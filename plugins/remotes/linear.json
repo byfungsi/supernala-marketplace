@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "status": "staged-unverified",
+  "id": "linear-remote-1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "linear",
+  "version": "1.0.0",
+  "name": "Linear",
+  "description": "Staged curated Linear managed remote MCP candidate",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "linear-mcp-v1",
+    "providerRegistrationId": "linear-oauth-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://mcp.linear.app/mcp",
+  "oauthRegistrationMode": "dynamic",
+  "scopes": [],
+  "catalog": {
+    "id": "linear-unverified-catalog",
+    "schemaVersion": 1,
+    "digest": "0000000000000000000000000000000000000000000000000000000000000000",
+    "tools": []
+  },
+  "config": { "revision": 1, "fields": [] },
+  "allowedHosts": ["mcp.linear.app"],
+  "verificationNotes": "Endpoint and DCR mode documented by Linear; scopes, live catalog, privacy, and account eligibility not verified."
+}

@@ -1,0 +1,6 @@
+/releases/ @supernala/release-reviewers
+/plugins/ @supernala/plugin-reviewers
+/src/plugin-contract.ts @supernala/plugin-reviewers
+/src/authority-diff.ts @supernala/plugin-reviewers
+/tools/infra/ @supernala/infrastructure-reviewers
+/.github/workflows/ @supernala/infrastructure-reviewers

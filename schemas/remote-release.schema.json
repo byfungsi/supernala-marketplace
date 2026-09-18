@@ -1,0 +1,388 @@
+{
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "enum": [1]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["staged-unverified", "reviewed-publishable"]
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "marketplaceId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "publisherNamespace": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 80
+        }
+      ]
+    },
+    "pluginSlug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 80
+        }
+      ]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 120
+        }
+      ]
+    },
+    "description": {
+      "type": "string",
+      "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 2000
+        }
+      ]
+    },
+    "license": {
+      "type": "string",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 80
+        }
+      ]
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "_tag": {
+          "type": "string",
+          "enum": ["ManagedRemoteMcp"]
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["managed-remote-mcp"]
+        },
+        "endpointRegistrationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "providerRegistrationId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "transport": {
+          "type": "string",
+          "enum": ["streamable-http"]
+        }
+      },
+      "required": ["_tag", "kind", "endpointRegistrationId", "providerRegistrationId", "transport"],
+      "additionalProperties": true
+    },
+    "endpoint": {
+      "type": "string",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 2048
+        }
+      ]
+    },
+    "oauthRegistrationMode": {
+      "type": "string",
+      "enum": ["dynamic", "platform-pre-registered"]
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "allOf": [
+          {
+            "minLength": 1
+          },
+          {
+            "maxLength": 300
+          }
+        ]
+      },
+      "maxItems": 100
+    },
+    "catalog": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "schemaVersion": {
+          "type": "number",
+          "enum": [1]
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 160
+                  }
+                ]
+              },
+              "mcpName": {
+                "type": "string",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 160
+                  }
+                ]
+              },
+              "title": {
+                "type": "string",
+                "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 160
+                  }
+                ]
+              },
+              "description": {
+                "type": "string",
+                "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 1000
+                  }
+                ]
+              },
+              "classification": {
+                "type": "string",
+                "enum": ["read", "write", "destructive", "unknown"]
+              },
+              "defaultPolicy": {
+                "type": "string",
+                "enum": ["allow", "require-approval", "block"]
+              },
+              "inputSchema": {
+                "type": "object"
+              },
+              "maximumOutputBytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1048576
+              }
+            },
+            "required": [
+              "id",
+              "mcpName",
+              "title",
+              "description",
+              "classification",
+              "defaultPolicy",
+              "inputSchema",
+              "maximumOutputBytes"
+            ],
+            "additionalProperties": true
+          },
+          "maxItems": 2000
+        }
+      },
+      "required": ["id", "schemaVersion", "digest", "tools"],
+      "additionalProperties": true
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string",
+                "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 120
+                  }
+                ]
+              },
+              "label": {
+                "type": "string",
+                "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 160
+                  }
+                ]
+              },
+              "type": {
+                "type": "string",
+                "enum": ["string", "boolean", "integer", "url"]
+              },
+              "scope": {
+                "type": "string",
+                "enum": ["workspace-activation", "connection"]
+              },
+              "sensitivity": {
+                "type": "string",
+                "enum": ["non-secret", "secret"]
+              },
+              "sourcePolicy": {
+                "type": "string",
+                "enum": [
+                  "platform-only",
+                  "owner-required",
+                  "owner-optional",
+                  "platform-default-owner-override"
+                ]
+              },
+              "delivery": {
+                "type": "string",
+                "enum": [
+                  "oauth-broker-only",
+                  "token-minting-adapter-only",
+                  "plugin-host-environment",
+                  "remote-mcp-header",
+                  "control-plane-only"
+                ]
+              },
+              "runtimeName": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]*$"
+              },
+              "affects": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": ["authentication", "network-egress", "tool-behavior"]
+                },
+                "maxItems": 3
+              }
+            },
+            "required": [
+              "key",
+              "label",
+              "type",
+              "scope",
+              "sensitivity",
+              "sourcePolicy",
+              "delivery",
+              "affects"
+            ],
+            "additionalProperties": true
+          },
+          "maxItems": 100
+        }
+      },
+      "required": ["revision", "fields"],
+      "additionalProperties": true
+    },
+    "allowedHosts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "allOf": [
+        {
+          "minItems": 1
+        },
+        {
+          "maxItems": 100
+        }
+      ]
+    },
+    "verificationNotes": {
+      "type": "string",
+      "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 2000
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "status",
+    "id",
+    "marketplaceId",
+    "publisherNamespace",
+    "pluginSlug",
+    "version",
+    "name",
+    "description",
+    "license",
+    "runtime",
+    "endpoint",
+    "oauthRegistrationMode",
+    "scopes",
+    "catalog",
+    "config",
+    "allowedHosts",
+    "verificationNotes"
+  ],
+  "additionalProperties": true
+}

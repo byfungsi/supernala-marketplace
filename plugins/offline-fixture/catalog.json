@@ -1,0 +1,26 @@
+{
+  "id": "offline-fixture-catalog-v1",
+  "schemaVersion": 1,
+  "tools": [
+    {
+      "id": "offline-fixture.echo",
+      "mcpName": "echo",
+      "title": "Echo text",
+      "description": "Returns bounded synthetic text without network or credential access",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": ["text"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 4096
+    }
+  ]
+}

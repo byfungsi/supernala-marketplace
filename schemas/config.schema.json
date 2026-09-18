@@ -1,0 +1,98 @@
+{
+  "type": "object",
+  "properties": {
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "fields": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9_.-]*$",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 120
+              }
+            ]
+          },
+          "label": {
+            "type": "string",
+            "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 160
+              }
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": ["string", "boolean", "integer", "url"]
+          },
+          "scope": {
+            "type": "string",
+            "enum": ["workspace-activation", "connection"]
+          },
+          "sensitivity": {
+            "type": "string",
+            "enum": ["non-secret", "secret"]
+          },
+          "sourcePolicy": {
+            "type": "string",
+            "enum": [
+              "platform-only",
+              "owner-required",
+              "owner-optional",
+              "platform-default-owner-override"
+            ]
+          },
+          "delivery": {
+            "type": "string",
+            "enum": [
+              "oauth-broker-only",
+              "token-minting-adapter-only",
+              "plugin-host-environment",
+              "remote-mcp-header",
+              "control-plane-only"
+            ]
+          },
+          "runtimeName": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]*$"
+          },
+          "affects": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["authentication", "network-egress", "tool-behavior"]
+            },
+            "maxItems": 3
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "type",
+          "scope",
+          "sensitivity",
+          "sourcePolicy",
+          "delivery",
+          "affects"
+        ],
+        "additionalProperties": true
+      },
+      "maxItems": 100
+    }
+  },
+  "required": ["revision", "fields"],
+  "additionalProperties": true
+}

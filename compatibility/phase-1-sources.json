@@ -1,0 +1,31 @@
+{
+  "rootDescription": "Committed and locally merged Plugin integration 9e020887a5619d81bcda135cd729af360c6a3096, fast-forwarded from parent main ad5c0ddd7feae44ce21c8aaf7ad7c8afdbf6f645; not deployed",
+  "files": {
+    "packages/domain/src/plugin-identity.ts": "889d4646d1449204f07eec4d299619f649ad0c67cd158d35bdf1e3815834e817",
+    "packages/domain/src/plugin-package.ts": "68f08f22757d25ba52d8565458ad97319eb95ed580b6aed3cad03e77a96b2482",
+    "packages/domain/src/plugin-archive.ts": "bd260302be75774f2c09f803d8d9d4492f6f5fa06fa9383b936655d850719cd7",
+    "apps/api/src/plugin-publication.ts": "1e17c33301c011a9bc61b98f36d57fa7eefc5a8d29fb795e903facb291bcdd16",
+    "apps/api/src/plugin-package-archive.ts": "faf5f5b5a86e2156de624ba770a75b6cc138c173b9f82e8eea8ee351c26b550a",
+    "apps/api/src/plugin-tool-input-validation.ts": "63ad457e12c6f676a348dd2ab60f1c93dfb7feb8559fd81753a20a8f7dd75d5a",
+    "apps/api/application-migrations/0042_plugin_control_plane.sql": "5d834a38ff1fe278e0225ffe16c2c4f03d335cf0a1511fe67e17b2c348c05f2e",
+    "packages/plugin-host-runner/src/plugin-host-server.mjs": "b981f9dbc845338479fcd1e51a0605f419af97e1efae70544a0c357243cf9b19",
+    "pnpm-workspace.yaml": "c6b9785bc09ca280edbcbe0dba4c87f67a9fea3ac33eef0d89a910a4a9cb07fc",
+    "docs/plugins/09-phases-and-acceptance.md": "4f91edcae34dd41f36cd335281043d8c0983126e901fce416ad24d946e2ddcc5"
+  },
+  "additionalReviewedSources": {
+    "docs/plugins/01-product-and-domain.md": "523eeb0aebff0871d29f72ebb76e764db2df7f7029b4cd526f7feb9b3ef4c278",
+    "docs/plugins/02-package-specification.md": "715911a2853522e320f61acbccdf1a9def611e062bac8f09e23f51f69e0579ec",
+    "docs/plugins/03-architecture.md": "12a6811bbb638742e08866c65cbb5cb0bac64125043db126981c00bcc0fc339d",
+    "docs/plugins/04-installation-oauth-and-grants.md": "bfa760b0ae2011c8ec3251bb1b6fd4c264003293a29353a32f7f15ae0a379397",
+    "docs/plugins/05-runtime-and-execution.md": "53509c6f51229252be890f24a64319ce5c39b0d578e9b514f22fe1a0adb87bba",
+    "docs/plugins/06-security.md": "1dc146dd60ca99a2da1afda4f21403dd88f21ed18c91b7d6588e71f341d0043e",
+    "docs/plugins/07-usage-statistics.md": "084df1090000eeb590432c5887977199cf43186db920d2297811ffbb31f068ed",
+    "docs/plugins/08-call-graphs.md": "679a502ad6fe571305af1806ff153891872949769960fa9112a1b7bf0fabbeaa",
+    "docs/plugins/10-references.md": "33491719b78811db729b8142c0a0a4c18410e8de8f7c5e3cea251d4c57206694",
+    "docs/plugins/11-private-marketplace-extension.md": "67dc89a69ff0ec2e60fe980ddc05db9823bc160273d0fd649cd39faa0832da82",
+    "docs/plugins/12-config-and-provider-registrations.md": "ed96ad83b580e2936d262c7fb69d337efadbc53423ae4c952ff757a94ead3842",
+    "docs/plugins/README.md": "a100ca45ca32223ea72362c28459f6405a775144fd20c1318e19ec06e42582fc",
+    "package.json": "b70d8a0427bc188649fb717b1c6654113a4f7d9b40ca5e31fed8e888753a9444",
+    "apps/api/package.json": "d4aaaf7eace2cd7512d2d28ef4f2ceb7c48248c7b04df639076ed7d19c9f1df8"
+  }
+}

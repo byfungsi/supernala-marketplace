@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "sharedInputs": [
+    "package.json",
+    "pnpm-lock.yaml",
+    "src/plugin-contract.ts",
+    "src/plugin-config-validation.ts",
+    "src/plugin-archive.ts",
+    "src/package-archive.ts",
+    "src/authoring-validation.ts",
+    "src/authority-diff.ts",
+    "schemas/plugin.schema.json",
+    "schemas/catalog.schema.json",
+    "schemas/config.schema.json"
+  ],
+  "plugins": [
+    {
+      "sourceDirectory": "plugins/offline-fixture",
+      "kind": "managed-package",
+      "publicationEligible": false,
+      "reason": "conformance fixture only"
+    },
+    {
+      "sourceDirectory": "plugins/github",
+      "kind": "managed-package",
+      "publicationEligible": false,
+      "reason": "provider registration, independent review, and live acceptance remain unverified"
+    },
+    {
+      "sourceDirectory": "plugins/remotes",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": false,
+      "reason": "provider facts and catalogs remain staged-unverified"
+    }
+  ]
+}

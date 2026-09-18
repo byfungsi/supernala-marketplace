@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "id": "github",
+  "publisher": "supernala",
+  "version": "0.1.0",
+  "name": "GitHub",
+  "description": "Narrow first-party GitHub issue search, read, and creation tools",
+  "license": "MIT",
+  "licenseEvidence": {
+    "kind": "spdx-mit-full-text",
+    "license": {
+      "path": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    "notice": {
+      "path": "NOTICE",
+      "sha256": "29d7f3fdd6c998da171c49c271f2edfb7f9175e666e1ad7d20120945d4be3378"
+    }
+  },
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "catalog": {
+    "path": "catalog.json",
+    "sha256": "8934d2b26b76ee8a92efd5520155948690f37d25b4b437a706cc93c31e73ca6f"
+  },
+  "config": {
+    "path": "config.json",
+    "sha256": "188c99376af243549f4f6c7c254af79b09f258a547ec4287f6a946e53b05e7c7"
+  },
+  "authentication": {
+    "kind": "github-app",
+    "providerRegistration": "supernala-github-app-v1",
+    "credentialDelivery": "short-lived-installation-token-only"
+  },
+  "network": {
+    "allowedHosts": ["api.github.com"]
+  },
+  "limits": {
+    "expandedBytes": 1048576,
+    "files": 20
+  },
+  "provenance": "provenance.json"
+}

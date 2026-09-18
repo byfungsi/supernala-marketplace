@@ -1,0 +1,105 @@
+name: Incremental Marketplace release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: marketplace-release-main
+  cancel-in-progress: false
+
+jobs:
+  authoritative-baseline:
+    runs-on: ubuntu-24.04
+    environment: marketplace-release-read
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0 peeled commit
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22.20.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - name: Read durable release baseline
+        run: pnpm release baseline release-baseline.json "$GITHUB_SHA"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          MARKETPLACE_JOURNAL_DATABASE_ID: ${{ vars.MARKETPLACE_JOURNAL_DATABASE_ID }}
+          APPLICATION_DATABASE_ID: ${{ vars.APPLICATION_DATABASE_ID }}
+          PLUGIN_PACKAGE_BUCKET_NAME: ${{ vars.PLUGIN_PACKAGE_BUCKET_NAME }}
+          MARKETPLACE_JOURNAL_READ_TOKEN: ${{ secrets.MARKETPLACE_JOURNAL_READ_TOKEN }}
+          APPLICATION_PLUGIN_READ_TOKEN: ${{ secrets.APPLICATION_PLUGIN_READ_TOKEN }}
+          PLUGIN_PACKAGE_R2_READ_ACCESS_KEY_ID: ${{ secrets.PLUGIN_PACKAGE_R2_READ_ACCESS_KEY_ID }}
+          PLUGIN_PACKAGE_R2_READ_SECRET_ACCESS_KEY: ${{ secrets.PLUGIN_PACKAGE_R2_READ_SECRET_ACCESS_KEY }}
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: authoritative-release-baseline-${{ github.sha }}
+          path: release-baseline.json
+          if-no-files-found: error
+          retention-days: 1
+
+  credential-free-build:
+    needs: authoritative-baseline
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0 peeled commit
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22.20.0
+          cache: pnpm
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: authoritative-release-baseline-${{ github.sha }}
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm check
+      - run: pnpm marketplace public-safety
+      - name: Select and build exact merge release set
+        run: pnpm release build release-baseline.json release-output "$GITHUB_SHA" "$GITHUB_RUN_NUMBER"
+      - name: Verify publisher dry-run performs no writes
+        run: pnpm release publish release-output --dry-run
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: marketplace-release-${{ github.sha }}
+          path: release-output/
+          if-no-files-found: error
+          retention-days: 1
+
+  trusted-publication:
+    needs: credential-free-build
+    runs-on: ubuntu-24.04
+    environment: marketplace-production-publication
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0 peeled commit
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22.20.0
+          cache: pnpm
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: marketplace-release-${{ github.sha }}
+          path: release-output
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm marketplace public-safety
+      - name: Publish selected immutable versions
+        run: pnpm release publish release-output
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          MARKETPLACE_JOURNAL_DATABASE_ID: ${{ vars.MARKETPLACE_JOURNAL_DATABASE_ID }}
+          APPLICATION_DATABASE_ID: ${{ vars.APPLICATION_DATABASE_ID }}
+          PLUGIN_PACKAGE_BUCKET_NAME: ${{ vars.PLUGIN_PACKAGE_BUCKET_NAME }}
+          MARKETPLACE_JOURNAL_WRITE_TOKEN: ${{ secrets.MARKETPLACE_JOURNAL_WRITE_TOKEN }}
+          APPLICATION_PLUGIN_PUBLISH_TOKEN: ${{ secrets.APPLICATION_PLUGIN_PUBLISH_TOKEN }}
+          PLUGIN_PACKAGE_R2_ACCESS_KEY_ID: ${{ secrets.PLUGIN_PACKAGE_R2_ACCESS_KEY_ID }}
+          PLUGIN_PACKAGE_R2_SECRET_ACCESS_KEY: ${{ secrets.PLUGIN_PACKAGE_R2_SECRET_ACCESS_KEY }}
+          MARKETPLACE_APPROVED_RELEASE_SET_DIGEST: ${{ vars.MARKETPLACE_APPROVED_RELEASE_SET_DIGEST }}

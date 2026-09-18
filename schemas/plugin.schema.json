@@ -1,0 +1,252 @@
+{
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "enum": [1]
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 80
+        }
+      ]
+    },
+    "publisher": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 80
+        }
+      ]
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?(?:\\+[0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*)?$"
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 120
+        }
+      ]
+    },
+    "description": {
+      "type": "string",
+      "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 2000
+        }
+      ]
+    },
+    "license": {
+      "type": "string",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 80
+        }
+      ]
+    },
+    "licenseEvidence": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["spdx-mit-full-text"]
+        },
+        "license": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "enum": ["LICENSE"]
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": ["path", "sha256"],
+          "additionalProperties": true
+        },
+        "notice": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "enum": ["NOTICE"]
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            }
+          },
+          "required": ["path", "sha256"],
+          "additionalProperties": true
+        }
+      },
+      "required": ["kind", "license", "notice"],
+      "additionalProperties": true
+    },
+    "runtime": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["managed-package"]
+        },
+        "type": {
+          "type": "string",
+          "enum": ["node"]
+        },
+        "node": {
+          "type": "string",
+          "enum": ["22.x"]
+        },
+        "entrypoint": {
+          "type": "string"
+        }
+      },
+      "required": ["kind", "type", "node", "entrypoint"],
+      "additionalProperties": true
+    },
+    "catalog": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "enum": ["catalog.json"]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": ["path", "sha256"],
+      "additionalProperties": true
+    },
+    "config": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "enum": ["config.json"]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": ["path", "sha256"],
+      "additionalProperties": true
+    },
+    "authentication": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["none"]
+            }
+          },
+          "required": ["kind"],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["github-app"]
+            },
+            "providerRegistration": {
+              "type": "string",
+              "minLength": 1
+            },
+            "credentialDelivery": {
+              "type": "string",
+              "enum": ["short-lived-installation-token-only"]
+            }
+          },
+          "required": ["kind", "providerRegistration", "credentialDelivery"],
+          "additionalProperties": true
+        }
+      ]
+    },
+    "network": {
+      "type": "object",
+      "properties": {
+        "allowedHosts": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(?=.{1,253}$)(?!-)[a-z0-9-]+(?:\\.[a-z0-9-]+)+$"
+          },
+          "maxItems": 100
+        }
+      },
+      "required": ["allowedHosts"],
+      "additionalProperties": true
+    },
+    "limits": {
+      "type": "object",
+      "properties": {
+        "expandedBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 52428800
+        },
+        "files": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5000
+        }
+      },
+      "required": ["expandedBytes", "files"],
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "string",
+      "enum": ["provenance.json"]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "publisher",
+    "version",
+    "name",
+    "description",
+    "license",
+    "runtime",
+    "catalog",
+    "config",
+    "authentication",
+    "network",
+    "limits",
+    "provenance"
+  ],
+  "additionalProperties": true
+}

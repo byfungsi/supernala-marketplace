@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "id": "offline-fixture",
+  "publisher": "supernala",
+  "version": "1.0.0",
+  "name": "Offline Conformance Fixture",
+  "description": "Deterministic credential-free fixture for package and MCP compatibility testing",
+  "license": "LicenseRef-Testing-Only",
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "catalog": {
+    "path": "catalog.json",
+    "sha256": "f82bf8a0b1c2ac82d0f27ed5d837f3b7c2e4a508f43bb072c4750a13fe5e2220"
+  },
+  "config": {
+    "path": "config.json",
+    "sha256": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334"
+  },
+  "authentication": {
+    "kind": "none"
+  },
+  "network": {
+    "allowedHosts": []
+  },
+  "limits": {
+    "expandedBytes": 1048576,
+    "files": 20
+  },
+  "provenance": "provenance.json"
+}

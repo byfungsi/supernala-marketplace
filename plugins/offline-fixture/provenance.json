@@ -1,0 +1,17 @@
+{
+  "source": {
+    "type": "first-party-fixture",
+    "path": "plugins/offline-fixture/dist/server.mjs",
+    "purpose": "offline-conformance-only"
+  },
+  "build": {
+    "recipeVersion": 1,
+    "runtimeDependencies": [],
+    "reproducible": true,
+    "builtAt": "1980-01-01T00:00:00.000Z"
+  },
+  "publication": {
+    "eligible": false,
+    "reason": "test-fixture-not-a-store-release"
+  }
+}

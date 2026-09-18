@@ -1,0 +1,60 @@
+{
+  "id": "github-candidate-catalog-v1",
+  "schemaVersion": 1,
+  "tools": [
+    {
+      "id": "github.search_issues",
+      "mcpName": "search_issues",
+      "title": "Search issues",
+      "description": "Search issues visible to the connected GitHub App installation",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "inputSchema": {
+        "type": "object",
+        "properties": { "query": { "type": "string", "maxLength": 500 } },
+        "required": ["query"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "github.get_issue",
+      "mcpName": "get_issue",
+      "title": "Get issue",
+      "description": "Read one issue in an installation-visible repository",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "maxLength": 100 },
+          "repo": { "type": "string", "maxLength": 100 },
+          "number": { "type": "integer", "minimum": 1, "maximum": 2147483647 }
+        },
+        "required": ["owner", "repo", "number"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "github.create_issue",
+      "mcpName": "create_issue",
+      "title": "Create issue",
+      "description": "Create one issue after exact Owner review",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "owner": { "type": "string", "maxLength": 100 },
+          "repo": { "type": "string", "maxLength": 100 },
+          "title": { "type": "string", "maxLength": 256 },
+          "body": { "type": "string", "maxLength": 10000 }
+        },
+        "required": ["owner", "repo", "title"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    }
+  ]
+}

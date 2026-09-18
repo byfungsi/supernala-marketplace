@@ -1,0 +1,16 @@
+{
+  "artifactDigest": "bd896d214ddbf42c5a9df9320e2aa7a929b199c2e1a3e8b6a79d86d9cd1de1ce",
+  "manifestDigest": "aa2ff08024259c8193d4d794655439bca06baed2c7df18e3ddde26a7dbf644d2",
+  "catalogDigest": "f82bf8a0b1c2ac82d0f27ed5d837f3b7c2e4a508f43bb072c4750a13fe5e2220",
+  "configDigest": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
+  "byteLength": 2603,
+  "entryOrder": [
+    "LICENSE",
+    "README.md",
+    "catalog.json",
+    "config.json",
+    "dist/server.mjs",
+    "plugin.json",
+    "provenance.json"
+  ]
+}

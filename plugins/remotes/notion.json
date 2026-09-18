@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "status": "staged-unverified",
+  "id": "notion-remote-1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "notion",
+  "version": "1.0.0",
+  "name": "Notion",
+  "description": "Staged curated Notion managed remote MCP candidate",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "notion-mcp-v1",
+    "providerRegistrationId": "notion-oauth-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://mcp.notion.com/mcp",
+  "oauthRegistrationMode": "dynamic",
+  "scopes": [],
+  "catalog": {
+    "id": "notion-unverified-catalog",
+    "schemaVersion": 1,
+    "digest": "0000000000000000000000000000000000000000000000000000000000000000",
+    "tools": []
+  },
+  "config": { "revision": 1, "fields": [] },
+  "allowedHosts": ["mcp.notion.com"],
+  "verificationNotes": "Endpoint documented by Notion; OAuth metadata suggests DCR, but scopes, live catalog, privacy, and account eligibility remain unverified."
+}

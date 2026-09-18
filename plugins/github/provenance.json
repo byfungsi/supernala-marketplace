@@ -1,0 +1,19 @@
+{
+  "source": {
+    "type": "first-party",
+    "path": "plugins/github/source/server.mjs",
+    "upstream": null
+  },
+  "build": {
+    "recipe": "plugins/github/build-recipe.json",
+    "runtimeDependencies": [],
+    "networkDuringBuild": false
+  },
+  "license": {
+    "spdx": "MIT",
+    "status": "approved-first-party-source",
+    "file": "plugins/github/LICENSE",
+    "notice": "plugins/github/NOTICE",
+    "copyright": "Copyright (c) 2026 Supernala contributors"
+  }
+}

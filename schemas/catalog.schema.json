@@ -1,0 +1,105 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "schemaVersion": {
+      "type": "number",
+      "enum": [1]
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 160
+              }
+            ]
+          },
+          "mcpName": {
+            "type": "string",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 160
+              }
+            ]
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 160
+              }
+            ]
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 1000
+              }
+            ]
+          },
+          "classification": {
+            "type": "string",
+            "enum": ["read", "write", "destructive", "unknown"]
+          },
+          "defaultPolicy": {
+            "type": "string",
+            "enum": ["allow", "require-approval", "block"]
+          },
+          "inputSchema": {
+            "type": "object"
+          },
+          "maximumOutputBytes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1048576
+          }
+        },
+        "required": [
+          "id",
+          "mcpName",
+          "title",
+          "description",
+          "classification",
+          "defaultPolicy",
+          "inputSchema",
+          "maximumOutputBytes"
+        ],
+        "additionalProperties": true
+      },
+      "allOf": [
+        {
+          "minItems": 1
+        },
+        {
+          "maxItems": 2000
+        }
+      ]
+    }
+  },
+  "required": ["id", "schemaVersion", "tools"],
+  "additionalProperties": true
+}

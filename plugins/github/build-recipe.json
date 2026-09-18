@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "source": "plugins/github/source/server.mjs",
+  "output": "plugins/github/dist/server.mjs",
+  "manifest": "plugins/github/package-manifest.json",
+  "runtime": "node-22.x",
+  "runtimeDependencies": [],
+  "networkDuringBuild": false,
+  "lifecycleScripts": false,
+  "deterministicCopy": true,
+  "license": "MIT",
+  "licenseFile": "plugins/github/LICENSE",
+  "noticeFile": "plugins/github/NOTICE",
+  "preservedThirdPartyNotices": [],
+  "packageFiles": [
+    {
+      "source": "plugins/github/package-manifest.json",
+      "destination": "plugin.json",
+      "sha256": "9c9ff3a78f870f28bedf91fd549e7f8b8da23ac7c7933a13851885d4c489b51b"
+    },
+    {
+      "source": "plugins/github/catalog.json",
+      "destination": "catalog.json",
+      "sha256": "8934d2b26b76ee8a92efd5520155948690f37d25b4b437a706cc93c31e73ca6f"
+    },
+    {
+      "source": "plugins/github/config.json",
+      "destination": "config.json",
+      "sha256": "188c99376af243549f4f6c7c254af79b09f258a547ec4287f6a946e53b05e7c7"
+    },
+    {
+      "source": "plugins/github/provenance.json",
+      "destination": "provenance.json",
+      "sha256": "8e23c82369d69cc15738bef71365f5fe84a3f5a9830231353122bf632c223c0a"
+    },
+    {
+      "source": "plugins/github/source/server.mjs",
+      "destination": "dist/server.mjs",
+      "sha256": "6ed47d432335ff7b02a966fceed150b276a252cfc99904625bad59d283354834"
+    },
+    {
+      "source": "plugins/github/LICENSE",
+      "destination": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    {
+      "source": "plugins/github/NOTICE",
+      "destination": "NOTICE",
+      "sha256": "29d7f3fdd6c998da171c49c271f2edfb7f9175e666e1ad7d20120945d4be3378"
+    }
+  ]
+}

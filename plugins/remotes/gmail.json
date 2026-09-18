@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "status": "staged-unverified",
+  "id": "gmail-remote-1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "gmail",
+  "version": "1.0.0",
+  "name": "Gmail",
+  "description": "Staged Developer Preview Gmail managed remote MCP candidate",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "gmail-mcp-preview-v1",
+    "providerRegistrationId": "google-gmail-mcp-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://gmailmcp.googleapis.com/mcp/v1",
+  "oauthRegistrationMode": "platform-pre-registered",
+  "scopes": [
+    "https://www.googleapis.com/auth/gmail.readonly",
+    "https://www.googleapis.com/auth/gmail.compose"
+  ],
+  "catalog": {
+    "id": "gmail-unverified-catalog",
+    "schemaVersion": 1,
+    "digest": "0000000000000000000000000000000000000000000000000000000000000000",
+    "tools": []
+  },
+  "config": { "revision": 1, "fields": [] },
+  "allowedHosts": ["gmailmcp.googleapis.com"],
+  "verificationNotes": "Developer Preview endpoint and scopes documented by Google; eligibility, OAuth verification, live catalog, privacy controls, and production readiness remain unverified."
+}

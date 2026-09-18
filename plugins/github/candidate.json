@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "status": "staged-nonpublishable",
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "authentication": {
+    "kind": "github-app",
+    "providerRegistration": "supernala-github-app-v1",
+    "credentialDelivery": "short-lived-installation-token-only"
+  },
+  "network": {
+    "allowedHosts": ["api.github.com"]
+  },
+  "license": "MIT",
+  "blockingReason": "Provider registration, independent release review, and live acceptance remain unverified"
+}

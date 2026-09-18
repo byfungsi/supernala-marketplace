@@ -1,0 +1,10 @@
+{
+  "providerRegistration": "supernala-github-app-v1",
+  "bindings": {
+    "apiBaseUrl": {
+      "source": "manifest-default",
+      "name": "GITHUB_API_URL",
+      "value": "https://api.github.com"
+    }
+  }
+}

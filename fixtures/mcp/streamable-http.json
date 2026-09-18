@@ -1,0 +1,5 @@
+{
+  "jsonrpc": "2.0",
+  "id": "http-1",
+  "result": { "content": [{ "type": "text", "text": "synthetic result" }] }
+}

@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "status": "staged-unverified",
+  "id": "atlassian-remote-1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "atlassian",
+  "version": "1.0.0",
+  "name": "Atlassian",
+  "description": "Staged curated Atlassian Rovo managed remote MCP candidate",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "atlassian-rovo-mcp-v2",
+    "providerRegistrationId": "atlassian-oauth-v2",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://mcp.atlassian.com/v2/mcp",
+  "oauthRegistrationMode": "dynamic",
+  "scopes": [],
+  "catalog": {
+    "id": "atlassian-unverified-catalog",
+    "schemaVersion": 1,
+    "digest": "0000000000000000000000000000000000000000000000000000000000000000",
+    "tools": []
+  },
+  "config": { "revision": 1, "fields": [] },
+  "allowedHosts": ["mcp.atlassian.com"],
+  "verificationNotes": "V2 endpoint and OAuth 2.1 documented by Atlassian; DCR metadata, scopes, live catalog, privacy, Rovo credit behavior, and eligibility remain unverified."
+}
