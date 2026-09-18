@@ -15,14 +15,36 @@ pnpm marketplace plan-publication plugins/offline-fixture artifacts/offline-fixt
 pnpm marketplace public-safety
 pnpm marketplace export-schemas
 pnpm release baseline <baseline.json> <merge-sha>
-pnpm release build <baseline.json> <output-directory> <merge-sha> <run-number>
+pnpm release build <baseline.json> <output-directory> <merge-sha> <reserved-release-ordinal>
 pnpm release publish <output-directory> --dry-run
 pnpm check
 ```
 
 The legacy publication-plan command remains useful for contract inspection. The merge release machinery reads a durable journal baseline, independently verifies published rows against exact application D1 state and complete R2 bytes, builds only selected Plugin versions, and uses verified R2/D1 publication adapters. Dry-run never writes. A published row without current durable-state evidence fails closed rather than being silently skipped. Production publication requires explicit configuration and has not been enabled or called.
 
+`plugins/offline-fixture/dist/server.mjs` is checked-in fixture source despite the general `dist/` ignore rule. Its exact bytes are bound by `fixtures/golden/offline-package.json`; do not regenerate or reformat it. Clean-clone checks require this file without a build step.
+
 See `docs/release-operations.md` and `docs/infra-ownership.md` for trust boundaries, recovery behavior, Alchemy ownership, and required operator configuration.
+
+## Local production releases
+
+After the one-time infrastructure and private credential setup in [release operations](docs/release-operations.md):
+
+```sh
+git switch main
+git pull --ff-only
+pnpm marketplace deploy --environment production
+```
+
+The command verifies fetched `origin/main`, checks an isolated exact-commit checkout, reserves durable release authority, builds with no inherited credentials, displays the release and authority diffs, and asks for the exact digest before publishing. It never enables ineligible Plugins or upgrades existing installations. GitHub Actions runs checks only; merges do not publish automatically.
+
+```sh
+pnpm marketplace deploy --environment production --status
+# Only after ALL old publishers and their in-flight requests have stopped:
+pnpm marketplace deploy --environment production --recover-attempt ATTEMPT_UUID
+```
+
+Failed/uncertain attempts retain a non-expiring lock. Explicit recovery abandons only the attempt, not Plugin records or artifacts; the next deployment reconciles the durable baseline.
 
 Supernala-authored repository source is licensed under the [MIT License](LICENSE), copyright 2026 Supernala contributors. See [NOTICE](NOTICE) for scope. This does not relicense third-party dependencies, copied upstream material, provider services, trademarks, or remote-provider content; their respective licenses and terms continue to apply.
 

@@ -1,6 +1,6 @@
 # Marketplace release infrastructure
 
-Alchemy `2.0.0-beta.77` is the only infrastructure definition for Marketplace release state. The stack provisions one Marketplace-owned D1 database, `MarketplaceReleaseJournal`, with `migrations/0001_release_journal.sql`.
+Alchemy `2.0.0-beta.77` is the only infrastructure definition for Marketplace release state. The stack provisions one Marketplace-owned D1 database, `MarketplaceReleaseJournal`, with `migrations/0001_release_journal.sql` and the additive `migrations/0002_local_release_attempts.sql` for local-operator exclusivity and ordering. Apply both before using the local deploy command; do not modify applied migrations.
 
 The application stack continues to own `ApplicationDatabase` and `PluginPackages`. `alchemy.run.ts` uses cross-stack `Database.ref`/`Bucket.ref` references to read their identifiers for trusted release configuration; it does **not** create, import, adopt, migrate, or destroy those resources.
 

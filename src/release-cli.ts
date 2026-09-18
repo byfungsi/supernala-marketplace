@@ -19,14 +19,21 @@ import {
   ReleaseReview,
 } from "./release-bundle.js";
 import {
-  PluginReleaseIdentity,
   publishIncrementalRelease,
   ReleaseJournalRecordSchema,
   selectIncrementalReleaseSources,
   type IncrementalReleaseCandidate,
+  type PluginReleaseIdentity,
   type ReleaseSourceState,
 } from "./release-machine.js";
 import { validatePublicationAuthorityLineage } from "./release-lineage.js";
+import { ReleaseSet } from "./release-set.js";
+import {
+  LocalReleaseCoordinator,
+  ReleaseAttemptId,
+  ReleaseCommit,
+  ReleaseOrdinal,
+} from "./local-release-coordinator.js";
 
 const ReleaseIndex = Schema.Struct({
   schemaVersion: Schema.Literal(1),
@@ -37,24 +44,6 @@ const ReleaseIndex = Schema.Struct({
       kind: Schema.Literals(["managed-package", "managed-remote-mcp"]),
       publicationEligible: Schema.Boolean,
       reason: Schema.NonEmptyString,
-    }),
-  ),
-});
-
-const ReleaseSet = Schema.Struct({
-  schemaVersion: Schema.Literal(1),
-  mergeCommit: Schema.String.pipe(Schema.check(Schema.isPattern(/^[a-f0-9]{40}$/u))),
-  releaseOrdinal: Schema.Int.pipe(
-    Schema.check(Schema.isGreaterThanOrEqualTo(0)),
-    Schema.check(Schema.isLessThanOrEqualTo(Number.MAX_SAFE_INTEGER)),
-  ),
-  setDigest: PluginSha256,
-  bundles: Schema.Array(
-    Schema.Struct({
-      relativePath: Schema.NonEmptyString,
-      identity: PluginReleaseIdentity,
-      releaseDigest: PluginSha256,
-      reviewId: Schema.NonEmptyString,
     }),
   ),
 });
@@ -281,11 +270,13 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
   const releaseSetFile = path.join(directory, "release-set.json");
   if ((await fs.lstat(releaseSetFile)).isSymbolicLink()) fail("release-set-link-rejected");
   const releaseSet = await readJson(releaseSetFile, ReleaseSet);
-  const mergeCommit = dryRun ? releaseSet.mergeCommit : requiredEnvironment("GITHUB_SHA");
+  const mergeCommit = dryRun
+    ? releaseSet.mergeCommit
+    : requiredEnvironment("MARKETPLACE_RELEASE_COMMIT");
   if (mergeCommit !== releaseSet.mergeCommit) fail("release-merge-commit-mismatch");
   const releaseOrdinal = dryRun
     ? releaseSet.releaseOrdinal
-    : Number(requiredEnvironment("GITHUB_RUN_NUMBER"));
+    : Number(requiredEnvironment("MARKETPLACE_RELEASE_ORDINAL"));
   if (!Number.isSafeInteger(releaseOrdinal) || releaseOrdinal < 0) {
     fail("release-ordinal-invalid");
   }
@@ -375,6 +366,16 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
     fail("release-set-approval-mismatch");
   }
   const accountId = requiredEnvironment("CLOUDFLARE_ACCOUNT_ID");
+  const coordinator = new LocalReleaseCoordinator(
+    new CloudflareD1RestTransport({
+      accountId,
+      databaseId: requiredEnvironment("MARKETPLACE_JOURNAL_DATABASE_ID"),
+      apiToken: requiredEnvironment("MARKETPLACE_JOURNAL_WRITE_TOKEN"),
+    }),
+  );
+  const attemptId = Schema.decodeUnknownSync(ReleaseAttemptId)(
+    requiredEnvironment("MARKETPLACE_RELEASE_ATTEMPT_ID"),
+  );
   const journal = new D1ReleaseJournal(
     new CloudflareD1RestTransport({
       accountId,
@@ -405,6 +406,15 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
     });
     if (Result.isFailure(lineage)) fail(lineage.failure);
   }
+  unwrap(
+    await coordinator.beginPublication({
+      attemptId,
+      commit: Schema.decodeUnknownSync(ReleaseCommit)(mergeCommit),
+      ordinal: Schema.decodeUnknownSync(ReleaseOrdinal)(releaseOrdinal),
+      digest: verifiedSetDigest,
+    }),
+    (error) => error.reason,
+  );
   for (const { candidate: loaded } of verifiedBundles) {
     const published = await publishIncrementalRelease({
       candidate: loaded,
@@ -414,6 +424,7 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
     });
     if (Result.isFailure(published)) fail(published.failure);
   }
+  unwrap(await coordinator.finish(attemptId, "completed"), (error) => error.reason);
 };
 
 const main = async (): Promise<void> => {

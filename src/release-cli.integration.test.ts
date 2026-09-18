@@ -215,8 +215,8 @@ it("runs actual CLI build and zero-write dry-run, then rejects descriptor tamper
     expect(dryRun).toMatchObject({ exitCode: 0, stderr: "" });
     expect(JSON.parse(dryRun.stdout)).toEqual({ mode: "dry-run", writes: 0, bundles: 1 });
     const wrongTrustedOrdinal = await runReleaseCli(fixture.root, ["publish", "release-output"], {
-      GITHUB_SHA: "a".repeat(40),
-      GITHUB_RUN_NUMBER: "2",
+      MARKETPLACE_RELEASE_COMMIT: "a".repeat(40),
+      MARKETPLACE_RELEASE_ORDINAL: "2",
     });
     expect(wrongTrustedOrdinal.exitCode).toBe(1);
     expect(wrongTrustedOrdinal.stderr).toBe("Release failed: release-ordinal-mismatch\n");

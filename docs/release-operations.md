@@ -1,23 +1,27 @@
-# Incremental merge release operations
+# Local Marketplace release operations
 
 ## Trust boundary
 
-Pull requests run `.github/workflows/pull-request.yml` without provider or publication secrets. `release-on-main.yml` runs only for the resulting protected `main` commit. The baseline job has a read-only Marketplace-journal token. The build job receives no Cloudflare/R2 credentials. Only the final `marketplace-production-publication` environment job receives write credentials, after downloading and re-verifying the artifact built for the exact `${{ github.sha }}`. Cloudflare D1 token authority is database/account scoped rather than table scoped; the environment variable name does not imply narrower app-table enforcement.
+Pull requests and pushes run `.github/workflows/pull-request.yml` without provider or publication secrets. There is no automatic publication workflow. A trusted local operator publishes an exact fetched `origin/main` commit with `pnpm marketplace deploy --environment production`. See [local deployment](local-deployment.md) for setup, normal operation, credential files, and recovery.
+
+The operator CLI checks a separate exact-commit clone with its own dependencies, temporary HOME, and subprocess environment allowlist. Install/check/build/dry-run receive no Cloudflare/R2 credentials. Only Git fetch may use the operator's Git/SSH authentication. The baseline process gets read credentials only. The parent holds journal-control credentials; app/R2 write credentials are read from a separate owner-only file only after exact release-set confirmation. The publisher reconstructs every candidate before one-shot durable admission.
+
+This is environment separation on a trusted operator machine, not a sandbox against malicious same-user code. Trusted source, dependencies, Node/pnpm/Git, and secure workstation access are prerequisites. Cloudflare D1 token authority is database/account scoped rather than table scoped; a variable name does not imply app-table isolation.
 
 Repository operators must configure—not assume—the following:
 
 - protect `main`; require PRs, current PR checks, CODEOWNER review, conversation resolution, and no force pushes;
 - protect `releases/`, Plugin sources, release tooling, workflows, and `tools/infra/` with the owners in `.github/CODEOWNERS` (replace placeholder teams with real organization teams before enabling);
-- require independent reviewers for `marketplace-production-publication`, disallow self-review, and restrict it to `main`;
-- configure `marketplace-release-read` with Marketplace-journal read authority, application-D1 read authority, and an R2 key pair restricted to object reads for the package bucket; expose them as `MARKETPLACE_JOURNAL_READ_TOKEN`, `APPLICATION_PLUGIN_READ_TOKEN`, `PLUGIN_PACKAGE_R2_READ_ACCESS_KEY_ID`, and `PLUGIN_PACKAGE_R2_READ_SECRET_ACCESS_KEY`;
-- populate Alchemy output variables and separately approved secret-store credentials named in the workflow;
-- make `MARKETPLACE_APPROVED_RELEASE_SET_DIGEST` equal the independently approved exact identity/release/review set digest.
+- retain independent source/permission review on protected main; final operator confirmation does not replace it;
+- scan the exact public inventory, artifacts, and Git history before approval; the CLI worktree scan does not scan every historical Git blob;
+- provision the external owner-only credential files described in the local deployment guide, with matching Alchemy output topology;
+- disable any previously configured automated publisher and revoke its unused credentials before switching release ownership. An older publisher binary does not know about the local release lock.
 
 These controls are documentation requirements; this repository does not claim that GitHub or Cloudflare has been configured.
 
 ## Baseline and retry behavior
 
-The authoritative baseline starts from the Marketplace-owned D1 journal. It is not the previous push SHA and not a Git-authored ledger. Before export, every row marked published is checked through read-only interfaces against exact application D1 state and a complete R2 GET whose byte length and SHA-256 match the journal. The envelope is bound to the current merge SHA and uploaded/downloaded inside the same authenticated workflow run. Only then is `durableStateVerified: true` emitted. The boolean is not a signature and is not intrinsically trustworthy in hand-authored JSON; its authority comes from same-run artifact provenance, merge binding, and the credential separation between baseline and build jobs. Missing, stale, tampered, or unreadable durable state fails the workflow closed.
+The authoritative baseline starts from the Marketplace-owned D1 journal, not the previous push SHA or a Git-authored ledger. Before export, every published row is checked through read-only interfaces against exact application D1 state and a complete R2 GET whose byte length and SHA-256 match the journal. The envelope is bound to the pinned commit and retained in the same private local attempt directory. Only then is `durableStateVerified: true` emitted. This boolean is not a signature: authority comes from the trusted operator process freshly exporting it, commit binding, and credential separation. Missing, stale, tampered, or unreadable durable state fails closed; never hand-author a production baseline.
 
 Every candidate is keyed by `(marketplaceId, publisherNamespace, pluginSlug, semanticVersion)`. Same version with changed source, executable bytes, catalog, Config, provenance, or authority fails. Failed and interrupted rows are rebuilt from protected source and exact review data, then reconciled against application D1 and R2. A retry may originate from a later merge commit while preserving the original immutable approval/content identity. The monotonic baseline updates only after application post-publication readback and only for a greater release ordinal; older concurrent completion cannot regress it. Failed rows remain discoverable.
 
@@ -25,9 +29,9 @@ Authority review has explicit lineage. A first publication must use the derived 
 
 The reviewed lineage stays frozen across retries, but the trusted publisher revalidates it against the current journal and exact application state before any publication write. The named predecessor must still be the latest prior published row for the same Marketplace/publisher/slug and must still be published, not revoked or mismatched. A concurrently published newer predecessor makes the attempt stale; the publisher never recomputes lineage from the retry candidate itself.
 
-Merge commit and release ordinal are attempt authority, not immutable Plugin content authority. Both are carried by the release-set envelope and its approved digest. Trusted publication requires exact equality with `GITHUB_SHA` and the safely parsed `GITHUB_RUN_NUMBER`; each bundle must repeat those exact values. A later-merge retry receives a newly trusted ordinal while the journal retains the original successful claim's audit fields. Artifact-controlled ordinal tampering fails before journal or provider writes.
+Source commit and release ordinal are attempt authority, not immutable Plugin content authority. Both are carried by the release-set envelope and its approved digest. The local wrapper passes `MARKETPLACE_RELEASE_ATTEMPT_ID`, `MARKETPLACE_RELEASE_COMMIT`, `MARKETPLACE_RELEASE_ORDINAL`, and `MARKETPLACE_APPROVED_RELEASE_SET_DIGEST`; environment values alone confer no authority. Every bundle must match, and the coordinator atomically admits only the matching durable approved attempt before application/R2 writes. Ordinals are reserved atomically above historical journal and attempt ordinals. A later-commit retry gets a new ordinal while existing immutable claims retain their original audit fields.
 
-Selection skips an unchanged published Plugin only when its same-run exported row carries current `durableStateVerified: true` evidence. Outside that authenticated workflow provenance, operators must not treat the field as proof. A journal dump produced without application/R2 verification fails with `published-state-reverification-required`. Verified unchanged Plugins incur zero package builds and zero PUTs.
+Selection skips an unchanged published Plugin only when its same-attempt exported row carries current `durableStateVerified: true` evidence. Outside that trusted export, operators must not treat the field as proof. A journal dump produced without application/R2 verification fails with `published-state-reverification-required`. Verified unchanged Plugins incur zero package builds and zero PUTs.
 
 An exact application row reported as revoked is emitted as `durableStateRevoked: true` after immutable-row and R2 verification. It does not become installable or get republished. Selecting that exact source fails with `published-version-revoked`; unrelated Plugin releases continue normally. Re-enabling or superseding a revoked version is an explicit operator/application decision, not automatic baseline recovery.
 
@@ -41,7 +45,7 @@ Primary contract evidence: [D1 query API request body (`{ sql, params }` or `{ b
 
 Workflow action pins are recorded in `compatibility/github-action-pins.json`. The commits were resolved directly from each upstream tag with `git ls-remote`; the annotated `pnpm/action-setup@v4.1.0` tag is pinned to its peeled commit rather than its tag-object SHA. Tests require every workflow `uses:` entry to match that evidence.
 
-`pnpm release publish <directory> --dry-run` needs no credentials and writes nothing. Production mode fails closed unless every named configuration value is present, the workflow SHA equals the bundle merge commit, artifact scans pass, every protected full-identity review matches reconstructed archive/source authority, and the approved release-set digest matches.
+`pnpm release publish <directory> --dry-run` needs no credentials and writes nothing. Production mode requires matching source commit, ordinal, artifact scans, full-identity reviews, release-set approval, and one-shot durable attempt admission. Use the local deploy wrapper, not manual environment-variable emulation. Failures retain the non-expiring lock; explicit stopped-process recovery is documented in the local deployment guide.
 
 ## Application compatibility and remaining gates
 

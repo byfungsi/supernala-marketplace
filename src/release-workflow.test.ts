@@ -1,39 +1,25 @@
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { describe, expect, it } from "@effect/vitest";
 
-describe("merge release trust boundary", () => {
-  it("triggers on protected-main pushes without privileged PR execution", async () => {
-    const workflow = await readFile(".github/workflows/release-on-main.yml", "utf8");
+describe("local release trust boundary", () => {
+  it("runs only credential-free checks on PRs and main; publication has no workflow trigger", async () => {
+    expect(await readdir(".github/workflows")).toEqual(["pull-request.yml"]);
+    const workflow = await readFile(".github/workflows/pull-request.yml", "utf8");
     expect(workflow).toContain("push:");
     expect(workflow).toContain("branches: [main]");
     expect(workflow).not.toContain("pull_request_target");
     expect(workflow).toContain("persist-credentials: false");
-    expect(workflow).toContain("group: marketplace-release-main");
+    expect(workflow).not.toContain("secrets.");
+    expect(workflow).not.toContain("release publish");
+    expect(workflow).toContain("pnpm check");
   });
 
-  it("keeps build steps credential-free and publication environment-gated", async () => {
-    const workflow = await readFile(".github/workflows/release-on-main.yml", "utf8");
-    const baseline = workflow.slice(
-      workflow.indexOf("authoritative-baseline:"),
-      workflow.indexOf("credential-free-build:"),
-    );
-    expect(baseline).toContain("APPLICATION_PLUGIN_READ_TOKEN");
-    expect(baseline).toContain("PLUGIN_PACKAGE_R2_READ_ACCESS_KEY_ID");
-    expect(baseline).not.toContain("APPLICATION_PLUGIN_PUBLISH_TOKEN");
-    expect(baseline).not.toContain("MARKETPLACE_JOURNAL_WRITE_TOKEN");
-    expect(baseline).toContain('baseline release-baseline.json "$GITHUB_SHA"');
-    expect(baseline).toContain("authoritative-release-baseline-${{ github.sha }}");
-    const build = workflow.slice(
-      workflow.indexOf("credential-free-build:"),
-      workflow.indexOf("trusted-publication:"),
-    );
-    expect(build).not.toContain("secrets.");
-    expect(build).not.toContain("CLOUDFLARE_");
-    expect(build).toContain("publish release-output --dry-run");
-    const publish = workflow.slice(workflow.indexOf("trusted-publication:"));
-    expect(publish).toContain("environment: marketplace-production-publication");
-    expect(publish).toContain("MARKETPLACE_APPROVED_RELEASE_SET_DIGEST");
-    expect(publish).toContain("APPLICATION_PLUGIN_PUBLISH_TOKEN");
+  it("requires durable one-shot admission rather than GitHub environment variables", async () => {
+    const publisher = await readFile("src/release-cli.ts", "utf8");
+    expect(publisher).not.toContain("GITHUB_SHA");
+    expect(publisher).not.toContain("GITHUB_RUN_NUMBER");
+    expect(publisher).toContain("coordinator.beginPublication");
+    expect(publisher).toContain("MARKETPLACE_APPROVED_RELEASE_SET_DIGEST");
   });
 
   it("pins every workflow action to the independently verified upstream commit", async () => {
@@ -42,10 +28,7 @@ describe("merge release trust boundary", () => {
     ) as {
       readonly actions: Readonly<Record<string, { readonly commit: string }>>;
     };
-    const workflows = await Promise.all([
-      readFile(".github/workflows/pull-request.yml", "utf8"),
-      readFile(".github/workflows/release-on-main.yml", "utf8"),
-    ]);
+    const workflows = [await readFile(".github/workflows/pull-request.yml", "utf8")];
     const uses = workflows
       .flatMap((workflow) => [...workflow.matchAll(/uses: ([^@\s]+)@([a-f0-9]{40})/gu)])
       .map((match) => ({ action: match[1], commit: match[2] }));

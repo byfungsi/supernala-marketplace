@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { Result, Schema } from "effect";
+import { Effect, Result, Schema } from "effect";
 import { derivePluginAuthoritySnapshot, diffPluginAuthority } from "./authority-diff.js";
 import {
   preparePluginPackage,
@@ -252,6 +252,22 @@ const planCommand = async (arguments_: ReadonlyArray<string>): Promise<void> => 
 const main = async (): Promise<void> => {
   const [command, ...arguments_] = process.argv.slice(2);
   switch (command) {
+    case "deploy": {
+      const { runLocalMarketplaceDeploy } = await import("./local-marketplace-deploy.js");
+      await Effect.runPromise(
+        runLocalMarketplaceDeploy(arguments_).pipe(
+          Effect.catch((error) =>
+            Effect.sync(() => {
+              process.stderr.write(
+                `Marketplace deploy failed: ${error.reason}. Use deploy --environment production --status to inspect retained attempts.\n`,
+              );
+              process.exitCode = 1;
+            }),
+          ),
+        ),
+      );
+      return;
+    }
     case "validate":
       return validateCommand(requireArgument(arguments_, 0, "source-directory"));
     case "prepare":
@@ -283,7 +299,7 @@ const main = async (): Promise<void> => {
       );
     default:
       return fail(
-        "expected validate|prepare|inspect|diff-authority|conformance|validate-remotes|plan-publication|verify-plan|public-safety|export-schemas",
+        "expected deploy|validate|prepare|inspect|diff-authority|conformance|validate-remotes|plan-publication|verify-plan|public-safety|export-schemas",
       );
   }
 };
