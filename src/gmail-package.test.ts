@@ -3,6 +3,12 @@ import { readFile } from "node:fs/promises";
 import { expect, it } from "@effect/vitest";
 import { Result, Schema } from "effect";
 import {
+  deriveBootstrapAuthoritySnapshot,
+  derivePluginAuthoritySnapshot,
+  diffPluginAuthority,
+} from "./authority-diff.js";
+import { preparePluginPackage, validatePluginSource } from "./authoring-validation.js";
+import {
   createGmailToolHandler,
   gmailToolCatalog,
   parseGmailMessage,
@@ -12,13 +18,22 @@ import {
   PackageManifest,
   PackagedPluginLicenseEvidence,
 } from "./package-archive.js";
-import { digestPluginBytes, PluginSha256 } from "./plugin-contract.js";
+import { canonicalPluginJson, digestPluginBytes, PluginSha256 } from "./plugin-contract.js";
 import {
   decodePluginOAuthProviderDefinition,
   digestPluginOAuthProviderDefinition,
   encodePluginOAuthProviderDefinitionCanonicalJson,
   PackagedOAuthAuthentication,
 } from "./oauth-provider-definition.js";
+import {
+  calculateAuthorityBaselineDigest,
+  calculateManagedPackageSourceInputDigest,
+  calculateReleaseDigest,
+  pluginVersionId,
+  releaseReviewFile,
+  ReleaseReview,
+} from "./release-bundle.js";
+import { PluginReleaseIdentity } from "./release-machine.js";
 
 const gmailProviderDefinitionDigest =
   "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07";
@@ -32,7 +47,7 @@ const gmailProviderDefinitionCanonicalJson = [
 
 const GmailCandidate = Schema.Struct({
   schemaVersion: Schema.Literal(1),
-  status: Schema.Literal("staged-nonpublishable"),
+  status: Schema.Literal("owner-authorized-publication-ready"),
   runtime: Schema.Struct({
     kind: Schema.Literal("managed-package"),
     type: Schema.Literal("node"),
@@ -246,6 +261,10 @@ it("binds the five-field package declaration to the strict canonical Gmail defin
   const bindings = Schema.decodeUnknownSync(GmailPlatformBindings, {
     onExcessProperty: "error",
   })(JSON.parse(bindingsSource));
+  expect(candidate).toMatchObject({
+    status: "owner-authorized-publication-ready",
+    blockingReason: expect.stringContaining("live mailbox acceptance remains pending"),
+  });
   expect(manifest.authentication).toEqual(candidate.authentication);
   expect(manifest.authentication).toEqual({
     kind: "oauth",
@@ -670,7 +689,115 @@ it("binds full MIT and notice evidence without relicensing Google services", asy
   expect(releases.plugins).toContainEqual({
     sourceDirectory: "plugins/gmail",
     kind: "managed-package",
-    publicationEligible: false,
-    reason: expect.any(String),
+    publicationEligible: true,
+    reason: expect.stringMatching(/Owner-authorized.*formal reviews were waived.*live mailbox/u),
   });
+});
+
+it("binds the Owner-authorized first-publication review to exact Gmail release authority", async () => {
+  const releaseIndex = Schema.decodeUnknownSync(
+    Schema.Struct({
+      schemaVersion: Schema.Literal(1),
+      sharedInputs: Schema.Array(Schema.NonEmptyString),
+    }),
+  )(JSON.parse(await readFile("releases/index.json", "utf8")));
+  const sharedInputEntries = await Promise.all(
+    releaseIndex.sharedInputs.toSorted().map(async (file) => ({
+      file,
+      digest: await digestPluginBytes(new Uint8Array(await readFile(file))),
+    })),
+  );
+  const sharedInputDigest = await digestPluginBytes(
+    new TextEncoder().encode(JSON.stringify(sharedInputEntries)),
+  );
+  const source = await validatePluginSource("plugins/gmail");
+  if (Result.isFailure(source)) throw source.failure;
+  const identity = PluginReleaseIdentity.make({
+    marketplaceId: "supernala-public",
+    publisherNamespace: "supernala",
+    pluginSlug: "gmail",
+    semanticVersion: "0.1.0",
+  });
+  const reviewPath = releaseReviewFile(identity);
+  expect(reviewPath).toBe("releases/reviews/supernala-public__supernala__gmail__0.1.0.json");
+  const review = Schema.decodeUnknownSync(ReleaseReview, { onExcessProperty: "error" })(
+    JSON.parse(await readFile(reviewPath, "utf8")),
+  );
+  const prepared = await preparePluginPackage({
+    source: source.success,
+    marketplaceId: identity.marketplaceId,
+    versionId: pluginVersionId(identity),
+    publishedAt: review.reviewedAt,
+  });
+  if (Result.isFailure(prepared)) throw prepared.failure;
+  const digestJson = (value: Schema.Json) =>
+    digestPluginBytes(new TextEncoder().encode(canonicalPluginJson(value)));
+  const authorityAfter = derivePluginAuthoritySnapshot(source.success);
+  const authorityBefore = deriveBootstrapAuthoritySnapshot(authorityAfter);
+  const authorityBeforeDigest = await digestJson(authorityBefore);
+  const authorityDigest = await digestJson(authorityAfter);
+  const authorityDiff = await diffPluginAuthority(authorityBefore, authorityAfter);
+  const authorityBaselineDigest = await calculateAuthorityBaselineDigest({
+    authorityBeforeIdentity: null,
+    authorityBeforeReleaseDigest: null,
+    authorityBefore,
+    authorityBeforeDigest,
+  });
+  const sourceInputDigest = await calculateManagedPackageSourceInputDigest({
+    sourceDirectory: "plugins/gmail",
+    sharedInputDigest,
+  });
+  const provenanceDigest = await digestJson(prepared.success.parsed.provenance);
+  const releaseDigest = await calculateReleaseDigest({
+    identity,
+    version: prepared.success.parsed.version,
+    authentication: prepared.success.parsed.authentication,
+    sourceInputDigest,
+    catalogDigest: prepared.success.parsed.version.catalog.digest,
+    configDigest: prepared.success.parsed.configDigest,
+    provenanceDigest,
+    authorityBaselineDigest,
+    authorityDigest,
+    authorityDiffDigest: PluginSha256.make(authorityDiff.diffDigest),
+    artifactDigest: prepared.success.artifactDigest,
+  });
+
+  expect(review).toEqual({
+    schemaVersion: 1,
+    identity,
+    reviewId: "gmail-0.1.0-owner-authorized-waiver-v1",
+    reviewer: "supernala-owner (formal reviews waived, not passed)",
+    reviewedAt: expect.any(Number),
+    sourceInputDigest,
+    artifactDigest: prepared.success.artifactDigest,
+    authentication: {
+      kind: "oauth",
+      providerRegistration: "google-gmail-rest-v1",
+      providerDefinitionDigest: gmailProviderDefinitionDigest,
+      requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+      credentialDelivery: "short-lived-access-token-only",
+    },
+    catalogDigest: prepared.success.parsed.version.catalog.digest,
+    configDigest: prepared.success.parsed.configDigest,
+    provenanceDigest,
+    authorityBeforeIdentity: null,
+    authorityBeforeReleaseDigest: null,
+    authorityBefore,
+    authorityBeforeDigest,
+    authorityAfter,
+    authorityDigest,
+    authorityDiffDigest: authorityDiff.diffDigest,
+    releaseDigest,
+    decision: "approved",
+  });
+  expect(review.reviewedAt).toBeGreaterThan(0);
+  expect(review.authorityAfter.tools).toHaveLength(4);
+  expect(
+    review.authorityAfter.tools.every(
+      (tool) => tool.classification === "read" && tool.defaultPolicy === "require-approval",
+    ),
+  ).toBe(true);
+  expect(review.authorityAfter.requestedScopes).toEqual([
+    "https://www.googleapis.com/auth/gmail.readonly",
+  ]);
 });

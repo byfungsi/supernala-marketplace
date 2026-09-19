@@ -4,6 +4,7 @@ import { Result, Schema } from "effect";
 import {
   digestPluginBytes,
   PluginConfigSchema,
+  PluginSha256,
   type PluginSha256 as PluginSha256Type,
 } from "./plugin-contract.js";
 import {
@@ -57,6 +58,39 @@ export interface ValidatedPluginSource {
   readonly config: PluginConfigSchema;
   readonly provenance: Schema.Json;
   readonly files: Readonly<Record<string, Uint8Array>>;
+}
+
+const ManagedPackageBuildRecipe = Schema.Struct({
+  schemaVersion: Schema.Literal(1),
+  source: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 1_024))),
+  output: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 1_024))),
+  manifest: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 1_024))),
+  runtime: Schema.Literal("node-22.x"),
+  runtimeDependencies: Schema.Array(Schema.NonEmptyString).pipe(
+    Schema.check(Schema.isMaxLength(0)),
+  ),
+  networkDuringBuild: Schema.Literal(false),
+  lifecycleScripts: Schema.Literal(false),
+  deterministicCopy: Schema.Literal(true),
+  license: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 80))),
+  licenseFile: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 1_024))),
+  noticeFile: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 1_024))),
+  preservedThirdPartyNotices: Schema.Array(
+    Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 1_024))),
+  ).pipe(Schema.check(Schema.isMaxLength(1_000))),
+  packageFiles: Schema.Array(
+    Schema.Struct({
+      source: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 1_024))),
+      destination: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 1_024))),
+      sha256: PluginSha256,
+    }),
+  ).pipe(Schema.check(Schema.isLengthBetween(1, 1_000))),
+});
+interface ManagedPackageBuildRecipe extends Schema.Schema.Type<typeof ManagedPackageBuildRecipe> {}
+
+interface PreparedSourceFiles {
+  readonly files: Readonly<Record<string, Uint8Array>>;
+  readonly declaredLicense: string | null;
 }
 
 /** Public source/build provenance accepted by Marketplace authoring validation. */
@@ -215,29 +249,153 @@ const readSourceFiles = async (
   return Result.succeed(files);
 };
 
+const isSafeBuildRecipePath = (value: string): boolean =>
+  !path.isAbsolute(value) &&
+  !value.includes("\\") &&
+  path.posix.normalize(value) === value &&
+  value.split("/").every((segment) => segment !== "" && segment !== "." && segment !== "..");
+
+const pathIsInside = (root: string, candidate: string): boolean =>
+  candidate.startsWith(`${root}${path.sep}`);
+
+const resolveBuildRecipePath = (root: string, value: string): string | null => {
+  if (!isSafeBuildRecipePath(value)) return null;
+  const workingDirectoryCandidate = path.resolve(value);
+  if (pathIsInside(root, workingDirectoryCandidate)) return workingDirectoryCandidate;
+  const authoringDirectoryCandidate = path.resolve(root, value);
+  return pathIsInside(root, authoringDirectoryCandidate) ? authoringDirectoryCandidate : null;
+};
+
+const readOrdinaryBuildRecipeFile = async (
+  root: string,
+  absolute: string,
+): Promise<Result.Result<Uint8Array, PluginAuthoringFailure>> => {
+  const relative = path.relative(root, absolute);
+  let current = root;
+  try {
+    for (const [index, segment] of relative.split(path.sep).entries()) {
+      current = path.join(current, segment);
+      const metadata = await fs.lstat(current);
+      if (
+        metadata.isSymbolicLink() ||
+        (index === relative.split(path.sep).length - 1
+          ? !metadata.isFile()
+          : !metadata.isDirectory())
+      ) {
+        return Result.fail(
+          new PluginAuthoringFailure({
+            operation: "build-recipe",
+            reason: "source-not-ordinary-file",
+          }),
+        );
+      }
+    }
+    return Result.succeed(new Uint8Array(await fs.readFile(absolute)));
+  } catch {
+    return Result.fail(
+      new PluginAuthoringFailure({ operation: "build-recipe", reason: "source-unavailable" }),
+    );
+  }
+};
+
+const materializeBuildRecipe = async (
+  root: string,
+  recipeBytes: Uint8Array,
+): Promise<Result.Result<PreparedSourceFiles, PluginAuthoringFailure>> => {
+  const decoded = parseJsonBytes("build-recipe.json", recipeBytes, ManagedPackageBuildRecipe, true);
+  if (Result.isFailure(decoded)) return Result.fail(decoded.failure);
+  const recipe = decoded.success;
+  const files: Record<string, Uint8Array> = {};
+  const sourceByDestination = new Map<string, string>();
+  for (const packageFile of recipe.packageFiles) {
+    if (!isSafeBuildRecipePath(packageFile.destination)) {
+      return Result.fail(
+        new PluginAuthoringFailure({
+          operation: "build-recipe",
+          reason: "destination-path-invalid",
+        }),
+      );
+    }
+    if (sourceByDestination.has(packageFile.destination)) {
+      return Result.fail(
+        new PluginAuthoringFailure({
+          operation: "build-recipe",
+          reason: "destination-duplicate",
+        }),
+      );
+    }
+    const source = resolveBuildRecipePath(root, packageFile.source);
+    if (source === null) {
+      return Result.fail(
+        new PluginAuthoringFailure({ operation: "build-recipe", reason: "source-path-invalid" }),
+      );
+    }
+    const bytes = await readOrdinaryBuildRecipeFile(root, source);
+    if (Result.isFailure(bytes)) return Result.fail(bytes.failure);
+    if ((await digestPluginBytes(bytes.success)) !== packageFile.sha256) {
+      return Result.fail(
+        new PluginAuthoringFailure({ operation: "build-recipe", reason: "source-digest-mismatch" }),
+      );
+    }
+    files[packageFile.destination] = bytes.success;
+    sourceByDestination.set(packageFile.destination, source);
+  }
+
+  const manifest = resolveBuildRecipePath(root, recipe.manifest);
+  const source = resolveBuildRecipePath(root, recipe.source);
+  const output = resolveBuildRecipePath(root, recipe.output);
+  const license = resolveBuildRecipePath(root, recipe.licenseFile);
+  const notice = resolveBuildRecipePath(root, recipe.noticeFile);
+  if (
+    manifest === null ||
+    source === null ||
+    output === null ||
+    license === null ||
+    notice === null ||
+    sourceByDestination.get("plugin.json") !== manifest ||
+    sourceByDestination.get(path.relative(root, output).split(path.sep).join("/")) !== source ||
+    sourceByDestination.get("LICENSE") !== license ||
+    sourceByDestination.get("NOTICE") !== notice
+  ) {
+    return Result.fail(
+      new PluginAuthoringFailure({ operation: "build-recipe", reason: "declaration-mismatch" }),
+    );
+  }
+  return Result.succeed({ files, declaredLicense: recipe.license });
+};
+
 /** Validate an authoring directory before package preparation. */
 export async function validatePluginSource(
   directory: string,
 ): Promise<Result.Result<ValidatedPluginSource, PluginAuthoringFailure>> {
+  const root = path.resolve(directory);
   let sourceFiles: Result.Result<Readonly<Record<string, Uint8Array>>, PluginAuthoringFailure>;
   try {
-    sourceFiles = await readSourceFiles(path.resolve(directory));
+    sourceFiles = await readSourceFiles(root);
   } catch {
     return Result.fail(
       new PluginAuthoringFailure({ operation: "read", reason: "source-unavailable" }),
     );
   }
   if (Result.isFailure(sourceFiles)) return Result.fail(sourceFiles.failure);
+  let preparedSource: PreparedSourceFiles = { files: sourceFiles.success, declaredLicense: null };
+  const recipeBytes = sourceFiles.success["build-recipe.json"];
+  if (recipeBytes !== undefined) {
+    const materialized = await materializeBuildRecipe(root, recipeBytes);
+    if (Result.isFailure(materialized)) return Result.fail(materialized.failure);
+    preparedSource = materialized.success;
+  }
+  const packageFiles = preparedSource.files;
   const required = ["plugin.json", "catalog.json", "config.json", "LICENSE", "provenance.json"];
-  if (required.some((file) => sourceFiles.success[file] === undefined)) {
+  if (required.some((file) => packageFiles[file] === undefined)) {
     return Result.fail(
       new PluginAuthoringFailure({ operation: "validate", reason: "required-file-missing" }),
     );
   }
-  const manifestBytes = sourceFiles.success["plugin.json"];
-  const catalogBytes = sourceFiles.success["catalog.json"];
-  const configBytes = sourceFiles.success["config.json"];
-  const provenanceBytes = sourceFiles.success["provenance.json"];
+  const manifestBytes = packageFiles["plugin.json"];
+  const catalogBytes = packageFiles["catalog.json"];
+  const configBytes = packageFiles["config.json"];
+  const provenanceBytes = packageFiles["provenance.json"];
   if (
     manifestBytes === undefined ||
     catalogBytes === undefined ||
@@ -254,6 +412,14 @@ export async function validatePluginSource(
   const config = parseJsonBytes("config.json", configBytes, PluginConfigSchema, true);
   const provenance = parseJsonBytes("provenance.json", provenanceBytes, PluginProvenance);
   if (Result.isFailure(manifest)) return Result.fail(manifest.failure);
+  if (
+    preparedSource.declaredLicense !== null &&
+    manifest.success.license !== preparedSource.declaredLicense
+  ) {
+    return Result.fail(
+      new PluginAuthoringFailure({ operation: "build-recipe", reason: "license-mismatch" }),
+    );
+  }
   if (Result.isFailure(catalog)) return Result.fail(catalog.failure);
   if (
     Result.isFailure(configJson) ||
@@ -270,13 +436,13 @@ export async function validatePluginSource(
       new PluginAuthoringFailure({ operation: "validate", reason: "entrypoint-mismatch" }),
     );
   }
-  if (sourceFiles.success[manifest.success.runtime.entrypoint] === undefined) {
+  if (packageFiles[manifest.success.runtime.entrypoint] === undefined) {
     return Result.fail(
       new PluginAuthoringFailure({ operation: "validate", reason: "entrypoint-missing" }),
     );
   }
   const licenseEvidence = await validatePackagedPluginLicenseEvidence({
-    files: sourceFiles.success,
+    files: packageFiles,
     manifest: manifest.success,
   });
   if (Result.isFailure(licenseEvidence)) {
@@ -349,7 +515,7 @@ export async function validatePluginSource(
     catalog: catalog.success,
     config: config.success,
     provenance: provenance.success,
-    files: sourceFiles.success,
+    files: packageFiles,
   });
 }
 

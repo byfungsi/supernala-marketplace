@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "staged-nonpublishable",
+  "status": "owner-authorized-publication-ready",
   "runtime": {
     "kind": "managed-package",
     "type": "node",
@@ -18,5 +18,5 @@
     "allowedHosts": ["gmail.googleapis.com"]
   },
   "license": "MIT",
-  "blockingReason": "Trusted Plugin operator provisioning is not implemented or approved; generic OAuth integration, independent review, installation, Connection consent, and live acceptance remain unverified"
+  "blockingReason": "Post-publication live mailbox acceptance remains pending; App runtime deployment and exact Gmail OAuth definition, registration, and environment material-source admission are complete, and the Owner authorized publication with formal reviews waived, not passed"
 }

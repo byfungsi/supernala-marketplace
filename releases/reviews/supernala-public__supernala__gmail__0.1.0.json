@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "gmail",
+    "semanticVersion": "0.1.0"
+  },
+  "reviewId": "gmail-0.1.0-owner-authorized-waiver-v1",
+  "reviewer": "supernala-owner (formal reviews waived, not passed)",
+  "reviewedAt": 1789817913173,
+  "sourceInputDigest": "c0c7a10189d1b891410b4760dd12359c48904982c66af103a88798feb0568ca0",
+  "artifactDigest": "4c3a568a455cdd549517f75f06428530f7b8ee1b78a57644982f212ee7dd6aa6",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-gmail-rest-v1",
+    "providerDefinitionDigest": "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
+    "requestedScopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "e808b72a105eafde546b63245238f87906bddcf82e1766f93a7d0ce10882a952",
+  "configDigest": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
+  "provenanceDigest": "29cb3bdd1806b60fb95ddfb14d5f6ace560304be720fe546f4ad848d95550e6f",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "d1b5571f6c94cd5bbc0842b690ce808d45733d4349a8bc058b02ae1872eb4350",
+  "authorityAfter": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "oauth",
+    "requestedScopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "google-gmail-rest-v1",
+    "providerDefinitionDigest": "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
+    "tools": [
+      {
+        "id": "gmail.search_messages",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "maxResults": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25
+            },
+            "pageToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "gmail.get_message",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": ["messageId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "gmail.list_drafts",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "maxResults": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25
+            },
+            "pageToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "gmail.get_draft",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "draftId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": ["draftId"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["gmail.googleapis.com"],
+    "config": []
+  },
+  "authorityDigest": "fd04d060052be6ce96f2968d1369a7330a9c0b2a4ac38adfb43f0e495683aa51",
+  "authorityDiffDigest": "a3084799dad170042ee4ce6bb20f5b92b8d1abb5cbcafe214663ca07b1bad118",
+  "releaseDigest": "5f330e56548dc1f6b45299be1dd7cc73957b964259f541c42e90187736b9fce3",
+  "decision": "approved"
+}

@@ -1,4 +1,6 @@
-import { readFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "@effect/vitest";
 import { Result, Schema } from "effect";
 import { validatePluginSource, preparePluginPackage } from "./authoring-validation.js";
@@ -60,7 +62,176 @@ const loadGolden = async (): Promise<{
   readonly entryOrder: ReadonlyArray<string>;
 }> => JSON.parse(await readFile("fixtures/golden/offline-package.json", "utf8"));
 
+const createBuildRecipeFixture = async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-build-recipe-"));
+  const directory = path.join(root, "plugin");
+  const inputs = path.join(directory, "inputs");
+  await mkdir(inputs, { recursive: true });
+  const packageFiles = await githubPackageFiles();
+  const sources = {
+    "plugin.json": "inputs/plugin.json",
+    "catalog.json": "inputs/catalog.json",
+    "config.json": "inputs/config.json",
+    "provenance.json": "inputs/provenance.json",
+    "dist/server.mjs": "inputs/server.mjs",
+    LICENSE: "inputs/LICENSE",
+    NOTICE: "inputs/NOTICE",
+  };
+  const recipePackageFiles = [];
+  for (const [destination, source] of Object.entries(sources)) {
+    const bytes = packageFiles[destination];
+    if (bytes === undefined) throw new Error(`test-package-file-missing:${destination}`);
+    await writeFile(path.join(directory, source), bytes);
+    recipePackageFiles.push({ source, destination, sha256: await digestPluginBytes(bytes) });
+  }
+  const recipe = {
+    schemaVersion: 1,
+    source: sources["dist/server.mjs"],
+    output: "dist/server.mjs",
+    manifest: sources["plugin.json"],
+    runtime: "node-22.x",
+    runtimeDependencies: [],
+    networkDuringBuild: false,
+    lifecycleScripts: false,
+    deterministicCopy: true,
+    license: "MIT",
+    licenseFile: sources.LICENSE,
+    noticeFile: sources.NOTICE,
+    preservedThirdPartyNotices: [],
+    packageFiles: recipePackageFiles,
+  };
+  const writeRecipe = () =>
+    writeFile(path.join(directory, "build-recipe.json"), `${JSON.stringify(recipe, null, 2)}\n`);
+  await writeRecipe();
+  return { root, directory, recipe, writeRecipe };
+};
+
 describe("Phase 1 package archive parity", () => {
+  it("materializes the real Gmail recipe in memory and preserves direct prepared sources", async () => {
+    const gmail = await validatePluginSource("plugins/gmail");
+    if (Result.isFailure(gmail)) throw gmail.failure;
+    expect(Object.keys(gmail.success.files).toSorted()).toEqual([
+      "LICENSE",
+      "NOTICE",
+      "catalog.json",
+      "config.json",
+      "dist/server.mjs",
+      "plugin.json",
+      "provenance.json",
+    ]);
+    const preparedGmail = await preparePluginPackage({
+      source: gmail.success,
+      marketplaceId: "supernala-public",
+      versionId: "supernala-public:supernala:gmail@0.1.0",
+      publishedAt: 1,
+    });
+    expect(Result.isSuccess(preparedGmail)).toBe(true);
+
+    const direct = await validatePluginSource("plugins/offline-fixture");
+    if (Result.isFailure(direct)) throw direct.failure;
+    expect(direct.success.files["build-recipe.json"]).toBeUndefined();
+    expect(Object.keys(direct.success.files).toSorted()).toEqual(
+      (await loadGolden()).entryOrder.toSorted(),
+    );
+  });
+
+  it("rejects hash-tampered recipe sources", async () => {
+    const fixture = await createBuildRecipeFixture();
+    try {
+      await writeFile(path.join(fixture.directory, fixture.recipe.source), "tampered");
+      const result = await validatePluginSource(fixture.directory);
+      expect(result).toMatchObject({
+        _tag: "Failure",
+        failure: { operation: "build-recipe", reason: "source-digest-mismatch" },
+      });
+    } finally {
+      await rm(fixture.root, { recursive: true });
+    }
+  });
+
+  it("rejects recursively excess recipe properties", async () => {
+    const fixture = await createBuildRecipeFixture();
+    try {
+      await writeFile(
+        path.join(fixture.directory, "build-recipe.json"),
+        JSON.stringify({
+          ...fixture.recipe,
+          packageFiles: fixture.recipe.packageFiles.map((entry, index) =>
+            index === 0 ? { ...entry, unreviewed: true } : entry,
+          ),
+        }),
+      );
+      const result = await validatePluginSource(fixture.directory);
+      expect(result).toMatchObject({
+        _tag: "Failure",
+        failure: { operation: "parse", reason: "invalid-build-recipe.json" },
+      });
+    } finally {
+      await rm(fixture.root, { recursive: true });
+    }
+  });
+
+  it("rejects traversal and absolute recipe source or destination paths", async () => {
+    for (const mutate of [
+      (fixture: Awaited<ReturnType<typeof createBuildRecipeFixture>>) => {
+        const first = fixture.recipe.packageFiles[0];
+        if (first === undefined) throw new Error("test-recipe-file-missing");
+        first.source = "../outside";
+      },
+      (fixture: Awaited<ReturnType<typeof createBuildRecipeFixture>>) => {
+        const first = fixture.recipe.packageFiles[0];
+        if (first === undefined) throw new Error("test-recipe-file-missing");
+        first.source = path.resolve(fixture.root, "outside");
+      },
+      (fixture: Awaited<ReturnType<typeof createBuildRecipeFixture>>) => {
+        const first = fixture.recipe.packageFiles[0];
+        if (first === undefined) throw new Error("test-recipe-file-missing");
+        first.destination = "../plugin.json";
+      },
+      (fixture: Awaited<ReturnType<typeof createBuildRecipeFixture>>) => {
+        const first = fixture.recipe.packageFiles[0];
+        if (first === undefined) throw new Error("test-recipe-file-missing");
+        first.destination = path.resolve(fixture.root, "plugin.json");
+      },
+    ]) {
+      const fixture = await createBuildRecipeFixture();
+      try {
+        mutate(fixture);
+        await fixture.writeRecipe();
+        expect(Result.isFailure(await validatePluginSource(fixture.directory))).toBe(true);
+      } finally {
+        await rm(fixture.root, { recursive: true });
+      }
+    }
+  });
+
+  it("rejects symlink recipe sources and duplicate destinations", async () => {
+    const symlinkFixture = await createBuildRecipeFixture();
+    try {
+      const server = path.join(symlinkFixture.directory, symlinkFixture.recipe.source);
+      await rm(server);
+      await symlink(path.join(symlinkFixture.directory, "inputs", "catalog.json"), server);
+      expect(Result.isFailure(await validatePluginSource(symlinkFixture.directory))).toBe(true);
+    } finally {
+      await rm(symlinkFixture.root, { recursive: true });
+    }
+
+    const duplicateFixture = await createBuildRecipeFixture();
+    try {
+      const [first, second] = duplicateFixture.recipe.packageFiles;
+      if (first === undefined || second === undefined) throw new Error("test-recipe-files-missing");
+      second.destination = first.destination;
+      await duplicateFixture.writeRecipe();
+      const result = await validatePluginSource(duplicateFixture.directory);
+      expect(result).toMatchObject({
+        _tag: "Failure",
+        failure: { operation: "build-recipe", reason: "destination-duplicate" },
+      });
+    } finally {
+      await rm(duplicateFixture.root, { recursive: true });
+    }
+  });
+
   it("produces identical bytes twice and matches golden contract digests", async () => {
     const expectedGolden = await loadGolden();
     const sourceResult = await validatePluginSource("plugins/offline-fixture");
