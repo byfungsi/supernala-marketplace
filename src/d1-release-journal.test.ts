@@ -6,6 +6,7 @@ import { preparePluginPackage, validatePluginSource } from "./authoring-validati
 import type { D1BatchTransport, D1Statement } from "./cloudflare-adapters.js";
 import { D1ReleaseJournal } from "./d1-release-journal.js";
 import { canonicalPluginJson, PluginSha256, PluginVersion } from "./plugin-contract.js";
+import { PackagedPluginAuthentication } from "./package-archive.js";
 import {
   InMemoryApplicationPublicationAdapter,
   InMemoryImmutableArtifactStore,
@@ -125,6 +126,48 @@ it("persists exact durable claims, retries, publication status and monotonic bas
   }
   database
     .prepare("UPDATE marketplace_release_journal SET version_json = ? WHERE release_identity = ?")
+    .run(
+      canonicalPluginJson({
+        schemaVersion: 1,
+        version: release.version,
+        authentication: {
+          kind: "oauth",
+          providerRegistration: "synthetic-mail-rest-v1",
+          requestedScopes: ["synthetic.mail.read"],
+          credentialDelivery: "short-lived-access-token-only",
+        },
+      }),
+      "supernala-public/supernala/offline-fixture@1.0.0",
+    );
+  await expect(journal.list()).rejects.toThrow("release-journal-row-invalid");
+  database
+    .prepare("UPDATE marketplace_release_journal SET version_json = ? WHERE release_identity = ?")
+    .run(
+      canonicalPluginJson({
+        schemaVersion: 1,
+        version: release.version,
+        authentication: {
+          kind: "oauth",
+          providerRegistration: "synthetic-mail-rest-v1",
+          providerDefinitionDigest: "a".repeat(64),
+          requestedScopes: ["synthetic.mail.read"],
+          credentialDelivery: "short-lived-access-token-only",
+        },
+      }),
+      "supernala-public/supernala/offline-fixture@1.0.0",
+    );
+  expect(await journal.list()).toMatchObject([
+    {
+      authentication: {
+        kind: "oauth",
+        providerRegistration: "synthetic-mail-rest-v1",
+        providerDefinitionDigest: "a".repeat(64),
+        requestedScopes: ["synthetic.mail.read"],
+      },
+    },
+  ]);
+  database
+    .prepare("UPDATE marketplace_release_journal SET version_json = ? WHERE release_identity = ?")
     .run(storedEnvelope.version_json, "supernala-public/supernala/offline-fixture@1.0.0");
   const retry = await journal.claim(release);
   expect(Result.isSuccess(retry)).toBe(true);
@@ -163,6 +206,36 @@ it("persists exact durable claims, retries, publication status and monotonic bas
   };
   expect(await journal.claim(stale)).toEqual(Result.fail("release-journal-claim-failed"));
   expect(await journal.list()).toHaveLength(1);
+  database.close();
+});
+
+it("persists exact five-field OAuth authority across durable retries", async () => {
+  const database = new DatabaseSync(":memory:");
+  database.exec(await readFile("tools/infra/migrations/0001_release_journal.sql", "utf8"));
+  const journal = new D1ReleaseJournal(new SQLiteJournalTransport(database));
+  const release = await makeCandidate();
+  const authentication = Schema.decodeUnknownSync(PackagedPluginAuthentication, {
+    onExcessProperty: "error",
+  })({
+    kind: "oauth",
+    providerRegistration: "synthetic-mail-rest-v1",
+    providerDefinitionDigest: "a".repeat(64),
+    requestedScopes: ["synthetic.mail.read"],
+    credentialDelivery: "short-lived-access-token-only",
+  });
+  const oauthRelease = { ...release, authentication };
+  expect(Result.isSuccess(await journal.claim(oauthRelease))).toBe(true);
+  expect(Result.isSuccess(await journal.claim(oauthRelease))).toBe(true);
+  expect(await journal.list()).toMatchObject([{ authentication }]);
+  const changedAuthentication = Schema.decodeUnknownSync(PackagedPluginAuthentication, {
+    onExcessProperty: "error",
+  })({
+    ...authentication,
+    providerDefinitionDigest: "b".repeat(64),
+  });
+  expect(await journal.claim({ ...oauthRelease, authentication: changedAuthentication })).toEqual(
+    Result.fail("immutable-version-conflict"),
+  );
   database.close();
 });
 

@@ -12,6 +12,41 @@ import {
 } from "./publication-plan.js";
 
 describe("publication plan adapter contract", () => {
+  it("carries only exact digest-bound OAuth review authority", () => {
+    const authentication = {
+      kind: "oauth",
+      providerRegistration: "synthetic-mail-rest-v1",
+      providerDefinitionDigest: "a".repeat(64),
+      requestedScopes: ["synthetic.mail.read"],
+      credentialDelivery: "short-lived-access-token-only",
+    };
+    const review = {
+      reviewId: "synthetic-oauth-review",
+      reviewedAt: 1,
+      reviewer: "synthetic-reviewer",
+      sourceTreeDigest: "1".repeat(64),
+      artifactDigest: "2".repeat(64),
+      authentication,
+      catalogDigest: "3".repeat(64),
+      configDigest: "4".repeat(64),
+      authorityDiffDigest: "5".repeat(64),
+      decision: "approved",
+    };
+    expect(
+      Schema.decodeUnknownResult(PublicationReviewBinding, { onExcessProperty: "error" })(review),
+    ).toMatchObject({ _tag: "Success", success: { authentication } });
+    const { providerDefinitionDigest: _providerDefinitionDigest, ...fourFieldAuthentication } =
+      authentication;
+    expect(
+      Result.isFailure(
+        Schema.decodeUnknownResult(PublicationReviewBinding, { onExcessProperty: "error" })({
+          ...review,
+          authentication: fourFieldAuthentication,
+        }),
+      ),
+    ).toBe(true);
+  });
+
   it("serializes a sidecar reference and reconstructs exact Uint8Array input", async () => {
     const sourceResult = await validatePluginSource("plugins/offline-fixture");
     expect(Result.isSuccess(sourceResult)).toBe(true);

@@ -29,6 +29,28 @@ const githubPackageFiles = async (): Promise<Readonly<Record<string, Uint8Array>
   return Object.fromEntries(entries);
 };
 
+const syntheticOAuthPackageFiles = async (): Promise<Readonly<Record<string, Uint8Array>>> => {
+  const files = await githubPackageFiles();
+  const manifest = Schema.decodeUnknownSync(Schema.JsonObject)(
+    JSON.parse(new TextDecoder().decode(files["plugin.json"])),
+  );
+  return {
+    ...files,
+    "plugin.json": new TextEncoder().encode(
+      JSON.stringify({
+        ...manifest,
+        authentication: {
+          kind: "oauth",
+          providerRegistration: "synthetic-mail-rest-v1",
+          providerDefinitionDigest: "a".repeat(64),
+          requestedScopes: ["synthetic.mail.read"],
+          credentialDelivery: "short-lived-access-token-only",
+        },
+      }),
+    ),
+  };
+};
+
 const loadGolden = async (): Promise<{
   readonly artifactDigest: string;
   readonly manifestDigest: string;
@@ -206,5 +228,107 @@ describe("Phase 1 package archive parity", () => {
         "plugin.json": new TextEncoder().encode(JSON.stringify(noticeManifest)),
       }),
     ).toEqual(Result.fail("invalid-license-evidence"));
+  });
+
+  it("accepts digest-bound OAuth auth and rejects four-field, noncanonical, or excess declarations", async () => {
+    const files = await syntheticOAuthPackageFiles();
+    const parse = (packageFiles: Readonly<Record<string, Uint8Array>>) =>
+      parsePackagedPluginArchive({
+        archiveBytes: buildDeterministicPluginArchive(packageFiles),
+        marketplaceId: "supernala-public",
+        versionId: "supernala-public:supernala:synthetic-mail@0.1.0",
+        publishedAt: 1,
+      });
+    await expect(parse(files)).resolves.toMatchObject({
+      _tag: "Success",
+      success: {
+        authentication: {
+          kind: "oauth",
+          providerRegistration: "synthetic-mail-rest-v1",
+          providerDefinitionDigest: "a".repeat(64),
+          requestedScopes: ["synthetic.mail.read"],
+          credentialDelivery: "short-lived-access-token-only",
+        },
+      },
+    });
+
+    const manifest = Schema.decodeUnknownSync(Schema.JsonObject)(
+      JSON.parse(new TextDecoder().decode(files["plugin.json"])),
+    );
+    const authentication = Schema.decodeUnknownSync(Schema.JsonObject)(manifest.authentication);
+    const { providerDefinitionDigest: _providerDefinitionDigest, ...fourFieldAuthentication } =
+      authentication;
+    await expect(
+      parse({
+        ...files,
+        "plugin.json": new TextEncoder().encode(
+          JSON.stringify({ ...manifest, authentication: fourFieldAuthentication }),
+        ),
+      }),
+    ).resolves.toEqual(Result.fail("invalid-plugin.json"));
+    for (const requestedScopes of [
+      [],
+      ["synthetic.read", "synthetic.read"],
+      ["synthetic.write", "synthetic.read"],
+      [""],
+      ["synthetic scope"],
+    ]) {
+      await expect(
+        parse({
+          ...files,
+          "plugin.json": new TextEncoder().encode(
+            JSON.stringify({ ...manifest, authentication: { ...authentication, requestedScopes } }),
+          ),
+        }),
+      ).resolves.toEqual(Result.fail("invalid-plugin.json"));
+    }
+    await expect(
+      parse({
+        ...files,
+        "plugin.json": new TextEncoder().encode(
+          JSON.stringify({
+            ...manifest,
+            authentication: {
+              ...authentication,
+              unreviewedNestedField: { enabled: true },
+            },
+          }),
+        ),
+      }),
+    ).resolves.toEqual(Result.fail("invalid-plugin.json"));
+
+    const credentialConfig = new TextEncoder().encode(
+      JSON.stringify({
+        revision: 1,
+        fields: [
+          {
+            key: "clientSecret",
+            label: "OAuth client secret",
+            type: "string",
+            scope: "connection",
+            sensitivity: "secret",
+            sourcePolicy: "platform-only",
+            delivery: "oauth-broker-only",
+            affects: ["authentication"],
+          },
+        ],
+      }),
+    );
+    const configDeclaration = Schema.decodeUnknownSync(Schema.JsonObject)(manifest.config);
+    await expect(
+      parse({
+        ...files,
+        "config.json": credentialConfig,
+        "plugin.json": new TextEncoder().encode(
+          JSON.stringify({
+            ...manifest,
+            config: {
+              ...configDeclaration,
+              sha256: await digestPluginBytes(credentialConfig),
+            },
+          }),
+        ),
+      }),
+    ).resolves.toEqual(Result.fail("credential-bearing-config-declaration"));
   });
 });

@@ -23,6 +23,7 @@ import {
   type PluginVersion as PluginVersionType,
 } from "./plugin-contract.js";
 import { pluginConfigHasNoExcessProperties } from "./plugin-config-validation.js";
+import { PackagedOAuthAuthentication } from "./oauth-provider-definition.js";
 
 /** Maximum accepted file count shared with Phase 1. */
 export const maximumPluginArchiveFiles = 5_000;
@@ -33,8 +34,7 @@ export const maximumPluginFileBytes = 20_971_520;
 /** Maximum accepted compression ratio shared with Phase 1. */
 export const maximumPluginCompressionRatio = 100;
 
-/** Exact accepted managed-package manifest representation. */
-/** Reviewed packaged authentication metadata containing no credential value or broad scope. */
+/** Exact accepted managed-package authentication declaration. */
 export const PackagedPluginAuthentication = Schema.Union([
   Schema.Struct({ kind: Schema.Literal("none") }),
   Schema.Struct({
@@ -42,9 +42,31 @@ export const PackagedPluginAuthentication = Schema.Union([
     providerRegistration: ProviderRegistrationId,
     credentialDelivery: Schema.Literal("short-lived-installation-token-only"),
   }),
+  PackagedOAuthAuthentication,
 ]);
-/** Reviewed packaged authentication metadata containing no credential value or broad scope. */
+/** Exact accepted managed-package authentication declaration. */
 export type PackagedPluginAuthentication = typeof PackagedPluginAuthentication.Type;
+
+/** Return the provider registration bound by packaged authentication, when required. */
+export function packagedAuthenticationProviderRegistration(
+  authentication: PackagedPluginAuthentication,
+): string | null {
+  return authentication.kind === "none" ? null : authentication.providerRegistration;
+}
+
+/** Return the deterministic OAuth scopes bound by packaged authentication. */
+export function packagedAuthenticationRequestedScopes(
+  authentication: PackagedPluginAuthentication,
+): ReadonlyArray<string> {
+  return authentication.kind === "oauth" ? authentication.requestedScopes : [];
+}
+
+/** Return the reviewed OAuth provider-definition digest, when required. */
+export function packagedAuthenticationProviderDefinitionDigest(
+  authentication: PackagedPluginAuthentication,
+): PluginSha256Type | null {
+  return authentication.kind === "oauth" ? authentication.providerDefinitionDigest : null;
+}
 
 /** Digest-bound full MIT license and notice evidence carried by new first-party packages. */
 export const PackagedPluginLicenseEvidence = Schema.Struct({
@@ -368,7 +390,7 @@ export async function parsePackagedPluginArchive(input: {
     return Result.fail("reserved-host-credential-name");
   }
   if (
-    manifest.success.authentication.kind === "github-app" &&
+    manifest.success.authentication.kind !== "none" &&
     config.success.fields.some(
       (field) =>
         field.sensitivity === "secret" ||

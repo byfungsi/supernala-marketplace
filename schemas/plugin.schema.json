@@ -192,6 +192,59 @@
           },
           "required": ["kind", "providerRegistration", "credentialDelivery"],
           "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["oauth"]
+            },
+            "providerRegistration": {
+              "type": "string",
+              "minLength": 1
+            },
+            "providerDefinitionDigest": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "requestedScopes": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 300
+                  }
+                ],
+                "pattern": "^[\\x21\\x23-\\x5B\\x5D-\\x7E]+$"
+              },
+              "allOf": [
+                {
+                  "minItems": 1
+                },
+                {
+                  "maxItems": 64
+                }
+              ],
+              "uniqueItems": true
+            },
+            "credentialDelivery": {
+              "type": "string",
+              "enum": ["short-lived-access-token-only"]
+            }
+          },
+          "required": [
+            "kind",
+            "providerRegistration",
+            "providerDefinitionDigest",
+            "requestedScopes",
+            "credentialDelivery"
+          ],
+          "additionalProperties": true
         }
       ]
     },

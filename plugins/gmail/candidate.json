@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "status": "staged-nonpublishable",
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-gmail-rest-v1",
+    "requestedScopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "network": {
+    "allowedHosts": ["gmail.googleapis.com"]
+  },
+  "license": "MIT",
+  "blockingReason": "Trusted Plugin operator provisioning is not implemented or approved; generic OAuth integration, independent review, installation, Connection consent, and live acceptance remain unverified"
+}

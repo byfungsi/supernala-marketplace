@@ -4,7 +4,13 @@ import {
   digestPluginBytes,
   type PluginConfigSchema,
 } from "./plugin-contract.js";
-import type { PackageCatalog, PackageManifest } from "./package-archive.js";
+import {
+  packagedAuthenticationProviderDefinitionDigest,
+  packagedAuthenticationProviderRegistration,
+  packagedAuthenticationRequestedScopes,
+  type PackageCatalog,
+  type PackageManifest,
+} from "./package-archive.js";
 
 /** Complete reviewed authority surface for one authoring release. */
 export const PluginAuthoritySnapshot = Schema.Struct({
@@ -14,6 +20,7 @@ export const PluginAuthoritySnapshot = Schema.Struct({
   endpoint: Schema.NullOr(Schema.String),
   endpointRegistrationId: Schema.NullOr(Schema.String),
   providerRegistrationId: Schema.NullOr(Schema.String),
+  providerDefinitionDigest: Schema.NullOr(Schema.String),
   tools: Schema.Array(
     Schema.Struct({
       id: Schema.String,
@@ -67,13 +74,15 @@ export function derivePluginAuthoritySnapshot(input: {
   return PluginAuthoritySnapshot.make({
     runtimeKind: input.manifest.runtime.kind,
     authenticationKind: input.manifest.authentication.kind,
-    requestedScopes: [],
+    requestedScopes: packagedAuthenticationRequestedScopes(input.manifest.authentication),
     endpoint: null,
     endpointRegistrationId: null,
-    providerRegistrationId:
-      input.manifest.authentication.kind === "github-app"
-        ? input.manifest.authentication.providerRegistration
-        : null,
+    providerRegistrationId: packagedAuthenticationProviderRegistration(
+      input.manifest.authentication,
+    ),
+    providerDefinitionDigest: packagedAuthenticationProviderDefinitionDigest(
+      input.manifest.authentication,
+    ),
     tools: input.catalog.tools.map((tool) => ({
       id: tool.id,
       classification: tool.classification,
@@ -107,6 +116,7 @@ export function deriveBootstrapAuthoritySnapshot(
     endpoint: null,
     endpointRegistrationId: null,
     providerRegistrationId: null,
+    providerDefinitionDigest: null,
     tools: [],
     allowedHosts: [],
     config: [],
@@ -156,6 +166,7 @@ export async function diffPluginAuthority(
     endpoint: snapshot.endpoint,
     endpointRegistrationId: snapshot.endpointRegistrationId,
     providerRegistrationId: snapshot.providerRegistrationId,
+    providerDefinitionDigest: snapshot.providerDefinitionDigest,
   });
   const changedRuntimeAuthority =
     canonicalPluginJson(runtimeAuthority(before)) !== canonicalPluginJson(runtimeAuthority(after));

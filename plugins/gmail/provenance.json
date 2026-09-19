@@ -1,0 +1,23 @@
+{
+  "source": {
+    "type": "first-party",
+    "path": "plugins/gmail/source/server.mjs",
+    "upstream": null
+  },
+  "build": {
+    "recipe": "plugins/gmail/build-recipe.json",
+    "runtimeDependencies": [],
+    "networkDuringBuild": false
+  },
+  "license": {
+    "spdx": "MIT",
+    "status": "approved-first-party-source",
+    "file": "plugins/gmail/LICENSE",
+    "notice": "plugins/gmail/NOTICE",
+    "copyright": "Copyright (c) 2026 Supernala contributors"
+  },
+  "publication": {
+    "eligible": false,
+    "reason": "Trusted Plugin operator provisioning is not implemented or approved; generic OAuth integration, independent review, and live acceptance remain unverified"
+  }
+}

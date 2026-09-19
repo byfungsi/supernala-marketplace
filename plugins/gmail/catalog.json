@@ -1,0 +1,76 @@
+{
+  "id": "gmail-readonly-catalog-v1",
+  "schemaVersion": 1,
+  "tools": [
+    {
+      "id": "gmail.search_messages",
+      "mcpName": "search_messages",
+      "title": "Search messages",
+      "description": "Search message identities in the connected Gmail mailbox without reading bodies",
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "maxResults": { "type": "integer", "minimum": 1, "maximum": 25 },
+          "pageToken": { "type": "string", "minLength": 1, "maxLength": 2048 }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "gmail.get_message",
+      "mcpName": "get_message",
+      "title": "Get message",
+      "description": "Read one message as bounded plain text and inert metadata",
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "messageId": { "type": "string", "minLength": 1, "maxLength": 256 }
+        },
+        "required": ["messageId"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "gmail.list_drafts",
+      "mcpName": "list_drafts",
+      "title": "List drafts",
+      "description": "List draft identities in the connected Gmail mailbox without reading bodies",
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "maxResults": { "type": "integer", "minimum": 1, "maximum": 25 },
+          "pageToken": { "type": "string", "minLength": 1, "maxLength": 2048 }
+        },
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "gmail.get_draft",
+      "mcpName": "get_draft",
+      "title": "Get draft",
+      "description": "Read one draft as bounded plain text and inert metadata",
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "draftId": { "type": "string", "minLength": 1, "maxLength": 256 }
+        },
+        "required": ["draftId"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    }
+  ]
+}

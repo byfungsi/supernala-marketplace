@@ -27,6 +27,12 @@
       "reason": "provider registration, independent review, and live acceptance remain unverified"
     },
     {
+      "sourceDirectory": "plugins/gmail",
+      "kind": "managed-package",
+      "publicationEligible": false,
+      "reason": "trusted env-to-Vault provider provisioning is absent; app integration, independent review, and live acceptance remain unverified"
+    },
+    {
       "sourceDirectory": "plugins/remotes",
       "kind": "managed-remote-mcp",
       "publicationEligible": false,

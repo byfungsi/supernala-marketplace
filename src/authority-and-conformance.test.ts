@@ -34,6 +34,7 @@ describe("authority and protocol gates", () => {
       endpoint: before.endpoint,
       endpointRegistrationId: before.endpointRegistrationId,
       providerRegistrationId: before.providerRegistrationId,
+      providerDefinitionDigest: before.providerDefinitionDigest,
       allowedHosts: ["api.example.invalid"],
       tools: [
         ...before.tools,
@@ -77,6 +78,7 @@ describe("authority and protocol gates", () => {
       endpoint: "https://mcp.example.invalid/mcp",
       endpointRegistrationId: "synthetic-endpoint-v1",
       providerRegistrationId: "synthetic-provider-v1",
+      providerDefinitionDigest: "a".repeat(64),
       tools: before.tools,
       allowedHosts: before.allowedHosts,
       config: [
@@ -98,6 +100,39 @@ describe("authority and protocol gates", () => {
     expect(diff.changedRuntimeAuthority).toBe(true);
     expect(diff.changedConfig).toEqual([field.key]);
     expect(diff.expandsAuthority).toBe(true);
+  });
+
+  it("treats an OAuth provider-definition digest change as reviewed authority expansion", async () => {
+    const source = await validatePluginSource("plugins/offline-fixture");
+    expect(Result.isSuccess(source)).toBe(true);
+    if (Result.isFailure(source)) return;
+    const before = derivePluginAuthoritySnapshot(source.success);
+    const after = PluginAuthoritySnapshot.make({
+      runtimeKind: before.runtimeKind,
+      authenticationKind: "oauth",
+      requestedScopes: ["synthetic.mail.read"],
+      endpoint: before.endpoint,
+      endpointRegistrationId: before.endpointRegistrationId,
+      providerRegistrationId: "synthetic-mail-rest-v1",
+      providerDefinitionDigest: "a".repeat(64),
+      tools: before.tools,
+      allowedHosts: before.allowedHosts,
+      config: before.config,
+    });
+    const changedDigest = PluginAuthoritySnapshot.make({
+      runtimeKind: after.runtimeKind,
+      authenticationKind: after.authenticationKind,
+      requestedScopes: after.requestedScopes,
+      endpoint: after.endpoint,
+      endpointRegistrationId: after.endpointRegistrationId,
+      providerRegistrationId: after.providerRegistrationId,
+      providerDefinitionDigest: "b".repeat(64),
+      tools: after.tools,
+      allowedHosts: after.allowedHosts,
+      config: after.config,
+    });
+    expect((await diffPluginAuthority(before, after)).changedRuntimeAuthority).toBe(true);
+    expect((await diffPluginAuthority(after, changedDigest)).changedRuntimeAuthority).toBe(true);
   });
 
   it("requires exact bounded response IDs for both standard transports", async () => {

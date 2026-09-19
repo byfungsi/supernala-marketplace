@@ -39,7 +39,9 @@ interface MutableSerializedRelease {
   authentication: {
     kind: string;
     providerRegistration?: string;
+    providerDefinitionDigest?: string;
     credentialDelivery?: string;
+    requestedScopes?: Array<string>;
     scopes?: Array<string>;
     provider?: string;
   };
@@ -181,6 +183,14 @@ it("rejects independent descriptor, digest, authority, provenance and identity t
     },
     (value) => {
       value.reviewId = "self-attested-review";
+    },
+    (value) => {
+      value.authentication = {
+        kind: "oauth",
+        providerRegistration: "synthetic-mail-rest-v1",
+        requestedScopes: ["synthetic.mail.read"],
+        credentialDelivery: "short-lived-access-token-only",
+      };
     },
     (value) => {
       value.authentication = {

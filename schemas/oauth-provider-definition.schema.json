@@ -1,0 +1,407 @@
+{
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "enum": [1]
+    },
+    "protocol": {
+      "type": "string",
+      "enum": ["oauth2-authorization-code"]
+    },
+    "issuer": {
+      "type": "string",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 2048
+        }
+      ]
+    },
+    "provider": {
+      "type": "string",
+      "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 200
+        }
+      ]
+    },
+    "resourceIdentity": {
+      "type": "string",
+      "pattern": "^\\S[\\s\\S]*\\S$|^\\S$|^$",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 200
+        }
+      ]
+    },
+    "authorizationEndpoint": {
+      "type": "string",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 2048
+        }
+      ]
+    },
+    "tokenEndpoint": {
+      "type": "string",
+      "allOf": [
+        {
+          "minLength": 1
+        },
+        {
+          "maxLength": 2048
+        }
+      ]
+    },
+    "tokenEndpointAuthMethod": {
+      "type": "string",
+      "enum": ["client_secret_post", "client_secret_basic", "none"]
+    },
+    "authorizationResponseIssuer": {
+      "type": "string",
+      "enum": ["required", "not-supported"]
+    },
+    "pkce": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["S256"]
+        }
+      },
+      "required": ["method"],
+      "additionalProperties": true
+    },
+    "authorizationParameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 64
+              }
+            ],
+            "pattern": "^[a-z][a-z0-9_.-]*$"
+          },
+          "value": {
+            "type": "string",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 512
+              }
+            ]
+          }
+        },
+        "required": ["name", "value"],
+        "additionalProperties": true
+      },
+      "maxItems": 32
+    },
+    "scopes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "allOf": [
+          {
+            "minLength": 1
+          },
+          {
+            "maxLength": 300
+          }
+        ],
+        "pattern": "^[\\x21\\x23-\\x5B\\x5D-\\x7E]+$"
+      },
+      "allOf": [
+        {
+          "minItems": 1
+        },
+        {
+          "maxItems": 64
+        }
+      ],
+      "uniqueItems": true
+    },
+    "account": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["https-json"]
+        },
+        "endpoint": {
+          "type": "string",
+          "allOf": [
+            {
+              "minLength": 1
+            },
+            {
+              "maxLength": 2048
+            }
+          ]
+        },
+        "authorization": {
+          "type": "string",
+          "enum": ["bearer"]
+        },
+        "subjectPath": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 128
+              }
+            ],
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+          },
+          "allOf": [
+            {
+              "minItems": 1
+            },
+            {
+              "maxItems": 8
+            }
+          ]
+        },
+        "displayLabelPath": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 128
+              }
+            ],
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+          },
+          "allOf": [
+            {
+              "minItems": 1
+            },
+            {
+              "maxItems": 8
+            }
+          ]
+        },
+        "subjectStability": {
+          "type": "string",
+          "enum": ["stable", "mutable"]
+        },
+        "maximumResponseBytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 262144
+        },
+        "maximumJsonDepth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "maximumObjectKeys": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2048
+        },
+        "maximumSubjectLength": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 300
+        },
+        "maximumDisplayLabelLength": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 160
+        }
+      },
+      "required": [
+        "kind",
+        "endpoint",
+        "authorization",
+        "subjectPath",
+        "subjectStability",
+        "maximumResponseBytes",
+        "maximumJsonDepth",
+        "maximumObjectKeys",
+        "maximumSubjectLength",
+        "maximumDisplayLabelLength"
+      ],
+      "additionalProperties": true
+    },
+    "tokens": {
+      "type": "object",
+      "properties": {
+        "accessTokenType": {
+          "type": "string",
+          "enum": ["bearer"]
+        },
+        "expiresIn": {
+          "type": "object",
+          "properties": {
+            "required": {
+              "type": "boolean",
+              "enum": [true]
+            },
+            "minimumSeconds": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 3600
+            },
+            "maximumSeconds": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 86400
+            }
+          },
+          "required": ["required", "minimumSeconds", "maximumSeconds"],
+          "additionalProperties": true
+        },
+        "grantedScopes": {
+          "type": "object",
+          "properties": {
+            "whenPresent": {
+              "type": "string",
+              "enum": ["exact-match"]
+            },
+            "whenOmitted": {
+              "type": "string",
+              "enum": ["requested-scopes"]
+            }
+          },
+          "required": ["whenPresent", "whenOmitted"],
+          "additionalProperties": true
+        },
+        "initialRefreshToken": {
+          "type": "string",
+          "enum": ["required"]
+        },
+        "refreshResponseToken": {
+          "type": "string",
+          "enum": ["retain-current-if-omitted"]
+        }
+      },
+      "required": [
+        "accessTokenType",
+        "expiresIn",
+        "grantedScopes",
+        "initialRefreshToken",
+        "refreshResponseToken"
+      ],
+      "additionalProperties": true
+    },
+    "refresh": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["standard-form-post"]
+        },
+        "invalidGrant": {
+          "type": "string",
+          "enum": ["reauthorization-required"]
+        },
+        "ambiguousOutcome": {
+          "type": "string",
+          "enum": ["fail-closed-no-replay"]
+        }
+      },
+      "required": ["kind", "invalidGrant", "ambiguousOutcome"],
+      "additionalProperties": true
+    },
+    "revocation": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["none"]
+            }
+          },
+          "required": ["kind"],
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["standard-form-post"]
+            },
+            "endpoint": {
+              "type": "string",
+              "allOf": [
+                {
+                  "minLength": 1
+                },
+                {
+                  "maxLength": 2048
+                }
+              ]
+            },
+            "token": {
+              "type": "string",
+              "enum": ["refresh-token", "access-token"]
+            },
+            "clientAuthentication": {
+              "type": "string",
+              "enum": ["registration-method", "token-only"]
+            },
+            "outcome": {
+              "type": "string",
+              "enum": ["best-effort-observed"]
+            }
+          },
+          "required": ["kind", "endpoint", "token", "clientAuthentication", "outcome"],
+          "additionalProperties": true
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "protocol",
+    "issuer",
+    "provider",
+    "resourceIdentity",
+    "authorizationEndpoint",
+    "tokenEndpoint",
+    "tokenEndpointAuthMethod",
+    "authorizationResponseIssuer",
+    "pkce",
+    "authorizationParameters",
+    "scopes",
+    "account",
+    "tokens",
+    "refresh",
+    "revocation"
+  ],
+  "additionalProperties": true
+}

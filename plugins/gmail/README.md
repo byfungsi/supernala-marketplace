@@ -1,0 +1,9 @@
+# Gmail managed-package candidate
+
+First-party source for four read-only Gmail capabilities: search message identities, read one message, list draft identities, and read one draft. Every tool is classified `read` and defaults to the existing `require-approval` policy. Installation, OAuth Connection consent, and Agent Grant remain separate mandatory controls.
+
+The package requests only `https://www.googleapis.com/auth/gmail.readonly`. It does not expose create, update, send, delete, trash, label, settings, alias, or import operations. Search/list calls do not fetch message bodies. Get calls return bounded normalized text and metadata with explicit truncation flags; email content is untrusted data, never instructions. Raw MIME, active HTML, remote content, and attachment bytes are not returned.
+
+This candidate is **not publishable**. The provider-independent OAuth definition/archive contract, app integration, independent review, and live acceptance remain separate prerequisites. Trusted Plugin operator provisioning is not implemented or approved: no operator process currently moves protected deployment values into the Plugin Vault and creates the safe, opaque active Provider Registration. This is a Plugin broker/operator gate, not a Workspace Secrets dependency. The approved names `GOOGLE_GMAIL_OAUTH_CLIENT_ID`, `GOOGLE_GMAIL_OAUTH_CLIENT_SECRET`, and `GOOGLE_GMAIL_OAUTH_CALLBACK_URL` are declarations only; naming them here does not provision credentials or make a Google Connection runnable. No package, pull-request, build, or publication job receives those values. After separately approved provisioning and Owner consent, the Actor supplies only a short-lived access token to the Host as `PLUGIN_ACCESS_TOKEN`.
+
+The Supernala-authored source is licensed under the MIT License in `plugins/gmail/LICENSE`; `plugins/gmail/NOTICE` records its scope. This repository does not relicense Google APIs, services, hosted content, or trademarks.

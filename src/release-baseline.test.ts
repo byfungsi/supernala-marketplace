@@ -1,11 +1,12 @@
 import { expect, it } from "@effect/vitest";
-import { Result } from "effect";
+import { Result, Schema } from "effect";
 import { preparePluginPackage, validatePluginSource } from "./authoring-validation.js";
 import { PluginAuthoritySnapshot } from "./authority-diff.js";
 import { ReleaseReview } from "./release-bundle.js";
 import { validatePublicationAuthorityLineage } from "./release-lineage.js";
 import { digestPluginBytes, PluginSha256, PluginVersion } from "./plugin-contract.js";
 import { verifyPublishedReleaseBaseline } from "./release-baseline.js";
+import { PackagedPluginAuthentication } from "./package-archive.js";
 import {
   InMemoryReleaseJournal,
   pluginReleaseIdentityKey,
@@ -58,14 +59,37 @@ const publishedCandidate = async (): Promise<IncrementalReleaseCandidate> => {
 
 class ControlledApplicationReader implements ApplicationPublicationReader {
   reads = 0;
+  observedAuthentication: IncrementalReleaseCandidate["authentication"] | null = null;
   constructor(readonly result: Result.Result<"published" | "revoked" | "mismatch", string>) {}
-  async readPublicationState(): Promise<
-    Result.Result<"published" | "revoked" | "mismatch", string>
-  > {
+  async readPublicationState(
+    candidate: IncrementalReleaseCandidate,
+  ): Promise<Result.Result<"published" | "revoked" | "mismatch", string>> {
     this.reads += 1;
+    this.observedAuthentication = candidate.authentication;
     return this.result;
   }
 }
+
+it("forwards exact five-field OAuth authority into durable baseline readback", async () => {
+  const { record } = await publishedRecord();
+  const authentication = Schema.decodeUnknownSync(PackagedPluginAuthentication, {
+    onExcessProperty: "error",
+  })({
+    kind: "oauth",
+    providerRegistration: "synthetic-mail-rest-v1",
+    providerDefinitionDigest: "a".repeat(64),
+    requestedScopes: ["synthetic.mail.read"],
+    credentialDelivery: "short-lived-access-token-only",
+  });
+  const application = new ControlledApplicationReader(Result.succeed("published"));
+  const result = await verifyPublishedReleaseBaseline({
+    records: [{ ...record, authentication }],
+    application,
+    artifacts: new ControlledArtifactReader(Result.succeed(true)),
+  });
+  expect(Result.isSuccess(result)).toBe(true);
+  expect(application.observedAuthentication).toEqual(authentication);
+});
 
 class ControlledArtifactReader implements ImmutableArtifactReader {
   reads = 0;
@@ -263,6 +287,7 @@ it("rejects stale or revoked predecessor lineage before publication writes", asy
     endpoint: null,
     endpointRegistrationId: null,
     providerRegistrationId: null,
+    providerDefinitionDigest: null,
     tools: [],
     allowedHosts: [],
     config: [],

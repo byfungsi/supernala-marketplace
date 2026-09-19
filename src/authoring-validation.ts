@@ -328,7 +328,7 @@ export async function validatePluginSource(
     );
   }
   if (
-    manifest.success.authentication.kind === "github-app" &&
+    manifest.success.authentication.kind !== "none" &&
     config.success.fields.some(
       (field) =>
         field.sensitivity === "secret" ||

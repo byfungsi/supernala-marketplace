@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "id": "gmail",
+  "publisher": "supernala",
+  "version": "0.1.0",
+  "name": "Gmail",
+  "description": "Narrow first-party Gmail message and draft search and reading tools",
+  "license": "MIT",
+  "licenseEvidence": {
+    "kind": "spdx-mit-full-text",
+    "license": {
+      "path": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    "notice": {
+      "path": "NOTICE",
+      "sha256": "bf21a2ce4c597b4a02693c3461e005328c956c5aa7a78e3ff00c831964d98f09"
+    }
+  },
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "catalog": {
+    "path": "catalog.json",
+    "sha256": "e808b72a105eafde546b63245238f87906bddcf82e1766f93a7d0ce10882a952"
+  },
+  "config": {
+    "path": "config.json",
+    "sha256": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334"
+  },
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-gmail-rest-v1",
+    "requestedScopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "network": {
+    "allowedHosts": ["gmail.googleapis.com"]
+  },
+  "limits": {
+    "expandedBytes": 1048576,
+    "files": 20
+  },
+  "provenance": "provenance.json"
+}

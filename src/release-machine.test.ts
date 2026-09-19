@@ -1,7 +1,8 @@
 import { expect, it } from "@effect/vitest";
-import { Result } from "effect";
+import { Result, Schema } from "effect";
 import { preparePluginPackage, validatePluginSource } from "./authoring-validation.js";
 import { digestPluginBytes, PluginSha256, PluginVersion } from "./plugin-contract.js";
+import { PackagedPluginAuthentication } from "./package-archive.js";
 import {
   InMemoryApplicationPublicationAdapter,
   InMemoryImmutableArtifactStore,
@@ -151,6 +152,38 @@ it("fails same semantic version when source/shared inputs change", async () => {
   expect(
     selectIncrementalReleaseSources({ sources: [changed], journal: await journal.list() }),
   ).toEqual(Result.fail("immutable-version-input-conflict:supernala-public/supernala/alpha@1.0.0"));
+});
+
+it("keeps exact five-field OAuth authority immutable across journal retries", async () => {
+  const candidate = await makeCandidate({ slug: "oauth-alpha", version: "1.0.0" });
+  const authentication = Schema.decodeUnknownSync(PackagedPluginAuthentication, {
+    onExcessProperty: "error",
+  })({
+    kind: "oauth",
+    providerRegistration: "synthetic-mail-rest-v1",
+    providerDefinitionDigest: "a".repeat(64),
+    requestedScopes: ["synthetic.mail.read"],
+    credentialDelivery: "short-lived-access-token-only",
+  });
+  const release = { ...candidate, authentication };
+  const journal = new InMemoryReleaseJournal();
+  expect(Result.isSuccess(await journal.claim(release))).toBe(true);
+  expect(Result.isSuccess(await journal.claim(release))).toBe(true);
+  const changedAuthentication = Schema.decodeUnknownSync(PackagedPluginAuthentication, {
+    onExcessProperty: "error",
+  })({
+    kind: "oauth",
+    providerRegistration: "synthetic-mail-rest-v1",
+    providerDefinitionDigest: "b".repeat(64),
+    requestedScopes: ["synthetic.mail.read"],
+    credentialDelivery: "short-lived-access-token-only",
+  });
+  expect(
+    await journal.claim({
+      ...release,
+      authentication: changedAuthentication,
+    }),
+  ).toEqual(Result.fail("immutable-version-conflict"));
 });
 
 it("does zero additional PUTs on rerun and under concurrent exact publication", async () => {

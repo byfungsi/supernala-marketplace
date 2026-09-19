@@ -9,3 +9,12 @@ it("keeps portable JSON Schemas byte-aligned with owning Effect schemas", async 
     expect(JSON.parse(committed)).toEqual(schema);
   }
 });
+
+it("exports the five-field OAuth digest binding through package and plan schemas", () => {
+  const schemas = generateMarketplaceJsonSchemas();
+  expect(schemas["oauth-provider-definition.schema.json"]).toBeDefined();
+  for (const file of ["plugin.schema.json", "publication-plan.schema.json"]) {
+    const schema = schemas[file];
+    expect(JSON.stringify(schema)).toContain('"providerDefinitionDigest"');
+  }
+});

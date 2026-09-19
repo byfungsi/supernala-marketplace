@@ -60,7 +60,9 @@ const runReleaseCli = (
 const digestJson = (value: Parameters<typeof canonicalPluginJson>[0]) =>
   digestPluginBytes(new TextEncoder().encode(canonicalPluginJson(value)));
 
-const createCliFixture = async (): Promise<{
+const createCliFixture = async (
+  authentication: "none" | "oauth" = "none",
+): Promise<{
   readonly root: string;
   readonly bundleDirectory: string;
   readonly reviewFile: string;
@@ -71,6 +73,28 @@ const createCliFixture = async (): Promise<{
   await cp(path.join(repositoryRoot, "plugins", "offline-fixture"), sourceDirectory, {
     recursive: true,
   });
+  if (authentication === "oauth") {
+    const manifest = Schema.decodeUnknownSync(Schema.JsonObject)(
+      JSON.parse(await readFile(path.join(sourceDirectory, "plugin.json"), "utf8")),
+    );
+    await writeFile(
+      path.join(sourceDirectory, "plugin.json"),
+      `${JSON.stringify(
+        {
+          ...manifest,
+          authentication: {
+            kind: "oauth",
+            providerRegistration: "synthetic-mail-rest-v1",
+            providerDefinitionDigest: "a".repeat(64),
+            requestedScopes: ["synthetic.mail.read"],
+            credentialDelivery: "short-lived-access-token-only",
+          },
+        },
+        null,
+        2,
+      )}\n`,
+    );
+  }
   await writeFile(path.join(root, "shared.txt"), "reviewed shared input\n");
   await mkdir(path.join(root, "releases", "reviews"), { recursive: true });
   await writeFile(
@@ -177,6 +201,34 @@ const createCliFixture = async (): Promise<{
     reviewFile,
   };
 };
+
+it("carries exact five-field OAuth authority through actual CLI build and dry-run", async () => {
+  const fixture = await createCliFixture("oauth");
+  try {
+    const build = await runReleaseCli(fixture.root, [
+      "build",
+      "baseline.json",
+      "release-output",
+      "a".repeat(40),
+      "1",
+    ]);
+    expect(build).toMatchObject({ exitCode: 0, stderr: "" });
+    const release = Schema.decodeUnknownSync(Schema.JsonObject)(
+      JSON.parse(await readFile(path.join(fixture.bundleDirectory, "release.json"), "utf8")),
+    );
+    expect(release.authentication).toEqual({
+      kind: "oauth",
+      providerRegistration: "synthetic-mail-rest-v1",
+      providerDefinitionDigest: "a".repeat(64),
+      requestedScopes: ["synthetic.mail.read"],
+      credentialDelivery: "short-lived-access-token-only",
+    });
+    const dryRun = await runReleaseCli(fixture.root, ["publish", "release-output", "--dry-run"]);
+    expect(JSON.parse(dryRun.stdout)).toEqual({ mode: "dry-run", writes: 0, bundles: 1 });
+  } finally {
+    await rm(fixture.root, { recursive: true });
+  }
+});
 
 it("runs actual CLI build and zero-write dry-run, then rejects descriptor tampering safely", async () => {
   const fixture = await createCliFixture();
