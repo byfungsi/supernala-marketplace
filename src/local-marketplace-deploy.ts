@@ -34,23 +34,14 @@ function reject(reason: string): never {
   throw new LocalReleaseFailure({ reason });
 }
 const emit = (value: Schema.Json) => process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
-const confirmExact = async (message: string, expected: string): Promise<boolean> => {
-  const terminal = createInterface({ input: process.stdin, output: process.stdout });
-  try {
-    return (await terminal.question(`${message}\nType ${expected}: `)).trim() === expected;
-  } finally {
-    terminal.close();
-  }
-};
-
-/** Normal publication accepts an explicit case-insensitive y/yes response only. */
-export const isNormalPublicationConfirmation = (answer: string): boolean =>
+/** Interactive confirmations accept an explicit case-insensitive y/yes response only. */
+export const isAffirmativeConfirmation = (answer: string): boolean =>
   ["y", "yes"].includes(answer.trim().toLowerCase());
 
-const confirmNormalPublication = async (message: string): Promise<boolean> => {
+const confirmAffirmative = async (message: string): Promise<boolean> => {
   const terminal = createInterface({ input: process.stdin, output: process.stdout });
   try {
-    return isNormalPublicationConfirmation(await terminal.question(`${message} [y/N] `));
+    return isAffirmativeConfirmation(await terminal.question(`${message} [y/N] `));
   } finally {
     terminal.close();
   }
@@ -78,7 +69,7 @@ export function runLocalMarketplaceDeploy(
       });
       if (values.help) {
         process.stdout.write(
-          "Usage: pnpm marketplace deploy --environment production [--control-env FILE] [--publication-env FILE] [--yes]\nInspection: add --status\nRecovery: add --recover-attempt UUID (only after every old publisher and in-flight request has stopped)\n--yes approves only a normal publication after all checks; it conflicts with inspection and recovery.\n",
+          "Usage: pnpm marketplace deploy --environment production [--control-env FILE] [--publication-env FILE] [--yes]\nInspection: add --status\nRecovery: add --recover-attempt UUID (only after every old publisher and in-flight request has stopped)\nRecovery confirmation uses [y/N]; --yes approves only a normal publication after all checks and conflicts with inspection and recovery.\n",
         );
         return;
       }
@@ -116,9 +107,8 @@ export function runLocalMarketplaceDeploy(
         const id = Schema.decodeUnknownSync(ReleaseAttemptId)(values["recover-attempt"]);
         emit({ attempt: unwrap(await coordinator.read(id)) });
         if (
-          !(await confirmExact(
-            "Recovery does not stop another process. Confirm ALL old publishers and in-flight requests have stopped. Partial releases will be reconciled on the next deployment.",
-            `stopped ${id}`,
+          !(await confirmAffirmative(
+            `Recover stopped attempt ${id}? Recovery does not stop another process. Confirm ALL old publishers and in-flight requests have stopped. Partial releases will be reconciled on the next deployment.`,
           ))
         )
           reject("release-recovery-not-confirmed");
@@ -255,7 +245,7 @@ export function runLocalMarketplaceDeploy(
       );
       if (
         !values.yes &&
-        !(await confirmNormalPublication(
+        !(await confirmAffirmative(
           `Publish exact release set ${releaseSet.setDigest}? Independent source/permission review and public history safety review must already be complete.`,
         ))
       ) {

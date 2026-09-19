@@ -74,7 +74,7 @@ The command:
 6. Displays `[y/N]` and accepts only case-insensitive `y` or `yes`. `--yes` skips only this normal publication prompt and permits a non-TTY invocation after every exact commit/build/review/release-set check. Independent source/permission review and public Git-history safety review must already be complete. Interactive or `--yes` operator confirmation does not replace them.
 7. Rechecks fetched main and the snapshot, then loads matching publication credentials, records approval, publishes with one-shot durable admission, verifies readback, and completes the attempt.
 
-`--yes` is explicit operator approval for the exact normal release set, not an independent review or a general safety bypass. It is rejected with `--status` and `--recover-attempt`, and it never bypasses the exact stopped-process recovery assertion. GitHub Actions runs PR/main checks only; remove any old automatic publisher and revoke its unused credentials before enabling local releases. Old publisher binaries do not participate in the lock protocol.
+`--yes` is explicit operator approval for the exact normal release set, not an independent review or a general safety bypass. It is rejected with `--status` and `--recover-attempt`, and it never bypasses the interactive stopped-process recovery confirmation. GitHub Actions runs PR/main checks only; remove any old automatic publisher and revoke its unused credentials before enabling local releases. Old publisher binaries do not participate in the lock protocol.
 
 An empty/unchanged release set publishes nothing and releases its reservation. Ineligible candidates stay excluded. Publishing does not install, upgrade, connect accounts, activate Workspaces, or change Agent grants.
 
@@ -92,7 +92,7 @@ pnpm marketplace deploy --environment production --status
 pnpm marketplace deploy --environment production --recover-attempt ATTEMPT_UUID
 ```
 
-Recovery requires typing `stopped <exact attempt UUID>`. This is an operator assertion, not a process-termination mechanism or proof that Cloudflare has stopped processing requests. Never recover while an old publisher might still be alive.
+Recovery displays the exact attempt UUID and requires an explicit `y` or `yes` response to its `[y/N]` prompt. This is an operator assertion, not a process-termination mechanism or proof that Cloudflare has stopped processing requests. `--yes` cannot bypass recovery confirmation. Never recover while an old publisher might still be alive.
 
 Recovery abandons only the named attempt. It does not delete packages, roll back application state, or erase journal records. The next normal deploy gets a fresh ordinal, re-verifies durable state, and reconciles partial releases using existing immutable-content rules. Completed/abandoned authority cannot admit another publisher.
 

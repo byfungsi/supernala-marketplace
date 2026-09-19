@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import path from "node:path";
 import { expect, it } from "@effect/vitest";
-import { isNormalPublicationConfirmation } from "./local-marketplace-deploy.js";
+import { isAffirmativeConfirmation } from "./local-marketplace-deploy.js";
 
 const run = (
   args: ReadonlyArray<string>,
@@ -38,15 +38,25 @@ it("exposes local deploy help without loading credentials or calling providers",
   expect(result.stdout).toContain("pnpm marketplace deploy --environment production");
   expect(result.stdout).toContain("--yes");
   expect(result.stdout).toContain("--recover-attempt UUID");
+  expect(result.stdout).toContain("Recovery confirmation uses [y/N]");
   expect(result.stderr).toBe("");
 });
 
-it("accepts only y/yes as normal publication confirmation", () => {
+it("accepts only y/yes for every interactive confirmation", () => {
   for (const answer of ["y", "Y", "yes", "YES", " Yes "]) {
-    expect(isNormalPublicationConfirmation(answer)).toBe(true);
+    expect(isAffirmativeConfirmation(answer)).toBe(true);
   }
-  for (const answer of ["", "n", "no", "publish", "true", "1", "yes please"]) {
-    expect(isNormalPublicationConfirmation(answer)).toBe(false);
+  for (const answer of [
+    "",
+    "n",
+    "no",
+    "publish",
+    "stopped 470a4b99-c953-4b34-be3c-4532fea330e3",
+    "true",
+    "1",
+    "yes please",
+  ]) {
+    expect(isAffirmativeConfirmation(answer)).toBe(false);
   }
 });
 
