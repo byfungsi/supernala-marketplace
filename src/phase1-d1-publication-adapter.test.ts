@@ -662,6 +662,137 @@ it("keeps every D1 statement within 100 binds for larger exact catalogs", async 
   }
 });
 
+it("keeps the complete stage predicate contract in bounded same-batch guards", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-stage-guard-contract-"));
+  try {
+    const source = await createSourceVariant({
+      root,
+      slug: "stage-guard-contract",
+      version: "1.0.0",
+      catalogSuffix: "stage-guard-contract",
+      toolCount: 4,
+    });
+    const release = await candidate(source);
+    const transport = new RecordingD1Transport();
+    const adapter = new Phase1D1PublicationAdapter(transport);
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    const batch = transport.batches[0];
+    if (batch === undefined) throw new Error("test-stage-batch-missing");
+    expect(batch).toHaveLength(19);
+    expect(
+      batch.slice(0, 10).map((statement) => statement.sql.match(/INSERT INTO ([a-z_]+)/u)?.[1]),
+    ).toEqual([
+      "plugin_definitions",
+      "plugin_artifacts",
+      "plugin_catalog_snapshots",
+      "plugin_config_schemas",
+      "plugin_catalog_tools",
+      "plugin_catalog_tools",
+      "plugin_catalog_tools",
+      "plugin_catalog_tools",
+      "plugin_versions",
+      "plugin_publication_intents",
+    ]);
+    const guards = batch.filter((statement) => statement.sql.includes("SELECT NULL, NULL, NULL"));
+    const toolGuards = guards.filter((statement) => statement.sql.includes("t.tool_id = ?"));
+    const aggregateGuards = guards.filter((statement) => !statement.sql.includes("t.tool_id = ?"));
+    expect(toolGuards).toHaveLength(4);
+    expect(aggregateGuards).toHaveLength(5);
+    const guardContract = aggregateGuards.map((statement) => statement.sql).join("\n");
+    for (const predicate of [
+      "v.plugin_version_id = ?",
+      "v.plugin_definition_id = ?",
+      "v.semantic_version = ?",
+      "v.artifact_digest = ?",
+      "v.manifest_digest = ?",
+      "v.catalog_snapshot_id = ?",
+      "v.config_schema_id = ?",
+      "i.publication_intent_id = ?",
+      "i.artifact_digest = v.artifact_digest",
+      "v.runtime_kind = 'managed-package'",
+      "v.package_entrypoint = ?",
+      "v.package_node_version = '22.x'",
+      "v.authentication_kind = ?",
+      "v.provider_registration_id IS ?",
+      "v.requested_scopes_json = ?",
+      "v.provider_registration_authority_revision IS ?",
+      "v.provider_definition_digest IS ?",
+      "v.provider_definition_revision IS ?",
+      "v.allowed_hosts_json = ?",
+      "v.license = ?",
+      "v.provenance_json = ?",
+      "v.release_date = ?",
+      "v.review_status = 'approved'",
+      "v.status IN ('publishing', 'published')",
+      "a.object_key = ?",
+      "a.byte_size = ?",
+      "a.status IN ('pending', 'available')",
+      "i.status IN ('pending', 'artifact-verified', 'published')",
+      "i.provider_registration_material_source_revision IS ?",
+      "d.marketplace_id = ?",
+      "d.publisher_namespace = ?",
+      "d.plugin_slug = ?",
+      "d.name = ?",
+      "d.short_description = ?",
+      "d.long_description = ?",
+      "d.status = 'active'",
+      "m.marketplace_id = d.marketplace_id",
+      "m.status = 'active'",
+      "c.catalog_snapshot_id = v.catalog_snapshot_id",
+      "c.catalog_digest = ?",
+      "c.schema_version = 1",
+      "s.config_schema_id = v.config_schema_id",
+      "s.schema_digest = ?",
+      "s.revision = ?",
+      "s.fields_json = ?",
+      "? = 'none'",
+      "? = 'github-app'",
+      "p.provider_registration_id = v.provider_registration_id",
+      "p.registration_mode = 'platform-pre-registered'",
+      "p.approved_scopes_json = ?",
+      "p.source = 'platform'",
+      "p.status = 'active'",
+      "length(p.client_credential_reference) > 0",
+      "p.oauth_provider_definition_digest IS NULL",
+      "? = 'oauth'",
+      "p.client_credential_reference IS NULL",
+      "p.oauth_authority_revision = v.provider_registration_authority_revision",
+      "p.oauth_provider_definition_digest = v.provider_definition_digest",
+      "p.oauth_provider_definition_revision = v.provider_definition_revision",
+      "ms.provider_registration_id = p.provider_registration_id",
+      "ms.oauth_authority_revision = p.oauth_authority_revision",
+      "ms.provider_definition_digest = p.oauth_provider_definition_digest",
+      "ms.provider_definition_revision = p.oauth_provider_definition_revision",
+      "ms.source_revision = i.provider_registration_material_source_revision",
+      "ms.source_revision IS ?",
+      "ms.source_kind = 'deployment-environment'",
+      "ms.status = 'active'",
+      "ms.material_version IS ?",
+      "ms.declaration_id IS ?",
+      "ms.deployment_revision IS ?",
+      "ms.token_endpoint_auth_method IS ?",
+      "od.status = 'active'",
+      "od.provider_definition_digest = p.oauth_provider_definition_digest",
+      "od.revision = p.oauth_provider_definition_revision",
+      "od.provider = p.provider",
+      "od.resource_identity = p.resource_identity",
+      "od.scopes_json = v.requested_scopes_json",
+      "od.display_label_path_present = 1",
+      "json_extract(od.canonical_definition_json, '$.tokenEndpointAuthMethod')",
+      "= ms.token_endpoint_auth_method",
+      "SELECT COUNT(*) FROM plugin_catalog_tools t",
+    ]) {
+      expect(guardContract).toContain(predicate);
+    }
+    for (const guard of guards) {
+      const expressionComplexity = guard.sql.match(/\b(?:AND|OR|EXISTS|IN)\b/gu)?.length ?? 0;
+      expect(expressionComplexity).toBeLessThanOrEqual(64);
+    }
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
 it("fences Marketplace and Plugin-definition lifecycle during stage and finalize", async () => {
   const release = await candidate();
   const disabledMarketplace = await applicationDatabase();

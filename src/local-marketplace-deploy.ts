@@ -34,10 +34,23 @@ function reject(reason: string): never {
   throw new LocalReleaseFailure({ reason });
 }
 const emit = (value: Schema.Json) => process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
-const confirm = async (message: string, expected: string): Promise<boolean> => {
+const confirmExact = async (message: string, expected: string): Promise<boolean> => {
   const terminal = createInterface({ input: process.stdin, output: process.stdout });
   try {
     return (await terminal.question(`${message}\nType ${expected}: `)).trim() === expected;
+  } finally {
+    terminal.close();
+  }
+};
+
+/** Normal publication accepts an explicit case-insensitive y/yes response only. */
+export const isNormalPublicationConfirmation = (answer: string): boolean =>
+  ["y", "yes"].includes(answer.trim().toLowerCase());
+
+const confirmNormalPublication = async (message: string): Promise<boolean> => {
+  const terminal = createInterface({ input: process.stdin, output: process.stdout });
+  try {
+    return isNormalPublicationConfirmation(await terminal.question(`${message} [y/N] `));
   } finally {
     terminal.close();
   }
@@ -59,12 +72,13 @@ export function runLocalMarketplaceDeploy(
           "publication-env": { type: "string" },
           status: { type: "boolean" },
           "recover-attempt": { type: "string" },
+          yes: { type: "boolean" },
           help: { type: "boolean" },
         },
       });
       if (values.help) {
         process.stdout.write(
-          "Usage: pnpm marketplace deploy --environment production [--control-env FILE] [--publication-env FILE]\nInspection: add --status\nRecovery: add --recover-attempt UUID (only after every old publisher and in-flight request has stopped)\n",
+          "Usage: pnpm marketplace deploy --environment production [--control-env FILE] [--publication-env FILE] [--yes]\nInspection: add --status\nRecovery: add --recover-attempt UUID (only after every old publisher and in-flight request has stopped)\n--yes approves only a normal publication after all checks; it conflicts with inspection and recovery.\n",
         );
         return;
       }
@@ -72,7 +86,9 @@ export function runLocalMarketplaceDeploy(
         reject("local-release-requires-production-environment");
       if (values.status && values["recover-attempt"] !== undefined)
         reject("local-release-conflicting-options");
-      if (!values.status && !process.stdin.isTTY)
+      if (values.yes && (values.status || values["recover-attempt"] !== undefined))
+        reject("local-release-conflicting-options");
+      if (!values.status && !values.yes && !process.stdin.isTTY)
         reject("local-release-requires-interactive-terminal");
       const repositoryRoot = await realpath(process.cwd());
       const configurationRoot = path.join(homedir(), ".config", "supernala-marketplace");
@@ -100,7 +116,7 @@ export function runLocalMarketplaceDeploy(
         const id = Schema.decodeUnknownSync(ReleaseAttemptId)(values["recover-attempt"]);
         emit({ attempt: unwrap(await coordinator.read(id)) });
         if (
-          !(await confirm(
+          !(await confirmExact(
             "Recovery does not stop another process. Confirm ALL old publishers and in-flight requests have stopped. Partial releases will be reconciled on the next deployment.",
             `stopped ${id}`,
           ))
@@ -238,9 +254,9 @@ export function runLocalMarketplaceDeploy(
         { mode: 0o600 },
       );
       if (
-        !(await confirm(
-          "Publish this exact release set? Independent source/permission review and public history safety review must already be complete.",
-          `publish ${releaseSet.setDigest}`,
+        !values.yes &&
+        !(await confirmNormalPublication(
+          `Publish exact release set ${releaseSet.setDigest}? Independent source/permission review and public history safety review must already be complete.`,
         ))
       ) {
         unwrap(await coordinator.finish(attemptId, "cancelled"));

@@ -60,6 +60,8 @@ Do not launch from a secret-bearing shell. Build subprocesses have a fresh HOME 
 git switch main
 git pull --ff-only
 pnpm marketplace deploy --environment production
+# Explicit noninteractive approval after all checks (for trusted operator automation only):
+pnpm marketplace deploy --environment production --yes
 ```
 
 The command:
@@ -69,10 +71,10 @@ The command:
 3. Reserves a journal-owned exclusive attempt and release ordinal.
 4. Exports and verifies the durable baseline, builds only eligible selected Plugins, and performs a zero-write dry-run.
 5. Displays target IDs, commit, versions, review identities, authority diffs, and exact release-set digest.
-6. Requires typing `publish <exact digest>`. Independent source/permission review and public Git-history safety review must already be complete. Operator confirmation does not replace them.
+6. Displays `[y/N]` and accepts only case-insensitive `y` or `yes`. `--yes` skips only this normal publication prompt and permits a non-TTY invocation after every exact commit/build/review/release-set check. Independent source/permission review and public Git-history safety review must already be complete. Interactive or `--yes` operator confirmation does not replace them.
 7. Rechecks fetched main and the snapshot, then loads matching publication credentials, records approval, publishes with one-shot durable admission, verifies readback, and completes the attempt.
 
-There is no `--yes` or noninteractive bypass. GitHub Actions runs PR/main checks only; remove any old automatic publisher and revoke its unused credentials before enabling local releases. Old publisher binaries do not participate in the lock protocol.
+`--yes` is explicit operator approval for the exact normal release set, not an independent review or a general safety bypass. It is rejected with `--status` and `--recover-attempt`, and it never bypasses the exact stopped-process recovery assertion. GitHub Actions runs PR/main checks only; remove any old automatic publisher and revoke its unused credentials before enabling local releases. Old publisher binaries do not participate in the lock protocol.
 
 An empty/unchanged release set publishes nothing and releases its reservation. Ineligible candidates stay excluded. Publishing does not install, upgrade, connect accounts, activate Workspaces, or change Agent grants.
 

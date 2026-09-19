@@ -330,72 +330,16 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
          JOIN plugin_publication_intents i ON i.plugin_version_id = v.plugin_version_id
          JOIN plugin_artifacts a ON a.artifact_digest = v.artifact_digest
          WHERE v.plugin_version_id = ? AND v.plugin_definition_id = ?
-            AND v.semantic_version = ? AND v.artifact_digest = ?
-            AND v.manifest_digest = ? AND v.catalog_snapshot_id = ?
-            AND v.config_schema_id = ? AND i.publication_intent_id = ?
-            AND i.artifact_digest = v.artifact_digest
-            AND v.runtime_kind = 'managed-package' AND v.package_entrypoint = ?
-             AND v.package_node_version = '22.x' AND v.authentication_kind = ?
-             AND v.provider_registration_id IS ?
-              AND v.requested_scopes_json = ?
-              AND v.provider_registration_authority_revision IS ?
-              AND v.provider_definition_digest IS ? AND v.provider_definition_revision IS ?
-              AND v.allowed_hosts_json = ?
-            AND v.license = ? AND v.provenance_json = ? AND v.release_date = ?
-            AND v.review_status = 'approved' AND v.status IN ('publishing', 'published')
-             AND a.object_key = ? AND a.byte_size = ? AND a.status IN ('pending', 'available')
-             AND i.status IN ('pending', 'artifact-verified', 'published')
-             AND i.provider_registration_material_source_revision IS ?
-            AND EXISTS (SELECT 1 FROM plugin_definitions d
-             WHERE d.plugin_definition_id = v.plugin_definition_id
-               AND d.marketplace_id = ? AND d.publisher_namespace = ? AND d.plugin_slug = ?
-               AND d.name = ? AND d.short_description = ? AND d.long_description = ?
-               AND d.status = 'active'
-               AND EXISTS (SELECT 1 FROM plugin_marketplaces m
-                 WHERE m.marketplace_id = d.marketplace_id AND m.status = 'active'))
-           AND EXISTS (SELECT 1 FROM plugin_catalog_snapshots c
-             WHERE c.catalog_snapshot_id = v.catalog_snapshot_id
-               AND c.catalog_digest = ? AND c.schema_version = 1)
-           AND EXISTS (SELECT 1 FROM plugin_config_schemas s
-              WHERE s.config_schema_id = v.config_schema_id
-                AND s.schema_digest = ? AND s.revision = ? AND s.fields_json = ?)
-              AND (? = 'none'
-                OR (? = 'github-app' AND EXISTS (SELECT 1 FROM provider_registrations p
-                  WHERE p.provider_registration_id = v.provider_registration_id
-                    AND p.registration_mode = 'platform-pre-registered'
-                    AND p.approved_scopes_json = ? AND p.source = 'platform'
-                    AND p.status = 'active' AND length(p.client_credential_reference) > 0
-                    AND p.oauth_provider_definition_digest IS NULL))
-                OR (? = 'oauth' AND EXISTS (
-                  SELECT 1 FROM provider_registrations p
-                  JOIN plugin_oauth_registration_material_sources ms
-                    ON ms.provider_registration_id = p.provider_registration_id
-                   AND ms.oauth_authority_revision = p.oauth_authority_revision
-                   AND ms.provider_definition_digest = p.oauth_provider_definition_digest
-                   AND ms.provider_definition_revision = p.oauth_provider_definition_revision
-                  JOIN plugin_oauth_provider_definitions od
-                    ON od.provider_definition_digest = p.oauth_provider_definition_digest
-                   AND od.revision = p.oauth_provider_definition_revision
-                  WHERE p.provider_registration_id = v.provider_registration_id
-                    AND p.registration_mode = 'platform-pre-registered'
-                    AND p.approved_scopes_json = ? AND p.source = 'platform'
-                    AND p.status = 'active' AND p.client_credential_reference IS NULL
-                    AND p.oauth_authority_revision = v.provider_registration_authority_revision
-                    AND p.oauth_provider_definition_digest = v.provider_definition_digest
-                    AND p.oauth_provider_definition_revision = v.provider_definition_revision
-                    AND ms.source_revision = i.provider_registration_material_source_revision
-                    AND ms.source_revision IS ? AND ms.source_kind = 'deployment-environment'
-                    AND ms.status = 'active' AND ms.material_version IS ?
-                    AND ms.declaration_id IS ? AND ms.deployment_revision IS ?
-                    AND ms.token_endpoint_auth_method IS ?
-                    AND od.status = 'active' AND od.provider = p.provider
-                    AND od.resource_identity = p.resource_identity
-                    AND od.scopes_json = v.requested_scopes_json
-                    AND od.display_label_path_present = 1
-                    AND json_extract(od.canonical_definition_json, '$.tokenEndpointAuthMethod')
-                          = ms.token_endpoint_auth_method)))
-           AND (SELECT COUNT(*) FROM plugin_catalog_tools t
-                WHERE t.catalog_snapshot_id = v.catalog_snapshot_id) = ?`,
+           AND v.semantic_version = ? AND v.artifact_digest = ?
+           AND v.manifest_digest = ? AND v.catalog_snapshot_id = ?
+           AND v.config_schema_id = ? AND i.publication_intent_id = ?
+           AND i.artifact_digest = v.artifact_digest
+           AND v.runtime_kind = 'managed-package' AND v.package_entrypoint = ?
+           AND v.package_node_version = '22.x' AND v.allowed_hosts_json = ?
+           AND v.license = ? AND v.provenance_json = ? AND v.release_date = ?
+           AND v.review_status = 'approved' AND v.status IN ('publishing', 'published')
+           AND a.object_key = ? AND a.byte_size = ? AND a.status IN ('pending', 'available')
+           AND i.status IN ('pending', 'artifact-verified', 'published')`,
         [
           version.id,
           candidate.definitionId,
@@ -406,29 +350,103 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
           configId,
           intentId,
           runtime.entrypoint,
-          candidate.authentication.kind,
-          packagedAuthenticationProviderRegistration(candidate.authentication),
-          authenticationRequestedScopesJson(candidate.authentication),
-          authentication.success.providerRegistrationAuthorityRevision,
-          authentication.success.providerDefinitionDigest,
-          authentication.success.providerDefinitionRevision,
           JSON.stringify(version.allowedHosts),
           version.license,
           canonicalPluginJson(candidate.provenance),
           version.publishedAt,
           objectKey,
           candidate.artifactByteLength ?? 0,
-          authentication.success.materialSource?.sourceRevision ?? null,
+        ],
+      ),
+      failBatchGuard(
+        `SELECT 1 FROM plugin_versions v
+         WHERE v.plugin_version_id = ?
+           AND EXISTS (SELECT 1 FROM plugin_definitions d
+             WHERE d.plugin_definition_id = v.plugin_definition_id
+               AND d.marketplace_id = ? AND d.publisher_namespace = ? AND d.plugin_slug = ?
+               AND d.name = ? AND d.short_description = ? AND d.long_description = ?
+               AND d.status = 'active'
+               AND EXISTS (SELECT 1 FROM plugin_marketplaces m
+                 WHERE m.marketplace_id = d.marketplace_id AND m.status = 'active'))`,
+        [
+          version.id,
           version.marketplaceId,
           version.publisherNamespace,
           version.pluginSlug,
           version.name,
           version.description.slice(0, 500),
           version.description,
+        ],
+      ),
+      failBatchGuard(
+        `SELECT 1 FROM plugin_versions v
+         WHERE v.plugin_version_id = ?
+           AND EXISTS (SELECT 1 FROM plugin_catalog_snapshots c
+             WHERE c.catalog_snapshot_id = v.catalog_snapshot_id
+               AND c.catalog_digest = ? AND c.schema_version = 1)
+           AND EXISTS (SELECT 1 FROM plugin_config_schemas s
+             WHERE s.config_schema_id = v.config_schema_id
+               AND s.schema_digest = ? AND s.revision = ? AND s.fields_json = ?)`,
+        [
+          version.id,
           version.catalog.digest,
           candidate.configDigest,
           version.config.revision,
           configIdentity.success.fieldsJson,
+        ],
+      ),
+      failBatchGuard(
+        `SELECT 1 FROM plugin_versions v
+         JOIN plugin_publication_intents i ON i.plugin_version_id = v.plugin_version_id
+         WHERE v.plugin_version_id = ? AND v.authentication_kind = ?
+           AND v.provider_registration_id IS ? AND v.requested_scopes_json = ?
+           AND v.provider_registration_authority_revision IS ?
+           AND v.provider_definition_digest IS ? AND v.provider_definition_revision IS ?
+           AND i.provider_registration_material_source_revision IS ?
+           AND (? = 'none'
+             OR (? = 'github-app' AND EXISTS (SELECT 1 FROM provider_registrations p
+               WHERE p.provider_registration_id = v.provider_registration_id
+                 AND p.registration_mode = 'platform-pre-registered'
+                 AND p.approved_scopes_json = ? AND p.source = 'platform'
+                 AND p.status = 'active' AND length(p.client_credential_reference) > 0
+                 AND p.oauth_provider_definition_digest IS NULL))
+             OR (? = 'oauth' AND EXISTS (
+               SELECT 1 FROM provider_registrations p
+               JOIN plugin_oauth_registration_material_sources ms
+                 ON ms.provider_registration_id = p.provider_registration_id
+                AND ms.oauth_authority_revision = p.oauth_authority_revision
+                AND ms.provider_definition_digest = p.oauth_provider_definition_digest
+                AND ms.provider_definition_revision = p.oauth_provider_definition_revision
+               JOIN plugin_oauth_provider_definitions od
+                 ON od.provider_definition_digest = p.oauth_provider_definition_digest
+                AND od.revision = p.oauth_provider_definition_revision
+               WHERE p.provider_registration_id = v.provider_registration_id
+                 AND p.registration_mode = 'platform-pre-registered'
+                 AND p.approved_scopes_json = ? AND p.source = 'platform'
+                 AND p.status = 'active' AND p.client_credential_reference IS NULL
+                 AND p.oauth_authority_revision = v.provider_registration_authority_revision
+                 AND p.oauth_provider_definition_digest = v.provider_definition_digest
+                 AND p.oauth_provider_definition_revision = v.provider_definition_revision
+                 AND ms.source_revision = i.provider_registration_material_source_revision
+                 AND ms.source_revision IS ? AND ms.source_kind = 'deployment-environment'
+                 AND ms.status = 'active' AND ms.material_version IS ?
+                 AND ms.declaration_id IS ? AND ms.deployment_revision IS ?
+                 AND ms.token_endpoint_auth_method IS ?
+                 AND od.status = 'active' AND od.provider = p.provider
+                 AND od.resource_identity = p.resource_identity
+                 AND od.scopes_json = v.requested_scopes_json
+                 AND od.display_label_path_present = 1
+                 AND json_extract(od.canonical_definition_json, '$.tokenEndpointAuthMethod')
+                       = ms.token_endpoint_auth_method)))`,
+        [
+          version.id,
+          candidate.authentication.kind,
+          packagedAuthenticationProviderRegistration(candidate.authentication),
+          authenticationRequestedScopesJson(candidate.authentication),
+          authentication.success.providerRegistrationAuthorityRevision,
+          authentication.success.providerDefinitionDigest,
+          authentication.success.providerDefinitionRevision,
+          authentication.success.materialSource?.sourceRevision ?? null,
           candidate.authentication.kind,
           candidate.authentication.kind,
           authenticationRequestedScopesJson(candidate.authentication),
@@ -439,8 +457,14 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
           authentication.success.materialSource?.declarationId ?? null,
           authentication.success.materialSource?.deploymentRevision ?? null,
           authentication.success.materialSource?.tokenEndpointAuthMethod ?? null,
-          version.catalog.tools.length,
         ],
+      ),
+      failBatchGuard(
+        `SELECT 1 FROM plugin_versions v
+         WHERE v.plugin_version_id = ?
+           AND (SELECT COUNT(*) FROM plugin_catalog_tools t
+                WHERE t.catalog_snapshot_id = v.catalog_snapshot_id) = ?`,
+        [version.id, version.catalog.tools.length],
       ),
     );
     for (const [ordinal, tool] of version.catalog.tools.entries()) {
