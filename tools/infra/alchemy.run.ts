@@ -9,10 +9,10 @@ const environment = Config.schema(
   Schema.Literals(["local", "staging", "production"]),
   "MARKETPLACE_ENVIRONMENT",
 );
-const applicationStack = Config.String("APPLICATION_ALCHEMY_STACK").pipe(
+const applicationStack = Config.string("APPLICATION_ALCHEMY_STACK").pipe(
   Config.withDefault("supernala-api"),
 );
-const applicationStage = Config.String("APPLICATION_ALCHEMY_STAGE");
+const applicationStage = Config.string("APPLICATION_ALCHEMY_STAGE");
 
 /**
  * Marketplace-owned release journal plus read-only Alchemy references to application-owned stores.

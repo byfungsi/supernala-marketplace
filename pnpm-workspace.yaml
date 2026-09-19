@@ -17,3 +17,6 @@ catalog:
   vitest: 5.0.0
 
 onlyBuiltDependencies: []
+
+overrides:
+  "@effect/platform-node@4.0.0-rc.112>@effect/platform-node-shared": 4.0.0-rc.112

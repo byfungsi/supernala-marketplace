@@ -10,6 +10,7 @@ coverage/
 .dev.vars
 .wrangler/
 .cloudflare/
+.alchemy/
 *.pem
 *.key
 *.p12

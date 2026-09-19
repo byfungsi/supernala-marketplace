@@ -6,6 +6,8 @@ The application stack continues to own `ApplicationDatabase` and `PluginPackages
 
 ## Environments
 
+The infrastructure package pins Effect and `@effect/platform-node` to `4.0.0-rc.112`, matching the application deployment tooling. A parent-specific workspace override also pins its `@effect/platform-node-shared` dependency to rc.112. Alchemy beta.77 uses `Config.string`, which is absent from the publisher's Effect rc.115 runtime. Keep these dependency scopes separate; `src/marketplace-infrastructure.test.ts` checks actual credential-free CLI startup, not just TypeScript declarations.
+
 Set only non-secret topology values when running an explicitly approved Alchemy operation:
 
 - `MARKETPLACE_ENVIRONMENT=local|staging|production`
