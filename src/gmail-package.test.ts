@@ -1,14 +1,78 @@
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { expect, it } from "@effect/vitest";
-import { Schema } from "effect";
+import { Result, Schema } from "effect";
 import {
   createGmailToolHandler,
   gmailToolCatalog,
   parseGmailMessage,
 } from "../plugins/gmail/source/server.mjs";
-import { PackageCatalog, PackagedPluginLicenseEvidence } from "./package-archive.js";
+import {
+  PackageCatalog,
+  PackageManifest,
+  PackagedPluginLicenseEvidence,
+} from "./package-archive.js";
 import { digestPluginBytes, PluginSha256 } from "./plugin-contract.js";
+import {
+  decodePluginOAuthProviderDefinition,
+  digestPluginOAuthProviderDefinition,
+  encodePluginOAuthProviderDefinitionCanonicalJson,
+  PackagedOAuthAuthentication,
+} from "./oauth-provider-definition.js";
+
+const gmailProviderDefinitionDigest =
+  "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07";
+
+const gmailProviderDefinitionCanonicalJson = [
+  '{"account":{"authorization":"bearer","displayLabelPath":["emailAddress"],"endpoint":"https://gmail.googleapis.com/gmail/v1/users/me/profile","kind":"https-json","maximumDisplayLabelLength":160,"maximumJsonDepth":4,"maximumObjectKeys":16,"maximumResponseBytes":16384,"maximumSubjectLength":300,"subjectPath":["emailAddress"],"subjectStability":"mutable"},',
+  '"authorizationEndpoint":"https://accounts.google.com/o/oauth2/v2/auth","authorizationParameters":[{"name":"access_type","value":"offline"},{"name":"prompt","value":"consent"}],"authorizationResponseIssuer":"required","issuer":"https://accounts.google.com","pkce":{"method":"S256"},"protocol":"oauth2-authorization-code","provider":"google",',
+  '"refresh":{"ambiguousOutcome":"fail-closed-no-replay","invalidGrant":"reauthorization-required","kind":"standard-form-post"},"resourceIdentity":"gmail.googleapis.com","revocation":{"clientAuthentication":"token-only","endpoint":"https://oauth2.googleapis.com/revoke","kind":"standard-form-post","outcome":"best-effort-observed","token":"refresh-token"},',
+  '"schemaVersion":1,"scopes":["https://www.googleapis.com/auth/gmail.readonly"],"tokenEndpoint":"https://oauth2.googleapis.com/token","tokenEndpointAuthMethod":"client_secret_post","tokens":{"accessTokenType":"bearer","expiresIn":{"maximumSeconds":86400,"minimumSeconds":1,"required":true},"grantedScopes":{"whenOmitted":"requested-scopes","whenPresent":"exact-match"},"initialRefreshToken":"required","refreshResponseToken":"retain-current-if-omitted"}}',
+].join("");
+
+const GmailCandidate = Schema.Struct({
+  schemaVersion: Schema.Literal(1),
+  status: Schema.Literal("staged-nonpublishable"),
+  runtime: Schema.Struct({
+    kind: Schema.Literal("managed-package"),
+    type: Schema.Literal("node"),
+    node: Schema.Literal("22.x"),
+    entrypoint: Schema.Literal("dist/server.mjs"),
+  }),
+  authentication: PackagedOAuthAuthentication,
+  network: Schema.Struct({ allowedHosts: Schema.Array(Schema.String) }),
+  license: Schema.Literal("MIT"),
+  blockingReason: Schema.NonEmptyString,
+});
+
+const GmailPlatformBindings = Schema.Struct({
+  providerRegistration: Schema.Literal("google-gmail-rest-v1"),
+  providerDefinition: Schema.Struct({
+    path: Schema.Literal("oauth-provider.json"),
+    canonicalSha256: PluginSha256,
+  }),
+  providerMetadata: Schema.Struct({
+    provider: Schema.String,
+    resourceIdentity: Schema.String,
+    registrationMode: Schema.Literal("platform-pre-registered"),
+    source: Schema.Literal("platform"),
+    approvedScopes: Schema.Array(Schema.String),
+  }),
+  bindings: Schema.Struct({
+    clientId: Schema.Struct({
+      source: Schema.Literal("environment"),
+      name: Schema.Literal("GOOGLE_GMAIL_OAUTH_CLIENT_ID"),
+    }),
+    ["client" + "Secret"]: Schema.Struct({
+      source: Schema.Literal("secret"),
+      name: Schema.Literal("GOOGLE_GMAIL_OAUTH_CLIENT_SECRET"),
+    }),
+    callbackUrl: Schema.Struct({
+      source: Schema.Literal("environment"),
+      name: Schema.Literal("GOOGLE_GMAIL_OAUTH_CALLBACK_URL"),
+    }),
+  }),
+});
 
 const GmailBuildRecipe = Schema.Struct({
   license: Schema.Literal("MIT"),
@@ -84,6 +148,171 @@ it("declares only the four reviewed read tools and sole readonly OAuth scope", a
       inputSchema: tool.inputSchema,
     })),
   );
+});
+
+it("binds the five-field package declaration to the strict canonical Gmail definition", async () => {
+  const [definitionSource, manifestSource, candidateSource, bindingsSource, recipeSource] =
+    await Promise.all([
+      readFile("plugins/gmail/oauth-provider.json", "utf8"),
+      readFile("plugins/gmail/package-manifest.json", "utf8"),
+      readFile("plugins/gmail/candidate.json", "utf8"),
+      readFile("plugins/gmail/platform-bindings.json", "utf8"),
+      readFile("plugins/gmail/build-recipe.json", "utf8"),
+    ]);
+  const definitionInput = Schema.decodeUnknownSync(Schema.Json)(JSON.parse(definitionSource));
+  const decodedDefinition = decodePluginOAuthProviderDefinition(definitionInput);
+  if (Result.isFailure(decodedDefinition)) throw decodedDefinition.failure;
+  const definition = decodedDefinition.success;
+  const canonicalBytes = encodePluginOAuthProviderDefinitionCanonicalJson(definition);
+  const canonicalText = new TextDecoder().decode(canonicalBytes);
+
+  expect(canonicalText).toBe(gmailProviderDefinitionCanonicalJson);
+  expect(canonicalBytes.byteLength).toBe(1_499);
+  await expect(digestPluginOAuthProviderDefinition(definition)).resolves.toBe(
+    gmailProviderDefinitionDigest,
+  );
+  await expect(digestPluginBytes(new TextEncoder().encode(definitionSource))).resolves.toBe(
+    "329d63038c896a71f15c1aa676ea3f950c0b8202e0d054bd74e40f2162979fb5",
+  );
+  expect(await digestPluginBytes(new TextEncoder().encode(definitionSource))).not.toBe(
+    gmailProviderDefinitionDigest,
+  );
+
+  expect(definition).toMatchObject({
+    issuer: "https://accounts.google.com",
+    authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+    tokenEndpoint: "https://oauth2.googleapis.com/token",
+    tokenEndpointAuthMethod: "client_secret_post",
+    authorizationResponseIssuer: "required",
+    pkce: { method: "S256" },
+    authorizationParameters: [
+      { name: "access_type", value: "offline" },
+      { name: "prompt", value: "consent" },
+    ],
+    account: {
+      endpoint: "https://gmail.googleapis.com/gmail/v1/users/me/profile",
+      subjectPath: ["emailAddress"],
+      displayLabelPath: ["emailAddress"],
+      subjectStability: "mutable",
+      maximumResponseBytes: 16_384,
+      maximumJsonDepth: 4,
+      maximumObjectKeys: 16,
+      maximumSubjectLength: 300,
+      maximumDisplayLabelLength: 160,
+    },
+    tokens: {
+      expiresIn: { required: true, minimumSeconds: 1, maximumSeconds: 86_400 },
+      initialRefreshToken: "required",
+      refreshResponseToken: "retain-current-if-omitted",
+    },
+    refresh: {
+      invalidGrant: "reauthorization-required",
+      ambiguousOutcome: "fail-closed-no-replay",
+    },
+    revocation: {
+      kind: "standard-form-post",
+      endpoint: "https://oauth2.googleapis.com/revoke",
+      token: "refresh-token",
+      clientAuthentication: "token-only",
+      outcome: "best-effort-observed",
+    },
+  });
+
+  const excessDefinition = decodePluginOAuthProviderDefinition({
+    ...Schema.decodeUnknownSync(Schema.JsonObject)(JSON.parse(canonicalText)),
+    account: {
+      ...Schema.decodeUnknownSync(Schema.JsonObject)(
+        Schema.decodeUnknownSync(Schema.JsonObject)(JSON.parse(canonicalText)).account,
+      ),
+      executableProjection: "$.emailAddress",
+    },
+  });
+  expect(Result.isFailure(excessDefinition)).toBe(true);
+  const endpointTampered = decodePluginOAuthProviderDefinition({
+    ...Schema.decodeUnknownSync(Schema.JsonObject)(JSON.parse(canonicalText)),
+    tokenEndpoint: "https://oauth2.googleapis.com/token-v2",
+  });
+  if (Result.isFailure(endpointTampered)) throw endpointTampered.failure;
+  await expect(digestPluginOAuthProviderDefinition(endpointTampered.success)).resolves.not.toBe(
+    gmailProviderDefinitionDigest,
+  );
+
+  const manifest = Schema.decodeUnknownSync(PackageManifest, { onExcessProperty: "error" })(
+    JSON.parse(manifestSource),
+  );
+  const candidate = Schema.decodeUnknownSync(GmailCandidate, { onExcessProperty: "error" })(
+    JSON.parse(candidateSource),
+  );
+  const bindings = Schema.decodeUnknownSync(GmailPlatformBindings, {
+    onExcessProperty: "error",
+  })(JSON.parse(bindingsSource));
+  expect(manifest.authentication).toEqual(candidate.authentication);
+  expect(manifest.authentication).toEqual({
+    kind: "oauth",
+    providerRegistration: "google-gmail-rest-v1",
+    providerDefinitionDigest: gmailProviderDefinitionDigest,
+    requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+    credentialDelivery: "short-lived-access-token-only",
+  });
+  expect(Object.keys(manifest.authentication).toSorted()).toEqual([
+    "credentialDelivery",
+    "kind",
+    "providerDefinitionDigest",
+    "providerRegistration",
+    "requestedScopes",
+  ]);
+  expect(bindings.providerDefinition).toEqual({
+    path: "oauth-provider.json",
+    canonicalSha256: gmailProviderDefinitionDigest,
+  });
+  expect(bindings.providerMetadata).toMatchObject({
+    provider: definition.provider,
+    resourceIdentity: definition.resourceIdentity,
+    approvedScopes: definition.scopes,
+  });
+  if (manifest.authentication.kind !== "oauth") throw new Error("gmail-oauth-authentication-lost");
+  expect(manifest.authentication.requestedScopes).toEqual(definition.scopes);
+
+  const recipe = Schema.decodeUnknownSync(Schema.JsonObject)(JSON.parse(recipeSource));
+  const packageFiles = Schema.decodeUnknownSync(GmailBuildRecipe)(recipe).packageFiles;
+  expect(packageFiles.map((entry) => entry.source)).not.toContain(
+    "plugins/gmail/oauth-provider.json",
+  );
+  expect(packageFiles.map((entry) => entry.source)).not.toContain(
+    "plugins/gmail/platform-bindings.json",
+  );
+  expect(packageFiles.slice(1)).toEqual([
+    {
+      source: "plugins/gmail/catalog.json",
+      destination: "catalog.json",
+      sha256: "e808b72a105eafde546b63245238f87906bddcf82e1766f93a7d0ce10882a952",
+    },
+    {
+      source: "plugins/gmail/config.json",
+      destination: "config.json",
+      sha256: "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
+    },
+    {
+      source: "plugins/gmail/provenance.json",
+      destination: "provenance.json",
+      sha256: "d6c90d4f2aaa6f01dd70e21bfea30a7b8cb2243e3be643c7d582eb1a450d34f7",
+    },
+    {
+      source: "plugins/gmail/source/server.mjs",
+      destination: "dist/server.mjs",
+      sha256: "abf9f4748a455d18c94a023fb4fceea129dff711315e1a969096c7021b492cc2",
+    },
+    {
+      source: "plugins/gmail/LICENSE",
+      destination: "LICENSE",
+      sha256: "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091",
+    },
+    {
+      source: "plugins/gmail/NOTICE",
+      destination: "NOTICE",
+      sha256: "bf21a2ce4c597b4a02693c3461e005328c956c5aa7a78e3ff00c831964d98f09",
+    },
+  ]);
 });
 
 it("searches and lists bounded identities without hidden message-body requests", async () => {
@@ -385,6 +614,7 @@ it("keeps public Gmail declarations free of credential values and write authorit
     [
       "plugins/gmail/package-manifest.json",
       "plugins/gmail/candidate.json",
+      "plugins/gmail/oauth-provider.json",
       "plugins/gmail/platform-bindings.json",
       "plugins/gmail/catalog.json",
       "plugins/gmail/config.json",

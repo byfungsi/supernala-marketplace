@@ -1,5 +1,9 @@
 {
   "providerRegistration": "google-gmail-rest-v1",
+  "providerDefinition": {
+    "path": "oauth-provider.json",
+    "canonicalSha256": "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07"
+  },
   "providerMetadata": {
     "provider": "google",
     "resourceIdentity": "gmail.googleapis.com",

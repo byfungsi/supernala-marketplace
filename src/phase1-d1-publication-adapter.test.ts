@@ -125,6 +125,24 @@ class ConfigWinnerRaceTransport extends SQLiteD1Transport {
   }
 }
 
+class BeforeFirstBatchSQLiteD1Transport extends SQLiteD1Transport {
+  #beforeFirstBatch: (() => Promise<void> | void) | undefined;
+
+  constructor(database: DatabaseSync, beforeFirstBatch: () => Promise<void> | void) {
+    super(database);
+    this.#beforeFirstBatch = beforeFirstBatch;
+  }
+
+  override async batch(statements: ReadonlyArray<D1Statement>) {
+    const beforeFirstBatch = this.#beforeFirstBatch;
+    if (beforeFirstBatch !== undefined) {
+      this.#beforeFirstBatch = undefined;
+      await beforeFirstBatch();
+    }
+    return super.batch(statements);
+  }
+}
+
 const candidate = async (
   sourceDirectory = "plugins/offline-fixture",
 ): Promise<IncrementalReleaseCandidate> => {
@@ -316,6 +334,94 @@ const syntheticOAuthDefinitionRow = async (
   revision: 1,
 });
 
+const admitSyntheticOAuthDefinition = (
+  database: DatabaseSync,
+  definition: ReturnType<typeof syntheticOAuthDefinition>,
+  definitionDigest: string,
+): void => {
+  database
+    .prepare(
+      `INSERT INTO plugin_oauth_provider_definitions
+        (provider_definition_digest, schema_version, canonical_definition_json, scopes_json,
+         provider, resource_identity, display_label_path_present, status, revision,
+         admission_operation_id, admitted_by, source_kind, source_repository, source_revision,
+         source_path, source_content_digest, reviewed_at, created_at, updated_at)
+       VALUES (?, 1, ?, ?, 'synthetic-mail', 'mail-api.synthetic.example', 1, 'active', 1,
+               'synthetic-admission', 'synthetic-reviewer', 'marketplace-release',
+               'synthetic/repository', 'synthetic-revision', 'providers/synthetic.json', ?,
+               1, 1, 1)`,
+    )
+    .run(
+      definitionDigest,
+      new TextDecoder().decode(encodePluginOAuthProviderDefinitionCanonicalJson(definition)),
+      '["synthetic.mail.read"]',
+      definitionDigest,
+    );
+};
+
+const admitSyntheticEnvironmentRegistration = (
+  database: DatabaseSync,
+  definitionDigest: string,
+  input: {
+    readonly sourceRevision?: number;
+    readonly materialVersion?: string;
+    readonly declarationId?: string;
+    readonly deploymentRevision?: string;
+    readonly operationId?: string;
+  } = {},
+): void => {
+  if ((input.sourceRevision ?? 1) === 1) {
+    database
+      .prepare(
+        `INSERT INTO provider_registrations
+          (provider_registration_id, provider, resource_identity, registration_mode,
+           callback_url, approved_scopes_json, client_credential_reference, source, status,
+           revision, created_at, updated_at, oauth_provider_definition_digest,
+           oauth_provider_definition_revision, oauth_authority_revision)
+         VALUES ('synthetic-mail-rest-v1', 'synthetic-mail', 'mail-api.synthetic.example',
+                 'platform-pre-registered', 'https://example.invalid/v1/plugins/oauth/callback',
+                 '["synthetic.mail.read"]', NULL, 'platform', 'active', 1, 0, 0, ?, 1, 1)`,
+      )
+      .run(definitionDigest);
+  }
+  const sourceRevision = input.sourceRevision ?? 1;
+  database
+    .prepare(
+      `INSERT INTO plugin_oauth_registration_material_sources
+        (provider_registration_id, source_revision, oauth_authority_revision,
+         provider_definition_digest, provider_definition_revision, source_kind,
+         material_version, declaration_id, token_endpoint_auth_method, deployment_revision,
+         status, attestation_operation_id, attested_by, attested_at, created_at, updated_at)
+       VALUES ('synthetic-mail-rest-v1', ?, 1, ?, 1, 'deployment-environment', ?, ?,
+               'client_secret_post', ?, 'active', ?, 'synthetic-operator', ?, ?, ?)`,
+    )
+    .run(
+      sourceRevision,
+      definitionDigest,
+      input.materialVersion ?? `material-v${sourceRevision}`,
+      input.declarationId ?? `declaration:${sourceRevision}`,
+      input.deploymentRevision ?? `deployment-${sourceRevision}`,
+      input.operationId ?? `source-admission-${sourceRevision}`,
+      sourceRevision,
+      sourceRevision,
+      sourceRevision,
+    );
+};
+
+const retireSyntheticEnvironmentSource = (
+  database: DatabaseSync,
+  sourceRevision: number,
+  retiredAt: number,
+): void => {
+  database
+    .prepare(
+      `UPDATE plugin_oauth_registration_material_sources
+       SET status = 'retired', updated_at = ?, retired_at = ?, retirement_reason = ?
+       WHERE provider_registration_id = 'synthetic-mail-rest-v1' AND source_revision = ?`,
+    )
+    .run(retiredAt, retiredAt, `synthetic-retirement-${sourceRevision}`, sourceRevision);
+};
+
 const createSyntheticOAuthPackageSource = async (
   root: string,
   definitionDigest: string,
@@ -367,8 +473,12 @@ const exactMigrationDigest = "5d834a38ff1fe278e0225ffe16c2c4f03d335cf0a1511fe67e
 const exactOAuthMigrationFile = "fixtures/sql/phase1-0044-plugin-oauth-publication-authority.sql";
 const exactOAuthMigrationDigest =
   "41b1a35768cba4aa334b69889051e8d6b6f6b2ff4b10c01b7cb632ad43fe3448";
+const exactOAuthEnvironmentMigrationFile =
+  "fixtures/sql/phase1-0047-plugin-oauth-environment-registration-authority.sql";
+const exactOAuthEnvironmentMigrationDigest =
+  "f9ff731250e5ce76958bdb8b111e11468cb9d6a88715b2de0e51128b55bc6f0e";
 
-const applicationDatabase = async (): Promise<DatabaseSync> => {
+const applicationDatabaseThroughOAuthPublication = async (): Promise<DatabaseSync> => {
   const migration = await readFile(exactMigrationFile);
   const oauthMigration = await readFile(exactOAuthMigrationFile);
   expect(createHash("sha256").update(migration).digest("hex")).toBe(exactMigrationDigest);
@@ -377,6 +487,35 @@ const applicationDatabase = async (): Promise<DatabaseSync> => {
   database.exec("PRAGMA foreign_keys = ON");
   database.exec(migration.toString("utf8"));
   database.exec(oauthMigration.toString("utf8"));
+  return database;
+};
+
+const applyOAuthEnvironmentMigration = async (database: DatabaseSync): Promise<void> => {
+  const migration = await readFile(exactOAuthEnvironmentMigrationFile);
+  expect(createHash("sha256").update(migration).digest("hex")).toBe(
+    exactOAuthEnvironmentMigrationDigest,
+  );
+  expect(migration.byteLength).toBe(23_408);
+  // The portable 0042 fixture intentionally omits App-owned identity tables, but SQLite reparses
+  // every retained trigger while 0047 rebuilds provider_registrations.
+  database.exec(
+    `CREATE TABLE workspace_memberships
+      (workspace_id TEXT NOT NULL, user_id TEXT NOT NULL, role TEXT NOT NULL, status TEXT NOT NULL)`,
+  );
+  database.exec("BEGIN IMMEDIATE");
+  try {
+    database.exec(migration.toString("utf8"));
+    database.exec("COMMIT");
+  } catch (cause) {
+    database.exec("ROLLBACK");
+    throw cause;
+  }
+  expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+};
+
+const applicationDatabase = async (): Promise<DatabaseSync> => {
+  const database = await applicationDatabaseThroughOAuthPublication();
+  await applyOAuthEnvironmentMigration(database);
   return database;
 };
 
@@ -501,6 +640,13 @@ it("keeps every D1 statement within 100 binds for larger exact catalogs", async 
     expect(
       Math.max(...transport.batches.flatMap((batch) => batch.map((entry) => entry.params.length))),
     ).toBeLessThanOrEqual(100);
+    expect(
+      Math.max(
+        ...transport.batches.flatMap((batch) =>
+          batch.map((entry) => new TextEncoder().encode(entry.sql).byteLength),
+        ),
+      ),
+    ).toBeLessThanOrEqual(100_000);
     expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
     database
       .prepare(
@@ -947,45 +1093,19 @@ it("persists exact generic OAuth definition and semantic registration authority"
     expect(await adapter.stage(release)).toEqual(
       Result.fail("application-provider-verification-failed"),
     );
-    database
-      .prepare(
-        `INSERT INTO plugin_oauth_provider_definitions
-          (provider_definition_digest, schema_version, canonical_definition_json, scopes_json,
-           provider, resource_identity, display_label_path_present, status, revision,
-           admission_operation_id, admitted_by, source_kind, source_repository, source_revision,
-           source_path, source_content_digest, reviewed_at, created_at, updated_at)
-         VALUES (?, 1, ?, ?, 'synthetic-mail', 'mail-api.synthetic.example', 1, 'active', 1,
-                 'synthetic-admission', 'synthetic-reviewer', 'marketplace-release',
-                 'synthetic/repository', 'synthetic-revision', 'providers/synthetic.json', ?,
-                 1, 1, 1)`,
-      )
-      .run(
-        definitionDigest,
-        new TextDecoder().decode(encodePluginOAuthProviderDefinitionCanonicalJson(definition)),
-        '["synthetic.mail.read"]',
-        definitionDigest,
-      );
-    database
-      .prepare(
-        `INSERT INTO provider_registrations
-          (provider_registration_id, provider, resource_identity, registration_mode,
-           callback_url, approved_scopes_json, client_credential_reference, source, status,
-            revision, created_at, updated_at, oauth_provider_definition_digest,
-            oauth_provider_definition_revision, oauth_authority_revision)
-          VALUES ('synthetic-mail-rest-v1', 'synthetic-mail', 'mail-api.synthetic.example',
-                  'platform-pre-registered', 'https://example.invalid/v1/plugins/oauth/callback',
-                  '["synthetic.mail.read"]', 'private-reference', 'platform', 'active', 1, 0, 0,
-                  ?, 1, 1)`,
-      )
-      .run(definitionDigest);
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
     expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
     expect(
       database
         .prepare(
-          `SELECT authentication_kind, provider_registration_id, requested_scopes_json,
+          `SELECT v.authentication_kind, v.provider_registration_id, v.requested_scopes_json,
                   provider_registration_authority_revision, provider_definition_digest,
-                  provider_definition_revision
-           FROM plugin_versions WHERE plugin_version_id = ?`,
+                  provider_definition_revision,
+                  i.provider_registration_material_source_revision
+           FROM plugin_versions v
+           JOIN plugin_publication_intents i ON i.plugin_version_id = v.plugin_version_id
+           WHERE v.plugin_version_id = ?`,
         )
         .get(release.version.id),
     ).toMatchObject({
@@ -995,6 +1115,7 @@ it("persists exact generic OAuth definition and semantic registration authority"
       provider_registration_authority_revision: 1,
       provider_definition_digest: definitionDigest,
       provider_definition_revision: 1,
+      provider_registration_material_source_revision: 1,
     });
     expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
     expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
@@ -1007,7 +1128,539 @@ it("persists exact generic OAuth definition and semantic registration authority"
          WHERE provider_definition_digest = ?`,
       )
       .run(definitionDigest);
+    expect(
+      database
+        .prepare(
+          `SELECT d.status AS definition_status, d.revision AS definition_revision,
+                  s.status AS source_status, s.provider_definition_revision,
+                  s.retirement_reason
+           FROM plugin_oauth_provider_definitions d
+           JOIN plugin_oauth_registration_material_sources s
+             ON s.provider_definition_digest = d.provider_definition_digest
+           WHERE d.provider_definition_digest = ?`,
+        )
+        .get(definitionDigest),
+    ).toMatchObject({
+      definition_status: "revoked",
+      definition_revision: 2,
+      source_status: "retired",
+      provider_definition_revision: 1,
+      retirement_reason: "provider-definition-revoked",
+    });
+    expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
     expect(await adapter.readPublished(release)).toEqual(Result.succeed(false));
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("enforces environment registration shape, source authority, retention, and legacy DCR", async () => {
+  const definition = syntheticOAuthDefinition();
+  const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+  const database = await applicationDatabase();
+  admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+
+  expect(() =>
+    database
+      .prepare(
+        `INSERT INTO provider_registrations
+          (provider_registration_id, provider, resource_identity, registration_mode,
+           callback_url, approved_scopes_json, source, status, revision, created_at, updated_at,
+           oauth_provider_definition_digest)
+         VALUES ('synthetic-partial', 'synthetic-mail', 'mail-api.synthetic.example',
+                 'platform-pre-registered', 'https://example.invalid/callback',
+                 '["synthetic.mail.read"]', 'platform', 'active', 1, 0, 0, ?)`,
+      )
+      .run(definitionDigest),
+  ).toThrow();
+  expect(() =>
+    database
+      .prepare(
+        `INSERT INTO provider_registrations
+          (provider_registration_id, provider, resource_identity, registration_mode,
+           callback_url, approved_scopes_json, client_credential_reference, source, status,
+           revision, created_at, updated_at, oauth_provider_definition_digest,
+           oauth_provider_definition_revision, oauth_authority_revision)
+         VALUES ('synthetic-fake-reference', 'synthetic-mail', 'mail-api.synthetic.example',
+                 'platform-pre-registered', 'https://example.invalid/callback',
+                 '["synthetic.mail.read"]', 'plugin-vault:fake', 'platform', 'active', 1, 0, 0,
+                 ?, 1, 1)`,
+      )
+      .run(definitionDigest),
+  ).toThrow();
+
+  admitSyntheticEnvironmentRegistration(database, definitionDigest);
+  expect(() =>
+    database
+      .prepare(
+        `INSERT INTO plugin_oauth_registration_material_sources
+          (provider_registration_id, source_revision, oauth_authority_revision,
+           provider_definition_digest, provider_definition_revision, source_kind,
+           material_version, declaration_id, token_endpoint_auth_method, deployment_revision,
+           status, attestation_operation_id, attested_by, attested_at, created_at, updated_at)
+         VALUES ('synthetic-mail-rest-v1', 2, 1, ?, 1, 'deployment-environment',
+                 'material-v2', 'declaration:2', 'client_secret_basic', 'deployment-2',
+                 'active', 'source-admission-2', 'synthetic-operator', 2, 2, 2)`,
+      )
+      .run(definitionDigest),
+  ).toThrow();
+  expect(() =>
+    database
+      .prepare(
+        `UPDATE plugin_oauth_registration_material_sources
+         SET material_version = 'mutated-version'
+         WHERE provider_registration_id = 'synthetic-mail-rest-v1' AND source_revision = 1`,
+      )
+      .run(),
+  ).toThrow();
+  expect(() =>
+    database
+      .prepare(
+        `DELETE FROM plugin_oauth_registration_material_sources
+         WHERE provider_registration_id = 'synthetic-mail-rest-v1' AND source_revision = 1`,
+      )
+      .run(),
+  ).toThrow();
+
+  database
+    .prepare(
+      `INSERT INTO provider_registrations
+        (provider_registration_id, provider, resource_identity, registration_mode,
+         authorization_metadata_url, callback_url, approved_scopes_json, source, status,
+         revision, created_at, updated_at)
+       VALUES ('synthetic-dcr', 'synthetic-dcr', 'synthetic-resource', 'dynamic',
+               'https://identity.synthetic.example/.well-known/oauth-authorization-server',
+               'https://example.invalid/callback', '[]', 'platform', 'active', 1, 0, 0)`,
+    )
+    .run();
+  expect(
+    database
+      .prepare(
+        `SELECT registration_mode, client_credential_reference,
+                oauth_provider_definition_digest
+         FROM provider_registrations WHERE provider_registration_id = 'synthetic-dcr'`,
+      )
+      .get(),
+  ).toMatchObject({
+    registration_mode: "dynamic",
+    client_credential_reference: null,
+    oauth_provider_definition_digest: null,
+  });
+  expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+  database.close();
+});
+
+it("pins finalize to the staged source while current metadata follows active rotation", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-rotation-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    admitSyntheticEnvironmentRegistration(database, definitionDigest, { sourceRevision: 2 });
+    expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+    expect(
+      database
+        .prepare(
+          `SELECT provider_registration_material_source_revision
+           FROM plugin_publication_intents WHERE plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({ provider_registration_material_source_revision: 1 });
+
+    retireSyntheticEnvironmentSource(database, 1, 3);
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+    expect(
+      database
+        .prepare(
+          `SELECT source_revision, status FROM plugin_oauth_registration_material_sources
+           WHERE provider_registration_id = 'synthetic-mail-rest-v1'
+           ORDER BY source_revision`,
+        )
+        .all(),
+    ).toEqual([
+      { source_revision: 1, status: "retired" },
+      { source_revision: 2, status: "active" },
+    ]);
+
+    retireSyntheticEnvironmentSource(database, 2, 4);
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(false));
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("rejects finalize when the staged source retires without adopting a newer source", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-retired-stage-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    retireSyntheticEnvironmentSource(database, 1, 2);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest, { sourceRevision: 2 });
+    expect(await adapter.finalize(release)).toEqual(
+      Result.fail("application-provider-verification-failed"),
+    );
+    expect(
+      database
+        .prepare(
+          `SELECT v.status, a.status AS artifact_status, i.status AS intent_status,
+                  i.provider_registration_material_source_revision
+           FROM plugin_versions v
+           JOIN plugin_artifacts a ON a.artifact_digest = v.artifact_digest
+           JOIN plugin_publication_intents i ON i.plugin_version_id = v.plugin_version_id
+           WHERE v.plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({
+      status: "publishing",
+      artifact_status: "pending",
+      intent_status: "pending",
+      provider_registration_material_source_revision: 1,
+    });
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("terminalizes active sources when registration authority is revoked", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-parent-terminal-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    database
+      .prepare(
+        `UPDATE provider_registrations
+         SET status = 'revoked', oauth_authority_revision = 2, updated_at = 2
+         WHERE provider_registration_id = 'synthetic-mail-rest-v1'`,
+      )
+      .run();
+    expect(
+      database
+        .prepare(
+          `SELECT status, retirement_reason, oauth_authority_revision,
+                  provider_definition_revision
+           FROM plugin_oauth_registration_material_sources
+           WHERE provider_registration_id = 'synthetic-mail-rest-v1' AND source_revision = 1`,
+        )
+        .get(),
+    ).toMatchObject({
+      status: "retired",
+      retirement_reason: "parent-authority-terminalized",
+      oauth_authority_revision: 1,
+      provider_definition_revision: 1,
+    });
+    expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+    expect(await adapter.finalize(release)).toEqual(
+      Result.fail("application-provider-verification-failed"),
+    );
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(false));
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("reuses the invocation source across a Config winner retry", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-config-race-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const transport = new BeforeFirstBatchSQLiteD1Transport(database, () => {
+      database
+        .prepare(
+          `INSERT INTO plugin_config_schemas
+            (config_schema_id, schema_digest, revision, fields_json, created_at)
+           VALUES ('legacy:oauth-concurrent-winner', ?, ?, ?, 0)`,
+        )
+        .run(
+          release.configDigest,
+          release.version.config.revision,
+          canonicalPluginJson(release.version.config.fields),
+        );
+      admitSyntheticEnvironmentRegistration(database, definitionDigest, { sourceRevision: 2 });
+    });
+    const adapter = new Phase1D1PublicationAdapter(transport);
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    expect(
+      database
+        .prepare(
+          `SELECT v.config_schema_id, i.provider_registration_material_source_revision
+           FROM plugin_versions v
+           JOIN plugin_publication_intents i ON i.plugin_version_id = v.plugin_version_id
+           WHERE v.plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({
+      config_schema_id: "legacy:oauth-concurrent-winner",
+      provider_registration_material_source_revision: 1,
+    });
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("rejects a Config-retry winner whose intent persisted a different source", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-config-authority-race-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const transport = new BeforeFirstBatchSQLiteD1Transport(database, async () => {
+      database
+        .prepare(
+          `INSERT INTO plugin_config_schemas
+            (config_schema_id, schema_digest, revision, fields_json, created_at)
+           VALUES ('legacy:oauth-authority-winner', ?, ?, ?, 0)`,
+        )
+        .run(
+          release.configDigest,
+          release.version.config.revision,
+          canonicalPluginJson(release.version.config.fields),
+        );
+      admitSyntheticEnvironmentRegistration(database, definitionDigest, { sourceRevision: 2 });
+      const winner = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+      expect(await winner.stage(release)).toEqual(Result.succeed(undefined));
+    });
+    const adapter = new Phase1D1PublicationAdapter(transport);
+
+    expect(await adapter.stage(release)).toEqual(Result.fail("immutable-version-conflict"));
+    expect(
+      database
+        .prepare(
+          `SELECT provider_registration_material_source_revision
+           FROM plugin_publication_intents WHERE plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({ provider_registration_material_source_revision: 2 });
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("rolls back stage when the resolved source retires before its guarded batch", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-source-race-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const adapter = new Phase1D1PublicationAdapter(
+      new BeforeFirstBatchSQLiteD1Transport(database, () => {
+        retireSyntheticEnvironmentSource(database, 1, 2);
+      }),
+    );
+
+    expect(await adapter.stage(release)).toEqual(Result.fail("application-stage-failed"));
+    expect(database.prepare("SELECT COUNT(*) AS count FROM plugin_versions").get()).toMatchObject({
+      count: 0,
+    });
+    expect(database.prepare("SELECT COUNT(*) AS count FROM plugin_artifacts").get()).toMatchObject({
+      count: 0,
+    });
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("reads retained published generic history but refuses legacy stage and finalize", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-legacy-history-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    if (release.version.runtime.kind !== "managed-package") {
+      throw new Error("test-managed-package-required");
+    }
+    const runtime = release.version.runtime;
+    const database = await applicationDatabaseThroughOAuthPublication();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    database
+      .prepare(
+        `INSERT INTO provider_registrations
+          (provider_registration_id, provider, resource_identity, registration_mode,
+           callback_url, approved_scopes_json, client_credential_reference, source, status,
+           revision, created_at, updated_at, oauth_provider_definition_digest,
+           oauth_provider_definition_revision, oauth_authority_revision)
+         VALUES ('synthetic-mail-rest-v1', 'synthetic-mail', 'mail-api.synthetic.example',
+                 'platform-pre-registered', 'https://example.invalid/v1/plugins/oauth/callback',
+                 '["synthetic.mail.read"]', 'retained-private-reference', 'platform', 'active',
+                 1, 0, 0, ?, 1, 1)`,
+      )
+      .run(definitionDigest);
+    database
+      .prepare(
+        `INSERT INTO plugin_definitions
+          (plugin_definition_id, marketplace_id, publisher_namespace, plugin_slug, name,
+           short_description, long_description, categories_json, publisher_trust, status,
+           created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, '[]', 'supernala-curated', 'active', 1, 1)`,
+      )
+      .run(
+        release.definitionId,
+        release.version.marketplaceId,
+        release.version.publisherNamespace,
+        release.version.pluginSlug,
+        release.version.name,
+        release.version.description.slice(0, 500),
+        release.version.description,
+      );
+    database
+      .prepare(
+        `INSERT INTO plugin_artifacts
+          (artifact_digest, object_key, byte_size, status, verified_at, created_at)
+         VALUES (?, ?, ?, 'available', 1, 1)`,
+      )
+      .run(
+        runtime.artifactDigest,
+        `plugin-packages/sha256/${runtime.artifactDigest.slice(0, 2)}/${runtime.artifactDigest}.plugin`,
+        release.artifactByteLength,
+      );
+    database
+      .prepare(
+        `INSERT INTO plugin_catalog_snapshots
+          (catalog_snapshot_id, catalog_digest, schema_version, created_at)
+         VALUES (?, ?, 1, 1)`,
+      )
+      .run(release.version.catalog.id, release.catalogDigest);
+    for (const [ordinal, tool] of release.version.catalog.tools.entries()) {
+      database
+        .prepare(
+          `INSERT INTO plugin_catalog_tools
+            (catalog_snapshot_id, tool_id, ordinal, mcp_name, title, description,
+             classification, default_policy, input_schema_json, maximum_output_bytes)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+          release.version.catalog.id,
+          tool.id,
+          ordinal,
+          tool.mcpName,
+          tool.title,
+          tool.description,
+          tool.classification,
+          tool.defaultPolicy,
+          JSON.stringify(tool.inputSchema),
+          tool.maximumOutputBytes,
+        );
+    }
+    const configId = `config:sha256:${release.configDigest}`;
+    database
+      .prepare(
+        `INSERT INTO plugin_config_schemas
+          (config_schema_id, schema_digest, revision, fields_json, created_at)
+         VALUES (?, ?, ?, ?, 1)`,
+      )
+      .run(
+        configId,
+        release.configDigest,
+        release.version.config.revision,
+        canonicalPluginJson(release.version.config.fields),
+      );
+    database
+      .prepare(
+        `INSERT INTO plugin_versions
+          (plugin_version_id, plugin_definition_id, semantic_version, manifest_digest,
+           catalog_snapshot_id, config_schema_id, runtime_kind, artifact_digest,
+           package_entrypoint, package_node_version, provider_registration_id,
+           authentication_kind, requested_scopes_json, allowed_hosts_json, license,
+           provenance_json, release_date, status, review_status, published_at, created_at,
+           provider_registration_authority_revision, provider_definition_digest,
+           provider_definition_revision)
+         VALUES (?, ?, ?, ?, ?, ?, 'managed-package', ?, ?, '22.x',
+                 'synthetic-mail-rest-v1', 'oauth', '["synthetic.mail.read"]', ?, ?, ?, ?,
+                 'published', 'approved', ?, ?, 1, ?, 1)`,
+      )
+      .run(
+        release.version.id,
+        release.definitionId,
+        release.version.version,
+        runtime.manifestDigest,
+        release.version.catalog.id,
+        configId,
+        runtime.artifactDigest,
+        runtime.entrypoint,
+        JSON.stringify(release.version.allowedHosts),
+        release.version.license,
+        canonicalPluginJson(release.provenance),
+        release.version.publishedAt,
+        release.version.publishedAt,
+        release.reviewedAt,
+        definitionDigest,
+      );
+    database
+      .prepare(
+        `INSERT INTO plugin_publication_intents
+          (publication_intent_id, plugin_version_id, artifact_digest, status, attempts,
+           available_at, last_failure_reason, created_at, updated_at)
+         VALUES (?, ?, ?, 'published', 1, 1, NULL, 1, 1)`,
+      )
+      .run(`${release.version.id}:publication`, release.version.id, runtime.artifactDigest);
+
+    await applyOAuthEnvironmentMigration(database);
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+    expect(await adapter.readPublicationState(release)).toEqual(Result.succeed("published"));
+    expect(await adapter.stage(release)).toEqual(Result.fail("immutable-version-conflict"));
+    expect(await adapter.finalize(release)).toEqual(
+      Result.fail("application-provider-verification-failed"),
+    );
+    expect(
+      database
+        .prepare(
+          `SELECT provider_registration_material_source_revision
+           FROM plugin_publication_intents WHERE plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({ provider_registration_material_source_revision: null });
     database.close();
   } finally {
     await rm(root, { recursive: true });
@@ -1099,24 +1752,11 @@ it("validates canonical OAuth definitions before registration lookup", async () 
   expect(extractedMismatch.transport.queries).toHaveLength(2);
 });
 
-it("requires client material existence without projecting its opaque reference", async () => {
+it("requires an exact environment source receipt without projecting credential values", async () => {
   const definition = syntheticOAuthDefinition();
   const digest = await digestPluginOAuthProviderDefinition(definition);
   const definitionRow = await syntheticOAuthDefinitionRow(definition);
-  const registrationRow = {
-    provider_registration_id: "synthetic-mail-rest-v1",
-    provider: definition.provider,
-    resource_identity: definition.resourceIdentity,
-    registration_mode: "platform-pre-registered",
-    approved_scopes_json: '["synthetic.mail.read"]',
-    source: "platform",
-    status: "active",
-    oauth_provider_definition_digest: digest,
-    oauth_provider_definition_revision: 1,
-    oauth_authority_revision: 1,
-    client_authority_present: 0,
-  };
-  const transport = new SequencedQueryTransport([[], [definitionRow], [registrationRow]]);
+  const transport = new SequencedQueryTransport([[], [definitionRow], []]);
   const adapter = new Phase1D1PublicationAdapter(transport);
   expect(
     await adapter.stage({
@@ -1128,6 +1768,47 @@ it("requires client material existence without projecting its opaque reference",
   expect(transport.queries.map((query) => query.sql).join("\n")).not.toContain(
     "client_credential_reference,",
   );
+  expect(transport.queries.map((query) => query.sql).join("\n")).not.toContain("material_value");
+});
+
+it("rejects malformed or definition-mismatched environment source projections", async () => {
+  const definition = syntheticOAuthDefinition();
+  const digest = await digestPluginOAuthProviderDefinition(definition);
+  const definitionRow = await syntheticOAuthDefinitionRow(definition);
+  const exactRegistrationRow = {
+    provider_registration_id: "synthetic-mail-rest-v1",
+    provider: definition.provider,
+    resource_identity: definition.resourceIdentity,
+    registration_mode: "platform-pre-registered",
+    approved_scopes_json: '["synthetic.mail.read"]',
+    source: "platform",
+    status: "active",
+    oauth_provider_definition_digest: digest,
+    oauth_provider_definition_revision: 1,
+    oauth_authority_revision: 1,
+    source_revision: 1,
+    source_kind: "deployment-environment",
+    material_version: "material-v1",
+    declaration_id: "declaration:1",
+    token_endpoint_auth_method: "client_secret_post",
+    deployment_revision: "deployment-1",
+  } as const;
+  for (const registrationRow of [
+    { ...exactRegistrationRow, material_version: "invalid version" },
+    { ...exactRegistrationRow, token_endpoint_auth_method: "client_secret_basic" },
+    { ...exactRegistrationRow, approved_scopes_json: '["synthetic.mail.write"]' },
+    { ...exactRegistrationRow, oauth_provider_definition_digest: "f".repeat(64) },
+  ]) {
+    const transport = new SequencedQueryTransport([[], [definitionRow], [registrationRow]]);
+    const adapter = new Phase1D1PublicationAdapter(transport);
+    expect(
+      await adapter.stage({
+        ...(await candidate()),
+        authentication: syntheticOAuthAuthentication(digest),
+      }),
+    ).toEqual(Result.fail("application-provider-verification-failed"));
+    expect(transport.batchCalls).toBe(0);
+  }
 });
 
 it("retries once against an exact concurrent alternate-ID Config winner", async () => {

@@ -10,6 +10,7 @@
   "authentication": {
     "kind": "oauth",
     "providerRegistration": "google-gmail-rest-v1",
+    "providerDefinitionDigest": "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
     "requestedScopes": ["https://www.googleapis.com/auth/gmail.readonly"],
     "credentialDelivery": "short-lived-access-token-only"
   },

@@ -47,12 +47,22 @@ interface ResolvedPublicationAuthentication {
   readonly providerRegistrationAuthorityRevision: number | null;
   readonly providerDefinitionDigest: typeof PluginSha256.Type | null;
   readonly providerDefinitionRevision: number | null;
+  readonly materialSource: ResolvedOAuthMaterialSource | null;
+}
+
+interface ResolvedOAuthMaterialSource {
+  readonly sourceRevision: number;
+  readonly materialVersion: string;
+  readonly declarationId: string;
+  readonly deploymentRevision: string;
+  readonly tokenEndpointAuthMethod: "client_secret_post" | "client_secret_basic" | "none";
 }
 
 const noGenericOAuthAuthority: ResolvedPublicationAuthentication = {
   providerRegistrationAuthorityRevision: null,
   providerDefinitionDigest: null,
   providerDefinitionRevision: null,
+  materialSource: null,
 };
 
 const OAuthDefinitionPublicationRow = Schema.Struct({
@@ -67,7 +77,9 @@ const OAuthDefinitionPublicationRow = Schema.Struct({
   revision: Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(1))),
 });
 
-const OAuthRegistrationPublicationRow = Schema.Struct({
+const PositiveRevision = Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(1)));
+
+const OAuthRegistrationSemanticRowFields = {
   provider_registration_id: Schema.NonEmptyString,
   provider: Schema.String,
   resource_identity: Schema.String,
@@ -76,10 +88,46 @@ const OAuthRegistrationPublicationRow = Schema.Struct({
   source: Schema.Literal("platform"),
   status: Schema.Literal("active"),
   oauth_provider_definition_digest: PluginSha256,
-  oauth_provider_definition_revision: Schema.Int.pipe(
-    Schema.check(Schema.isGreaterThanOrEqualTo(1)),
+  oauth_provider_definition_revision: PositiveRevision,
+  oauth_authority_revision: PositiveRevision,
+} as const;
+
+const OAuthEnvironmentRegistrationPublicationRow = Schema.Struct({
+  ...OAuthRegistrationSemanticRowFields,
+  source_revision: PositiveRevision,
+  source_kind: Schema.Literal("deployment-environment"),
+  material_version: Schema.String.pipe(
+    Schema.check(Schema.isPattern(/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/u)),
   ),
-  oauth_authority_revision: Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(1))),
+  declaration_id: Schema.String.pipe(
+    Schema.check(Schema.isPattern(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,159}$/u)),
+  ),
+  token_endpoint_auth_method: Schema.Literals([
+    "client_secret_post",
+    "client_secret_basic",
+    "none",
+  ]),
+  deployment_revision: Schema.String.pipe(
+    Schema.check(Schema.isMinLength(1)),
+    Schema.check(Schema.isMaxLength(200)),
+  ),
+});
+
+const OAuthPublishedEnvironmentRegistrationRow = Schema.Struct({
+  ...OAuthRegistrationSemanticRowFields,
+  source_revision: PositiveRevision,
+  source_kind: Schema.Literal("deployment-environment"),
+  material_version: OAuthEnvironmentRegistrationPublicationRow.fields.material_version,
+  declaration_id: OAuthEnvironmentRegistrationPublicationRow.fields.declaration_id,
+  token_endpoint_auth_method:
+    OAuthEnvironmentRegistrationPublicationRow.fields.token_endpoint_auth_method,
+  deployment_revision: OAuthEnvironmentRegistrationPublicationRow.fields.deployment_revision,
+  historical_source_status: Schema.Literals(["active", "retired"]),
+  current_source_available: Schema.Literal(1),
+});
+
+const OAuthLegacyRegistrationPublicationRow = Schema.Struct({
+  ...OAuthRegistrationSemanticRowFields,
   client_authority_present: Schema.Literal(1),
 });
 
@@ -263,9 +311,10 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
       {
         sql: `INSERT INTO plugin_publication_intents
           (publication_intent_id, plugin_version_id, artifact_digest, status, attempts,
-           available_at, last_failure_reason, created_at, updated_at)
-          VALUES (?, ?, ?, 'pending', 0, ?, NULL, ?, ?)
-          ON CONFLICT (publication_intent_id) DO NOTHING`,
+            available_at, last_failure_reason, created_at, updated_at,
+            provider_registration_material_source_revision)
+           VALUES (?, ?, ?, 'pending', 0, ?, NULL, ?, ?, ?)
+           ON CONFLICT (publication_intent_id) DO NOTHING`,
         params: [
           intentId,
           version.id,
@@ -273,6 +322,7 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
           candidate.reviewedAt,
           candidate.reviewedAt,
           candidate.reviewedAt,
+          authentication.success.materialSource?.sourceRevision ?? null,
         ],
       },
       failBatchGuard(
@@ -293,8 +343,9 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
               AND v.allowed_hosts_json = ?
             AND v.license = ? AND v.provenance_json = ? AND v.release_date = ?
             AND v.review_status = 'approved' AND v.status IN ('publishing', 'published')
-            AND a.object_key = ? AND a.byte_size = ? AND a.status IN ('pending', 'available')
-            AND i.status IN ('pending', 'artifact-verified', 'published')
+             AND a.object_key = ? AND a.byte_size = ? AND a.status IN ('pending', 'available')
+             AND i.status IN ('pending', 'artifact-verified', 'published')
+             AND i.provider_registration_material_source_revision IS ?
             AND EXISTS (SELECT 1 FROM plugin_definitions d
              WHERE d.plugin_definition_id = v.plugin_definition_id
                AND d.marketplace_id = ? AND d.publisher_namespace = ? AND d.plugin_slug = ?
@@ -308,23 +359,41 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
            AND EXISTS (SELECT 1 FROM plugin_config_schemas s
               WHERE s.config_schema_id = v.config_schema_id
                 AND s.schema_digest = ? AND s.revision = ? AND s.fields_json = ?)
-             AND (? = 'none' OR EXISTS (SELECT 1 FROM provider_registrations p
-               WHERE p.provider_registration_id = v.provider_registration_id
-                 AND p.registration_mode = 'platform-pre-registered'
-                 AND p.approved_scopes_json = ? AND p.source = 'platform' AND p.status = 'active'
-                 AND length(p.client_credential_reference) > 0
-                 AND ((? = 'github-app' AND p.oauth_provider_definition_digest IS NULL)
-                   OR (? = 'oauth'
-                     AND p.oauth_authority_revision = v.provider_registration_authority_revision
-                     AND p.oauth_provider_definition_digest = v.provider_definition_digest
-                     AND p.oauth_provider_definition_revision = v.provider_definition_revision
-                     AND EXISTS (SELECT 1 FROM plugin_oauth_provider_definitions od
-                       WHERE od.provider_definition_digest = v.provider_definition_digest
-                         AND od.revision = v.provider_definition_revision
-                         AND od.status = 'active' AND od.provider = p.provider
-                         AND od.resource_identity = p.resource_identity
-                         AND od.scopes_json = v.requested_scopes_json
-                         AND od.display_label_path_present = 1)))))
+              AND (? = 'none'
+                OR (? = 'github-app' AND EXISTS (SELECT 1 FROM provider_registrations p
+                  WHERE p.provider_registration_id = v.provider_registration_id
+                    AND p.registration_mode = 'platform-pre-registered'
+                    AND p.approved_scopes_json = ? AND p.source = 'platform'
+                    AND p.status = 'active' AND length(p.client_credential_reference) > 0
+                    AND p.oauth_provider_definition_digest IS NULL))
+                OR (? = 'oauth' AND EXISTS (
+                  SELECT 1 FROM provider_registrations p
+                  JOIN plugin_oauth_registration_material_sources ms
+                    ON ms.provider_registration_id = p.provider_registration_id
+                   AND ms.oauth_authority_revision = p.oauth_authority_revision
+                   AND ms.provider_definition_digest = p.oauth_provider_definition_digest
+                   AND ms.provider_definition_revision = p.oauth_provider_definition_revision
+                  JOIN plugin_oauth_provider_definitions od
+                    ON od.provider_definition_digest = p.oauth_provider_definition_digest
+                   AND od.revision = p.oauth_provider_definition_revision
+                  WHERE p.provider_registration_id = v.provider_registration_id
+                    AND p.registration_mode = 'platform-pre-registered'
+                    AND p.approved_scopes_json = ? AND p.source = 'platform'
+                    AND p.status = 'active' AND p.client_credential_reference IS NULL
+                    AND p.oauth_authority_revision = v.provider_registration_authority_revision
+                    AND p.oauth_provider_definition_digest = v.provider_definition_digest
+                    AND p.oauth_provider_definition_revision = v.provider_definition_revision
+                    AND ms.source_revision = i.provider_registration_material_source_revision
+                    AND ms.source_revision IS ? AND ms.source_kind = 'deployment-environment'
+                    AND ms.status = 'active' AND ms.material_version IS ?
+                    AND ms.declaration_id IS ? AND ms.deployment_revision IS ?
+                    AND ms.token_endpoint_auth_method IS ?
+                    AND od.status = 'active' AND od.provider = p.provider
+                    AND od.resource_identity = p.resource_identity
+                    AND od.scopes_json = v.requested_scopes_json
+                    AND od.display_label_path_present = 1
+                    AND json_extract(od.canonical_definition_json, '$.tokenEndpointAuthMethod')
+                          = ms.token_endpoint_auth_method)))
            AND (SELECT COUNT(*) FROM plugin_catalog_tools t
                 WHERE t.catalog_snapshot_id = v.catalog_snapshot_id) = ?`,
         [
@@ -349,6 +418,7 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
           version.publishedAt,
           objectKey,
           candidate.artifactByteLength ?? 0,
+          authentication.success.materialSource?.sourceRevision ?? null,
           version.marketplaceId,
           version.publisherNamespace,
           version.pluginSlug,
@@ -360,9 +430,15 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
           version.config.revision,
           configIdentity.success.fieldsJson,
           candidate.authentication.kind,
+          candidate.authentication.kind,
           authenticationRequestedScopesJson(candidate.authentication),
           candidate.authentication.kind,
-          candidate.authentication.kind,
+          authenticationRequestedScopesJson(candidate.authentication),
+          authentication.success.materialSource?.sourceRevision ?? null,
+          authentication.success.materialSource?.materialVersion ?? null,
+          authentication.success.materialSource?.declarationId ?? null,
+          authentication.success.materialSource?.deploymentRevision ?? null,
+          authentication.success.materialSource?.tokenEndpointAuthMethod ?? null,
           version.catalog.tools.length,
         ],
       ),
@@ -418,6 +494,7 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
     const authentication = await this.#verifyPersistedPublicationAuthentication(
       existing.success,
       candidate.authentication,
+      false,
     );
     if (Result.isFailure(authentication)) return Result.fail(authentication.failure);
     const configIdentity = await this.#resolveConfigIdentity(candidate);
@@ -456,10 +533,11 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
                       AND d.status = 'active' AND m.status = 'active')
                 AND EXISTS (SELECT 1 FROM plugin_artifacts a
                   WHERE a.artifact_digest = plugin_versions.artifact_digest AND a.status = 'available')
-                AND EXISTS (SELECT 1 FROM plugin_publication_intents i
-                  WHERE i.publication_intent_id = ? AND i.plugin_version_id = plugin_versions.plugin_version_id
-                    AND i.artifact_digest = plugin_versions.artifact_digest
-                    AND i.status = 'artifact-verified')`,
+                 AND EXISTS (SELECT 1 FROM plugin_publication_intents i
+                   WHERE i.publication_intent_id = ? AND i.plugin_version_id = plugin_versions.plugin_version_id
+                     AND i.artifact_digest = plugin_versions.artifact_digest
+                     AND i.provider_registration_material_source_revision IS ?
+                     AND i.status = 'artifact-verified')`,
         params: [
           version.publishedAt,
           version.id,
@@ -475,6 +553,7 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
           version.config.revision,
           configIdentity.success.fieldsJson,
           intentId,
+          authentication.success.materialSource?.sourceRevision ?? null,
         ],
       },
       {
@@ -488,9 +567,10 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
                      AND v.artifact_digest = plugin_publication_intents.artifact_digest
                       AND v.config_schema_id = ? AND v.authentication_kind = ?
                        AND v.provider_registration_id IS ? AND v.requested_scopes_json = ?
-                       AND v.provider_registration_authority_revision IS ?
-                       AND v.provider_definition_digest IS ? AND v.provider_definition_revision IS ?
-                    AND a.status = 'available')`,
+                        AND v.provider_registration_authority_revision IS ?
+                        AND v.provider_definition_digest IS ? AND v.provider_definition_revision IS ?
+                        AND plugin_publication_intents.provider_registration_material_source_revision IS ?
+                     AND a.status = 'available')`,
         params: [
           candidate.reviewedAt,
           intentId,
@@ -503,6 +583,7 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
           authentication.success.providerRegistrationAuthorityRevision,
           authentication.success.providerDefinitionDigest,
           authentication.success.providerDefinitionRevision,
+          authentication.success.materialSource?.sourceRevision ?? null,
         ],
       },
       failBatchGuard(
@@ -510,7 +591,8 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
          JOIN plugin_versions v ON v.plugin_version_id = i.plugin_version_id
          JOIN plugin_artifacts a ON a.artifact_digest = i.artifact_digest
           WHERE i.publication_intent_id = ? AND i.plugin_version_id = ?
-            AND i.artifact_digest = ? AND i.status = 'published'
+             AND i.artifact_digest = ? AND i.status = 'published'
+             AND i.provider_registration_material_source_revision IS ?
             AND v.status = 'published' AND v.review_status = 'approved'
             AND v.plugin_definition_id = ? AND v.semantic_version = ?
             AND v.manifest_digest = ? AND v.catalog_snapshot_id = ? AND v.config_schema_id = ?
@@ -536,29 +618,48 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
             AND EXISTS (SELECT 1 FROM plugin_config_schemas s
               WHERE s.config_schema_id = v.config_schema_id
                 AND s.schema_digest = ? AND s.revision = ? AND s.fields_json = ?)
-             AND (? = 'none' OR EXISTS (SELECT 1 FROM provider_registrations p
-               WHERE p.provider_registration_id = v.provider_registration_id
-                 AND p.registration_mode = 'platform-pre-registered'
-                  AND p.approved_scopes_json = ? AND p.source = 'platform' AND p.status = 'active'
-                  AND length(p.client_credential_reference) > 0
-                  AND ((? = 'github-app' AND p.oauth_provider_definition_digest IS NULL)
-                    OR (? = 'oauth'
-                      AND p.oauth_authority_revision = v.provider_registration_authority_revision
-                      AND p.oauth_provider_definition_digest = v.provider_definition_digest
-                      AND p.oauth_provider_definition_revision = v.provider_definition_revision
-                      AND EXISTS (SELECT 1 FROM plugin_oauth_provider_definitions od
-                        WHERE od.provider_definition_digest = v.provider_definition_digest
-                          AND od.revision = v.provider_definition_revision
-                          AND od.status = 'active' AND od.provider = p.provider
-                          AND od.resource_identity = p.resource_identity
-                          AND od.scopes_json = v.requested_scopes_json
-                          AND od.display_label_path_present = 1)))))
+              AND (? = 'none'
+                OR (? = 'github-app' AND EXISTS (SELECT 1 FROM provider_registrations p
+                  WHERE p.provider_registration_id = v.provider_registration_id
+                    AND p.registration_mode = 'platform-pre-registered'
+                    AND p.approved_scopes_json = ? AND p.source = 'platform'
+                    AND p.status = 'active' AND length(p.client_credential_reference) > 0
+                    AND p.oauth_provider_definition_digest IS NULL))
+                OR (? = 'oauth' AND EXISTS (
+                  SELECT 1 FROM provider_registrations p
+                  JOIN plugin_oauth_registration_material_sources ms
+                    ON ms.provider_registration_id = p.provider_registration_id
+                   AND ms.oauth_authority_revision = p.oauth_authority_revision
+                   AND ms.provider_definition_digest = p.oauth_provider_definition_digest
+                   AND ms.provider_definition_revision = p.oauth_provider_definition_revision
+                  JOIN plugin_oauth_provider_definitions od
+                    ON od.provider_definition_digest = p.oauth_provider_definition_digest
+                   AND od.revision = p.oauth_provider_definition_revision
+                  WHERE p.provider_registration_id = v.provider_registration_id
+                    AND p.registration_mode = 'platform-pre-registered'
+                    AND p.approved_scopes_json = ? AND p.source = 'platform'
+                    AND p.status = 'active' AND p.client_credential_reference IS NULL
+                    AND p.oauth_authority_revision = v.provider_registration_authority_revision
+                    AND p.oauth_provider_definition_digest = v.provider_definition_digest
+                    AND p.oauth_provider_definition_revision = v.provider_definition_revision
+                    AND ms.source_revision = i.provider_registration_material_source_revision
+                    AND ms.source_revision IS ? AND ms.source_kind = 'deployment-environment'
+                    AND ms.status = 'active' AND ms.material_version IS ?
+                    AND ms.declaration_id IS ? AND ms.deployment_revision IS ?
+                    AND ms.token_endpoint_auth_method IS ?
+                    AND od.status = 'active' AND od.provider = p.provider
+                    AND od.resource_identity = p.resource_identity
+                    AND od.scopes_json = v.requested_scopes_json
+                    AND od.display_label_path_present = 1
+                    AND json_extract(od.canonical_definition_json, '$.tokenEndpointAuthMethod')
+                          = ms.token_endpoint_auth_method)))
             AND (SELECT COUNT(*) FROM plugin_catalog_tools t
                  WHERE t.catalog_snapshot_id = v.catalog_snapshot_id) = ?`,
         [
           intentId,
           version.id,
           digest,
+          authentication.success.materialSource?.sourceRevision ?? null,
           candidate.definitionId,
           version.version,
           runtime.manifestDigest,
@@ -588,9 +689,15 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
           version.config.revision,
           configIdentity.success.fieldsJson,
           candidate.authentication.kind,
+          candidate.authentication.kind,
           authenticationRequestedScopesJson(candidate.authentication),
           candidate.authentication.kind,
-          candidate.authentication.kind,
+          authenticationRequestedScopesJson(candidate.authentication),
+          authentication.success.materialSource?.sourceRevision ?? null,
+          authentication.success.materialSource?.materialVersion ?? null,
+          authentication.success.materialSource?.declarationId ?? null,
+          authentication.success.materialSource?.deploymentRevision ?? null,
+          authentication.success.materialSource?.tokenEndpointAuthMethod ?? null,
           version.catalog.tools.length,
         ],
       ),
@@ -781,13 +888,84 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
         : Result.fail("application-provider-verification-failed");
     }
 
-    const scopesJson = authenticationRequestedScopesJson(authentication);
+    const definition = await this.#resolveOAuthDefinition(
+      authentication.providerDefinitionDigest,
+      authenticationRequestedScopesJson(authentication),
+    );
+    if (Result.isFailure(definition)) return Result.fail(definition.failure);
+    const registrationRows = await this.database.query({
+      sql: `SELECT r.provider_registration_id, r.provider, r.resource_identity,
+                   r.registration_mode, r.approved_scopes_json, r.source, r.status,
+                   r.oauth_provider_definition_digest, r.oauth_provider_definition_revision,
+                   r.oauth_authority_revision, s.source_revision, s.source_kind,
+                   s.material_version, s.declaration_id, s.token_endpoint_auth_method,
+                   s.deployment_revision
+            FROM provider_registrations r
+            JOIN plugin_oauth_registration_material_sources s
+              ON s.provider_registration_id = r.provider_registration_id
+             AND s.oauth_authority_revision = r.oauth_authority_revision
+             AND s.provider_definition_digest = r.oauth_provider_definition_digest
+             AND s.provider_definition_revision = r.oauth_provider_definition_revision
+            WHERE r.provider_registration_id = ? AND r.status = 'active'
+              AND r.registration_mode = 'platform-pre-registered' AND r.source = 'platform'
+              AND r.client_credential_reference IS NULL
+              AND s.source_kind = 'deployment-environment' AND s.status = 'active'
+            ORDER BY s.source_revision DESC LIMIT 1`,
+      params: [authentication.providerRegistration],
+    });
+    if (Result.isFailure(registrationRows)) {
+      return Result.fail("application-provider-verification-failed");
+    }
+    const registrationRow = Schema.decodeUnknownResult(OAuthEnvironmentRegistrationPublicationRow, {
+      onExcessProperty: "error",
+    })(registrationRows.success[0]);
+    if (
+      Result.isFailure(registrationRow) ||
+      !this.#oauthRegistrationMatchesDefinition(
+        registrationRow.success,
+        authentication.providerRegistration,
+        authentication.providerDefinitionDigest,
+        authenticationRequestedScopesJson(authentication),
+        definition.success,
+      )
+    ) {
+      return Result.fail("application-provider-verification-failed");
+    }
+    return Result.succeed({
+      providerRegistrationAuthorityRevision: registrationRow.success.oauth_authority_revision,
+      providerDefinitionDigest: definition.success.providerDefinitionDigest,
+      providerDefinitionRevision: definition.success.providerDefinitionRevision,
+      materialSource: {
+        sourceRevision: registrationRow.success.source_revision,
+        materialVersion: registrationRow.success.material_version,
+        declarationId: registrationRow.success.declaration_id,
+        deploymentRevision: registrationRow.success.deployment_revision,
+        tokenEndpointAuthMethod: registrationRow.success.token_endpoint_auth_method,
+      },
+    });
+  }
+
+  async #resolveOAuthDefinition(
+    providerDefinitionDigest: typeof PluginSha256.Type,
+    scopesJson: string,
+  ): Promise<
+    Result.Result<
+      {
+        readonly providerDefinitionDigest: typeof PluginSha256.Type;
+        readonly providerDefinitionRevision: number;
+        readonly provider: string;
+        readonly resourceIdentity: string;
+        readonly tokenEndpointAuthMethod: "client_secret_post" | "client_secret_basic" | "none";
+      },
+      string
+    >
+  > {
     const definitionRows = await this.database.query({
       sql: `SELECT provider_definition_digest, schema_version, canonical_definition_json,
                    scopes_json, provider, resource_identity, display_label_path_present,
                    status, revision
             FROM plugin_oauth_provider_definitions WHERE provider_definition_digest = ?`,
-      params: [authentication.providerDefinitionDigest],
+      params: [providerDefinitionDigest],
     });
     if (Result.isFailure(definitionRows)) {
       return Result.fail("application-provider-verification-failed");
@@ -817,9 +995,8 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
     const admittedProviderIsDeployable = definition.success.provider.length <= 100;
     const exactDefinition =
       canonicalDefinitionJson === definitionRow.success.canonical_definition_json &&
-      definitionDigest === authentication.providerDefinitionDigest &&
-      definitionRow.success.provider_definition_digest ===
-        authentication.providerDefinitionDigest &&
+      definitionDigest === providerDefinitionDigest &&
+      definitionRow.success.provider_definition_digest === providerDefinitionDigest &&
       definitionRow.success.scopes_json === scopesJson &&
       canonicalPluginJson(definition.success.scopes) === scopesJson &&
       definitionRow.success.provider === definition.success.provider &&
@@ -829,6 +1006,173 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
     if (!exactDefinition) {
       return Result.fail("application-provider-verification-failed");
     }
+    return Result.succeed({
+      providerDefinitionDigest: definitionRow.success.provider_definition_digest,
+      providerDefinitionRevision: definitionRow.success.revision,
+      provider: definition.success.provider,
+      resourceIdentity: definition.success.resourceIdentity,
+      tokenEndpointAuthMethod: definition.success.tokenEndpointAuthMethod,
+    });
+  }
+
+  #oauthRegistrationMatchesDefinition(
+    registration: typeof OAuthEnvironmentRegistrationPublicationRow.Type,
+    providerRegistrationId: string,
+    providerDefinitionDigest: typeof PluginSha256.Type,
+    requestedScopesJson: string,
+    definition: {
+      readonly providerDefinitionRevision: number;
+      readonly provider: string;
+      readonly resourceIdentity: string;
+      readonly tokenEndpointAuthMethod: "client_secret_post" | "client_secret_basic" | "none";
+    },
+  ): boolean {
+    return (
+      registration.provider_registration_id === providerRegistrationId &&
+      registration.provider === definition.provider &&
+      registration.resource_identity === definition.resourceIdentity &&
+      registration.approved_scopes_json === requestedScopesJson &&
+      registration.oauth_provider_definition_digest === providerDefinitionDigest &&
+      registration.oauth_provider_definition_revision === definition.providerDefinitionRevision &&
+      registration.token_endpoint_auth_method === definition.tokenEndpointAuthMethod
+    );
+  }
+
+  async #verifyPersistedPublicationAuthentication(
+    row: Readonly<Record<string, unknown>>,
+    authentication: typeof PackagedPluginAuthentication.Type,
+    allowPublishedHistory: boolean,
+  ): Promise<Result.Result<ResolvedPublicationAuthentication, string>> {
+    if (authentication.kind !== "oauth") {
+      const current = await this.#resolvePublicationAuthentication(authentication);
+      if (Result.isFailure(current)) return current;
+      return this.#rowMatchesResolvedPublicationAuthentication(row, current.success) &&
+        row.provider_definition_digest ===
+          packagedAuthenticationProviderDefinitionDigest(authentication)
+        ? current
+        : Result.fail("application-provider-verification-failed");
+    }
+
+    const sourceRevision = row.provider_registration_material_source_revision;
+    if (sourceRevision === null) {
+      return allowPublishedHistory
+        ? this.#resolveLegacyPublishedOAuthAuthentication(row, authentication)
+        : Result.fail("application-provider-verification-failed");
+    }
+    const parsedSourceRevision = Schema.decodeUnknownResult(PositiveRevision)(sourceRevision);
+    if (Result.isFailure(parsedSourceRevision)) {
+      return Result.fail("application-provider-verification-failed");
+    }
+    const definition = await this.#resolveOAuthDefinition(
+      authentication.providerDefinitionDigest,
+      authenticationRequestedScopesJson(authentication),
+    );
+    if (Result.isFailure(definition)) return Result.fail(definition.failure);
+    const publishedHistory =
+      allowPublishedHistory &&
+      (row.status === "published" || row.status === "revoked") &&
+      row.artifact_status === "available" &&
+      row.intent_status === "published";
+    const registrationRows = await this.database.query({
+      sql: publishedHistory
+        ? `SELECT r.provider_registration_id, r.provider, r.resource_identity,
+                  r.registration_mode, r.approved_scopes_json, r.source, r.status,
+                  r.oauth_provider_definition_digest, r.oauth_provider_definition_revision,
+                  r.oauth_authority_revision, s.source_revision, s.source_kind,
+                  s.material_version, s.declaration_id, s.token_endpoint_auth_method,
+                  s.deployment_revision, s.status AS historical_source_status,
+                  CASE WHEN EXISTS (
+                    SELECT 1 FROM plugin_oauth_registration_material_sources current_source
+                    WHERE current_source.provider_registration_id = r.provider_registration_id
+                      AND current_source.oauth_authority_revision = r.oauth_authority_revision
+                      AND current_source.provider_definition_digest = r.oauth_provider_definition_digest
+                      AND current_source.provider_definition_revision = r.oauth_provider_definition_revision
+                      AND current_source.source_kind = 'deployment-environment'
+                      AND current_source.status = 'active'
+                      AND current_source.token_endpoint_auth_method = s.token_endpoint_auth_method
+                  ) THEN 1 ELSE 0 END AS current_source_available
+           FROM provider_registrations r
+           JOIN plugin_oauth_registration_material_sources s
+             ON s.provider_registration_id = r.provider_registration_id
+            AND s.oauth_authority_revision = r.oauth_authority_revision
+            AND s.provider_definition_digest = r.oauth_provider_definition_digest
+            AND s.provider_definition_revision = r.oauth_provider_definition_revision
+           WHERE r.provider_registration_id = ? AND r.status = 'active'
+             AND r.registration_mode = 'platform-pre-registered' AND r.source = 'platform'
+             AND r.client_credential_reference IS NULL AND s.source_revision = ?
+             AND s.source_kind = 'deployment-environment'`
+        : `SELECT r.provider_registration_id, r.provider, r.resource_identity,
+                  r.registration_mode, r.approved_scopes_json, r.source, r.status,
+                  r.oauth_provider_definition_digest, r.oauth_provider_definition_revision,
+                  r.oauth_authority_revision, s.source_revision, s.source_kind,
+                  s.material_version, s.declaration_id, s.token_endpoint_auth_method,
+                  s.deployment_revision
+           FROM provider_registrations r
+           JOIN plugin_oauth_registration_material_sources s
+             ON s.provider_registration_id = r.provider_registration_id
+            AND s.oauth_authority_revision = r.oauth_authority_revision
+            AND s.provider_definition_digest = r.oauth_provider_definition_digest
+            AND s.provider_definition_revision = r.oauth_provider_definition_revision
+           WHERE r.provider_registration_id = ? AND r.status = 'active'
+             AND r.registration_mode = 'platform-pre-registered' AND r.source = 'platform'
+             AND r.client_credential_reference IS NULL AND s.source_revision = ?
+             AND s.source_kind = 'deployment-environment' AND s.status = 'active'`,
+      params: [authentication.providerRegistration, parsedSourceRevision.success],
+    });
+    if (Result.isFailure(registrationRows)) {
+      return Result.fail("application-provider-verification-failed");
+    }
+    const registrationRow = Schema.decodeUnknownResult(
+      publishedHistory
+        ? OAuthPublishedEnvironmentRegistrationRow
+        : OAuthEnvironmentRegistrationPublicationRow,
+      { onExcessProperty: "error" },
+    )(registrationRows.success[0]);
+    if (
+      Result.isFailure(registrationRow) ||
+      !this.#oauthRegistrationMatchesDefinition(
+        registrationRow.success,
+        authentication.providerRegistration,
+        authentication.providerDefinitionDigest,
+        authenticationRequestedScopesJson(authentication),
+        definition.success,
+      )
+    ) {
+      return Result.fail("application-provider-verification-failed");
+    }
+    const resolved: ResolvedPublicationAuthentication = {
+      providerRegistrationAuthorityRevision: registrationRow.success.oauth_authority_revision,
+      providerDefinitionDigest: definition.success.providerDefinitionDigest,
+      providerDefinitionRevision: definition.success.providerDefinitionRevision,
+      materialSource: {
+        sourceRevision: registrationRow.success.source_revision,
+        materialVersion: registrationRow.success.material_version,
+        declarationId: registrationRow.success.declaration_id,
+        deploymentRevision: registrationRow.success.deployment_revision,
+        tokenEndpointAuthMethod: registrationRow.success.token_endpoint_auth_method,
+      },
+    };
+    return this.#rowMatchesResolvedPublicationAuthentication(row, resolved)
+      ? Result.succeed(resolved)
+      : Result.fail("application-provider-verification-failed");
+  }
+
+  async #resolveLegacyPublishedOAuthAuthentication(
+    row: Readonly<Record<string, unknown>>,
+    authentication: Extract<typeof PackagedPluginAuthentication.Type, { readonly kind: "oauth" }>,
+  ): Promise<Result.Result<ResolvedPublicationAuthentication, string>> {
+    if (
+      (row.status !== "published" && row.status !== "revoked") ||
+      row.artifact_status !== "available" ||
+      row.intent_status !== "published"
+    ) {
+      return Result.fail("application-provider-verification-failed");
+    }
+    const definition = await this.#resolveOAuthDefinition(
+      authentication.providerDefinitionDigest,
+      authenticationRequestedScopesJson(authentication),
+    );
+    if (Result.isFailure(definition)) return Result.fail(definition.failure);
     const registrationRows = await this.database.query({
       sql: `SELECT provider_registration_id, provider, resource_identity, registration_mode,
                    approved_scopes_json, source, status, oauth_provider_definition_digest,
@@ -842,43 +1186,31 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
     if (Result.isFailure(registrationRows)) {
       return Result.fail("application-provider-verification-failed");
     }
-    const registrationRow = Schema.decodeUnknownResult(OAuthRegistrationPublicationRow, {
+    const registrationRow = Schema.decodeUnknownResult(OAuthLegacyRegistrationPublicationRow, {
       onExcessProperty: "error",
     })(registrationRows.success[0]);
-    if (Result.isFailure(registrationRow)) {
+    if (
+      Result.isFailure(registrationRow) ||
+      registrationRow.success.provider_registration_id !== authentication.providerRegistration ||
+      registrationRow.success.provider !== definition.success.provider ||
+      registrationRow.success.resource_identity !== definition.success.resourceIdentity ||
+      registrationRow.success.approved_scopes_json !==
+        authenticationRequestedScopesJson(authentication) ||
+      registrationRow.success.oauth_provider_definition_digest !==
+        authentication.providerDefinitionDigest ||
+      registrationRow.success.oauth_provider_definition_revision !==
+        definition.success.providerDefinitionRevision
+    ) {
       return Result.fail("application-provider-verification-failed");
     }
-    const exactRegistration =
-      registrationRow.success.provider_registration_id === authentication.providerRegistration &&
-      registrationRow.success.provider === definition.success.provider &&
-      registrationRow.success.resource_identity === definition.success.resourceIdentity &&
-      registrationRow.success.approved_scopes_json === scopesJson &&
-      registrationRow.success.oauth_provider_definition_digest ===
-        authentication.providerDefinitionDigest &&
-      registrationRow.success.oauth_provider_definition_revision === definitionRow.success.revision;
-    if (!exactRegistration) {
-      return Result.fail("application-provider-verification-failed");
-    }
-    return Result.succeed({
+    const resolved: ResolvedPublicationAuthentication = {
       providerRegistrationAuthorityRevision: registrationRow.success.oauth_authority_revision,
-      providerDefinitionDigest: definitionRow.success.provider_definition_digest,
-      providerDefinitionRevision: definitionRow.success.revision,
-    });
-  }
-
-  async #verifyPersistedPublicationAuthentication(
-    row: Readonly<Record<string, unknown>>,
-    authentication: typeof PackagedPluginAuthentication.Type,
-  ): Promise<Result.Result<ResolvedPublicationAuthentication, string>> {
-    const current = await this.#resolvePublicationAuthentication(authentication);
-    if (Result.isFailure(current)) return current;
-    return row.provider_registration_authority_revision ===
-      current.success.providerRegistrationAuthorityRevision &&
-      row.provider_definition_digest === current.success.providerDefinitionDigest &&
-      row.provider_definition_revision === current.success.providerDefinitionRevision &&
-      row.provider_definition_digest ===
-        packagedAuthenticationProviderDefinitionDigest(authentication)
-      ? current
+      providerDefinitionDigest: definition.success.providerDefinitionDigest,
+      providerDefinitionRevision: definition.success.providerDefinitionRevision,
+      materialSource: null,
+    };
+    return this.#rowMatchesResolvedPublicationAuthentication(row, resolved)
+      ? Result.succeed(resolved)
       : Result.fail("application-provider-verification-failed");
   }
 
@@ -890,7 +1222,9 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
       row.provider_registration_authority_revision ===
         authentication.providerRegistrationAuthorityRevision &&
       row.provider_definition_digest === authentication.providerDefinitionDigest &&
-      row.provider_definition_revision === authentication.providerDefinitionRevision
+      row.provider_definition_revision === authentication.providerDefinitionRevision &&
+      row.provider_registration_material_source_revision ===
+        (authentication.materialSource?.sourceRevision ?? null)
     );
   }
 
@@ -915,8 +1249,9 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
                      d.short_description, d.long_description, d.status AS definition_status,
                      m.status AS marketplace_status,
                     a.status AS artifact_status, a.object_key, a.byte_size,
-                     i.publication_intent_id, i.artifact_digest AS intent_artifact_digest,
-                     i.status AS intent_status
+                      i.publication_intent_id, i.artifact_digest AS intent_artifact_digest,
+                      i.status AS intent_status,
+                      i.provider_registration_material_source_revision
              FROM plugin_versions v
              JOIN plugin_definitions d ON d.plugin_definition_id = v.plugin_definition_id
              JOIN plugin_marketplaces m ON m.marketplace_id = d.marketplace_id
@@ -945,6 +1280,7 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
     const authentication = await this.#verifyPersistedPublicationAuthentication(
       row,
       candidate.authentication,
+      mode !== "staged",
     );
     if (Result.isFailure(authentication)) return false;
     const tools = await this.database.query({
