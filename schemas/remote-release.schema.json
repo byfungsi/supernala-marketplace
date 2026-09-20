@@ -120,7 +120,7 @@
     },
     "oauthRegistrationMode": {
       "type": "string",
-      "enum": ["dynamic", "platform-pre-registered"]
+      "enum": ["dynamic", "platform-pre-registered", "workspace-oauth-app"]
     },
     "scopes": {
       "type": "array",

@@ -9,7 +9,7 @@
   "reviewId": "gmail-0.1.0-owner-authorized-waiver-v1",
   "reviewer": "supernala-owner (formal reviews waived, not passed)",
   "reviewedAt": 1789817913173,
-  "sourceInputDigest": "c0c7a10189d1b891410b4760dd12359c48904982c66af103a88798feb0568ca0",
+  "sourceInputDigest": "35f73fb1e04851588f00a5c0b1601e4535d9c87a20aa345d133c4c4bba79b8ab",
   "artifactDigest": "4c3a568a455cdd549517f75f06428530f7b8ee1b78a57644982f212ee7dd6aa6",
   "authentication": {
     "kind": "oauth",
@@ -133,6 +133,6 @@
   },
   "authorityDigest": "fd04d060052be6ce96f2968d1369a7330a9c0b2a4ac38adfb43f0e495683aa51",
   "authorityDiffDigest": "a3084799dad170042ee4ce6bb20f5b92b8d1abb5cbcafe214663ca07b1bad118",
-  "releaseDigest": "5f330e56548dc1f6b45299be1dd7cc73957b964259f541c42e90187736b9fce3",
+  "releaseDigest": "ba94023b3411867c24a6002204bd6aa0539c2200994032d180d6ff70dd60080b",
   "decision": "approved"
 }

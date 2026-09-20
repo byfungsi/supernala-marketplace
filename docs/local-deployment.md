@@ -27,6 +27,8 @@ Both files repeat this **non-secret topology**, populated from actual Alchemy ou
 CLOUDFLARE_ACCOUNT_ID
 MARKETPLACE_JOURNAL_DATABASE_ID
 APPLICATION_DATABASE_ID
+APPLICATION_OAUTH_CALLBACK_URL
+MARKETPLACE_SOURCE_REPOSITORY
 PLUGIN_PACKAGE_BUCKET_NAME
 ```
 
@@ -50,7 +52,7 @@ PLUGIN_PACKAGE_R2_ACCESS_KEY_ID
 PLUGIN_PACKAGE_R2_SECRET_ACCESS_KEY
 ```
 
-Restrict publication R2 credentials to the package bucket. D1 tokens are not table-scoped just because they have Plugin-specific names. These lists are an inventory, not ready-to-use file contents: each file must contain `NAME=value` entries. Custom external locations use `--control-env FILE` and `--publication-env FILE`.
+`APPLICATION_OAUTH_CALLBACK_URL` is the canonical HTTPS application callback configured in Workspace Owner OAuth apps; it contains no credential. `MARKETPLACE_SOURCE_REPOSITORY` is the reviewed `owner/repository` provenance identity. Restrict publication R2 credentials to the package bucket. D1 tokens are not table-scoped just because they have Plugin-specific names. These lists are an inventory, not ready-to-use file contents: each file must contain `NAME=value` entries. Custom external locations use `--control-env FILE` and `--publication-env FILE`.
 
 Do not launch from a secret-bearing shell. Build subprocesses have a fresh HOME and explicit environment; publication credentials are loaded only after confirmation. This does not sandbox malicious same-user code: use a trusted operator workstation, reviewed source/dependencies, and trusted local tooling.
 

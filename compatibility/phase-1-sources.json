@@ -1,10 +1,13 @@
 {
-  "rootDescription": "Committed and locally merged Plugin integration 9e020887a5619d81bcda135cd729af360c6a3096, fast-forwarded from parent main ad5c0ddd7feae44ce21c8aaf7ad7c8afdbf6f645; not deployed",
+  "rootDescription": "Phase 1 baseline plus the exact reviewed Workspace-owned OAuth authority reset; application and Marketplace changes are not yet deployed",
   "files": {
     "packages/domain/src/plugin-identity.ts": "889d4646d1449204f07eec4d299619f649ad0c67cd158d35bdf1e3815834e817",
     "packages/domain/src/plugin-package.ts": "68f08f22757d25ba52d8565458ad97319eb95ed580b6aed3cad03e77a96b2482",
     "packages/domain/src/plugin-archive.ts": "bd260302be75774f2c09f803d8d9d4492f6f5fa06fa9383b936655d850719cd7",
-    "apps/api/src/plugin-publication.ts": "1e17c33301c011a9bc61b98f36d57fa7eefc5a8d29fb795e903facb291bcdd16",
+    "apps/api/src/plugin-publication.ts": "23abf5cdf955c60b76efd8797750864664347f3396d205df0c64581b9e6869a9",
+    "apps/api/src/plugin-oauth-registration-authority.ts": "b5e0b23dd267d22ead0eff481a7e9c7263cdab6fce3659ccaed9a80938b69fc6",
+    "apps/api/src/plugin-oauth-runtime.ts": "00fe403a1481e72dbc951b89f7d5989c9b44fa17e38a244dbfbfeb2ed989a6f6",
+    "apps/api/application-migrations/0051_workspace_owned_oauth_authority.sql": "35836885aca78bd5c0b2700d8dd381fd734da87c02ec0fdf0376a40c5bdeb28f",
     "apps/api/src/plugin-package-archive.ts": "faf5f5b5a86e2156de624ba770a75b6cc138c173b9f82e8eea8ee351c26b550a",
     "apps/api/src/plugin-tool-input-validation.ts": "63ad457e12c6f676a348dd2ab60f1c93dfb7feb8559fd81753a20a8f7dd75d5a",
     "apps/api/application-migrations/0042_plugin_control_plane.sql": "5d834a38ff1fe278e0225ffe16c2c4f03d335cf0a1511fe67e17b2c348c05f2e",

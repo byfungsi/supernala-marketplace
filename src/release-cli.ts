@@ -29,6 +29,11 @@ import {
 import { validatePublicationAuthorityLineage } from "./release-lineage.js";
 import { ReleaseSet } from "./release-set.js";
 import {
+  loadReviewedWorkspaceOAuthProviderAuthority,
+  WorkspaceOAuthProviderAuthorityAdmission,
+  type ReviewedWorkspaceOAuthProviderAuthority,
+} from "./workspace-oauth-provider-authority.js";
+import {
   LocalReleaseCoordinator,
   ReleaseAttemptId,
   ReleaseCommit,
@@ -295,6 +300,7 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
   const verifiedBundles: Array<{
     readonly candidate: IncrementalReleaseCandidate;
     readonly review: ReleaseReview;
+    readonly oauthProviderAuthority: ReviewedWorkspaceOAuthProviderAuthority | null;
   }> = [];
   const identities = new Set<string>();
   const verifiedSetEntries = [];
@@ -343,7 +349,17 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
     if (loaded.releaseDigest !== bundle.releaseDigest || loaded.reviewId !== bundle.reviewId) {
       fail("release-set-candidate-mismatch");
     }
-    verifiedBundles.push({ candidate: loaded, review: trustedReview });
+    const oauthProviderAuthority =
+      loaded.authentication.kind === "oauth"
+        ? unwrap(
+            await loadReviewedWorkspaceOAuthProviderAuthority({
+              sourceDirectory,
+              authentication: loaded.authentication,
+            }),
+            (error) => error,
+          )
+        : null;
+    verifiedBundles.push({ candidate: loaded, review: trustedReview, oauthProviderAuthority });
     verifiedSetEntries.push({
       identity: loaded.identity,
       releaseDigest: loaded.releaseDigest,
@@ -383,12 +399,15 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
       apiToken: requiredEnvironment("MARKETPLACE_JOURNAL_WRITE_TOKEN"),
     }),
   );
-  const application = new Phase1D1PublicationAdapter(
-    new CloudflareD1RestTransport({
-      accountId,
-      databaseId: requiredEnvironment("APPLICATION_DATABASE_ID"),
-      apiToken: requiredEnvironment("APPLICATION_PLUGIN_PUBLISH_TOKEN"),
-    }),
+  const applicationDatabase = new CloudflareD1RestTransport({
+    accountId,
+    databaseId: requiredEnvironment("APPLICATION_DATABASE_ID"),
+    apiToken: requiredEnvironment("APPLICATION_PLUGIN_PUBLISH_TOKEN"),
+  });
+  const application = new Phase1D1PublicationAdapter(applicationDatabase);
+  const oauthProviderAdmission = new WorkspaceOAuthProviderAuthorityAdmission(
+    applicationDatabase,
+    requiredEnvironment("APPLICATION_OAUTH_CALLBACK_URL"),
   );
   const artifacts = new CloudflareR2S3ArtifactStore({
     accountId,
@@ -415,6 +434,20 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
     }),
     (error) => error.reason,
   );
+  for (const bundle of verifiedBundles) {
+    if (bundle.oauthProviderAuthority === null) continue;
+    unwrap(
+      await oauthProviderAdmission.admit({
+        authority: bundle.oauthProviderAuthority,
+        sourceRepository: requiredEnvironment("MARKETPLACE_SOURCE_REPOSITORY"),
+        sourceRevision: mergeCommit,
+        reviewId: bundle.review.reviewId,
+        reviewer: bundle.review.reviewer,
+        reviewedAt: bundle.review.reviewedAt,
+      }),
+      (error) => error,
+    );
+  }
   for (const { candidate: loaded } of verifiedBundles) {
     const published = await publishIncrementalRelease({
       candidate: loaded,

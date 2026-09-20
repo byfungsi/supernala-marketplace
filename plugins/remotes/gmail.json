@@ -17,7 +17,7 @@
     "transport": "streamable-http"
   },
   "endpoint": "https://gmailmcp.googleapis.com/mcp/v1",
-  "oauthRegistrationMode": "platform-pre-registered",
+  "oauthRegistrationMode": "workspace-oauth-app",
   "scopes": [
     "https://www.googleapis.com/auth/gmail.readonly",
     "https://www.googleapis.com/auth/gmail.compose"

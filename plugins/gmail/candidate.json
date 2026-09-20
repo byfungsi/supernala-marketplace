@@ -18,5 +18,5 @@
     "allowedHosts": ["gmail.googleapis.com"]
   },
   "license": "MIT",
-  "blockingReason": "Post-publication live mailbox acceptance remains pending; App runtime deployment and exact Gmail OAuth definition, registration, and environment material-source admission are complete, and the Owner authorized publication with formal reviews waived, not passed"
+  "blockingReason": "Post-publication live mailbox acceptance remains pending; publication first requires the reviewed App migration and trusted credential-free Gmail Provider Registration admission, and the Owner authorized publication with formal reviews waived, not passed"
 }

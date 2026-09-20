@@ -69,23 +69,14 @@ const GmailPlatformBindings = Schema.Struct({
   providerMetadata: Schema.Struct({
     provider: Schema.String,
     resourceIdentity: Schema.String,
-    registrationMode: Schema.Literal("platform-pre-registered"),
+    registrationMode: Schema.Literal("workspace-oauth-app"),
     source: Schema.Literal("platform"),
     approvedScopes: Schema.Array(Schema.String),
   }),
-  bindings: Schema.Struct({
-    clientId: Schema.Struct({
-      source: Schema.Literal("environment"),
-      name: Schema.Literal("GOOGLE_GMAIL_OAUTH_CLIENT_ID"),
-    }),
-    ["client" + "Secret"]: Schema.Struct({
-      source: Schema.Literal("secret"),
-      name: Schema.Literal("GOOGLE_GMAIL_OAUTH_CLIENT_SECRET"),
-    }),
-    callbackUrl: Schema.Struct({
-      source: Schema.Literal("environment"),
-      name: Schema.Literal("GOOGLE_GMAIL_OAUTH_CALLBACK_URL"),
-    }),
+  workspaceOAuthApp: Schema.Struct({
+    ownership: Schema.Literal("workspace-owner"),
+    credentialFields: Schema.Tuple([Schema.Literal("clientId"), Schema.Literal("clientSecret")]),
+    storage: Schema.Literal("encrypted-plugin-vault"),
   }),
 });
 
@@ -287,7 +278,13 @@ it("binds the five-field package declaration to the strict canonical Gmail defin
   expect(bindings.providerMetadata).toMatchObject({
     provider: definition.provider,
     resourceIdentity: definition.resourceIdentity,
+    registrationMode: "workspace-oauth-app",
     approvedScopes: definition.scopes,
+  });
+  expect(bindings.workspaceOAuthApp).toEqual({
+    ownership: "workspace-owner",
+    credentialFields: ["clientId", "clientSecret"],
+    storage: "encrypted-plugin-vault",
   });
   if (manifest.authentication.kind !== "oauth") throw new Error("gmail-oauth-authentication-lost");
   expect(manifest.authentication.requestedScopes).toEqual(definition.scopes);
@@ -641,7 +638,9 @@ it("keeps public Gmail declarations free of credential values and write authorit
     ].map((file) => readFile(file, "utf8")),
   );
   const publicText = publicFiles.join("\n");
-  expect(publicText).toContain("GOOGLE_GMAIL_OAUTH_CLIENT_SECRET");
+  expect(publicText).toContain("encrypted-plugin-vault");
+  expect(publicText).toContain("workspace-oauth-app");
+  expect(publicText).not.toContain("GOOGLE_GMAIL_OAUTH_CLIENT_SECRET");
   expect(publicText).toContain("https://www.googleapis.com/auth/gmail.readonly");
   expect(publicText).not.toContain("gmail.compose");
   expect(publicText).not.toContain("gmail.send");

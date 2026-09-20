@@ -7,22 +7,13 @@
   "providerMetadata": {
     "provider": "google",
     "resourceIdentity": "gmail.googleapis.com",
-    "registrationMode": "platform-pre-registered",
+    "registrationMode": "workspace-oauth-app",
     "source": "platform",
     "approvedScopes": ["https://www.googleapis.com/auth/gmail.readonly"]
   },
-  "bindings": {
-    "clientId": {
-      "source": "environment",
-      "name": "GOOGLE_GMAIL_OAUTH_CLIENT_ID"
-    },
-    "clientSecret": {
-      "source": "secret",
-      "name": "GOOGLE_GMAIL_OAUTH_CLIENT_SECRET"
-    },
-    "callbackUrl": {
-      "source": "environment",
-      "name": "GOOGLE_GMAIL_OAUTH_CALLBACK_URL"
-    }
+  "workspaceOAuthApp": {
+    "ownership": "workspace-owner",
+    "credentialFields": ["clientId", "clientSecret"],
+    "storage": "encrypted-plugin-vault"
   }
 }

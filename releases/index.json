@@ -30,7 +30,7 @@
       "sourceDirectory": "plugins/gmail",
       "kind": "managed-package",
       "publicationEligible": true,
-      "reason": "Owner-authorized after App runtime deployment and active exact Gmail OAuth admission; formal reviews were waived, not passed, and live mailbox acceptance follows publication"
+      "reason": "Owner-authorized for publication after the reviewed App migration; the trusted release workflow admits exact credential-free Gmail OAuth authority, formal reviews were waived rather than passed, and live mailbox acceptance follows publication"
     },
     {
       "sourceDirectory": "plugins/remotes",

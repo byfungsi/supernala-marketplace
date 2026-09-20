@@ -74,6 +74,16 @@ const createCliFixture = async (
     recursive: true,
   });
   if (authentication === "oauth") {
+    await Promise.all([
+      cp(
+        path.join(repositoryRoot, "plugins", "gmail", "oauth-provider.json"),
+        path.join(sourceDirectory, "oauth-provider.json"),
+      ),
+      cp(
+        path.join(repositoryRoot, "plugins", "gmail", "platform-bindings.json"),
+        path.join(sourceDirectory, "platform-bindings.json"),
+      ),
+    ]);
     const manifest = Schema.decodeUnknownSync(Schema.JsonObject)(
       JSON.parse(await readFile(path.join(sourceDirectory, "plugin.json"), "utf8")),
     );
@@ -84,9 +94,10 @@ const createCliFixture = async (
           ...manifest,
           authentication: {
             kind: "oauth",
-            providerRegistration: "synthetic-mail-rest-v1",
-            providerDefinitionDigest: "a".repeat(64),
-            requestedScopes: ["synthetic.mail.read"],
+            providerRegistration: "google-gmail-rest-v1",
+            providerDefinitionDigest:
+              "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
+            requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
             credentialDelivery: "short-lived-access-token-only",
           },
         },
@@ -218,9 +229,9 @@ it("carries exact five-field OAuth authority through actual CLI build and dry-ru
     );
     expect(release.authentication).toEqual({
       kind: "oauth",
-      providerRegistration: "synthetic-mail-rest-v1",
-      providerDefinitionDigest: "a".repeat(64),
-      requestedScopes: ["synthetic.mail.read"],
+      providerRegistration: "google-gmail-rest-v1",
+      providerDefinitionDigest: "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
+      requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
       credentialDelivery: "short-lived-access-token-only",
     });
     const dryRun = await runReleaseCli(fixture.root, ["publish", "release-output", "--dry-run"]);

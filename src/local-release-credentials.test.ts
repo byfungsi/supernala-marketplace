@@ -8,7 +8,7 @@ import {
   releaseCredentialEnvironment,
 } from "./local-release-credentials.js";
 
-const topology = `CLOUDFLARE_ACCOUNT_ID=${"a".repeat(32)}\nMARKETPLACE_JOURNAL_DATABASE_ID=123e4567-e89b-42d3-a456-426614174001\nAPPLICATION_DATABASE_ID=123e4567-e89b-42d3-a456-426614174002\nPLUGIN_PACKAGE_BUCKET_NAME=fixture-packages\n`;
+const topology = `CLOUDFLARE_ACCOUNT_ID=${"a".repeat(32)}\nMARKETPLACE_JOURNAL_DATABASE_ID=123e4567-e89b-42d3-a456-426614174001\nAPPLICATION_DATABASE_ID=123e4567-e89b-42d3-a456-426614174002\nAPPLICATION_OAUTH_CALLBACK_URL=https://api.example.test/v1/plugins/oauth/callback\nMARKETPLACE_SOURCE_REPOSITORY=supernala/marketplace\nPLUGIN_PACKAGE_BUCKET_NAME=fixture-packages\n`;
 const secrets =
   "APPLICATION_PLUGIN_PUBLISH_TOKEN=synthetic-test-only\nPLUGIN_PACKAGE_R2_ACCESS_KEY_ID=synthetic-test-only\nPLUGIN_PACKAGE_R2_SECRET_ACCESS_KEY=synthetic-test-only\n";
 

@@ -9,6 +9,12 @@ const Topology = Schema.Struct({
   CLOUDFLARE_ACCOUNT_ID: Schema.String.pipe(Schema.check(Schema.isPattern(/^[a-f0-9]{32}$/u))),
   MARKETPLACE_JOURNAL_DATABASE_ID: Schema.String.pipe(Schema.check(Schema.isUUID())),
   APPLICATION_DATABASE_ID: Schema.String.pipe(Schema.check(Schema.isUUID())),
+  APPLICATION_OAUTH_CALLBACK_URL: Schema.String.pipe(
+    Schema.check(Schema.isLengthBetween(1, 2_048)),
+  ),
+  MARKETPLACE_SOURCE_REPOSITORY: Schema.String.pipe(
+    Schema.check(Schema.isPattern(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u)),
+  ),
   PLUGIN_PACKAGE_BUCKET_NAME: Schema.String.pipe(
     Schema.check(Schema.isPattern(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/u)),
   ),

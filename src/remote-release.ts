@@ -31,7 +31,11 @@ export const ManagedRemotePluginRelease = Schema.Struct({
     transport: Schema.Literal("streamable-http"),
   }),
   endpoint: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 2_048))),
-  oauthRegistrationMode: Schema.Literals(["dynamic", "platform-pre-registered"]),
+  oauthRegistrationMode: Schema.Literals([
+    "dynamic",
+    "platform-pre-registered",
+    "workspace-oauth-app",
+  ]),
   scopes: Schema.Array(Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 300)))).pipe(
     Schema.check(Schema.isMaxLength(100)),
   ),

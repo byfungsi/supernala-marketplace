@@ -4,4 +4,4 @@
 
 The index contains no “published” state. Durable Marketplace journal and verified application D1/R2 readback are authoritative. A removed source causes no delete or revocation.
 
-No current candidate is eligible: the offline fixture is test-only, GitHub remains blocked on verified provider registration, independent release review, and live acceptance, and managed remotes are staged-unverified. The GitHub first-party source license and portable authentication contract are resolved, but neither establishes publication eligibility.
+Gmail `0.1.0` is the only publication-eligible candidate. Its trusted release workflow admits a credential-free Provider Definition and Provider Registration; each Workspace Owner must separately register an OAuth app whose encrypted client credentials remain in the Plugin Vault. The offline fixture is test-only, GitHub remains blocked on verified provider registration, independent review, and live acceptance, and managed remotes remain staged-unverified.
