@@ -36,7 +36,7 @@
       "sourceDirectory": "plugins/remotes/atlassian.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": false,
-      "reason": "live Atlassian consent, catalog capture, review, and acceptance remain incomplete"
+      "reason": "official public docs omit exact tool schemas and MCP identity/resource output paths required for reviewed catalog and selected-site authority"
     },
     {
       "sourceDirectory": "plugins/remotes/gmail.json",
@@ -53,14 +53,14 @@
     {
       "sourceDirectory": "plugins/remotes/notion.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": false,
-      "reason": "live consent, exact catalog capture, plan eligibility, and privacy review remain staged-unverified"
+      "publicationEligible": true,
+      "reason": "Owner-authorized documentation-derived source and authority admission for publication-first UI testing; live consent, hosted catalog equality, plan eligibility, privacy review, and production acceptance remain pending"
     },
     {
       "sourceDirectory": "plugins/remotes/resend.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": false,
-      "reason": "CIMD deployment, live team identity, catalog capture, privacy review, and acceptance remain unverified"
+      "publicationEligible": true,
+      "reason": "Owner-authorized documentation-derived source and narrow emails:send authority admission after CIMD deployment; live consent, hosted catalog equality, team identity, privacy review, and production acceptance remain pending"
     }
   ]
 }

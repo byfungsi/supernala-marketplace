@@ -180,16 +180,26 @@ const conformanceCommand = async (fixture: string): Promise<void> => {
 const remoteCommand = async (): Promise<void> => {
   const directory = path.resolve("plugins/remotes");
   const files = (await fs.readdir(directory)).filter((file) => file.endsWith(".json")).toSorted();
+  const staged: Array<string> = [];
+  const publishable: Array<string> = [];
   for (const file of files) {
     const parsed = validateManagedRemotePluginRelease(
       JSON.parse(await fs.readFile(path.join(directory, file), "utf8")),
       "authoring",
     );
     const release = unwrapResult(parsed, (error) => `${file}:${error}`);
-    const publishable = validateManagedRemotePluginRelease(release, "publication");
-    if (Result.isSuccess(publishable)) fail(`${file}:unexpectedly-publishable`);
+    const publication = validateManagedRemotePluginRelease(release, "publication");
+    if (release.status === "reviewed-publishable") {
+      if (Result.isFailure(publication)) fail(`${file}:${publication.failure}`);
+      publishable.push(file);
+      continue;
+    }
+    if (Result.isSuccess(publication) || publication.failure !== "remote-release-not-reviewed") {
+      fail(`${file}:staged-publication-gate-invalid`);
+    }
+    staged.push(file);
   }
-  writeJson({ valid: true, staged: files });
+  writeJson({ valid: true, staged, publishable });
 };
 
 const captureRemoteCatalogCommand = async (

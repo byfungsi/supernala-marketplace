@@ -451,10 +451,14 @@ it("validates and prepares existing build-recipe package candidates through the 
   }
 });
 
-it("validates and prepares the staged provider-owned remote declarations", async () => {
+it("validates and prepares provider-owned remote declarations at their reviewed status", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-provider-expansion-authoring-"));
   try {
-    for (const slug of ["atlassian", "notion", "resend"]) {
+    for (const [slug, publicationEligible, publicationBlocker] of [
+      ["atlassian", false, "remote-release-not-reviewed"],
+      ["notion", true, null],
+      ["resend", true, null],
+    ] as const) {
       const sourcePath = `plugins/remotes/${slug}.json`;
       const validated = await validatePluginAuthoringSource(sourcePath);
       expect(Result.isSuccess(validated)).toBe(true);
@@ -462,8 +466,8 @@ it("validates and prepares the staged provider-owned remote declarations", async
       expect(validated.success).toMatchObject({
         runtime: "managed-remote-mcp",
         plugin: `supernala/${slug}`,
-        publicationEligible: false,
-        publicationBlocker: "remote-release-not-reviewed",
+        publicationEligible,
+        publicationBlocker,
       });
       const prepared = await preparePluginAuthoringSource({
         sourcePath,

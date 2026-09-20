@@ -107,7 +107,7 @@ const providerExpansionDeclarations = await Promise.all(
   ["notion", "resend"].map(async (provider) => {
     const decoded = validateManagedRemotePluginRelease(
       JSON.parse(await readFile(`plugins/remotes/${provider}.json`, "utf8")),
-      "authoring",
+      "publication",
     );
     if (Result.isFailure(decoded)) throw new Error(`${provider}:${decoded.failure}`);
 

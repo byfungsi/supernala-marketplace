@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "status": "staged-unverified",
+  "status": "reviewed-publishable",
   "id": "supernala-public:supernala:notion@1.0.0",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "notion",
   "version": "1.0.0",
   "name": "Notion",
-  "description": "Staged curated Notion hosted MCP integration",
+  "description": "Curated Notion hosted MCP integration",
   "license": "LicenseRef-Provider-Service",
   "runtime": {
     "_tag": "ManagedRemoteMcp",
@@ -205,5 +205,5 @@
     "https://mcp.notion.com/.well-known/oauth-protected-resource",
     "https://mcp.notion.com/.well-known/oauth-authorization-server"
   ],
-  "verificationNotes": "Documentation-derived candidate tools and exact OAuth metadata are reviewed offline, not a consented tools/list capture. notion-fetch with id self returns a text block containing JSON whose self object carries workspace, user, and current_tool_access. The MCP-audience token is not sent to public REST /v1/users/me. Initial user_id/workspace_id/email_domain token fields must survive refreshes that omit them. Live consent, exact catalog schemas, per-plan tool eligibility, privacy review, and production acceptance remain unverified."
+  "verificationNotes": "Owner authorized publication-first testing through the normal Supernala UI. The admitted catalog remains documentation-derived, not a consented tools/list capture. notion-fetch with id self returns a text block containing JSON whose self object carries workspace, user, and current_tool_access. The MCP-audience token is not sent to public REST /v1/users/me. Initial user_id/workspace_id/email_domain token fields must survive refreshes that omit them. Live consent, hosted catalog equality, per-plan tool eligibility, privacy review, and production acceptance remain pending and must not be inferred from reviewed-publishable status."
 }

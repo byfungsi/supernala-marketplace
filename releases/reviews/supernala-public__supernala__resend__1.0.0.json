@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "resend",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "resend-1.0.0-owner-authorized-source-authority-v1",
+  "reviewer": "supernala-owner (publication authorized; formal and live acceptance pending)",
+  "reviewedAt": 1789915000000,
+  "sourceInputDigest": "5f32f0c43b2c5e5b96c406989f6e6797fe30ef7fe475b9c47c0c5ad8321ed73e",
+  "artifactDigest": null,
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "resend-oauth-cimd-v1",
+    "providerDefinitionDigest": "6770e9ee1659f427aa817e9d12df2a9a2b775bc209a1cd946039c7e58aa58ec1",
+    "requestedScopes": ["emails:send"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "cd04f64f8af8c90bb0c100ccef838bdbb912eccd1aeed35fbbb8d7fbedc78f62",
+  "configDigest": "e6ebf9c4674f06e5a34f3a0619d9caa13b618515eeff5f54267e104bd6400221",
+  "provenanceDigest": "b8a9039fb70252e769197d0ce5f04356833b6289bde47e2b893e349a408a0b2e",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "a550e0c82f40e481406e144770a99999c39c2bad7676e314f0f58c4eb8109d03",
+  "authorityAfter": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["emails:send"],
+    "endpoint": "https://mcp.resend.com/mcp",
+    "endpointRegistrationId": "resend-mcp-v1",
+    "providerRegistrationId": "resend-oauth-cimd-v1",
+    "providerDefinitionDigest": "6770e9ee1659f427aa817e9d12df2a9a2b775bc209a1cd946039c7e58aa58ec1",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "resend-oauth-cimd-v1",
+      "providerDefinitionDigest": "6770e9ee1659f427aa817e9d12df2a9a2b775bc209a1cd946039c7e58aa58ec1",
+      "requestedScopes": ["emails:send"],
+      "clientRegistration": {
+        "kind": "cimd",
+        "clientIdMetadataDocumentUrl": "https://supernala.com/.well-known/oauth-client/resend.json"
+      },
+      "resourceMetadataUrl": "https://mcp.resend.com/.well-known/oauth-protected-resource",
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Resend team (live identity pending)"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "resend.send_email",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 320
+            },
+            "to": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 50,
+              "items": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 320
+              }
+            },
+            "subject": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 998
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100000
+            }
+          },
+          "additionalProperties": false,
+          "required": ["from", "to", "subject", "text"]
+        }
+      }
+    ],
+    "allowedHosts": ["mcp.resend.com"],
+    "config": []
+  },
+  "authorityDigest": "8a50225312187cf849287f5d260dc47bdac701f860c14735ab00d0756d22e11b",
+  "authorityDiffDigest": "8fd85df692d75ceff0106a710549f0fef0835b0074376d14c0756e4691100094",
+  "releaseDigest": "b5713399d2a8bb38da51030d1115c10329d2ea234c7e53be576f386ca59f7652",
+  "decision": "approved"
+}

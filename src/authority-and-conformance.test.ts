@@ -154,8 +154,14 @@ describe("authority and protocol gates", () => {
     ).toMatchObject({ _tag: "Success" });
   });
 
-  it("keeps every remote candidate staged and validates exact endpoint host", async () => {
-    for (const name of ["linear", "notion", "atlassian", "gmail", "resend"]) {
+  it("enforces each remote candidate's reviewed publication status and exact endpoint host", async () => {
+    for (const [name, publicationEligible] of [
+      ["linear", false],
+      ["notion", true],
+      ["atlassian", false],
+      ["gmail", false],
+      ["resend", true],
+    ] as const) {
       const value: unknown = JSON.parse(await readFile(`plugins/remotes/${name}.json`, "utf8"));
       const authoring = validateManagedRemotePluginRelease(value, "authoring");
       expect(Result.isSuccess(authoring)).toBe(true);
@@ -168,9 +174,9 @@ describe("authority and protocol gates", () => {
           "exact reviewed public MCP identity tools may be required instead",
         );
       }
-      expect(validateManagedRemotePluginRelease(authoring.success, "publication")).toEqual(
-        Result.fail("remote-release-not-reviewed"),
-      );
+      const publication = validateManagedRemotePluginRelease(authoring.success, "publication");
+      if (publicationEligible) expect(Result.isSuccess(publication)).toBe(true);
+      else expect(publication).toEqual(Result.fail("remote-release-not-reviewed"));
     }
   });
 

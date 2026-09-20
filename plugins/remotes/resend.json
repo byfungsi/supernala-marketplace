@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "status": "staged-unverified",
+  "status": "reviewed-publishable",
   "id": "supernala-public:supernala:resend@1.0.0",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "resend",
   "version": "1.0.0",
   "name": "Resend",
-  "description": "Staged curated Resend hosted MCP email integration",
+  "description": "Curated Resend hosted MCP email integration",
   "license": "LicenseRef-Provider-Service",
   "runtime": {
     "_tag": "ManagedRemoteMcp",
@@ -149,5 +149,5 @@
     "https://mcp.resend.com/.well-known/oauth-protected-resource",
     "https://api.resend.com/.well-known/oauth-authorization-server"
   ],
-  "verificationNotes": "OAuth is the default. The hosted protected-resource metadata delegates to api.resend.com; CIMD supplies one durable public client identity and no secret. The requested emails:send scope intentionally permits only the documentation/source-backed send-email candidate and excludes API-key, domain, broadcast, contact, and admin tools. Official token examples contain no account/team identity and no identity endpoint is documented, so identity remains explicit opaque staged data pending authorized live verification. The supernala.com public origin is an undeployed staging assumption; render plugins/remotes/resend-cimd.json.template with the real approved PUBLIC_ORIGIN and update this declaration before review. The exact /v1/plugins/oauth/callback route and CIMD document must be deployed before consent. Live consent, hosted tools/list equality, team binding, privacy review, and production acceptance remain unverified."
+  "verificationNotes": "Owner authorized publication-first testing through the normal Supernala UI. OAuth is the default. The hosted protected-resource metadata delegates to api.resend.com; the deployed Supernala CIMD document supplies one durable public client identity and no secret. The requested emails:send scope intentionally admits only the documentation/source-backed send-email candidate and excludes API-key, domain, broadcast, contact, and admin tools. Official token examples contain no account/team identity and no identity endpoint is documented, so identity remains explicitly opaque pending authorized live verification. Live consent, hosted catalog equality, team binding, privacy review, and production acceptance remain pending and must not be inferred from reviewed-publishable status."
 }

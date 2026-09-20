@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "notion",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "notion-1.0.0-owner-authorized-source-authority-v1",
+  "reviewer": "supernala-owner (publication authorized; formal and live acceptance pending)",
+  "reviewedAt": 1789915000000,
+  "sourceInputDigest": "d790d6c3444427886640f8090b5231beecbdeaa497bbe5dbfb5929b7bd832cac",
+  "artifactDigest": null,
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "notion-oauth-v1",
+    "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
+    "requestedScopes": ["default"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "496f3be4bd75ba8ccc933a8689516376a9f967947fefc517ac80ab231b9d180e",
+  "configDigest": "e6ebf9c4674f06e5a34f3a0619d9caa13b618515eeff5f54267e104bd6400221",
+  "provenanceDigest": "f9ed3554e02f518376f37d618bcb5f2bb9bc2743da4d7b8b88cb870e161c38a8",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "a550e0c82f40e481406e144770a99999c39c2bad7676e314f0f58c4eb8109d03",
+  "authorityAfter": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["default"],
+    "endpoint": "https://mcp.notion.com/mcp",
+    "endpointRegistrationId": "notion-mcp-v1",
+    "providerRegistrationId": "notion-oauth-v1",
+    "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "notion-oauth-v1",
+      "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
+      "requestedScopes": ["default"],
+      "clientRegistration": {
+        "kind": "dynamic",
+        "authorizationServerMetadataUrl": "https://mcp.notion.com/.well-known/oauth-authorization-server"
+      },
+      "resourceMetadataUrl": "https://mcp.notion.com/.well-known/oauth-protected-resource",
+      "identity": {
+        "kind": "mcp-tool",
+        "operation": {
+          "endpoint": "https://mcp.notion.com/mcp",
+          "toolName": "notion-fetch",
+          "input": {
+            "id": "self"
+          },
+          "maximumOutputBytes": 65536
+        },
+        "subjectPaths": [
+          ["self", "workspace", "id"],
+          ["self", "user", "id"]
+        ],
+        "displayLabelPath": ["self", "workspace", "name"],
+        "subjectStability": "stable",
+        "maximumResponseBytes": 65536,
+        "maximumJsonDepth": 8,
+        "maximumObjectKeys": 512
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "notion.notion_fetch",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "additionalProperties": false,
+          "required": ["id"]
+        }
+      },
+      {
+        "id": "notion.notion_search",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": ["query"]
+        }
+      },
+      {
+        "id": "notion.notion_create_pages",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "parent": {
+              "type": "object"
+            },
+            "pages": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": ["parent", "pages"]
+        }
+      },
+      {
+        "id": "notion.notion_update_page",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "additionalProperties": false,
+          "required": ["page_id"]
+        }
+      }
+    ],
+    "allowedHosts": ["mcp.notion.com"],
+    "config": []
+  },
+  "authorityDigest": "b340f5cd713cbebd75be29f6ec5b5666ad7ec4d978b7b55d4db8a9323721f2b7",
+  "authorityDiffDigest": "e40daba340e2c2ce73c77e8556779fe595e9150a69813427112c74c2a63c5122",
+  "releaseDigest": "fa07056bdcea0b0e8037d59e9349077ebfbf05c12b5a713839dd1c768ac92de5",
+  "decision": "approved"
+}
