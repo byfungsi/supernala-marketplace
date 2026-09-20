@@ -24,6 +24,7 @@ import {
 } from "./plugin-contract.js";
 import { pluginConfigHasNoExcessProperties } from "./plugin-config-validation.js";
 import { PackagedOAuthAuthentication } from "./oauth-provider-definition.js";
+import { PluginAuthStrategyDefinition } from "./plugin-auth-strategy.js";
 
 /** Maximum accepted file count shared with Phase 1. */
 export const maximumPluginArchiveFiles = 5_000;
@@ -93,6 +94,7 @@ export const PackageManifest = Schema.Struct({
   catalog: Schema.Struct({ path: Schema.Literal("catalog.json"), sha256: PluginSha256 }),
   config: Schema.Struct({ path: Schema.Literal("config.json"), sha256: PluginSha256 }),
   authentication: PackagedPluginAuthentication,
+  authStrategy: Schema.optionalKey(PluginAuthStrategyDefinition),
   network: Schema.Struct({ allowedHosts: PluginVersion.fields.allowedHosts }),
   limits: Schema.Struct({
     expandedBytes: Schema.Int.pipe(
@@ -124,6 +126,7 @@ export interface ParsedPackagedPluginArchive {
   readonly configDigest: PluginSha256Type;
   readonly manifest: PackageManifest;
   readonly authentication: PackagedPluginAuthentication;
+  readonly authStrategy?: typeof PluginAuthStrategyDefinition.Type;
   readonly provenance: Schema.Json;
 }
 
@@ -413,6 +416,9 @@ export async function parsePackagedPluginArchive(input: {
     configDigest,
     manifest: manifest.success,
     authentication: manifest.success.authentication,
+    ...(manifest.success.authStrategy === undefined
+      ? {}
+      : { authStrategy: manifest.success.authStrategy }),
     provenance: provenanceJson.success,
     version: PluginVersion.make({
       id: versionId.success,

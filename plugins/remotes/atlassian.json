@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "status": "staged-unverified",
-  "id": "atlassian-remote-1.0.0",
+  "id": "supernala-public:supernala:atlassian@1.0.0",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "atlassian",
@@ -16,9 +16,56 @@
     "providerRegistrationId": "atlassian-oauth-v2",
     "transport": "streamable-http"
   },
-  "endpoint": "https://mcp.atlassian.com/v2/mcp",
+  "endpoint": "https://mcp.atlassian.com/v2/mcp?tools=all",
   "oauthRegistrationMode": "dynamic",
-  "scopes": [],
+  "providerDefinitionDigest": "0000000000000000000000000000000000000000000000000000000000000000",
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "atlassian-oauth-v2",
+    "providerDefinitionDigest": "0000000000000000000000000000000000000000000000000000000000000000",
+    "requestedScopes": [
+      "read:jira:agent-interface",
+      "search:jira:agent-interface",
+      "write:jira:agent-interface"
+    ],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://mcp.atlassian.com/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://mcp.atlassian.com/.well-known/oauth-protected-resource/v2/mcp",
+    "identity": {
+      "kind": "https-json",
+      "endpoint": "https://api.atlassian.com/me",
+      "authorization": "bearer",
+      "subjectPath": ["account_id"],
+      "displayLabelPath": ["name"],
+      "subjectStability": "stable",
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 256
+    },
+    "resources": {
+      "kind": "https-json",
+      "endpoint": "https://api.atlassian.com/oauth/token/accessible-resources",
+      "authorization": "bearer",
+      "idPath": ["id"],
+      "displayLabelPath": ["name"],
+      "selection": "owner-select",
+      "binding": {
+        "appliesTo": { "kind": "all-tools-with-argument" },
+        "argumentPath": ["cloudId"]
+      },
+      "maximumResponseBytes": 262144,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 2048
+    }
+  },
+  "scopes": [
+    "read:jira:agent-interface",
+    "search:jira:agent-interface",
+    "write:jira:agent-interface"
+  ],
   "catalog": {
     "id": "atlassian-unverified-catalog",
     "schemaVersion": 1,
@@ -27,5 +74,14 @@
   },
   "config": { "revision": 1, "fields": [] },
   "allowedHosts": ["mcp.atlassian.com"],
-  "verificationNotes": "V2 endpoint and OAuth 2.1 documented by Atlassian; DCR metadata, scopes, live catalog, privacy, Rovo credit behavior, and eligibility remain unverified."
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://support.atlassian.com/atlassian-ai-gateway/docs/configure-oauth-2-1/",
+    "https://support.atlassian.com/atlassian-ai-gateway/docs/supported-tools/",
+    "https://mcp.atlassian.com/.well-known/oauth-protected-resource/v2/mcp"
+  ],
+  "verificationNotes": "The v2 tools=all endpoint, OAuth 2.1, DCR metadata, and Jira agent-interface scopes are publicly documented. Whether the MCP audience token is accepted by /me and /oauth/token/accessible-resources remains unverified; exact reviewed public MCP identity tools may be required instead. Live consent, schemas/catalog, privacy, Rovo credit behavior, and eligibility remain unverified."
 }

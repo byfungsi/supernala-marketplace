@@ -35,12 +35,13 @@ export async function verifyPublishedReleaseBaseline(input: {
     if (applicationState.success === "mismatch") {
       return Result.fail("baseline-application-state-mismatch");
     }
-    if (
-      record.kind !== "managed-package" ||
-      record.artifactDigest === null ||
-      record.artifactByteLength === null
-    ) {
-      return Result.fail("baseline-artifact-evidence-missing");
+    if (record.kind === "managed-remote-mcp") {
+      verified.push(
+        applicationState.success === "published"
+          ? { ...record, durableStateVerified: true }
+          : { ...record, durableStateRevoked: true },
+      );
+      continue;
     }
     const artifactState = await input.artifacts.verifyExisting(
       record.artifactDigest,

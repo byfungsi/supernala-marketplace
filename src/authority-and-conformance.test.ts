@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "@effect/vitest";
-import { Result } from "effect";
+import { Result, Schema } from "effect";
 import {
   derivePluginAuthoritySnapshot,
   diffPluginAuthority,
@@ -8,6 +8,7 @@ import {
 } from "./authority-diff.js";
 import { validatePluginSource } from "./authoring-validation.js";
 import { inspectMcpJsonLines, inspectMcpStreamableHttpBody } from "./mcp-conformance.js";
+import { digestPluginOAuthProviderDefinition } from "./oauth-provider-definition.js";
 import { validateManagedRemotePluginRelease } from "./remote-release.js";
 
 describe("authority and protocol gates", () => {
@@ -154,14 +155,71 @@ describe("authority and protocol gates", () => {
   });
 
   it("keeps every remote candidate staged and validates exact endpoint host", async () => {
-    for (const name of ["linear", "notion", "atlassian", "gmail"]) {
+    for (const name of ["linear", "notion", "atlassian", "gmail", "resend"]) {
       const value: unknown = JSON.parse(await readFile(`plugins/remotes/${name}.json`, "utf8"));
       const authoring = validateManagedRemotePluginRelease(value, "authoring");
       expect(Result.isSuccess(authoring)).toBe(true);
       if (Result.isFailure(authoring)) continue;
+      if (name === "atlassian") {
+        expect(authoring.success.verificationNotes).toContain(
+          "MCP audience token is accepted by /me and /oauth/token/accessible-resources",
+        );
+        expect(authoring.success.verificationNotes).toContain(
+          "exact reviewed public MCP identity tools may be required instead",
+        );
+      }
       expect(validateManagedRemotePluginRelease(authoring.success, "publication")).toEqual(
         Result.fail("remote-release-not-reviewed"),
       );
     }
   });
+
+  for (const name of ["notion", "resend"]) {
+    it(`pins ${name} provider authority and rejects host, ownership, and scope drift`, async () => {
+      const value: unknown = JSON.parse(await readFile(`plugins/remotes/${name}.json`, "utf8"));
+      const decoded = validateManagedRemotePluginRelease(value, "authoring");
+      expect(Result.isSuccess(decoded)).toBe(true);
+      if (Result.isFailure(decoded)) return;
+      const remote = decoded.success;
+      if (
+        remote.authStrategy === undefined ||
+        remote.authStrategy.profile !== "mcp-oauth" ||
+        remote.oauthProviderDefinition === undefined
+      ) {
+        throw new Error(`${name}-oauth-authority-missing`);
+      }
+      const remoteJson = Schema.decodeUnknownSync(Schema.JsonObject)(
+        JSON.parse(JSON.stringify(remote)),
+      );
+      const authStrategyJson = Schema.decodeUnknownSync(Schema.JsonObject)(remoteJson.authStrategy);
+
+      expect(await digestPluginOAuthProviderDefinition(remote.oauthProviderDefinition)).toBe(
+        remote.authStrategy.providerDefinitionDigest,
+      );
+      expect(
+        validateManagedRemotePluginRelease(
+          { ...remoteJson, endpoint: "https://authority-drift.example/mcp" },
+          "authoring",
+        ),
+      ).toEqual(Result.fail("remote-endpoint-authority-mismatch"));
+      expect(
+        validateManagedRemotePluginRelease(
+          {
+            ...remoteJson,
+            authStrategy: {
+              ...authStrategyJson,
+              providerRegistrationId: `${name}-different-owner`,
+            },
+          },
+          "authoring",
+        ),
+      ).toEqual(Result.fail("remote-auth-provider-registration-mismatch"));
+      expect(
+        validateManagedRemotePluginRelease(
+          { ...remoteJson, scopes: [...remote.scopes, "full_access"] },
+          "authoring",
+        ),
+      ).toEqual(Result.fail("remote-auth-oauth-authority-mismatch"));
+    });
+  }
 });

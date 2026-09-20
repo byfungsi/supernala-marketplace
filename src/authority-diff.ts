@@ -11,6 +11,7 @@ import {
   type PackageCatalog,
   type PackageManifest,
 } from "./package-archive.js";
+import type { ManagedRemotePluginRelease } from "./remote-release.js";
 
 /** Complete reviewed authority surface for one authoring release. */
 export const PluginAuthoritySnapshot = Schema.Struct({
@@ -21,6 +22,7 @@ export const PluginAuthoritySnapshot = Schema.Struct({
   endpointRegistrationId: Schema.NullOr(Schema.String),
   providerRegistrationId: Schema.NullOr(Schema.String),
   providerDefinitionDigest: Schema.NullOr(Schema.String),
+  authStrategy: Schema.optionalKey(Schema.NullOr(Schema.JsonObject)),
   tools: Schema.Array(
     Schema.Struct({
       id: Schema.String,
@@ -83,6 +85,9 @@ export function derivePluginAuthoritySnapshot(input: {
     providerDefinitionDigest: packagedAuthenticationProviderDefinitionDigest(
       input.manifest.authentication,
     ),
+    ...(input.manifest.authStrategy === undefined
+      ? {}
+      : { authStrategy: input.manifest.authStrategy }),
     tools: input.catalog.tools.map((tool) => ({
       id: tool.id,
       classification: tool.classification,
@@ -90,6 +95,41 @@ export function derivePluginAuthoritySnapshot(input: {
       inputSchema: tool.inputSchema,
     })),
     allowedHosts: input.manifest.network.allowedHosts,
+    config: input.config.fields.map((field) => ({
+      key: field.key,
+      type: field.type,
+      scope: field.scope,
+      required: false,
+      atomicGroup: null,
+      sensitivity: field.sensitivity,
+      sourcePolicy: field.sourcePolicy,
+      delivery: field.delivery,
+      affects: field.affects,
+      runtimeName: field.runtimeName ?? null,
+    })),
+  });
+}
+
+/** Project one reviewed managed remote release into the complete authority surface. */
+export function deriveManagedRemoteAuthoritySnapshot(
+  input: ManagedRemotePluginRelease,
+): PluginAuthoritySnapshot {
+  return PluginAuthoritySnapshot.make({
+    runtimeKind: "managed-remote-mcp",
+    authenticationKind: input.authStrategy?.profile ?? "oauth",
+    requestedScopes: input.scopes,
+    endpoint: input.endpoint,
+    endpointRegistrationId: input.runtime.endpointRegistrationId,
+    providerRegistrationId: input.runtime.providerRegistrationId,
+    providerDefinitionDigest: input.providerDefinitionDigest ?? null,
+    ...(input.authStrategy === undefined ? {} : { authStrategy: input.authStrategy }),
+    tools: input.catalog.tools.map((tool) => ({
+      id: tool.id,
+      classification: tool.classification,
+      defaultPolicy: tool.defaultPolicy,
+      inputSchema: tool.inputSchema,
+    })),
+    allowedHosts: input.allowedHosts,
     config: input.config.fields.map((field) => ({
       key: field.key,
       type: field.type,
@@ -117,6 +157,7 @@ export function deriveBootstrapAuthoritySnapshot(
     endpointRegistrationId: null,
     providerRegistrationId: null,
     providerDefinitionDigest: null,
+    ...(after.authStrategy === undefined ? {} : { authStrategy: null }),
     tools: [],
     allowedHosts: [],
     config: [],
@@ -167,6 +208,7 @@ export async function diffPluginAuthority(
     endpointRegistrationId: snapshot.endpointRegistrationId,
     providerRegistrationId: snapshot.providerRegistrationId,
     providerDefinitionDigest: snapshot.providerDefinitionDigest,
+    ...(snapshot.authStrategy === undefined ? {} : { authStrategy: snapshot.authStrategy }),
   });
   const changedRuntimeAuthority =
     canonicalPluginJson(runtimeAuthority(before)) !== canonicalPluginJson(runtimeAuthority(after));

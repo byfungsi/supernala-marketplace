@@ -262,16 +262,8 @@ const AccountProjectionPath = Schema.Array(AccountProjectionKey).pipe(
   Schema.check(Schema.isLengthBetween(1, 8)),
 );
 
-/**
- * Bounded declarative account identity projection interpreted by the generic OAuth broker.
- * Direct boundary decoding must use `onExcessProperty: "error"`.
- */
-export const OAuthAccountProjection = Schema.Struct({
-  kind: Schema.Literal("https-json"),
-  endpoint: HttpsEndpoint,
+const OAuthAccountProjectionLimits = {
   authorization: Schema.Literal("bearer"),
-  subjectPath: AccountProjectionPath,
-  displayLabelPath: Schema.optionalKey(AccountProjectionPath),
   subjectStability: Schema.Literals(["stable", "mutable"]),
   maximumResponseBytes: Schema.Int.pipe(
     Schema.check(Schema.isBetween({ minimum: 1_024, maximum: 262_144 })),
@@ -286,10 +278,30 @@ export const OAuthAccountProjection = Schema.Struct({
   maximumDisplayLabelLength: Schema.Int.pipe(
     Schema.check(Schema.isBetween({ minimum: 1, maximum: 160 })),
   ),
-});
+} as const;
 
 /** Bounded declarative account identity projection interpreted by the generic OAuth broker. */
-export interface OAuthAccountProjection extends Schema.Schema.Type<typeof OAuthAccountProjection> {}
+export const OAuthAccountProjection = Schema.Union([
+  Schema.Struct({
+    kind: Schema.Literal("declaration-managed"),
+  }),
+  Schema.Struct({
+    kind: Schema.Literal("https-json"),
+    endpoint: HttpsEndpoint,
+    subjectPath: AccountProjectionPath,
+    displayLabelPath: Schema.optionalKey(AccountProjectionPath),
+    ...OAuthAccountProjectionLimits,
+  }),
+  Schema.Struct({
+    kind: Schema.Literal("atlassian-jira-site"),
+    accountEndpoint: HttpsEndpoint,
+    accessibleResourcesEndpoint: HttpsEndpoint,
+    ...OAuthAccountProjectionLimits,
+  }),
+]);
+
+/** Bounded declarative account identity projection interpreted by the generic OAuth broker. */
+export type OAuthAccountProjection = typeof OAuthAccountProjection.Type;
 
 // This is a nonsecret schema field; a computed key avoids a scanner false positive around Schema.Literal.
 const initialRefreshTokenField = "initialRefreshToken";

@@ -1,6 +1,8 @@
 import { Result, Schema } from "effect";
 import { canonicalPluginJson, PluginSha256, PluginVersion } from "./plugin-contract.js";
 import { PackagedPluginAuthentication } from "./package-archive.js";
+import { PluginAuthStrategyDefinition } from "./plugin-auth-strategy.js";
+import { PluginOAuthProviderDefinition } from "./oauth-provider-definition.js";
 import type { D1BatchTransport, D1Statement } from "./cloudflare-adapters.js";
 import {
   pluginReleaseIdentityKey,
@@ -47,6 +49,8 @@ const JournalVersionEnvelope = Schema.Struct({
   schemaVersion: Schema.Literal(1),
   version: PluginVersion,
   authentication: PackagedPluginAuthentication,
+  authStrategy: Schema.optionalKey(PluginAuthStrategyDefinition),
+  oauthProviderDefinition: Schema.optionalKey(PluginOAuthProviderDefinition),
 });
 
 const decodeVersionEnvelope = (value: Schema.Json): typeof JournalVersionEnvelope.Type => {
@@ -69,7 +73,7 @@ const decodeRow = (input: Schema.JsonObject): Result.Result<ReleaseJournalRecord
   try {
     const row = Schema.decodeUnknownSync(JournalRow)(input);
     const versionEnvelope = decodeVersionEnvelope(JSON.parse(row.version_json));
-    const record: ReleaseJournalRecord = {
+    const record = {
       identity: {
         marketplaceId: row.marketplace_id,
         publisherNamespace: row.publisher_namespace,
@@ -79,6 +83,12 @@ const decodeRow = (input: Schema.JsonObject): Result.Result<ReleaseJournalRecord
       definitionId: row.definition_id,
       version: versionEnvelope.version,
       authentication: versionEnvelope.authentication,
+      ...(versionEnvelope.authStrategy === undefined
+        ? {}
+        : { authStrategy: versionEnvelope.authStrategy }),
+      ...(versionEnvelope.oauthProviderDefinition === undefined
+        ? {}
+        : { oauthProviderDefinition: versionEnvelope.oauthProviderDefinition }),
       kind: row.runtime_kind,
       sourceInputDigest: row.source_input_digest,
       releaseDigest: row.release_digest,
@@ -169,6 +179,12 @@ export class D1ReleaseJournal implements ReleaseJournal {
             schemaVersion: 1,
             version: candidate.version,
             authentication: candidate.authentication,
+            ...(candidate.authStrategy === undefined
+              ? {}
+              : { authStrategy: candidate.authStrategy }),
+            ...(candidate.oauthProviderDefinition === undefined
+              ? {}
+              : { oauthProviderDefinition: candidate.oauthProviderDefinition }),
           }),
         ),
         candidate.sourceInputDigest,

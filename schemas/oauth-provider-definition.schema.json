@@ -144,116 +144,208 @@
       "uniqueItems": true
     },
     "account": {
-      "type": "object",
-      "properties": {
-        "kind": {
-          "type": "string",
-          "enum": ["https-json"]
-        },
-        "endpoint": {
-          "type": "string",
-          "allOf": [
-            {
-              "minLength": 1
-            },
-            {
-              "maxLength": 2048
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["declaration-managed"]
             }
-          ]
-        },
-        "authorization": {
-          "type": "string",
-          "enum": ["bearer"]
-        },
-        "subjectPath": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "allOf": [
-              {
-                "minLength": 1
-              },
-              {
-                "maxLength": 128
-              }
-            ],
-            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
           },
-          "allOf": [
-            {
-              "minItems": 1
-            },
-            {
-              "maxItems": 8
-            }
-          ]
+          "required": ["kind"],
+          "additionalProperties": true
         },
-        "displayLabelPath": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "allOf": [
-              {
-                "minLength": 1
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["https-json"]
+            },
+            "endpoint": {
+              "type": "string",
+              "allOf": [
+                {
+                  "minLength": 1
+                },
+                {
+                  "maxLength": 2048
+                }
+              ]
+            },
+            "subjectPath": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 128
+                  }
+                ],
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
               },
-              {
-                "maxLength": 128
-              }
-            ],
-            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
-          },
-          "allOf": [
-            {
-              "minItems": 1
+              "allOf": [
+                {
+                  "minItems": 1
+                },
+                {
+                  "maxItems": 8
+                }
+              ]
             },
-            {
-              "maxItems": 8
+            "displayLabelPath": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 128
+                  }
+                ],
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+              },
+              "allOf": [
+                {
+                  "minItems": 1
+                },
+                {
+                  "maxItems": 8
+                }
+              ]
+            },
+            "authorization": {
+              "type": "string",
+              "enum": ["bearer"]
+            },
+            "subjectStability": {
+              "type": "string",
+              "enum": ["stable", "mutable"]
+            },
+            "maximumResponseBytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 262144
+            },
+            "maximumJsonDepth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            },
+            "maximumObjectKeys": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2048
+            },
+            "maximumSubjectLength": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300
+            },
+            "maximumDisplayLabelLength": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 160
             }
-          ]
+          },
+          "required": [
+            "kind",
+            "endpoint",
+            "subjectPath",
+            "authorization",
+            "subjectStability",
+            "maximumResponseBytes",
+            "maximumJsonDepth",
+            "maximumObjectKeys",
+            "maximumSubjectLength",
+            "maximumDisplayLabelLength"
+          ],
+          "additionalProperties": true
         },
-        "subjectStability": {
-          "type": "string",
-          "enum": ["stable", "mutable"]
-        },
-        "maximumResponseBytes": {
-          "type": "integer",
-          "minimum": 1024,
-          "maximum": 262144
-        },
-        "maximumJsonDepth": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 16
-        },
-        "maximumObjectKeys": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 2048
-        },
-        "maximumSubjectLength": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 300
-        },
-        "maximumDisplayLabelLength": {
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 160
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": ["atlassian-jira-site"]
+            },
+            "accountEndpoint": {
+              "type": "string",
+              "allOf": [
+                {
+                  "minLength": 1
+                },
+                {
+                  "maxLength": 2048
+                }
+              ]
+            },
+            "accessibleResourcesEndpoint": {
+              "type": "string",
+              "allOf": [
+                {
+                  "minLength": 1
+                },
+                {
+                  "maxLength": 2048
+                }
+              ]
+            },
+            "authorization": {
+              "type": "string",
+              "enum": ["bearer"]
+            },
+            "subjectStability": {
+              "type": "string",
+              "enum": ["stable", "mutable"]
+            },
+            "maximumResponseBytes": {
+              "type": "integer",
+              "minimum": 1024,
+              "maximum": 262144
+            },
+            "maximumJsonDepth": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 16
+            },
+            "maximumObjectKeys": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2048
+            },
+            "maximumSubjectLength": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 300
+            },
+            "maximumDisplayLabelLength": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 160
+            }
+          },
+          "required": [
+            "kind",
+            "accountEndpoint",
+            "accessibleResourcesEndpoint",
+            "authorization",
+            "subjectStability",
+            "maximumResponseBytes",
+            "maximumJsonDepth",
+            "maximumObjectKeys",
+            "maximumSubjectLength",
+            "maximumDisplayLabelLength"
+          ],
+          "additionalProperties": true
         }
-      },
-      "required": [
-        "kind",
-        "endpoint",
-        "authorization",
-        "subjectPath",
-        "subjectStability",
-        "maximumResponseBytes",
-        "maximumJsonDepth",
-        "maximumObjectKeys",
-        "maximumSubjectLength",
-        "maximumDisplayLabelLength"
-      ],
-      "additionalProperties": true
+      ]
     },
     "tokens": {
       "type": "object",

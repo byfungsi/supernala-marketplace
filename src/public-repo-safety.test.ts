@@ -17,6 +17,15 @@ it("reports only sanitized finding locations and types", async () => {
   expect(JSON.stringify(findings)).not.toContain(syntheticSecret);
 });
 
+it("ignores Git metadata whether the checkout uses a directory or worktree pointer file", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-safety-worktree-"));
+  await writeFile(
+    path.join(root, ".git"),
+    `gitdir: ${["/", "Users/example/private/worktree"].join("")}\n`,
+  );
+  expect(await inspectPublicRepositorySafety(root)).toEqual([]);
+});
+
 it("covers JSON, env, YAML, key headers, token variants, and bounded archive entries", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-safety-matrix-"));
   const assigned = ["long", "synthetic", "secret"].join("");

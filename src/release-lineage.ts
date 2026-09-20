@@ -69,10 +69,11 @@ export async function validatePublicationAuthorityLineage(input: {
   ) {
     return Result.fail("release-previous-lineage-stale");
   }
-  const state = await input.application.readPublicationState({
+  const previousCandidate: IncrementalReleaseCandidate = {
     ...previous,
     artifactBytes: null,
-  });
+  };
+  const state = await input.application.readPublicationState(previousCandidate);
   if (Result.isFailure(state)) return Result.fail("release-previous-lineage-read-failed");
   return state.success === "published"
     ? Result.succeed(undefined)

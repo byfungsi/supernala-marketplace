@@ -5,6 +5,11 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { expect, it } from "@effect/vitest";
 import { Result, Schema } from "effect";
+import {
+  deriveBootstrapAuthoritySnapshot,
+  deriveManagedRemoteAuthoritySnapshot,
+  diffPluginAuthority,
+} from "./authority-diff.js";
 import type { D1BatchTransport, D1Statement } from "./cloudflare-adapters.js";
 import { D1ReleaseJournal } from "./d1-release-journal.js";
 import { Phase1D1PublicationAdapter } from "./phase1-d1-publication-adapter.js";
@@ -14,8 +19,12 @@ import {
   digestPluginBytes,
   PluginSha256,
   PluginVersion,
+  ProviderRegistrationId,
+  RemoteMcpEndpointRegistrationId,
 } from "./plugin-contract.js";
 import { PackagedPluginAuthentication } from "./package-archive.js";
+import { preparePluginAuthoringSource } from "./plugin-authoring.js";
+import { PluginAuthStrategyDefinition } from "./plugin-auth-strategy.js";
 import {
   decodePluginOAuthProviderDefinition,
   digestPluginOAuthProviderDefinition,
@@ -23,11 +32,82 @@ import {
 } from "./oauth-provider-definition.js";
 import {
   InMemoryImmutableArtifactStore,
+  PluginReleaseIdentity,
   publishIncrementalRelease,
   type ApplicationPublicationAdapter,
   type IncrementalReleaseCandidate,
 } from "./release-machine.js";
-import { pluginDefinitionId, pluginVersionId } from "./release-bundle.js";
+import {
+  calculateAuthorityBaselineDigest,
+  calculateReleaseDigest,
+  pluginDefinitionId,
+  pluginVersionId,
+  type ReleaseReview,
+} from "./release-bundle.js";
+import {
+  type ManagedRemotePluginRelease,
+  validateManagedRemotePluginRelease,
+} from "./remote-release.js";
+import {
+  buildManagedRemoteReleaseBundle,
+  calculateManagedRemoteSourceInputDigest,
+  loadManagedRemoteReleaseBundle,
+} from "./remote-release-bundle.js";
+
+const OAuthChainFixture = Schema.Struct({
+  provider: Schema.String,
+  providerRegistrationId: Schema.String,
+  resourceIdentity: Schema.String,
+  requestedScopes: Schema.Array(Schema.String),
+  tokenEndpointAuthMethod: Schema.Literals(["client_secret_post", "none"]),
+  issuer: Schema.String,
+  authorizationEndpoint: Schema.String,
+  tokenEndpoint: Schema.String,
+  identityEndpoint: Schema.String,
+  subjectPath: Schema.Array(Schema.String),
+  displayLabelPath: Schema.Array(Schema.String),
+});
+const ApiKeyChainFixture = Schema.Struct({
+  provider: Schema.String,
+  providerRegistrationId: Schema.String,
+  verificationEndpoint: Schema.String,
+  identityEndpoint: Schema.String,
+  subjectPath: Schema.Array(Schema.String),
+  displayLabelPath: Schema.Array(Schema.String),
+  headerName: Schema.String,
+});
+const DeviceChainFixture = Schema.Struct({
+  provider: Schema.String,
+  providerRegistrationId: Schema.String,
+  deviceAuthorizationEndpoint: Schema.String,
+  tokenEndpoint: Schema.String,
+  identityEndpoint: Schema.String,
+  subjectPath: Schema.Array(Schema.String),
+  displayLabelPath: Schema.Array(Schema.String),
+});
+const PublishedProviderChains = Schema.Struct({
+  profiles: Schema.Struct({
+    "workspace-oauth": Schema.Array(OAuthChainFixture),
+    "mcp-oauth": Schema.Array(OAuthChainFixture),
+    ["api-key"]: Schema.Array(ApiKeyChainFixture),
+    "device-oauth": Schema.Array(DeviceChainFixture),
+  }),
+});
+const publishedProviderChains = Schema.decodeUnknownSync(PublishedProviderChains)(
+  JSON.parse(await readFile("fixtures/auth-profile-provider-chains.v1.json", "utf8")),
+).profiles;
+
+const providerExpansionDeclarations = await Promise.all(
+  ["notion", "resend"].map(async (provider) => {
+    const decoded = validateManagedRemotePluginRelease(
+      JSON.parse(await readFile(`plugins/remotes/${provider}.json`, "utf8")),
+      "authoring",
+    );
+    if (Result.isFailure(decoded)) throw new Error(`${provider}:${decoded.failure}`);
+
+    return decoded.success;
+  }),
+);
 
 class RecordingD1Transport implements D1BatchTransport {
   batches: Array<ReadonlyArray<D1Statement>> = [];
@@ -125,6 +205,24 @@ class ConfigWinnerRaceTransport extends SQLiteD1Transport {
   }
 }
 
+class BeforeFirstBatchSQLiteD1Transport extends SQLiteD1Transport {
+  #beforeFirstBatch: (() => Promise<void> | void) | undefined;
+
+  constructor(database: DatabaseSync, beforeFirstBatch: () => Promise<void> | void) {
+    super(database);
+    this.#beforeFirstBatch = beforeFirstBatch;
+  }
+
+  override async batch(statements: ReadonlyArray<D1Statement>) {
+    const beforeFirstBatch = this.#beforeFirstBatch;
+    if (beforeFirstBatch !== undefined) {
+      this.#beforeFirstBatch = undefined;
+      await beforeFirstBatch();
+    }
+    return super.batch(statements);
+  }
+}
+
 const candidate = async (
   sourceDirectory = "plugins/offline-fixture",
 ): Promise<IncrementalReleaseCandidate> => {
@@ -148,6 +246,9 @@ const candidate = async (
     definitionId: pluginDefinitionId(identity),
     version: prepared.success.parsed.version,
     authentication: prepared.success.parsed.authentication,
+    ...(prepared.success.parsed.authStrategy === undefined
+      ? {}
+      : { authStrategy: prepared.success.parsed.authStrategy }),
     kind: "managed-package",
     sourceInputDigest: PluginSha256.make("1".repeat(64)),
     releaseDigest: PluginSha256.make("2".repeat(64)),
@@ -285,20 +386,287 @@ const syntheticOAuthDefinitionJson = {
   revocation: { kind: "none" },
 } as const;
 
-const syntheticOAuthDefinition = () => {
-  const decoded = decodePluginOAuthProviderDefinition(syntheticOAuthDefinitionJson);
+const syntheticOAuthDefinition = (suffix?: string) => {
+  const source =
+    suffix === undefined
+      ? syntheticOAuthDefinitionJson
+      : {
+          ...syntheticOAuthDefinitionJson,
+          issuer: `https://identity.${suffix}.example`,
+          provider: `synthetic-${suffix}`,
+          resourceIdentity: `${suffix}-api.synthetic.example`,
+          authorizationEndpoint: `https://identity.${suffix}.example/oauth/authorize`,
+          tokenEndpoint: `https://identity.${suffix}.example/oauth/token`,
+          account: {
+            ...syntheticOAuthDefinitionJson.account,
+            endpoint: `https://${suffix}-api.synthetic.example/v1/account`,
+          },
+        };
+  const decoded = decodePluginOAuthProviderDefinition(source);
   if (Result.isFailure(decoded)) throw new Error("test-oauth-definition-invalid");
   return decoded.success;
 };
 
-const syntheticOAuthAuthentication = (definitionDigest: string) =>
+const providerChainOAuthDefinition = (
+  fixture: typeof OAuthChainFixture.Type,
+  tokenEndpointAuthMethod: "client_secret_post" | "none" = fixture.tokenEndpointAuthMethod,
+) => {
+  const decoded = decodePluginOAuthProviderDefinition({
+    ...syntheticOAuthDefinitionJson,
+    issuer: fixture.issuer,
+    provider: fixture.provider,
+    resourceIdentity: fixture.resourceIdentity,
+    authorizationEndpoint: fixture.authorizationEndpoint,
+    tokenEndpoint: fixture.tokenEndpoint,
+    tokenEndpointAuthMethod,
+    scopes: fixture.requestedScopes,
+    authorizationParameters: [],
+    account: {
+      ...syntheticOAuthDefinitionJson.account,
+      endpoint: fixture.identityEndpoint,
+      subjectPath: fixture.subjectPath,
+      displayLabelPath: fixture.displayLabelPath,
+    },
+  });
+  if (Result.isFailure(decoded)) throw new Error("provider-chain-oauth-definition-invalid");
+  return decoded.success;
+};
+
+const syntheticOAuthAuthentication = (
+  definitionDigest: string,
+  providerRegistration = "synthetic-mail-rest-v1",
+) =>
   Schema.decodeUnknownSync(PackagedPluginAuthentication, { onExcessProperty: "error" })({
     kind: "oauth",
-    providerRegistration: "synthetic-mail-rest-v1",
+    providerRegistration,
     providerDefinitionDigest: definitionDigest,
     requestedScopes: ["synthetic.mail.read"],
     credentialDelivery: "short-lived-access-token-only",
   });
+
+const managedRemoteCandidate = async (
+  definitionDigest: string,
+  providerRegistrationId = "synthetic-mail-rest-v1",
+): Promise<IncrementalReleaseCandidate> => {
+  const base = await candidate();
+  const endpoint = "https://mcp.synthetic.example/v2/mcp";
+  return {
+    ...base,
+    kind: "managed-remote-mcp",
+    version: PluginVersion.make({
+      id: base.version.id,
+      marketplaceId: base.version.marketplaceId,
+      publisherNamespace: base.version.publisherNamespace,
+      pluginSlug: base.version.pluginSlug,
+      version: base.version.version,
+      name: base.version.name,
+      description: base.version.description,
+      license: base.version.license,
+      runtime: {
+        _tag: "ManagedRemoteMcp",
+        kind: "managed-remote-mcp",
+        endpointRegistrationId: RemoteMcpEndpointRegistrationId.make("synthetic-mcp-v2"),
+        providerRegistrationId: ProviderRegistrationId.make(providerRegistrationId),
+        transport: "streamable-http",
+      },
+      catalog: base.version.catalog,
+      config: base.version.config,
+      allowedHosts: ["mcp.synthetic.example"],
+      status: base.version.status,
+      publishedAt: base.version.publishedAt,
+    }),
+    authentication: syntheticOAuthAuthentication(definitionDigest, providerRegistrationId),
+    provenance: {
+      kind: "managed-remote-mcp",
+      endpoint,
+      oauthRegistrationMode: "dynamic",
+      protocolPolicy: { catalogCompatibility: "reviewed-subset", maximumCatalogPages: 10 },
+      evidenceUrls: ["https://mcp.synthetic.example/provider-evidence"],
+      verificationNotes: "Controlled production-adapter fixture.",
+    },
+    artifactDigest: null,
+    artifactByteLength: null,
+    artifactBytes: null,
+  };
+};
+
+const providerExpansionCandidate = async (
+  remote: ManagedRemotePluginRelease,
+): Promise<IncrementalReleaseCandidate> => {
+  if (
+    remote.authStrategy === undefined ||
+    remote.authStrategy.profile !== "mcp-oauth" ||
+    remote.oauthProviderDefinition === undefined
+  ) {
+    throw new Error("provider-expansion-auth-declaration-missing");
+  }
+  const root = await mkdtemp(path.join(os.tmpdir(), `${remote.pluginSlug}-provider-bundle-`));
+  try {
+    const reviewedSource = path.join(root, `${remote.pluginSlug}.reviewed.json`);
+    await writeFile(
+      reviewedSource,
+      `${JSON.stringify({ ...JSON.parse(JSON.stringify(remote)), status: "reviewed-publishable" }, null, 2)}\n`,
+    );
+    const preparedFile = path.join(root, `${remote.pluginSlug}.prepared.json`);
+    const prepared = await preparePluginAuthoringSource({
+      sourcePath: reviewedSource,
+      outputFile: preparedFile,
+    });
+    if (
+      Result.isFailure(prepared) ||
+      prepared.success.runtime !== "managed-remote-mcp" ||
+      prepared.success.publicationEligible !== true
+    ) {
+      throw new Error(`${remote.pluginSlug}-provider-preparation-failed`);
+    }
+    const preparedEnvelope = Schema.decodeUnknownSync(
+      Schema.Struct({ declaration: Schema.JsonObject }),
+    )(JSON.parse(await readFile(preparedFile, "utf8")));
+    const bundleSource = path.join(root, `${remote.pluginSlug}.bundle-source.json`);
+    await writeFile(bundleSource, `${JSON.stringify(preparedEnvelope.declaration, null, 2)}\n`);
+    const reviewed = validateManagedRemotePluginRelease(
+      preparedEnvelope.declaration,
+      "publication",
+    );
+    if (Result.isFailure(reviewed)) throw new Error(reviewed.failure);
+    const declaration = reviewed.success;
+    if (
+      declaration.authStrategy === undefined ||
+      declaration.authStrategy.profile !== "mcp-oauth"
+    ) {
+      throw new Error(`${remote.pluginSlug}-provider-auth-strategy-missing`);
+    }
+    const identity = PluginReleaseIdentity.make({
+      marketplaceId: declaration.marketplaceId,
+      publisherNamespace: declaration.publisherNamespace,
+      pluginSlug: declaration.pluginSlug,
+      semanticVersion: declaration.version,
+    });
+    const sharedInputDigest = PluginSha256.make("c".repeat(64));
+    const sourceInputDigest = await calculateManagedRemoteSourceInputDigest({
+      sourceFile: bundleSource,
+      sharedInputDigest,
+    });
+    const configDigest = await digestPluginBytes(
+      new TextEncoder().encode(canonicalPluginJson(declaration.config)),
+    );
+    const authentication = PackagedPluginAuthentication.make({
+      kind: "oauth",
+      providerRegistration: declaration.runtime.providerRegistrationId,
+      providerDefinitionDigest: declaration.authStrategy.providerDefinitionDigest,
+      requestedScopes: declaration.authStrategy.requestedScopes,
+      credentialDelivery: "short-lived-access-token-only",
+    });
+    const authStrategyDigest = await digestPluginBytes(
+      new TextEncoder().encode(canonicalPluginJson(declaration.authStrategy)),
+    );
+    const provenance = {
+      kind: "managed-remote-mcp" as const,
+      endpoint: declaration.endpoint,
+      oauthRegistrationMode: declaration.oauthRegistrationMode,
+      protocolPolicy: declaration.protocolPolicy ?? {
+        catalogCompatibility: "reviewed-subset" as const,
+        maximumCatalogPages: 10,
+      },
+      evidenceUrls: declaration.evidenceUrls ?? [],
+      verificationNotes: declaration.verificationNotes,
+      authProfile: declaration.authStrategy.profile,
+      authStrategyDigest,
+    };
+    const provenanceDigest = await digestPluginBytes(
+      new TextEncoder().encode(canonicalPluginJson(provenance)),
+    );
+    const authorityAfter = deriveManagedRemoteAuthoritySnapshot(declaration);
+    const authorityBefore = deriveBootstrapAuthoritySnapshot(authorityAfter);
+    const authorityBeforeDigest = await digestPluginBytes(
+      new TextEncoder().encode(canonicalPluginJson(authorityBefore)),
+    );
+    const authorityDigest = await digestPluginBytes(
+      new TextEncoder().encode(canonicalPluginJson(authorityAfter)),
+    );
+    const authorityDiff = await diffPluginAuthority(authorityBefore, authorityAfter);
+    const authorityDiffDigest = PluginSha256.make(authorityDiff.diffDigest);
+    const baseline = {
+      authorityBeforeIdentity: null,
+      authorityBeforeReleaseDigest: null,
+      authorityBefore,
+      authorityBeforeDigest,
+    } as const;
+    const authorityBaselineDigest = await calculateAuthorityBaselineDigest(baseline);
+    const version = PluginVersion.make({
+      id: declaration.id,
+      marketplaceId: declaration.marketplaceId,
+      publisherNamespace: declaration.publisherNamespace,
+      pluginSlug: declaration.pluginSlug,
+      version: declaration.version,
+      name: declaration.name,
+      description: declaration.description,
+      license: declaration.license,
+      runtime: declaration.runtime,
+      catalog: declaration.catalog,
+      config: declaration.config,
+      allowedHosts: declaration.allowedHosts,
+      status: "published",
+      publishedAt: 1,
+    });
+    const releaseDigest = await calculateReleaseDigest({
+      identity,
+      version,
+      authentication,
+      sourceInputDigest,
+      catalogDigest: declaration.catalog.digest,
+      configDigest,
+      provenanceDigest,
+      authorityBaselineDigest,
+      authorityDigest,
+      authorityDiffDigest,
+      artifactDigest: null,
+    });
+    const review: ReleaseReview = {
+      schemaVersion: 1,
+      identity,
+      reviewId: `${remote.pluginSlug}-controlled-review`,
+      reviewer: "controlled-provider-reviewer",
+      reviewedAt: 1,
+      sourceInputDigest,
+      artifactDigest: null,
+      authentication,
+      catalogDigest: declaration.catalog.digest,
+      configDigest,
+      provenanceDigest,
+      ...baseline,
+      authorityAfter,
+      authorityDigest,
+      authorityDiffDigest,
+      releaseDigest,
+      decision: "approved",
+    };
+    const bundleDirectory = path.join(root, "bundle");
+    const built = await buildManagedRemoteReleaseBundle({
+      sourceFile: bundleSource,
+      outputDirectory: bundleDirectory,
+      sharedInputDigest,
+      mergeCommit: "d".repeat(40),
+      releaseOrdinal: 1,
+      review,
+      previousPublished: null,
+    });
+    if (Result.isFailure(built)) throw new Error(built.failure);
+    const loaded = await loadManagedRemoteReleaseBundle({
+      bundleDirectory,
+      sourceFile: bundleSource,
+      sharedInputDigest,
+      trustedReview: review,
+      expectedMergeCommit: "d".repeat(40),
+      expectedReleaseOrdinal: 1,
+    });
+    if (Result.isFailure(loaded)) throw new Error(loaded.failure);
+
+    return loaded.success;
+  } finally {
+    await rm(root, { recursive: true });
+  }
+};
 
 const syntheticOAuthDefinitionRow = async (
   definition: ReturnType<typeof syntheticOAuthDefinition>,
@@ -341,27 +709,205 @@ const admitSyntheticOAuthDefinition = (
     );
 };
 
-const admitSyntheticWorkspaceOAuthRegistration = (
+const admitProviderChainOAuthDefinition = (
   database: DatabaseSync,
+  definition: ReturnType<typeof providerChainOAuthDefinition>,
+  definitionDigest: string,
+): void => {
+  database
+    .prepare(
+      `INSERT INTO plugin_oauth_provider_definitions
+        (provider_definition_digest, schema_version, canonical_definition_json, scopes_json,
+         provider, resource_identity, display_label_path_present, status, revision,
+         admission_operation_id, admitted_by, source_kind, source_repository, source_revision,
+         source_path, source_content_digest, reviewed_at, created_at, updated_at)
+       VALUES (?, 1, ?, ?, ?, ?, 1, 'active', 1, ?, 'fixture-reviewer',
+         'marketplace-release', 'fixture/repository', 'fixture-release', ?, ?, 1, 1, 1)`,
+    )
+    .run(
+      definitionDigest,
+      new TextDecoder().decode(encodePluginOAuthProviderDefinitionCanonicalJson(definition)),
+      JSON.stringify(definition.scopes),
+      definition.provider,
+      definition.resourceIdentity,
+      `${definition.provider}:admission`,
+      `providers/${definition.provider}.json`,
+      definitionDigest,
+    );
+};
+
+const admitProviderChainEnvironmentRegistration = (
+  database: DatabaseSync,
+  fixture: typeof OAuthChainFixture.Type,
+  definition: ReturnType<typeof providerChainOAuthDefinition>,
   definitionDigest: string,
 ): void => {
   database
     .prepare(
       `INSERT INTO provider_registrations
+        (provider_registration_id, provider, resource_identity, registration_mode,
+         callback_url, approved_scopes_json, client_credential_reference, source, status,
+         revision, created_at, updated_at, oauth_provider_definition_digest,
+         oauth_provider_definition_revision, oauth_authority_revision)
+       VALUES (?, ?, ?, 'platform-pre-registered', 'https://app.example/oauth/callback', ?,
+         NULL, 'platform', 'active', 1, 1, 1, ?, 1, 1)`,
+    )
+    .run(
+      fixture.providerRegistrationId,
+      definition.provider,
+      definition.resourceIdentity,
+      JSON.stringify(definition.scopes),
+      definitionDigest,
+    );
+  database
+    .prepare(
+      `INSERT INTO plugin_oauth_registration_material_sources
+        (provider_registration_id, source_revision, oauth_authority_revision,
+         provider_definition_digest, provider_definition_revision, source_kind,
+         material_version, declaration_id, token_endpoint_auth_method, deployment_revision,
+         status, attestation_operation_id, attested_by, attested_at, created_at, updated_at)
+       VALUES (?, 1, 1, ?, 1, 'deployment-environment', ?, ?, ?,
+         'fixture-deployment', 'active', ?, 'fixture-reviewer', 1, 1, 1)`,
+    )
+    .run(
+      fixture.providerRegistrationId,
+      definitionDigest,
+      `${fixture.providerRegistrationId}-material-v1`,
+      `${fixture.providerRegistrationId}-client`,
+      definition.tokenEndpointAuthMethod,
+      `${fixture.providerRegistrationId}:material:1`,
+    );
+};
+
+const admitProviderChainWorkspaceOAuthRegistration = (
+  database: DatabaseSync,
+  fixture: typeof OAuthChainFixture.Type,
+  definition: ReturnType<typeof providerChainOAuthDefinition>,
+  definitionDigest: string,
+): void => {
+  database
+    .prepare(
+      `INSERT INTO provider_registrations
+        (provider_registration_id, provider, resource_identity, registration_mode,
+         callback_url, approved_scopes_json, client_credential_reference, source, status,
+         revision, created_at, updated_at, oauth_provider_definition_digest,
+         oauth_provider_definition_revision, oauth_authority_revision)
+       VALUES (?, ?, ?, 'workspace-oauth-app', 'https://app.example/oauth/callback', ?,
+         NULL, 'platform', 'active', 1, 1, 1, ?, 1, 1)`,
+    )
+    .run(
+      fixture.providerRegistrationId,
+      definition.provider,
+      definition.resourceIdentity,
+      JSON.stringify(definition.scopes),
+      definitionDigest,
+    );
+};
+
+const admitSyntheticEnvironmentRegistration = (
+  database: DatabaseSync,
+  definitionDigest: string,
+  input: {
+    readonly sourceRevision?: number;
+    readonly materialVersion?: string;
+    readonly declarationId?: string;
+    readonly deploymentRevision?: string;
+    readonly operationId?: string;
+  } = {},
+): void => {
+  if ((input.sourceRevision ?? 1) === 1) {
+    database
+      .prepare(
+        `INSERT INTO provider_registrations
           (provider_registration_id, provider, resource_identity, registration_mode,
            callback_url, approved_scopes_json, client_credential_reference, source, status,
            revision, created_at, updated_at, oauth_provider_definition_digest,
            oauth_provider_definition_revision, oauth_authority_revision)
          VALUES ('synthetic-mail-rest-v1', 'synthetic-mail', 'mail-api.synthetic.example',
-                  'workspace-oauth-app', 'https://example.invalid/v1/plugins/oauth/callback',
-                  '["synthetic.mail.read"]', NULL, 'platform', 'active', 1, 0, 0, ?, 1, 1)`,
+                 'platform-pre-registered', 'https://example.invalid/v1/plugins/oauth/callback',
+                 '["synthetic.mail.read"]', NULL, 'platform', 'active', 1, 0, 0, ?, 1, 1)`,
+      )
+      .run(definitionDigest);
+  }
+  const sourceRevision = input.sourceRevision ?? 1;
+  database
+    .prepare(
+      `INSERT INTO plugin_oauth_registration_material_sources
+        (provider_registration_id, source_revision, oauth_authority_revision,
+         provider_definition_digest, provider_definition_revision, source_kind,
+         material_version, declaration_id, token_endpoint_auth_method, deployment_revision,
+         status, attestation_operation_id, attested_by, attested_at, created_at, updated_at)
+       VALUES ('synthetic-mail-rest-v1', ?, 1, ?, 1, 'deployment-environment', ?, ?,
+               'client_secret_post', ?, 'active', ?, 'synthetic-operator', ?, ?, ?)`,
     )
-    .run(definitionDigest);
+    .run(
+      sourceRevision,
+      definitionDigest,
+      input.materialVersion ?? `material-v${sourceRevision}`,
+      input.declarationId ?? `declaration:${sourceRevision}`,
+      input.deploymentRevision ?? `deployment-${sourceRevision}`,
+      input.operationId ?? `source-admission-${sourceRevision}`,
+      sourceRevision,
+      sourceRevision,
+      sourceRevision,
+    );
+};
+
+const admitSyntheticDynamicRegistration = (
+  database: DatabaseSync,
+  definitionDigest: string,
+): void => {
+  admitSyntheticOAuthDefinition(database, syntheticOAuthDefinition(), definitionDigest);
+  database
+    .prepare(
+      `INSERT INTO provider_registrations
+        (provider_registration_id, provider, resource_identity, registration_mode,
+         authorization_metadata_url, callback_url, approved_scopes_json, source, status,
+         revision, created_at, updated_at)
+       VALUES ('synthetic-mail-rest-v1', 'synthetic-mail', 'mail-api.synthetic.example', 'dynamic',
+               'https://identity.synthetic.example/.well-known/oauth-authorization-server',
+               'https://example.invalid/v1/plugins/oauth/callback', '["synthetic.mail.read"]',
+               'platform', 'active', 1, 0, 0)`,
+    )
+    .run();
+};
+
+const admitNonOAuthProviderRegistration = (
+  database: DatabaseSync,
+  providerRegistrationId: string,
+  provider: string,
+): void => {
+  database
+    .prepare(
+      `INSERT INTO provider_registrations
+        (provider_registration_id, provider, resource_identity, registration_mode,
+         authorization_metadata_url, callback_url, approved_scopes_json, source, status,
+         revision, created_at, updated_at)
+       VALUES (?, ?, ?, 'dynamic', 'https://auth.example/.well-known/oauth-authorization-server',
+         'https://app.example/oauth/callback', '[]', 'platform', 'active', 1, 1, 1)`,
+    )
+    .run(providerRegistrationId, provider, `${provider}:resource`);
+};
+
+const retireSyntheticEnvironmentSource = (
+  database: DatabaseSync,
+  sourceRevision: number,
+  retiredAt: number,
+): void => {
+  database
+    .prepare(
+      `UPDATE plugin_oauth_registration_material_sources
+       SET status = 'retired', updated_at = ?, retired_at = ?, retirement_reason = ?
+       WHERE provider_registration_id = 'synthetic-mail-rest-v1' AND source_revision = ?`,
+    )
+    .run(retiredAt, retiredAt, `synthetic-retirement-${sourceRevision}`, sourceRevision);
 };
 
 const createSyntheticOAuthPackageSource = async (
   root: string,
   definitionDigest: string,
+  includeWorkspaceAuthStrategy = false,
+  fixture?: typeof OAuthChainFixture.Type,
 ): Promise<string> => {
   const directory = await createGithubPackageSource(root);
   const manifest = Schema.decodeUnknownSync(Schema.JsonObject)(
@@ -374,11 +920,37 @@ const createSyntheticOAuthPackageSource = async (
         ...manifest,
         authentication: {
           kind: "oauth",
-          providerRegistration: "synthetic-mail-rest-v1",
+          providerRegistration: fixture?.providerRegistrationId ?? "synthetic-mail-rest-v1",
           providerDefinitionDigest: definitionDigest,
-          requestedScopes: ["synthetic.mail.read"],
+          requestedScopes: fixture?.requestedScopes ?? ["synthetic.mail.read"],
           credentialDelivery: "short-lived-access-token-only",
         },
+        ...(includeWorkspaceAuthStrategy
+          ? {
+              authStrategy: {
+                schemaVersion: 1,
+                profile: "workspace-oauth",
+                providerRegistrationId: fixture?.providerRegistrationId ?? "synthetic-mail-rest-v1",
+                providerDefinitionDigest: definitionDigest,
+                requestedScopes: fixture?.requestedScopes ?? ["synthetic.mail.read"],
+                identity:
+                  fixture === undefined
+                    ? { kind: "opaque-connection", displayLabel: "Synthetic mailbox" }
+                    : {
+                        kind: "https-json",
+                        endpoint: fixture.identityEndpoint,
+                        authorization: "bearer",
+                        subjectPath: fixture.subjectPath,
+                        displayLabelPath: fixture.displayLabelPath,
+                        subjectStability: "stable",
+                        maximumResponseBytes: 65_536,
+                        maximumJsonDepth: 8,
+                        maximumObjectKeys: 256,
+                      },
+                resources: { kind: "none" },
+              },
+            }
+          : {}),
       },
       null,
       2,
@@ -425,6 +997,17 @@ const workspaceOwnedOAuthMigrationFile =
   "fixtures/sql/phase1-0051-workspace-owned-oauth-authority.sql";
 const workspaceOwnedOAuthMigrationDigest =
   "35836885aca78bd5c0b2700d8dd381fd734da87c02ec0fdf0376a40c5bdeb28f";
+const exactManagedRemoteOAuthMigrationFile =
+  "fixtures/sql/phase1-0053-managed-remote-oauth-publication-authority.sql";
+const exactManagedRemoteOAuthMigrationDigest =
+  "e2afba1bd37854a3a680d9f87a7f73ec19915b363a22126519234a3f9d0fc868";
+const exactManagedRemoteDynamicOAuthRuntimeMigrationFile =
+  "fixtures/sql/phase1-0054-managed-remote-dynamic-oauth-runtime.sql";
+const exactManagedRemoteDynamicOAuthRuntimeMigrationDigest =
+  "ebb05d11919d00f43a96f02bb3b874c5024d0d23424c3920ed7abc6076686b5c";
+const exactAuthStrategiesMigrationFile = "fixtures/sql/phase1-0055-plugin-auth-strategies.sql";
+const exactAuthStrategiesMigrationDigest =
+  "cb344ff8b1e3ee8e0c072cc2f2639143a27444ce985a2e1c02bdaa99996c4909";
 
 const applicationDatabaseThroughOAuthPublication = async (): Promise<DatabaseSync> => {
   const migration = await readFile(exactMigrationFile);
@@ -464,8 +1047,12 @@ const applyOAuthEnvironmentMigration = async (database: DatabaseSync): Promise<v
 const applicationDatabase = async (): Promise<DatabaseSync> => {
   const database = await applicationDatabaseThroughOAuthPublication();
   await applyOAuthEnvironmentMigration(database);
+  const oauthRuntimeMigration = await readFile(exactOAuthRuntimeMigrationFile);
+  expect(createHash("sha256").update(oauthRuntimeMigration).digest("hex")).toBe(
+    exactOAuthRuntimeMigrationDigest,
+  );
+  database.exec(oauthRuntimeMigration.toString("utf8"));
   for (const [file, digest] of [
-    [exactOAuthRuntimeMigrationFile, exactOAuthRuntimeMigrationDigest],
     [exactWorkspaceOAuthAppsMigrationFile, exactWorkspaceOAuthAppsMigrationDigest],
     [workspaceOwnedOAuthMigrationFile, workspaceOwnedOAuthMigrationDigest],
   ] as const) {
@@ -473,9 +1060,32 @@ const applicationDatabase = async (): Promise<DatabaseSync> => {
     expect(createHash("sha256").update(migration).digest("hex")).toBe(digest);
     database.exec(migration.toString("utf8"));
   }
-  expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+  const managedRemoteOAuthMigration = await readFile(exactManagedRemoteOAuthMigrationFile);
+  expect(createHash("sha256").update(managedRemoteOAuthMigration).digest("hex")).toBe(
+    exactManagedRemoteOAuthMigrationDigest,
+  );
+  database.exec(managedRemoteOAuthMigration.toString("utf8"));
+  const managedRemoteDynamicOAuthMigration = await readFile(
+    exactManagedRemoteDynamicOAuthRuntimeMigrationFile,
+  );
+  expect(createHash("sha256").update(managedRemoteDynamicOAuthMigration).digest("hex")).toBe(
+    exactManagedRemoteDynamicOAuthRuntimeMigrationDigest,
+  );
+  database.exec(managedRemoteDynamicOAuthMigration.toString("utf8"));
+  const authStrategiesMigration = await readFile(exactAuthStrategiesMigrationFile);
+  expect(createHash("sha256").update(authStrategiesMigration).digest("hex")).toBe(
+    exactAuthStrategiesMigrationDigest,
+  );
+  database.exec(authStrategiesMigration.toString("utf8"));
   return database;
 };
+
+it("pins the managed-remote dynamic OAuth runtime migration bytes", async () => {
+  const migration = await readFile(exactManagedRemoteDynamicOAuthRuntimeMigrationFile);
+  expect(createHash("sha256").update(migration).digest("hex")).toBe(
+    exactManagedRemoteDynamicOAuthRuntimeMigrationDigest,
+  );
+});
 
 it("places rollback guard inside stage and finalization batches", async () => {
   const database = await applicationDatabase();
@@ -686,6 +1296,7 @@ it("keeps the complete stage predicate contract in bounded same-batch guards", a
       "a.byte_size = ?",
       "a.status IN ('pending', 'available')",
       "i.status IN ('pending', 'artifact-verified', 'published')",
+      "i.provider_registration_material_source_revision IS ?",
       "d.marketplace_id = ?",
       "d.publisher_namespace = ?",
       "d.plugin_slug = ?",
@@ -712,11 +1323,22 @@ it("keeps the complete stage predicate contract in bounded same-batch guards", a
       "length(p.client_credential_reference) > 0",
       "p.oauth_provider_definition_digest IS NULL",
       "? = 'oauth'",
-      "p.registration_mode = 'workspace-oauth-app'",
       "p.client_credential_reference IS NULL",
       "p.oauth_authority_revision = v.provider_registration_authority_revision",
       "p.oauth_provider_definition_digest = v.provider_definition_digest",
       "p.oauth_provider_definition_revision = v.provider_definition_revision",
+      "ms.provider_registration_id = p.provider_registration_id",
+      "ms.oauth_authority_revision = p.oauth_authority_revision",
+      "ms.provider_definition_digest = p.oauth_provider_definition_digest",
+      "ms.provider_definition_revision = p.oauth_provider_definition_revision",
+      "ms.source_revision = i.provider_registration_material_source_revision",
+      "ms.source_revision IS ?",
+      "ms.source_kind = 'deployment-environment'",
+      "ms.status = 'active'",
+      "ms.material_version IS ?",
+      "ms.declaration_id IS ?",
+      "ms.deployment_revision IS ?",
+      "ms.token_endpoint_auth_method IS ?",
       "od.status = 'active'",
       "od.provider_definition_digest = p.oauth_provider_definition_digest",
       "od.revision = p.oauth_provider_definition_revision",
@@ -724,6 +1346,8 @@ it("keeps the complete stage predicate contract in bounded same-batch guards", a
       "od.resource_identity = p.resource_identity",
       "od.scopes_json = v.requested_scopes_json",
       "od.display_label_path_present = 1",
+      "json_extract(od.canonical_definition_json, '$.tokenEndpointAuthMethod')",
+      "= ms.token_endpoint_auth_method",
       "SELECT COUNT(*) FROM plugin_catalog_tools t",
     ]) {
       expect(guardContract).toContain(predicate);
@@ -770,6 +1394,7 @@ it("keeps the complete finalize predicate contract in bounded same-batch guards"
       "i.plugin_version_id = ?",
       "i.artifact_digest = ?",
       "i.status = 'published'",
+      "i.provider_registration_material_source_revision IS ?",
       "v.status = 'published'",
       "v.review_status = 'approved'",
       "v.plugin_definition_id = ?",
@@ -820,11 +1445,22 @@ it("keeps the complete finalize predicate contract in bounded same-batch guards"
       "length(p.client_credential_reference) > 0",
       "p.oauth_provider_definition_digest IS NULL",
       "? = 'oauth'",
-      "p.registration_mode = 'workspace-oauth-app'",
       "p.client_credential_reference IS NULL",
       "p.oauth_authority_revision = v.provider_registration_authority_revision",
       "p.oauth_provider_definition_digest = v.provider_definition_digest",
       "p.oauth_provider_definition_revision = v.provider_definition_revision",
+      "ms.provider_registration_id = p.provider_registration_id",
+      "ms.oauth_authority_revision = p.oauth_authority_revision",
+      "ms.provider_definition_digest = p.oauth_provider_definition_digest",
+      "ms.provider_definition_revision = p.oauth_provider_definition_revision",
+      "ms.source_revision = i.provider_registration_material_source_revision",
+      "ms.source_revision IS ?",
+      "ms.source_kind = 'deployment-environment'",
+      "ms.status = 'active'",
+      "ms.material_version IS ?",
+      "ms.declaration_id IS ?",
+      "ms.deployment_revision IS ?",
+      "ms.token_endpoint_auth_method IS ?",
       "od.status = 'active'",
       "od.provider_definition_digest = p.oauth_provider_definition_digest",
       "od.revision = p.oauth_provider_definition_revision",
@@ -832,6 +1468,8 @@ it("keeps the complete finalize predicate contract in bounded same-batch guards"
       "od.resource_identity = p.resource_identity",
       "od.scopes_json = v.requested_scopes_json",
       "od.display_label_path_present = 1",
+      "json_extract(od.canonical_definition_json, '$.tokenEndpointAuthMethod')",
+      "= ms.token_endpoint_auth_method",
       "SELECT COUNT(*) FROM plugin_catalog_tools t",
     ]) {
       expect(guardContract).toContain(predicate);
@@ -1017,6 +1655,400 @@ it("distinguishes an exact revoked version from missing or mismatched publicatio
   expect(await adapter.readPublicationState(release)).toEqual(Result.succeed("revoked"));
   database.close();
 });
+
+it("publishes, replays, reconciles, and reads revocation for a declaration-only managed remote", async () => {
+  const definition = syntheticOAuthDefinition();
+  const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+  const release = await managedRemoteCandidate(definitionDigest);
+  const applicationDatabaseHandle = await applicationDatabase();
+  admitSyntheticDynamicRegistration(applicationDatabaseHandle, definitionDigest);
+  const application = new Phase1D1PublicationAdapter(
+    new SQLiteD1Transport(applicationDatabaseHandle),
+  );
+  const journalDatabase = new DatabaseSync(":memory:");
+  journalDatabase.exec(await readFile("tools/infra/migrations/0001_release_journal.sql", "utf8"));
+  const journal = new D1ReleaseJournal(new SQLiteD1Transport(journalDatabase));
+  const artifacts = new InMemoryImmutableArtifactStore();
+
+  expect(
+    await publishIncrementalRelease({ candidate: release, journal, artifacts, application }),
+  ).toEqual(Result.succeed({ status: "published" }));
+  expect(await application.readPublished(release)).toEqual(Result.succeed(true));
+  expect(artifacts.putCount).toBe(0);
+  expect(
+    applicationDatabaseHandle
+      .prepare(
+        `SELECT v.runtime_kind, v.artifact_digest, i.artifact_digest AS intent_artifact_digest,
+                e.endpoint_url, e.transport, e.protocol_policy_json, e.status
+         FROM plugin_versions v
+         JOIN plugin_publication_intents i ON i.plugin_version_id = v.plugin_version_id
+         JOIN remote_mcp_endpoint_registrations e
+           ON e.endpoint_registration_id = v.endpoint_registration_id
+         WHERE v.plugin_version_id = ?`,
+      )
+      .get(release.version.id),
+  ).toMatchObject({
+    runtime_kind: "managed-remote-mcp",
+    artifact_digest: null,
+    intent_artifact_digest: null,
+    endpoint_url: "https://mcp.synthetic.example/v2/mcp",
+    transport: "streamable-http",
+    protocol_policy_json: '{"catalogCompatibility":"reviewed-subset","maximumCatalogPages":10}',
+    status: "active",
+  });
+
+  expect(await application.stage(release)).toEqual(Result.succeed(undefined));
+  expect(await application.finalize(release)).toEqual(Result.succeed(undefined));
+  expect(
+    Result.isSuccess(
+      await publishIncrementalRelease({
+        candidate: { ...release, mergeCommit: "b".repeat(40), releaseOrdinal: 2 },
+        journal,
+        artifacts,
+        application,
+      }),
+    ),
+  ).toBe(true);
+  expect(artifacts.putCount).toBe(0);
+
+  applicationDatabaseHandle
+    .prepare(
+      "UPDATE plugin_versions SET status = 'revoked', revoked_at = 2 WHERE plugin_version_id = ?",
+    )
+    .run(release.version.id);
+  expect(await application.readPublished(release)).toEqual(Result.succeed(false));
+  expect(await application.readPublicationState(release)).toEqual(Result.succeed("revoked"));
+
+  applicationDatabaseHandle
+    .prepare(
+      "UPDATE remote_mcp_endpoint_registrations SET status = 'revoked' WHERE endpoint_registration_id = ?",
+    )
+    .run("synthetic-mcp-v2");
+  expect(await application.readPublicationState(release)).toEqual(Result.succeed("mismatch"));
+
+  journalDatabase.close();
+  applicationDatabaseHandle.close();
+});
+
+for (const remote of providerExpansionDeclarations) {
+  it(`stages, finalizes, and reads back the ${remote.name} production declaration chain`, async () => {
+    const authStrategy = remote.authStrategy;
+    if (authStrategy === undefined || authStrategy.profile !== "mcp-oauth") {
+      throw new Error("provider-expansion-mcp-auth-strategy-missing");
+    }
+    const release = await providerExpansionCandidate(remote);
+    const database = await applicationDatabase();
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+    expect(
+      database
+        .prepare(
+          `SELECT v.auth_profile, v.runtime_kind, endpoint.endpoint_url,
+                  registration.registration_mode, auth.canonical_definition_json
+           FROM plugin_versions v
+           JOIN remote_mcp_endpoint_registrations endpoint
+             ON endpoint.endpoint_registration_id = v.endpoint_registration_id
+           JOIN provider_registrations registration
+             ON registration.provider_registration_id = endpoint.provider_registration_id
+           JOIN plugin_auth_strategy_definitions auth
+             ON auth.auth_definition_digest = v.auth_definition_digest
+            AND auth.revision = v.auth_definition_revision
+           WHERE v.plugin_version_id = ?`,
+        )
+        .get(remote.id),
+    ).toMatchObject({
+      auth_profile: "mcp-oauth",
+      runtime_kind: "managed-remote-mcp",
+      endpoint_url: remote.endpoint,
+      registration_mode:
+        remote.oauthRegistrationMode === "platform-pre-registered"
+          ? "platform-pre-registered"
+          : "dynamic",
+      canonical_definition_json: canonicalPluginJson(authStrategy),
+    });
+    database.close();
+
+    if (release.oauthProviderDefinition === undefined) {
+      throw new Error("provider-expansion-oauth-definition-missing");
+    }
+    const driftedDefinitionJson = Schema.decodeUnknownSync(Schema.JsonObject)(
+      JSON.parse(canonicalPluginJson(release.oauthProviderDefinition)),
+    );
+    const driftedDefinition = decodePluginOAuthProviderDefinition({
+      ...driftedDefinitionJson,
+      provider: `${release.oauthProviderDefinition.provider}-drifted`,
+    });
+    if (Result.isFailure(driftedDefinition)) {
+      throw new Error("provider-expansion-drift-fixture-invalid");
+    }
+    const driftDatabase = await applicationDatabase();
+    const driftAdapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(driftDatabase));
+    expect(
+      await driftAdapter.stage({
+        ...release,
+        oauthProviderDefinition: driftedDefinition.success,
+      }),
+    ).toEqual(Result.fail("remote-provider-definition-admission-invalid"));
+    driftDatabase.close();
+  });
+}
+
+for (const fixture of publishedProviderChains["mcp-oauth"]) {
+  it(`publishes and reads back the canonical ${fixture.provider} MCP OAuth chain`, async () => {
+    const clientRegistration =
+      fixture.provider === "orbit"
+        ? {
+            kind: "cimd" as const,
+            clientIdMetadataDocumentUrl: "https://client.orbit-mcp.example/client.json",
+          }
+        : {
+            kind: "dynamic" as const,
+            authorizationServerMetadataUrl: `${fixture.issuer}/.well-known/oauth-authorization-server`,
+          };
+    const definition = providerChainOAuthDefinition(
+      fixture,
+      clientRegistration.kind === "cimd" ? "none" : "client_secret_post",
+    );
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const providerRegistrationId = fixture.providerRegistrationId;
+    const base = await managedRemoteCandidate(definitionDigest, providerRegistrationId);
+    const authStrategy = Schema.decodeUnknownSync(PluginAuthStrategyDefinition)({
+      schemaVersion: 1,
+      profile: "mcp-oauth",
+      providerRegistrationId,
+      providerDefinitionDigest: definitionDigest,
+      requestedScopes: fixture.requestedScopes,
+      clientRegistration,
+      ...(clientRegistration.kind === "cimd"
+        ? {
+            resourceMetadataUrl:
+              "https://mcp.orbit-mcp.example/.well-known/oauth-protected-resource",
+          }
+        : {}),
+      identity: {
+        kind: "https-json",
+        endpoint: fixture.identityEndpoint,
+        authorization: "bearer",
+        subjectPath: fixture.subjectPath,
+        displayLabelPath: fixture.displayLabelPath,
+        subjectStability: "stable",
+        maximumResponseBytes: 65_536,
+        maximumJsonDepth: 8,
+        maximumObjectKeys: 256,
+        maximumSubjectLength: 200,
+        maximumDisplayLabelLength: 120,
+      },
+      resources: { kind: "none" },
+    });
+    const release: IncrementalReleaseCandidate = {
+      ...base,
+      authStrategy,
+      oauthProviderDefinition: definition,
+    };
+    const database = await applicationDatabase();
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+    expect(
+      database
+        .prepare(
+          `SELECT v.auth_profile, auth.profile, auth.canonical_definition_json
+         FROM plugin_versions v
+         JOIN plugin_auth_strategy_definitions auth
+           ON auth.auth_definition_digest = v.auth_definition_digest
+          AND auth.revision = v.auth_definition_revision
+         WHERE v.plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({
+      auth_profile: "mcp-oauth",
+      profile: "mcp-oauth",
+      canonical_definition_json: canonicalPluginJson(authStrategy),
+    });
+    expect(
+      database
+        .prepare(
+          `SELECT provider_registration_id, registration_mode
+         FROM provider_registrations WHERE provider_registration_id = ?`,
+        )
+        .get(providerRegistrationId),
+    ).toEqual({
+      provider_registration_id: providerRegistrationId,
+      registration_mode: "dynamic",
+    });
+    database.close();
+  });
+}
+
+for (const fixture of publishedProviderChains["api-key"]) {
+  it(`publishes and reads back the canonical ${fixture.provider} API-key chain without credential values`, async () => {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const base = await managedRemoteCandidate(definitionDigest, fixture.providerRegistrationId);
+    const authStrategy = Schema.decodeUnknownSync(PluginAuthStrategyDefinition)({
+      schemaVersion: 1,
+      profile: "api-key",
+      providerRegistrationId: fixture.providerRegistrationId,
+      fields: [
+        { key: "token", label: "API token", secret: true, minimumLength: 8, maximumLength: 200 },
+      ],
+      delivery: [
+        {
+          kind: "header",
+          field: "token",
+          headerName: fixture.headerName,
+          encoding: fixture.provider === "orbit" ? "bearer" : "raw",
+        },
+      ],
+      verification: {
+        kind: "https-json",
+        endpoint: fixture.verificationEndpoint,
+        expectedStatus: 200,
+        maximumResponseBytes: 4_096,
+        maximumJsonDepth: 4,
+        maximumObjectKeys: 32,
+      },
+      identity: {
+        kind: "mcp-tool",
+        operation: {
+          endpoint: fixture.identityEndpoint,
+          toolName: "resolve_current_identity",
+          input: {},
+          maximumOutputBytes: 4_096,
+        },
+        subjectPath: fixture.subjectPath,
+        displayLabelPath: fixture.displayLabelPath,
+        subjectStability: "stable",
+        maximumResponseBytes: 4_096,
+        maximumJsonDepth: 4,
+        maximumObjectKeys: 32,
+      },
+      resources: { kind: "none" },
+    });
+    const release: IncrementalReleaseCandidate = {
+      ...base,
+      authentication: PackagedPluginAuthentication.make({ kind: "none" }),
+      authStrategy,
+    };
+    const database = await applicationDatabase();
+    admitNonOAuthProviderRegistration(database, fixture.providerRegistrationId, fixture.provider);
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+    const persisted = JSON.stringify(
+      database
+        .prepare(
+          `SELECT v.authentication_kind, v.auth_profile, auth.canonical_definition_json
+         FROM plugin_versions v
+         JOIN plugin_auth_strategy_definitions auth
+           ON auth.auth_definition_digest = v.auth_definition_digest
+         WHERE v.plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    );
+    expect(persisted).toContain('"auth_profile":"api-key"');
+    expect(persisted).not.toContain("credential-value");
+    database.close();
+  });
+}
+
+for (const fixture of publishedProviderChains["device-oauth"]) {
+  it(`publishes and reads back the canonical ${fixture.provider} device OAuth chain`, async () => {
+    const oauthFixture = {
+      provider: fixture.provider,
+      providerRegistrationId: fixture.providerRegistrationId,
+      resourceIdentity: `${fixture.provider}:device-resource`,
+      requestedScopes: ["synthetic.mail.read"],
+      tokenEndpointAuthMethod: "none" as const,
+      issuer: new URL(fixture.deviceAuthorizationEndpoint).origin,
+      authorizationEndpoint: fixture.deviceAuthorizationEndpoint,
+      tokenEndpoint: fixture.tokenEndpoint,
+      identityEndpoint: fixture.identityEndpoint,
+      subjectPath: fixture.subjectPath,
+      displayLabelPath: fixture.displayLabelPath,
+    };
+    const definition = providerChainOAuthDefinition(oauthFixture, "none");
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const base = await managedRemoteCandidate(definitionDigest, fixture.providerRegistrationId);
+    const authStrategy = Schema.decodeUnknownSync(PluginAuthStrategyDefinition)({
+      schemaVersion: 1,
+      profile: "device-oauth",
+      providerRegistrationId: fixture.providerRegistrationId,
+      providerDefinitionDigest: definitionDigest,
+      requestedScopes: ["synthetic.mail.read"],
+      client: { kind: "platform-pre-registered" },
+      deviceAuthorizationEndpoint: fixture.deviceAuthorizationEndpoint,
+      tokenEndpoint: fixture.tokenEndpoint,
+      tokenEndpointAuthMethod: "none",
+      tokens: {
+        accessTokenType: "bearer",
+        expiresIn: "optional",
+        refreshToken: "optional",
+        grantedScopes: "requested-scopes-if-omitted",
+      },
+      polling: {
+        defaultIntervalSeconds: 5,
+        slowDownIncrementSeconds: 5,
+        maximumDurationSeconds: 900,
+      },
+      identity: {
+        kind: "https-json",
+        endpoint: fixture.identityEndpoint,
+        authorization: "bearer",
+        subjectPath: fixture.subjectPath,
+        displayLabelPath: fixture.displayLabelPath,
+        subjectStability: "stable",
+        maximumResponseBytes: 4_096,
+        maximumJsonDepth: 4,
+        maximumObjectKeys: 32,
+      },
+      resources: { kind: "none" },
+    });
+    const release: IncrementalReleaseCandidate = {
+      ...base,
+      authStrategy,
+      provenance: {
+        kind: "managed-remote-mcp",
+        endpoint: "https://mcp.synthetic.example/v2/mcp",
+        oauthRegistrationMode: "platform-pre-registered",
+        protocolPolicy: { catalogCompatibility: "reviewed-subset", maximumCatalogPages: 10 },
+        evidenceUrls: ["https://mcp.synthetic.example/provider-evidence"],
+        verificationNotes: "Controlled production-adapter fixture.",
+      },
+    };
+    const database = await applicationDatabase();
+    admitProviderChainOAuthDefinition(database, definition, definitionDigest);
+    admitProviderChainEnvironmentRegistration(database, oauthFixture, definition, definitionDigest);
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+    expect(
+      database
+        .prepare(
+          `SELECT v.auth_profile, auth.profile, auth.canonical_definition_json
+           FROM plugin_versions v
+           JOIN plugin_auth_strategy_definitions auth
+             ON auth.auth_definition_digest = v.auth_definition_digest
+           WHERE v.plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({
+      auth_profile: "device-oauth",
+      profile: "device-oauth",
+      canonical_definition_json: canonicalPluginJson(authStrategy),
+    });
+    database.close();
+  });
+}
 
 it("runs coherent A/B packages through exact Phase 1 D1 with cross-merge resume and missing-journal recovery", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-exact-app-release-"));
@@ -1278,16 +2310,18 @@ it("persists exact generic OAuth definition and semantic registration authority"
       Result.fail("application-provider-verification-failed"),
     );
     admitSyntheticOAuthDefinition(database, definition, definitionDigest);
-    admitSyntheticWorkspaceOAuthRegistration(database, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
     expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
     expect(
       database
         .prepare(
           `SELECT v.authentication_kind, v.provider_registration_id, v.requested_scopes_json,
-                   provider_registration_authority_revision, provider_definition_digest,
-                   provider_definition_revision
-            FROM plugin_versions v
-            WHERE v.plugin_version_id = ?`,
+                  provider_registration_authority_revision, provider_definition_digest,
+                  provider_definition_revision,
+                  i.provider_registration_material_source_revision
+           FROM plugin_versions v
+           JOIN plugin_publication_intents i ON i.plugin_version_id = v.plugin_version_id
+           WHERE v.plugin_version_id = ?`,
         )
         .get(release.version.id),
     ).toMatchObject({
@@ -1297,6 +2331,7 @@ it("persists exact generic OAuth definition and semantic registration authority"
       provider_registration_authority_revision: 1,
       provider_definition_digest: definitionDigest,
       provider_definition_revision: 1,
+      provider_registration_material_source_revision: 1,
     });
     expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
     expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
@@ -1312,16 +2347,570 @@ it("persists exact generic OAuth definition and semantic registration authority"
     expect(
       database
         .prepare(
-          `SELECT status AS definition_status, revision AS definition_revision
-           FROM plugin_oauth_provider_definitions WHERE provider_definition_digest = ?`,
+          `SELECT d.status AS definition_status, d.revision AS definition_revision,
+                  s.status AS source_status, s.provider_definition_revision,
+                  s.retirement_reason
+           FROM plugin_oauth_provider_definitions d
+           JOIN plugin_oauth_registration_material_sources s
+             ON s.provider_definition_digest = d.provider_definition_digest
+           WHERE d.provider_definition_digest = ?`,
         )
         .get(definitionDigest),
-    ).toEqual({
+    ).toMatchObject({
       definition_status: "revoked",
       definition_revision: 2,
+      source_status: "retired",
+      provider_definition_revision: 1,
+      retirement_reason: "provider-definition-revoked",
     });
     expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
     expect(await adapter.readPublished(release)).toEqual(Result.succeed(false));
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+for (const fixture of publishedProviderChains["workspace-oauth"]) {
+  it(`publishes and reads back the canonical ${fixture.provider} Workspace OAuth chain`, async () => {
+    const root = await mkdtemp(
+      path.join(os.tmpdir(), `marketplace-${fixture.provider}-workspace-`),
+    );
+    try {
+      const definition = providerChainOAuthDefinition(fixture, "client_secret_post");
+      const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+      const source = await createSyntheticOAuthPackageSource(root, definitionDigest, true, fixture);
+      const release = await candidate(source);
+      expect(release.authStrategy?.profile).toBe("workspace-oauth");
+      const database = await applicationDatabase();
+      admitProviderChainOAuthDefinition(database, definition, definitionDigest);
+      admitProviderChainWorkspaceOAuthRegistration(database, fixture, definition, definitionDigest);
+      const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+      expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+      expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+      expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+      expect(
+        database
+          .prepare(
+            `SELECT auth_profile, auth_definition_revision
+           FROM plugin_versions WHERE plugin_version_id = ?`,
+          )
+          .get(release.version.id),
+      ).toEqual({ auth_profile: "workspace-oauth", auth_definition_revision: 1 });
+      database.close();
+    } finally {
+      await rm(root, { recursive: true });
+    }
+  });
+}
+
+it("enforces environment registration shape, source authority, retention, and legacy DCR", async () => {
+  const definition = syntheticOAuthDefinition();
+  const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+  const database = await applicationDatabase();
+  admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+
+  expect(() =>
+    database
+      .prepare(
+        `INSERT INTO provider_registrations
+          (provider_registration_id, provider, resource_identity, registration_mode,
+           callback_url, approved_scopes_json, source, status, revision, created_at, updated_at,
+           oauth_provider_definition_digest)
+         VALUES ('synthetic-partial', 'synthetic-mail', 'mail-api.synthetic.example',
+                 'platform-pre-registered', 'https://example.invalid/callback',
+                 '["synthetic.mail.read"]', 'platform', 'active', 1, 0, 0, ?)`,
+      )
+      .run(definitionDigest),
+  ).toThrow();
+  expect(() =>
+    database
+      .prepare(
+        `INSERT INTO provider_registrations
+          (provider_registration_id, provider, resource_identity, registration_mode,
+           callback_url, approved_scopes_json, client_credential_reference, source, status,
+           revision, created_at, updated_at, oauth_provider_definition_digest,
+           oauth_provider_definition_revision, oauth_authority_revision)
+         VALUES ('synthetic-fake-reference', 'synthetic-mail', 'mail-api.synthetic.example',
+                 'platform-pre-registered', 'https://example.invalid/callback',
+                 '["synthetic.mail.read"]', 'plugin-vault:fake', 'platform', 'active', 1, 0, 0,
+                 ?, 1, 1)`,
+      )
+      .run(definitionDigest),
+  ).toThrow();
+
+  admitSyntheticEnvironmentRegistration(database, definitionDigest);
+  expect(() =>
+    database
+      .prepare(
+        `INSERT INTO plugin_oauth_registration_material_sources
+          (provider_registration_id, source_revision, oauth_authority_revision,
+           provider_definition_digest, provider_definition_revision, source_kind,
+           material_version, declaration_id, token_endpoint_auth_method, deployment_revision,
+           status, attestation_operation_id, attested_by, attested_at, created_at, updated_at)
+         VALUES ('synthetic-mail-rest-v1', 2, 1, ?, 1, 'deployment-environment',
+                 'material-v2', 'declaration:2', 'client_secret_basic', 'deployment-2',
+                 'active', 'source-admission-2', 'synthetic-operator', 2, 2, 2)`,
+      )
+      .run(definitionDigest),
+  ).toThrow();
+  expect(() =>
+    database
+      .prepare(
+        `UPDATE plugin_oauth_registration_material_sources
+         SET material_version = 'mutated-version'
+         WHERE provider_registration_id = 'synthetic-mail-rest-v1' AND source_revision = 1`,
+      )
+      .run(),
+  ).toThrow();
+  expect(() =>
+    database
+      .prepare(
+        `DELETE FROM plugin_oauth_registration_material_sources
+         WHERE provider_registration_id = 'synthetic-mail-rest-v1' AND source_revision = 1`,
+      )
+      .run(),
+  ).toThrow();
+
+  database
+    .prepare(
+      `INSERT INTO provider_registrations
+        (provider_registration_id, provider, resource_identity, registration_mode,
+         authorization_metadata_url, callback_url, approved_scopes_json, source, status,
+         revision, created_at, updated_at)
+       VALUES ('synthetic-dcr', 'synthetic-dcr', 'synthetic-resource', 'dynamic',
+               'https://identity.synthetic.example/.well-known/oauth-authorization-server',
+               'https://example.invalid/callback', '[]', 'platform', 'active', 1, 0, 0)`,
+    )
+    .run();
+  expect(
+    database
+      .prepare(
+        `SELECT registration_mode, client_credential_reference,
+                oauth_provider_definition_digest
+         FROM provider_registrations WHERE provider_registration_id = 'synthetic-dcr'`,
+      )
+      .get(),
+  ).toMatchObject({
+    registration_mode: "dynamic",
+    client_credential_reference: null,
+    oauth_provider_definition_digest: null,
+  });
+  expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+  database.close();
+});
+
+it("pins finalize to the staged source while current metadata follows active rotation", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-rotation-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    admitSyntheticEnvironmentRegistration(database, definitionDigest, { sourceRevision: 2 });
+    expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+    expect(
+      database
+        .prepare(
+          `SELECT provider_registration_material_source_revision
+           FROM plugin_publication_intents WHERE plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({ provider_registration_material_source_revision: 1 });
+
+    retireSyntheticEnvironmentSource(database, 1, 3);
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+    expect(
+      database
+        .prepare(
+          `SELECT source_revision, status FROM plugin_oauth_registration_material_sources
+           WHERE provider_registration_id = 'synthetic-mail-rest-v1'
+           ORDER BY source_revision`,
+        )
+        .all(),
+    ).toEqual([
+      { source_revision: 1, status: "retired" },
+      { source_revision: 2, status: "active" },
+    ]);
+
+    retireSyntheticEnvironmentSource(database, 2, 4);
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(false));
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("rejects finalize when the staged source retires without adopting a newer source", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-retired-stage-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    retireSyntheticEnvironmentSource(database, 1, 2);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest, { sourceRevision: 2 });
+    expect(await adapter.finalize(release)).toEqual(
+      Result.fail("application-provider-verification-failed"),
+    );
+    expect(
+      database
+        .prepare(
+          `SELECT v.status, a.status AS artifact_status, i.status AS intent_status,
+                  i.provider_registration_material_source_revision
+           FROM plugin_versions v
+           JOIN plugin_artifacts a ON a.artifact_digest = v.artifact_digest
+           JOIN plugin_publication_intents i ON i.plugin_version_id = v.plugin_version_id
+           WHERE v.plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({
+      status: "publishing",
+      artifact_status: "pending",
+      intent_status: "pending",
+      provider_registration_material_source_revision: 1,
+    });
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("terminalizes active sources when registration authority is revoked", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-parent-terminal-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    database
+      .prepare(
+        `UPDATE provider_registrations
+         SET status = 'revoked', oauth_authority_revision = 2, updated_at = 2
+         WHERE provider_registration_id = 'synthetic-mail-rest-v1'`,
+      )
+      .run();
+    expect(
+      database
+        .prepare(
+          `SELECT status, retirement_reason, oauth_authority_revision,
+                  provider_definition_revision
+           FROM plugin_oauth_registration_material_sources
+           WHERE provider_registration_id = 'synthetic-mail-rest-v1' AND source_revision = 1`,
+        )
+        .get(),
+    ).toMatchObject({
+      status: "retired",
+      retirement_reason: "parent-authority-terminalized",
+      oauth_authority_revision: 1,
+      provider_definition_revision: 1,
+    });
+    expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+    expect(await adapter.finalize(release)).toEqual(
+      Result.fail("application-provider-verification-failed"),
+    );
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(false));
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("reuses the invocation source across a Config winner retry", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-config-race-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const transport = new BeforeFirstBatchSQLiteD1Transport(database, () => {
+      database
+        .prepare(
+          `INSERT INTO plugin_config_schemas
+            (config_schema_id, schema_digest, revision, fields_json, created_at)
+           VALUES ('legacy:oauth-concurrent-winner', ?, ?, ?, 0)`,
+        )
+        .run(
+          release.configDigest,
+          release.version.config.revision,
+          canonicalPluginJson(release.version.config.fields),
+        );
+      admitSyntheticEnvironmentRegistration(database, definitionDigest, { sourceRevision: 2 });
+    });
+    const adapter = new Phase1D1PublicationAdapter(transport);
+
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    expect(
+      database
+        .prepare(
+          `SELECT v.config_schema_id, i.provider_registration_material_source_revision
+           FROM plugin_versions v
+           JOIN plugin_publication_intents i ON i.plugin_version_id = v.plugin_version_id
+           WHERE v.plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({
+      config_schema_id: "legacy:oauth-concurrent-winner",
+      provider_registration_material_source_revision: 1,
+    });
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("rejects a Config-retry winner whose intent persisted a different source", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-config-authority-race-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const transport = new BeforeFirstBatchSQLiteD1Transport(database, async () => {
+      database
+        .prepare(
+          `INSERT INTO plugin_config_schemas
+            (config_schema_id, schema_digest, revision, fields_json, created_at)
+           VALUES ('legacy:oauth-authority-winner', ?, ?, ?, 0)`,
+        )
+        .run(
+          release.configDigest,
+          release.version.config.revision,
+          canonicalPluginJson(release.version.config.fields),
+        );
+      admitSyntheticEnvironmentRegistration(database, definitionDigest, { sourceRevision: 2 });
+      const winner = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+      expect(await winner.stage(release)).toEqual(Result.succeed(undefined));
+    });
+    const adapter = new Phase1D1PublicationAdapter(transport);
+
+    expect(await adapter.stage(release)).toEqual(Result.fail("immutable-version-conflict"));
+    expect(
+      database
+        .prepare(
+          `SELECT provider_registration_material_source_revision
+           FROM plugin_publication_intents WHERE plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({ provider_registration_material_source_revision: 2 });
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("rolls back stage when the resolved source retires before its guarded batch", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-source-race-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    const database = await applicationDatabase();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    admitSyntheticEnvironmentRegistration(database, definitionDigest);
+    const adapter = new Phase1D1PublicationAdapter(
+      new BeforeFirstBatchSQLiteD1Transport(database, () => {
+        retireSyntheticEnvironmentSource(database, 1, 2);
+      }),
+    );
+
+    expect(await adapter.stage(release)).toEqual(Result.fail("application-stage-failed"));
+    expect(database.prepare("SELECT COUNT(*) AS count FROM plugin_versions").get()).toMatchObject({
+      count: 0,
+    });
+    expect(database.prepare("SELECT COUNT(*) AS count FROM plugin_artifacts").get()).toMatchObject({
+      count: 0,
+    });
+    database.close();
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+it("reads retained published generic history but refuses legacy stage and finalize", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-oauth-legacy-history-"));
+  try {
+    const definition = syntheticOAuthDefinition();
+    const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+    const release = await candidate(
+      await createSyntheticOAuthPackageSource(root, definitionDigest),
+    );
+    if (release.version.runtime.kind !== "managed-package") {
+      throw new Error("test-managed-package-required");
+    }
+    const runtime = release.version.runtime;
+    const database = await applicationDatabaseThroughOAuthPublication();
+    admitSyntheticOAuthDefinition(database, definition, definitionDigest);
+    database
+      .prepare(
+        `INSERT INTO provider_registrations
+          (provider_registration_id, provider, resource_identity, registration_mode,
+           callback_url, approved_scopes_json, client_credential_reference, source, status,
+           revision, created_at, updated_at, oauth_provider_definition_digest,
+           oauth_provider_definition_revision, oauth_authority_revision)
+         VALUES ('synthetic-mail-rest-v1', 'synthetic-mail', 'mail-api.synthetic.example',
+                 'platform-pre-registered', 'https://example.invalid/v1/plugins/oauth/callback',
+                 '["synthetic.mail.read"]', 'retained-private-reference', 'platform', 'active',
+                 1, 0, 0, ?, 1, 1)`,
+      )
+      .run(definitionDigest);
+    database
+      .prepare(
+        `INSERT INTO plugin_definitions
+          (plugin_definition_id, marketplace_id, publisher_namespace, plugin_slug, name,
+           short_description, long_description, categories_json, publisher_trust, status,
+           created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, '[]', 'supernala-curated', 'active', 1, 1)`,
+      )
+      .run(
+        release.definitionId,
+        release.version.marketplaceId,
+        release.version.publisherNamespace,
+        release.version.pluginSlug,
+        release.version.name,
+        release.version.description.slice(0, 500),
+        release.version.description,
+      );
+    database
+      .prepare(
+        `INSERT INTO plugin_artifacts
+          (artifact_digest, object_key, byte_size, status, verified_at, created_at)
+         VALUES (?, ?, ?, 'available', 1, 1)`,
+      )
+      .run(
+        runtime.artifactDigest,
+        `plugin-packages/sha256/${runtime.artifactDigest.slice(0, 2)}/${runtime.artifactDigest}.plugin`,
+        release.artifactByteLength,
+      );
+    database
+      .prepare(
+        `INSERT INTO plugin_catalog_snapshots
+          (catalog_snapshot_id, catalog_digest, schema_version, created_at)
+         VALUES (?, ?, 1, 1)`,
+      )
+      .run(release.version.catalog.id, release.catalogDigest);
+    for (const [ordinal, tool] of release.version.catalog.tools.entries()) {
+      database
+        .prepare(
+          `INSERT INTO plugin_catalog_tools
+            (catalog_snapshot_id, tool_id, ordinal, mcp_name, title, description,
+             classification, default_policy, input_schema_json, maximum_output_bytes)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .run(
+          release.version.catalog.id,
+          tool.id,
+          ordinal,
+          tool.mcpName,
+          tool.title,
+          tool.description,
+          tool.classification,
+          tool.defaultPolicy,
+          JSON.stringify(tool.inputSchema),
+          tool.maximumOutputBytes,
+        );
+    }
+    const configId = `config:sha256:${release.configDigest}`;
+    database
+      .prepare(
+        `INSERT INTO plugin_config_schemas
+          (config_schema_id, schema_digest, revision, fields_json, created_at)
+         VALUES (?, ?, ?, ?, 1)`,
+      )
+      .run(
+        configId,
+        release.configDigest,
+        release.version.config.revision,
+        canonicalPluginJson(release.version.config.fields),
+      );
+    database
+      .prepare(
+        `INSERT INTO plugin_versions
+          (plugin_version_id, plugin_definition_id, semantic_version, manifest_digest,
+           catalog_snapshot_id, config_schema_id, runtime_kind, artifact_digest,
+           package_entrypoint, package_node_version, provider_registration_id,
+           authentication_kind, requested_scopes_json, allowed_hosts_json, license,
+           provenance_json, release_date, status, review_status, published_at, created_at,
+           provider_registration_authority_revision, provider_definition_digest,
+           provider_definition_revision)
+         VALUES (?, ?, ?, ?, ?, ?, 'managed-package', ?, ?, '22.x',
+                 'synthetic-mail-rest-v1', 'oauth', '["synthetic.mail.read"]', ?, ?, ?, ?,
+                 'published', 'approved', ?, ?, 1, ?, 1)`,
+      )
+      .run(
+        release.version.id,
+        release.definitionId,
+        release.version.version,
+        runtime.manifestDigest,
+        release.version.catalog.id,
+        configId,
+        runtime.artifactDigest,
+        runtime.entrypoint,
+        JSON.stringify(release.version.allowedHosts),
+        release.version.license,
+        canonicalPluginJson(release.provenance),
+        release.version.publishedAt,
+        release.version.publishedAt,
+        release.reviewedAt,
+        definitionDigest,
+      );
+    database
+      .prepare(
+        `INSERT INTO plugin_publication_intents
+          (publication_intent_id, plugin_version_id, artifact_digest, status, attempts,
+           available_at, last_failure_reason, created_at, updated_at)
+         VALUES (?, ?, ?, 'published', 1, 1, NULL, 1, 1)`,
+      )
+      .run(`${release.version.id}:publication`, release.version.id, runtime.artifactDigest);
+
+    await applyOAuthEnvironmentMigration(database);
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+    expect(await adapter.readPublicationState(release)).toEqual(Result.succeed("published"));
+    expect(await adapter.stage(release)).toEqual(Result.fail("immutable-version-conflict"));
+    expect(await adapter.finalize(release)).toEqual(
+      Result.fail("application-provider-verification-failed"),
+    );
+    expect(
+      database
+        .prepare(
+          `SELECT provider_registration_material_source_revision
+           FROM plugin_publication_intents WHERE plugin_version_id = ?`,
+        )
+        .get(release.version.id),
+    ).toMatchObject({ provider_registration_material_source_revision: null });
     database.close();
   } finally {
     await rm(root, { recursive: true });
@@ -1411,6 +3000,65 @@ it("validates canonical OAuth definitions before registration lookup", async () 
   const extractedMismatch = await attempt(definition, { provider: "synthetic-other" });
   expect(extractedMismatch.result).toEqual(Result.fail("application-provider-verification-failed"));
   expect(extractedMismatch.transport.queries).toHaveLength(2);
+});
+
+it("requires an exact environment source receipt without projecting credential values", async () => {
+  const definition = syntheticOAuthDefinition();
+  const digest = await digestPluginOAuthProviderDefinition(definition);
+  const definitionRow = await syntheticOAuthDefinitionRow(definition);
+  const transport = new SequencedQueryTransport([[], [definitionRow], []]);
+  const adapter = new Phase1D1PublicationAdapter(transport);
+  expect(
+    await adapter.stage({
+      ...(await candidate()),
+      authentication: syntheticOAuthAuthentication(digest),
+    }),
+  ).toEqual(Result.fail("application-provider-verification-failed"));
+  expect(transport.queries).toHaveLength(3);
+  expect(transport.queries.map((query) => query.sql).join("\n")).not.toContain(
+    "client_credential_reference,",
+  );
+  expect(transport.queries.map((query) => query.sql).join("\n")).not.toContain("material_value");
+});
+
+it("rejects malformed or definition-mismatched environment source projections", async () => {
+  const definition = syntheticOAuthDefinition();
+  const digest = await digestPluginOAuthProviderDefinition(definition);
+  const definitionRow = await syntheticOAuthDefinitionRow(definition);
+  const exactRegistrationRow = {
+    provider_registration_id: "synthetic-mail-rest-v1",
+    provider: definition.provider,
+    resource_identity: definition.resourceIdentity,
+    registration_mode: "platform-pre-registered",
+    approved_scopes_json: '["synthetic.mail.read"]',
+    source: "platform",
+    status: "active",
+    oauth_provider_definition_digest: digest,
+    oauth_provider_definition_revision: 1,
+    oauth_authority_revision: 1,
+    source_revision: 1,
+    source_kind: "deployment-environment",
+    material_version: "material-v1",
+    declaration_id: "declaration:1",
+    token_endpoint_auth_method: "client_secret_post",
+    deployment_revision: "deployment-1",
+  } as const;
+  for (const registrationRow of [
+    { ...exactRegistrationRow, material_version: "invalid version" },
+    { ...exactRegistrationRow, token_endpoint_auth_method: "client_secret_basic" },
+    { ...exactRegistrationRow, approved_scopes_json: '["synthetic.mail.write"]' },
+    { ...exactRegistrationRow, oauth_provider_definition_digest: "f".repeat(64) },
+  ]) {
+    const transport = new SequencedQueryTransport([[], [definitionRow], [registrationRow]]);
+    const adapter = new Phase1D1PublicationAdapter(transport);
+    expect(
+      await adapter.stage({
+        ...(await candidate()),
+        authentication: syntheticOAuthAuthentication(digest),
+      }),
+    ).toEqual(Result.fail("application-provider-verification-failed"));
+    expect(transport.batchCalls).toBe(0);
+  }
 });
 
 it("retries once against an exact concurrent alternate-ID Config winner", async () => {

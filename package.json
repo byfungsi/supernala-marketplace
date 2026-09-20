@@ -5,6 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "auth-contract:check": "node tools/vendor-plugin-auth-strategy-contract.mjs check",
+    "auth-contract:vendor": "node tools/vendor-plugin-auth-strategy-contract.mjs vendor",
     "build": "tsc -p tsconfig.json",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm --filter @supernala/marketplace-infra typecheck && pnpm test",
     "format": "oxfmt .",

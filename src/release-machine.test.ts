@@ -1,7 +1,13 @@
 import { expect, it } from "@effect/vitest";
 import { Result, Schema } from "effect";
 import { preparePluginPackage, validatePluginSource } from "./authoring-validation.js";
-import { digestPluginBytes, PluginSha256, PluginVersion } from "./plugin-contract.js";
+import {
+  digestPluginBytes,
+  PluginSha256,
+  PluginVersion,
+  ProviderRegistrationId,
+  RemoteMcpEndpointRegistrationId,
+} from "./plugin-contract.js";
 import { PackagedPluginAuthentication } from "./package-archive.js";
 import {
   InMemoryApplicationPublicationAdapter,
@@ -132,6 +138,59 @@ it("selects bootstrap and failed releases but fails closed before skipping publi
     Result.fail("published-state-reverification-required:supernala-public/supernala/alpha@1.0.0"),
   );
   expect(artifacts.putCount).toBe(1);
+});
+
+it("publishes and replays managed remote releases without fabricating artifact bytes", async () => {
+  const packaged = await makeCandidate({ slug: "remote-alpha", version: "1.0.0" });
+  const authentication = Schema.decodeUnknownSync(PackagedPluginAuthentication)({
+    kind: "oauth",
+    providerRegistration: "remote-provider-v1",
+    providerDefinitionDigest: "a".repeat(64),
+    requestedScopes: ["remote.read"],
+    credentialDelivery: "short-lived-access-token-only",
+  });
+  const remote: IncrementalReleaseCandidate = {
+    ...packaged,
+    version: PluginVersion.make({
+      id: packaged.version.id,
+      marketplaceId: packaged.version.marketplaceId,
+      publisherNamespace: packaged.version.publisherNamespace,
+      pluginSlug: packaged.version.pluginSlug,
+      version: packaged.version.version,
+      name: packaged.version.name,
+      description: packaged.version.description,
+      license: packaged.version.license,
+      runtime: {
+        _tag: "ManagedRemoteMcp",
+        kind: "managed-remote-mcp",
+        endpointRegistrationId: RemoteMcpEndpointRegistrationId.make("remote-endpoint-v1"),
+        providerRegistrationId: ProviderRegistrationId.make("remote-provider-v1"),
+        transport: "streamable-http",
+      },
+      catalog: packaged.version.catalog,
+      config: packaged.version.config,
+      allowedHosts: packaged.version.allowedHosts,
+      status: packaged.version.status,
+      publishedAt: packaged.version.publishedAt,
+    }),
+    authentication,
+    kind: "managed-remote-mcp",
+    artifactDigest: null,
+    artifactByteLength: null,
+    artifactBytes: null,
+  };
+  const journal = new InMemoryReleaseJournal();
+  const artifacts = new InMemoryImmutableArtifactStore();
+  const application = new InMemoryApplicationPublicationAdapter();
+
+  expect(await publish(remote, journal, artifacts, application)).toEqual(
+    Result.succeed({ status: "published" }),
+  );
+  expect(await publish(remote, journal, artifacts, application)).toEqual(
+    Result.succeed({ status: "unchanged" }),
+  );
+  expect(artifacts.putCount).toBe(0);
+  expect(application.finalizeCount).toBe(1);
 });
 
 it("fails same semantic version when source/shared inputs change", async () => {

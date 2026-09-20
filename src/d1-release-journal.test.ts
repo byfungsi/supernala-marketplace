@@ -45,7 +45,9 @@ class SQLiteJournalTransport implements D1BatchTransport {
   }
 }
 
-const makeCandidate = async (): Promise<IncrementalReleaseCandidate> => {
+const makeCandidate = async (): Promise<
+  Extract<IncrementalReleaseCandidate, { readonly kind: "managed-package" }>
+> => {
   const source = await validatePluginSource("plugins/offline-fixture");
   if (Result.isFailure(source)) throw new Error(source.failure.message);
   const prepared = await preparePluginPackage({
@@ -190,7 +192,10 @@ it("persists exact durable claims, retries, publication status and monotonic bas
   ).toMatchObject({
     release_ordinal: 7,
   });
-  const conflict = { ...release, artifactDigest: PluginSha256.make("9".repeat(64)) };
+  const conflict: IncrementalReleaseCandidate = {
+    ...release,
+    artifactDigest: PluginSha256.make("9".repeat(64)),
+  };
   expect(await journal.claim(conflict)).toEqual(Result.fail("immutable-version-conflict"));
   const stale = {
     ...release,

@@ -305,6 +305,7 @@ it("accepts authorityBefore only when bound to the verified previous published v
     publishedAt: input.candidate.version.publishedAt,
   });
   const previousReleaseDigest = PluginSha256.make("b".repeat(64));
+  if (input.candidate.kind !== "managed-package") throw new Error("invalid package fixture");
   const previous: ReleaseJournalRecord = {
     identity: previousIdentity,
     definitionId: input.candidate.definitionId,

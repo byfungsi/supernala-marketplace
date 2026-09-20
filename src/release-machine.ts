@@ -9,6 +9,14 @@ import {
   PackagedPluginAuthentication,
   type PackagedPluginAuthentication as PackagedPluginAuthenticationType,
 } from "./package-archive.js";
+import {
+  PluginAuthStrategyDefinition,
+  type PluginAuthStrategyDefinition as PluginAuthStrategyDefinitionType,
+} from "./plugin-auth-strategy.js";
+import {
+  PluginOAuthProviderDefinition,
+  type PluginOAuthProviderDefinition as PluginOAuthProviderDefinitionType,
+} from "./oauth-provider-definition.js";
 
 /** Stable per-Plugin version identity. Byte deduplication never replaces this trust identity. */
 export const PluginReleaseIdentity = Schema.Struct({
@@ -21,13 +29,13 @@ export interface PluginReleaseIdentity extends Schema.Schema.Type<typeof PluginR
 
 export type ReleaseKind = "managed-package" | "managed-remote-mcp";
 
-/** Fully validated immutable candidate produced by the credential-free build job. */
-export interface IncrementalReleaseCandidate {
+interface IncrementalReleaseCandidateBase {
   readonly identity: PluginReleaseIdentity;
   readonly definitionId: string;
   readonly version: PluginVersion;
   readonly authentication: PackagedPluginAuthenticationType;
-  readonly kind: ReleaseKind;
+  readonly authStrategy?: PluginAuthStrategyDefinitionType;
+  readonly oauthProviderDefinition?: PluginOAuthProviderDefinitionType;
   readonly sourceInputDigest: typeof PluginSha256.Type;
   readonly releaseDigest: typeof PluginSha256.Type;
   readonly catalogDigest: typeof PluginSha256.Type;
@@ -37,9 +45,6 @@ export interface IncrementalReleaseCandidate {
   readonly authorityDigest: typeof PluginSha256.Type;
   readonly authorityBaselineDigest: typeof PluginSha256.Type;
   readonly authorityDiffDigest: typeof PluginSha256.Type;
-  readonly artifactDigest: typeof PluginSha256.Type | null;
-  readonly artifactByteLength: number | null;
-  readonly artifactBytes: Uint8Array | null;
   readonly mergeCommit: string;
   readonly reviewId: string;
   readonly reviewer: string;
@@ -47,14 +52,30 @@ export interface IncrementalReleaseCandidate {
   readonly releaseOrdinal: number;
 }
 
+/** Fully validated immutable candidate with runtime-specific artifact state. */
+export type IncrementalReleaseCandidate =
+  | (IncrementalReleaseCandidateBase & {
+      readonly kind: "managed-package";
+      readonly artifactDigest: typeof PluginSha256.Type;
+      readonly artifactByteLength: number;
+      readonly artifactBytes: Uint8Array | null;
+    })
+  | (IncrementalReleaseCandidateBase & {
+      readonly kind: "managed-remote-mcp";
+      readonly artifactDigest: null;
+      readonly artifactByteLength: null;
+      readonly artifactBytes: null;
+    });
+
 export type ReleaseJournalStatus = "claimed" | "artifact-verified" | "published" | "failed";
 
-export const ReleaseJournalRecordSchema = Schema.Struct({
+const ReleaseJournalRecordFields = {
   identity: PluginReleaseIdentity,
   definitionId: Schema.NonEmptyString,
   version: PluginVersion,
   authentication: PackagedPluginAuthentication,
-  kind: Schema.Literals(["managed-package", "managed-remote-mcp"]),
+  authStrategy: Schema.optionalKey(PluginAuthStrategyDefinition),
+  oauthProviderDefinition: Schema.optionalKey(PluginOAuthProviderDefinition),
   sourceInputDigest: PluginSha256,
   releaseDigest: PluginSha256,
   catalogDigest: PluginSha256,
@@ -64,10 +85,6 @@ export const ReleaseJournalRecordSchema = Schema.Struct({
   authorityDigest: PluginSha256,
   authorityBaselineDigest: PluginSha256,
   authorityDiffDigest: PluginSha256,
-  artifactDigest: Schema.NullOr(PluginSha256),
-  artifactByteLength: Schema.NullOr(
-    Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(1))),
-  ),
   mergeCommit: Schema.String.pipe(Schema.check(Schema.isPattern(/^[a-f0-9]{40}$/u))),
   releaseOrdinal: Schema.Int.pipe(
     Schema.check(Schema.isGreaterThanOrEqualTo(0)),
@@ -82,17 +99,25 @@ export const ReleaseJournalRecordSchema = Schema.Struct({
   generation: Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(1))),
   durableStateVerified: Schema.optionalKey(Schema.Literal(true)),
   durableStateRevoked: Schema.optionalKey(Schema.Literal(true)),
-});
+} as const;
 
-/** Durable, authoritative release journal row. A checked-in snapshot is never substituted for this row. */
-export interface ReleaseJournalRecord extends Omit<IncrementalReleaseCandidate, "artifactBytes"> {
-  readonly status: ReleaseJournalStatus;
-  readonly attempts: number;
-  readonly failureType: string | null;
-  readonly generation: number;
-  readonly durableStateVerified?: true;
-  readonly durableStateRevoked?: true;
-}
+export const ReleaseJournalRecordSchema = Schema.Union([
+  Schema.Struct({
+    ...ReleaseJournalRecordFields,
+    kind: Schema.Literal("managed-package"),
+    artifactDigest: PluginSha256,
+    artifactByteLength: Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(1))),
+  }),
+  Schema.Struct({
+    ...ReleaseJournalRecordFields,
+    kind: Schema.Literal("managed-remote-mcp"),
+    artifactDigest: Schema.Null,
+    artifactByteLength: Schema.Null,
+  }),
+]);
+
+/** Durable, authoritative release journal row. Runtime kind retains its artifact invariant. */
+export type ReleaseJournalRecord = typeof ReleaseJournalRecordSchema.Type;
 
 export const pluginReleaseIdentityKey = (identity: PluginReleaseIdentity): string =>
   `${identity.marketplaceId}/${identity.publisherNamespace}/${identity.pluginSlug}@${identity.semanticVersion}`;
@@ -137,6 +162,10 @@ const immutableReleaseFieldsMatch = (
   record.definitionId === candidate.definitionId &&
   canonicalPluginJson(record.version) === canonicalPluginJson(candidate.version) &&
   canonicalPluginJson(record.authentication) === canonicalPluginJson(candidate.authentication) &&
+  canonicalPluginJson(record.authStrategy ?? null) ===
+    canonicalPluginJson(candidate.authStrategy ?? null) &&
+  canonicalPluginJson(record.oauthProviderDefinition ?? null) ===
+    canonicalPluginJson(candidate.oauthProviderDefinition ?? null) &&
   record.sourceInputDigest === candidate.sourceInputDigest &&
   record.releaseDigest === candidate.releaseDigest &&
   record.catalogDigest === candidate.catalogDigest &&

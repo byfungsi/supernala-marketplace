@@ -5,6 +5,7 @@ import { PackagedPluginPublicationPlan } from "./publication-plan.js";
 import { ManagedRemotePluginRelease } from "./remote-release.js";
 import { PluginConfigSchema } from "./plugin-contract.js";
 import { PluginOAuthProviderDefinition } from "./oauth-provider-definition.js";
+import { PluginAuthStrategyDefinition } from "./plugin-auth-strategy.js";
 
 /** Generate portable JSON Schema documents from the owning Effect schemas. */
 export function generateMarketplaceJsonSchemas(): Readonly<Record<string, object>> {
@@ -13,6 +14,9 @@ export function generateMarketplaceJsonSchemas(): Readonly<Record<string, object
     "config.schema.json": Schema.toJsonSchemaDocument(PluginConfigSchema).schema,
     "oauth-provider-definition.schema.json": Schema.toJsonSchemaDocument(
       PluginOAuthProviderDefinition,
+    ).schema,
+    "plugin-auth-strategy-definition.schema.json": Schema.toJsonSchemaDocument(
+      PluginAuthStrategyDefinition,
     ).schema,
     "plugin.schema.json": Schema.toJsonSchemaDocument(PackageManifest).schema,
     "provenance.schema.json": Schema.toJsonSchemaDocument(PluginProvenance).schema,

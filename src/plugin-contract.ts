@@ -29,6 +29,21 @@ export const ProviderRegistrationId = PluginOpaqueId.pipe(Schema.brand("Provider
 /** Stable identity for one platform-managed provider registration. */
 export type ProviderRegistrationId = typeof ProviderRegistrationId.Type;
 
+/** Stable identity for one Workspace-owned OAuth client registration. */
+export const PluginOAuthAppId = PluginOpaqueId.pipe(Schema.brand("PluginOAuthAppId"));
+/** Stable identity for one Workspace-owned OAuth client registration. */
+export type PluginOAuthAppId = typeof PluginOAuthAppId.Type;
+
+/** Stable identity for one durable profile-independent authentication setup attempt. */
+export const PluginAuthSetupAttemptId = PluginOpaqueId.pipe(
+  Schema.brand("PluginAuthSetupAttemptId"),
+);
+
+/** Stable identity of one installed Plugin connection. */
+export const PluginConnectionId = PluginOpaqueId.pipe(Schema.brand("PluginConnectionId"));
+/** Stable identity for one durable profile-independent authentication setup attempt. */
+export type PluginAuthSetupAttemptId = typeof PluginAuthSetupAttemptId.Type;
+
 /** Lowercase publisher namespace scoped to one Plugin Marketplace. */
 export const PluginPublisherNamespace = Schema.String.pipe(
   Schema.check(Schema.isPattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)),

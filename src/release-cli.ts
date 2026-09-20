@@ -27,6 +27,12 @@ import {
   type ReleaseSourceState,
 } from "./release-machine.js";
 import { validatePublicationAuthorityLineage } from "./release-lineage.js";
+import { validateManagedRemotePluginRelease } from "./remote-release.js";
+import {
+  buildManagedRemoteReleaseBundle,
+  calculateManagedRemoteSourceInputDigest,
+  loadManagedRemoteReleaseBundle,
+} from "./remote-release-bundle.js";
 import { ReleaseSet } from "./release-set.js";
 import {
   loadReviewedWorkspaceOAuthProviderAuthority,
@@ -153,6 +159,20 @@ const exportBaseline = async (output: string, mergeCommit: string): Promise<void
   );
 };
 
+const managedRemoteSourceFiles = async (sourcePath: string): Promise<ReadonlyArray<string>> => {
+  const stat = await fs.lstat(sourcePath);
+  if (stat.isSymbolicLink()) fail("remote-source-link-rejected");
+  if (stat.isFile()) {
+    if (!sourcePath.endsWith(".json")) fail("remote-source-file-invalid");
+    return [sourcePath];
+  }
+  if (!stat.isDirectory()) fail("remote-source-path-invalid");
+  return (await fs.readdir(sourcePath, { withFileTypes: true }))
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+    .map((entry) => path.join(sourcePath, entry.name))
+    .toSorted((left, right) => left.localeCompare(right));
+};
+
 const selectAndBuild = async (input: {
   readonly baselineFile: string;
   readonly outputDirectory: string;
@@ -166,11 +186,46 @@ const selectAndBuild = async (input: {
   const baseline = baselineEnvelope.records;
   const sharedInputDigest = await digestSharedInputs(index.sharedInputs);
   const states: Array<ReleaseSourceState> = [];
-  const sourceByKey = new Map<string, string>();
+  const sourceByKey = new Map<
+    string,
+    { readonly kind: "managed-package" | "managed-remote-mcp"; readonly path: string }
+  >();
   for (const plugin of index.plugins) {
     if (!plugin.publicationEligible) continue;
-    if (plugin.kind !== "managed-package")
-      fail("eligible-remote-release-requires-reviewed-adapter");
+    if (plugin.kind === "managed-remote-mcp") {
+      for (const sourceFile of await managedRemoteSourceFiles(plugin.sourceDirectory)) {
+        const remote = unwrap(
+          validateManagedRemotePluginRelease(
+            JSON.parse(await fs.readFile(sourceFile, "utf8")),
+            "publication",
+          ),
+          (error) => error,
+        );
+        const identity = {
+          marketplaceId: remote.marketplaceId,
+          publisherNamespace: remote.publisherNamespace,
+          pluginSlug: remote.pluginSlug,
+          semanticVersion: remote.version,
+        };
+        states.push({
+          identity,
+          kind: "managed-remote-mcp",
+          publicationEligible: true,
+          sourceInputDigest: await calculateManagedRemoteSourceInputDigest({
+            sourceFile,
+            sharedInputDigest,
+          }),
+        });
+        sourceByKey.set(
+          `${identity.publisherNamespace}/${identity.pluginSlug}@${identity.semanticVersion}`,
+          {
+            kind: "managed-remote-mcp",
+            path: sourceFile,
+          },
+        );
+      }
+      continue;
+    }
     const source = unwrap(
       await validatePluginSource(plugin.sourceDirectory),
       () => "release-source-invalid",
@@ -191,8 +246,11 @@ const selectAndBuild = async (input: {
       }),
     });
     sourceByKey.set(
-      `${identity.publisherNamespace}/${identity.pluginSlug}`,
-      plugin.sourceDirectory,
+      `${identity.publisherNamespace}/${identity.pluginSlug}@${identity.semanticVersion}`,
+      {
+        kind: "managed-package",
+        path: plugin.sourceDirectory,
+      },
     );
   }
   const selected = unwrap(
@@ -207,9 +265,10 @@ const selectAndBuild = async (input: {
     readonly reviewId: string;
   }> = [];
   for (const state of selected) {
-    const sourceDirectory =
-      sourceByKey.get(`${state.identity.publisherNamespace}/${state.identity.pluginSlug}`) ??
-      fail("selected-source-missing");
+    const source =
+      sourceByKey.get(
+        `${state.identity.publisherNamespace}/${state.identity.pluginSlug}@${state.identity.semanticVersion}`,
+      ) ?? fail("selected-source-missing");
     const reviewFile = releaseReviewFile(state.identity);
     const review = await readJson(reviewFile, ReleaseReview);
     const output = releaseBundleDirectory(input.outputDirectory, state.identity);
@@ -226,17 +285,36 @@ const selectAndBuild = async (input: {
     if (previousAuthorityRecord?.durableStateRevoked === true) {
       fail("previous-authority-version-revoked");
     }
-    const previousPublished = previousAuthorityRecord ?? null;
+    const previousPublished =
+      previousAuthorityRecord === undefined
+        ? null
+        : {
+            status: "published" as const,
+            durableStateVerified: true as const,
+            identity: previousAuthorityRecord.identity,
+            releaseDigest: previousAuthorityRecord.releaseDigest,
+            authorityDigest: previousAuthorityRecord.authorityDigest,
+          };
     const candidate = unwrap(
-      await buildManagedPackageReleaseBundle({
-        sourceDirectory,
-        outputDirectory: output,
-        sharedInputDigest,
-        mergeCommit: input.mergeCommit,
-        releaseOrdinal: input.releaseOrdinal,
-        review,
-        previousPublished,
-      }),
+      source.kind === "managed-package"
+        ? await buildManagedPackageReleaseBundle({
+            sourceDirectory: source.path,
+            outputDirectory: output,
+            sharedInputDigest,
+            mergeCommit: input.mergeCommit,
+            releaseOrdinal: input.releaseOrdinal,
+            review,
+            previousPublished: previousAuthorityRecord ?? null,
+          })
+        : await buildManagedRemoteReleaseBundle({
+            sourceFile: source.path,
+            outputDirectory: output,
+            sharedInputDigest,
+            mergeCommit: input.mergeCommit,
+            releaseOrdinal: input.releaseOrdinal,
+            review,
+            previousPublished,
+          }),
       (error) => error,
     );
     outputs.push({
@@ -288,14 +366,39 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
   if (releaseOrdinal !== releaseSet.releaseOrdinal) fail("release-ordinal-mismatch");
   const index = await readJson("releases/index.json", ReleaseIndex);
   const sharedInputDigest = await digestSharedInputs(index.sharedInputs);
-  const sourceByKey = new Map<string, string>();
+  const sourceByKey = new Map<
+    string,
+    { readonly kind: "managed-package" | "managed-remote-mcp"; readonly path: string }
+  >();
   for (const plugin of index.plugins) {
-    if (!plugin.publicationEligible || plugin.kind !== "managed-package") continue;
+    if (!plugin.publicationEligible) continue;
+    if (plugin.kind === "managed-remote-mcp") {
+      for (const sourceFile of await managedRemoteSourceFiles(plugin.sourceDirectory)) {
+        const remote = unwrap(
+          validateManagedRemotePluginRelease(
+            JSON.parse(await fs.readFile(sourceFile, "utf8")),
+            "publication",
+          ),
+          (error) => error,
+        );
+        sourceByKey.set(`${remote.publisherNamespace}/${remote.pluginSlug}@${remote.version}`, {
+          kind: "managed-remote-mcp",
+          path: sourceFile,
+        });
+      }
+      continue;
+    }
     const source = unwrap(
       await validatePluginSource(plugin.sourceDirectory),
       () => "release-source-invalid",
     );
-    sourceByKey.set(`${source.manifest.publisher}/${source.manifest.id}`, plugin.sourceDirectory);
+    sourceByKey.set(
+      `${source.manifest.publisher}/${source.manifest.id}@${source.manifest.version}`,
+      {
+        kind: "managed-package",
+        path: plugin.sourceDirectory,
+      },
+    );
   }
   const verifiedBundles: Array<{
     readonly candidate: IncrementalReleaseCandidate;
@@ -329,31 +432,41 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
     const identityKey = canonicalPluginJson(claimedIdentity);
     if (identities.has(identityKey)) fail("release-set-duplicate-identity");
     identities.add(identityKey);
-    const sourceDirectory =
-      sourceByKey.get(`${claimedIdentity.publisherNamespace}/${claimedIdentity.pluginSlug}`) ??
-      fail("release-source-not-eligible");
+    const source =
+      sourceByKey.get(
+        `${claimedIdentity.publisherNamespace}/${claimedIdentity.pluginSlug}@${claimedIdentity.semanticVersion}`,
+      ) ?? fail("release-source-not-eligible");
     const trustedReview = await readJson(releaseReviewFile(claimedIdentity), ReleaseReview);
     const safetyFindings = await inspectPublicRepositorySafety(bundleDirectory);
     if (safetyFindings.length > 0) fail("release-artifact-public-safety-failed");
     const loaded = unwrap(
-      await loadManagedPackageReleaseBundle({
-        bundleDirectory,
-        sourceDirectory,
-        sharedInputDigest,
-        trustedReview,
-        expectedMergeCommit: mergeCommit,
-        expectedReleaseOrdinal: releaseOrdinal,
-      }),
+      source.kind === "managed-package"
+        ? await loadManagedPackageReleaseBundle({
+            bundleDirectory,
+            sourceDirectory: source.path,
+            sharedInputDigest,
+            trustedReview,
+            expectedMergeCommit: mergeCommit,
+            expectedReleaseOrdinal: releaseOrdinal,
+          })
+        : await loadManagedRemoteReleaseBundle({
+            bundleDirectory,
+            sourceFile: source.path,
+            sharedInputDigest,
+            trustedReview,
+            expectedMergeCommit: mergeCommit,
+            expectedReleaseOrdinal: releaseOrdinal,
+          }),
       (error) => error,
     );
     if (loaded.releaseDigest !== bundle.releaseDigest || loaded.reviewId !== bundle.reviewId) {
       fail("release-set-candidate-mismatch");
     }
     const oauthProviderAuthority =
-      loaded.authentication.kind === "oauth"
+      source.kind === "managed-package" && loaded.authentication.kind === "oauth"
         ? unwrap(
             await loadReviewedWorkspaceOAuthProviderAuthority({
-              sourceDirectory,
+              sourceDirectory: source.path,
               authentication: loaded.authentication,
             }),
             (error) => error,

@@ -1,0 +1,10 @@
+{
+  "contractVersion": 1,
+  "owner": "@supernala/domain",
+  "sourcePath": "packages/domain/src/plugin-auth-strategy.ts",
+  "sourceSha256": "ab48df365da7608ba41b2a9cdc65540668bca9a5fbeca895a479b5403de4ac80",
+  "schemaPath": "packages/domain/schema/plugin-auth-strategy-definition.v1.schema.json",
+  "schemaSha256": "8fcc89a52dc1fafd241dc5e774593168d85f76123781493a965038024cc078a0",
+  "providerChainsPath": "packages/domain/fixtures/auth-profile-provider-chains.v1.json",
+  "providerChainsSha256": "9c82c873eecf8479708d37a6971d077df6f03894a6875fee4de728f535dca859"
+}

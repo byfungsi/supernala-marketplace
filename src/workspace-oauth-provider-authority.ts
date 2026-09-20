@@ -86,6 +86,7 @@ export async function loadReviewedWorkspaceOAuthProviderAuthority(input: {
         canonicalPluginJson(definition.scopes) ||
       canonicalPluginJson(input.authentication.requestedScopes) !==
         canonicalPluginJson(definition.scopes) ||
+      definition.account.kind !== "https-json" ||
       definition.account.displayLabelPath === undefined ||
       (definition.tokenEndpointAuthMethod !== "client_secret_post" &&
         definition.tokenEndpointAuthMethod !== "client_secret_basic")

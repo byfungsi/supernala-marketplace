@@ -4,7 +4,13 @@ import { preparePluginPackage, validatePluginSource } from "./authoring-validati
 import { PluginAuthoritySnapshot } from "./authority-diff.js";
 import { ReleaseReview } from "./release-bundle.js";
 import { validatePublicationAuthorityLineage } from "./release-lineage.js";
-import { digestPluginBytes, PluginSha256, PluginVersion } from "./plugin-contract.js";
+import {
+  digestPluginBytes,
+  PluginSha256,
+  PluginVersion,
+  ProviderRegistrationId,
+  RemoteMcpEndpointRegistrationId,
+} from "./plugin-contract.js";
 import { verifyPublishedReleaseBaseline } from "./release-baseline.js";
 import { PackagedPluginAuthentication } from "./package-archive.js";
 import {
@@ -14,6 +20,7 @@ import {
   type ApplicationPublicationReader,
   type ImmutableArtifactReader,
   type IncrementalReleaseCandidate,
+  type ReleaseJournalRecord,
 } from "./release-machine.js";
 
 const publishedCandidate = async (): Promise<IncrementalReleaseCandidate> => {
@@ -162,6 +169,41 @@ it("marks published baseline rows only after application and complete artifact v
       journal: result.success,
     }),
   ).toEqual(Result.succeed([]));
+});
+
+it("verifies artifact-free managed remotes without blocking later baseline exports", async () => {
+  const { record } = await publishedRecord();
+  const remote: ReleaseJournalRecord = {
+    ...record,
+    kind: "managed-remote-mcp",
+    version: PluginVersion.make({
+      ...record.version,
+      runtime: {
+        _tag: "ManagedRemoteMcp",
+        kind: "managed-remote-mcp",
+        endpointRegistrationId: RemoteMcpEndpointRegistrationId.make("synthetic-remote-v1"),
+        providerRegistrationId: ProviderRegistrationId.make("synthetic-oauth-v1"),
+        transport: "streamable-http",
+      },
+      allowedHosts: ["mcp.synthetic.example"],
+    }),
+    artifactDigest: null,
+    artifactByteLength: null,
+  };
+  const application = new ControlledApplicationReader(Result.succeed("published"));
+  const artifacts = new ControlledArtifactReader(Result.succeed(true));
+  const result = await verifyPublishedReleaseBaseline({
+    records: [remote],
+    application,
+    artifacts,
+  });
+
+  expect(result).toMatchObject({
+    _tag: "Success",
+    success: [{ durableStateVerified: true }],
+  });
+  expect(application.reads).toBe(1);
+  expect(artifacts.reads).toBe(0);
 });
 
 it("fails closed before artifact reads when application state does not match", async () => {

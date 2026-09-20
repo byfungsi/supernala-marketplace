@@ -33,10 +33,34 @@
       "reason": "Owner-authorized for publication after the reviewed App migration; the trusted release workflow admits exact credential-free Gmail OAuth authority, formal reviews were waived rather than passed, and live mailbox acceptance follows publication"
     },
     {
-      "sourceDirectory": "plugins/remotes",
+      "sourceDirectory": "plugins/remotes/atlassian.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": false,
-      "reason": "provider facts and catalogs remain staged-unverified"
+      "reason": "live Atlassian consent, catalog capture, review, and acceptance remain incomplete"
+    },
+    {
+      "sourceDirectory": "plugins/remotes/gmail.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": false,
+      "reason": "provider facts and catalog remain staged-unverified"
+    },
+    {
+      "sourceDirectory": "plugins/remotes/linear.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": false,
+      "reason": "provider facts and catalog remain staged-unverified"
+    },
+    {
+      "sourceDirectory": "plugins/remotes/notion.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": false,
+      "reason": "live consent, exact catalog capture, plan eligibility, and privacy review remain staged-unverified"
+    },
+    {
+      "sourceDirectory": "plugins/remotes/resend.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": false,
+      "reason": "CIMD deployment, live team identity, catalog capture, privacy review, and acceptance remain unverified"
     }
   ]
 }

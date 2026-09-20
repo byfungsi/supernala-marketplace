@@ -2,18 +2,22 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { Effect, Result, Schema } from "effect";
 import { derivePluginAuthoritySnapshot, diffPluginAuthority } from "./authority-diff.js";
-import {
-  preparePluginPackage,
-  synchronizePluginManifestDigests,
-  validatePluginSource,
-} from "./authoring-validation.js";
+import { validatePluginSource } from "./authoring-validation.js";
 import { inspectMcpJsonLines, inspectMcpStreamableHttpBody } from "./mcp-conformance.js";
 import { parsePackagedPluginArchive } from "./package-archive.js";
 import { makePackagedPluginPublicationPlan, PublicationReviewBinding } from "./publication-plan.js";
 import { inspectPublicRepositorySafety } from "./public-repo-safety.js";
 import { validateManagedRemotePluginRelease } from "./remote-release.js";
+import { captureRemoteMcpCatalog } from "./remote-catalog-capture.js";
 import { canonicalPluginJson, digestPluginBytes, PluginSha256 } from "./plugin-contract.js";
 import { generateMarketplaceJsonSchemas } from "./schema-exports.js";
+import {
+  type PluginAuthoringAuthProfile,
+  preparePluginAuthoringSource,
+  scaffoldPluginAuthoringSource,
+  type PluginAuthoringRuntime,
+  validatePluginAuthoringSource,
+} from "./plugin-authoring.js";
 
 const writeJson = (value: unknown): void => {
   process.stdout.write(`${JSON.stringify(value, null, 2)}\n`);
@@ -61,35 +65,66 @@ const sourceTreeDigest = async (directory: string): Promise<typeof PluginSha256.
 };
 
 const validateCommand = async (directory: string): Promise<void> => {
-  const result = await validatePluginSource(directory);
-  const source = unwrapResult(result, (error) => error.message);
+  const source = unwrapResult(await validatePluginAuthoringSource(directory), (error) => error);
   writeJson({
     valid: true,
-    plugin: `${source.manifest.publisher}/${source.manifest.id}`,
-    version: source.manifest.version,
-    tools: source.catalog.tools.length,
+    runtime: source.runtime,
+    plugin: source.plugin,
+    version: source.version,
+    tools: source.tools,
+    publicationEligible: source.publicationEligible,
+    publicationBlocker: source.publicationBlocker,
   });
 };
 
 const prepareCommand = async (directory: string, output: string): Promise<void> => {
-  await synchronizePluginManifestDigests(directory);
-  const source = await validatePluginSource(directory);
-  const validSource = unwrapResult(source, (error) => error.message);
-  const versionId = `${validSource.manifest.id}-${validSource.manifest.version}`;
-  const prepared = await preparePluginPackage({
-    source: validSource,
-    marketplaceId: "supernala-public",
-    versionId,
-    publishedAt: 0,
-  });
-  const packageResult = unwrapResult(prepared, (error) => error.message);
-  await fs.mkdir(path.dirname(path.resolve(output)), { recursive: true });
-  await fs.writeFile(output, packageResult.archiveBytes);
+  const prepared = unwrapResult(
+    await preparePluginAuthoringSource({ sourcePath: directory, outputFile: output }),
+    (error) => error,
+  );
   writeJson({
-    artifactDigest: packageResult.artifactDigest,
-    byteLength: packageResult.archiveBytes.byteLength,
+    ...prepared,
     output: path.basename(output),
     publication: "not-performed",
+  });
+};
+
+const createCommand = async (arguments_: ReadonlyArray<string>): Promise<void> => {
+  const slug = requireArgument(arguments_, 0, "plugin-slug");
+  if (arguments_[1] !== "--runtime") fail("expected---runtime");
+  const runtimeArgument = requireArgument(arguments_, 2, "runtime");
+  const runtime: PluginAuthoringRuntime =
+    runtimeArgument === "managed-package" || runtimeArgument === "managed-remote-mcp"
+      ? runtimeArgument
+      : fail("runtime-invalid");
+  let auth: PluginAuthoringAuthProfile | undefined;
+  if (arguments_.length > 3) {
+    if (arguments_[3] !== "--auth") fail("expected---auth");
+    const authArgument = requireArgument(arguments_, 4, "auth-profile");
+    auth =
+      authArgument === "workspace-oauth" ||
+      authArgument === "mcp-oauth" ||
+      authArgument === "api-key" ||
+      authArgument === "device-oauth"
+        ? authArgument
+        : fail("auth-profile-invalid");
+  }
+  if (arguments_.length !== (auth === undefined ? 3 : 5)) fail("unexpected-create-arguments");
+  const created = unwrapResult(
+    await scaffoldPluginAuthoringSource({
+      rootDirectory: "plugins",
+      slug,
+      runtime,
+      ...(auth === undefined ? {} : { auth }),
+    }),
+    (error) => error,
+  );
+  writeJson({
+    created: path.relative(process.cwd(), created.directory),
+    runtime,
+    auth: auth ?? null,
+    files: created.files,
+    publicationEligible: false,
   });
 };
 
@@ -155,6 +190,21 @@ const remoteCommand = async (): Promise<void> => {
     if (Result.isSuccess(publishable)) fail(`${file}:unexpectedly-publishable`);
   }
   writeJson({ valid: true, staged: files });
+};
+
+const captureRemoteCatalogCommand = async (
+  inputFile: string,
+  outputFile: string,
+): Promise<void> => {
+  const observed: unknown = JSON.parse(await fs.readFile(inputFile, "utf8"));
+  const capture = unwrapResult(await captureRemoteMcpCatalog(observed), (error) => error);
+  await fs.writeFile(outputFile, `${JSON.stringify(capture, null, 2)}\n`);
+  writeJson({
+    output: path.basename(outputFile),
+    digest: capture.digest,
+    tools: capture.tools.length,
+    publication: "not-performed",
+  });
 };
 
 const safetyCommand = async (): Promise<void> => {
@@ -270,6 +320,8 @@ const main = async (): Promise<void> => {
     }
     case "validate":
       return validateCommand(requireArgument(arguments_, 0, "source-directory"));
+    case "create":
+      return createCommand(arguments_);
     case "prepare":
       return prepareCommand(
         requireArgument(arguments_, 0, "source-directory"),
@@ -286,6 +338,11 @@ const main = async (): Promise<void> => {
       return conformanceCommand(requireArgument(arguments_, 0, "fixture-file"));
     case "validate-remotes":
       return remoteCommand();
+    case "capture-remote-catalog":
+      return captureRemoteCatalogCommand(
+        requireArgument(arguments_, 0, "observed-catalog-file"),
+        requireArgument(arguments_, 1, "output-file"),
+      );
     case "plan-publication":
       return planCommand(arguments_);
     case "public-safety":
@@ -299,7 +356,7 @@ const main = async (): Promise<void> => {
       );
     default:
       return fail(
-        "expected deploy|validate|prepare|inspect|diff-authority|conformance|validate-remotes|plan-publication|verify-plan|public-safety|export-schemas",
+        "expected deploy|create|validate|prepare|inspect|diff-authority|conformance|validate-remotes|capture-remote-catalog|plan-publication|verify-plan|public-safety|export-schemas",
       );
   }
 };

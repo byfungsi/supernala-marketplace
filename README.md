@@ -6,8 +6,12 @@ Public, curated source and offline tooling for Supernala Plugin releases. This r
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm marketplace create my-plugin --runtime managed-package
+pnpm marketplace create my-remote --runtime managed-remote-mcp
 pnpm marketplace validate plugins/offline-fixture
 pnpm marketplace prepare plugins/offline-fixture artifacts/offline-fixture.plugin
+pnpm marketplace validate plugins/my-remote
+pnpm marketplace prepare plugins/my-remote artifacts/my-remote.prepared.json
 pnpm marketplace inspect artifacts/offline-fixture.plugin
 pnpm marketplace diff-authority plugins/offline-fixture plugins/github
 pnpm marketplace conformance fixtures/mcp/stdio.jsonl
@@ -20,7 +24,9 @@ pnpm release publish <output-directory> --dry-run
 pnpm check
 ```
 
-The legacy publication-plan command remains useful for contract inspection. The merge release machinery reads a durable journal baseline, independently verifies published rows against exact application D1 state and complete R2 bytes, builds only selected Plugin versions, and uses verified R2/D1 publication adapters. Dry-run never writes. A published row without current durable-state evidence fails closed rather than being silently skipped. Production publication requires explicit configuration and has not been enabled or called.
+`create` writes an explicitly non-publishable starter and refuses invalid slugs or an existing target. `validate` accepts a managed-package directory, a managed-remote directory containing `remote.json`, or a remote JSON file. `prepare` preserves packaged `.plugin` output. For a remote it writes a credential-free canonical `.json` envelope with its publication eligibility/blocker; it does not contact the provider, create a reviewed release bundle, or publish.
+
+The legacy publication-plan command remains useful for contract inspection. The merge release machinery reads a durable journal baseline, independently verifies published rows against exact application D1 state and complete R2 bytes, builds only selected Plugin versions, and uses verified shared R2/D1 publication adapters. Plugin authors supply declarations and implementation files, never SQL, publication intents, database identities, or credentials. Dry-run never writes. A published row without current durable-state evidence fails closed rather than being silently skipped. Production publication requires explicit configuration and has not been enabled or called.
 
 `plugins/offline-fixture/dist/server.mjs` is checked-in fixture source despite the general `dist/` ignore rule. Its exact bytes are bound by `fixtures/golden/offline-package.json`; do not regenerate or reformat it. Clean-clone checks require this file without a build step.
 
@@ -51,3 +57,8 @@ Supernala-authored repository source is licensed under the [MIT License](LICENSE
 ## Status
 
 The repository supports offline authoring and acceptance. Live publication, Store visibility, Owner OAuth/install/invocation, outage independence, and revocation evidence remain human-controlled acceptance gates.
+
+The v0 provider lineup and exact promotion state are recorded in
+[`plugins/remotes/README.md`](plugins/remotes/README.md). Documentation-derived catalogs and synthetic
+publication fixtures are offline evidence only; neither is a claim of live provider eligibility or
+successful consent.

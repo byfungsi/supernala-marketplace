@@ -9,6 +9,7 @@ import {
 } from "./authority-diff.js";
 import { preparePluginPackage, validatePluginSource } from "./authoring-validation.js";
 import { PackagedPluginAuthentication, parsePackagedPluginArchive } from "./package-archive.js";
+import { PluginAuthStrategyDefinition } from "./plugin-auth-strategy.js";
 import {
   canonicalPluginJson,
   digestPluginBytes,
@@ -30,8 +31,9 @@ export const ReleaseReview = Schema.Struct({
   reviewer: Schema.NonEmptyString,
   reviewedAt: Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(0))),
   sourceInputDigest: PluginSha256,
-  artifactDigest: PluginSha256,
+  artifactDigest: Schema.NullOr(PluginSha256),
   authentication: PackagedPluginAuthentication,
+  authStrategy: Schema.optionalKey(PluginAuthStrategyDefinition),
   catalogDigest: PluginSha256,
   configDigest: PluginSha256,
   provenanceDigest: PluginSha256,
@@ -166,7 +168,7 @@ export const calculateReleaseDigest = (input: {
   readonly authorityBaselineDigest: typeof PluginSha256.Type;
   readonly authorityDigest: typeof PluginSha256.Type;
   readonly authorityDiffDigest: typeof PluginSha256.Type;
-  readonly artifactDigest: typeof PluginSha256.Type;
+  readonly artifactDigest: typeof PluginSha256.Type | null;
 }): Promise<typeof PluginSha256.Type> => digestJson(input);
 
 export const calculateAuthorityBaselineDigest = (
@@ -278,6 +280,9 @@ export async function buildManagedPackageReleaseBundle(input: {
     definitionId: pluginDefinitionId(identity),
     version: prepared.success.parsed.version,
     authentication: prepared.success.parsed.authentication,
+    ...(prepared.success.parsed.authStrategy === undefined
+      ? {}
+      : { authStrategy: prepared.success.parsed.authStrategy }),
     kind: "managed-package",
     sourceInputDigest,
     releaseDigest,
@@ -315,6 +320,7 @@ export async function buildManagedPackageReleaseBundle(input: {
         definitionId: candidate.definitionId,
         version: candidate.version,
         authentication: candidate.authentication,
+        ...(candidate.authStrategy === undefined ? {} : { authStrategy: candidate.authStrategy }),
         kind: "managed-package",
         sourceInputDigest,
         releaseDigest,
@@ -465,6 +471,9 @@ export async function loadManagedPackageReleaseBundle(input: {
     definitionId: pluginDefinitionId(input.trustedReview.identity),
     version: parsed.success.version,
     authentication: parsed.success.authentication,
+    ...(parsed.success.authStrategy === undefined
+      ? {}
+      : { authStrategy: parsed.success.authStrategy }),
     kind: "managed-package",
     sourceInputDigest,
     releaseDigest,
@@ -494,6 +503,7 @@ export async function loadManagedPackageReleaseBundle(input: {
         definitionId: candidate.definitionId,
         version: candidate.version,
         authentication: candidate.authentication,
+        ...(candidate.authStrategy === undefined ? {} : { authStrategy: candidate.authStrategy }),
         kind: candidate.kind,
         sourceInputDigest: candidate.sourceInputDigest,
         releaseDigest: candidate.releaseDigest,

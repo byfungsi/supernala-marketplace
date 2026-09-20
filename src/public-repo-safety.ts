@@ -67,7 +67,7 @@ export async function inspectPublicRepositorySafety(
   const visit = async (directory: string): Promise<void> => {
     const entries = await fs.readdir(directory, { withFileTypes: true });
     for (const entry of entries) {
-      if (entry.isDirectory() && excludedDirectories.has(entry.name)) continue;
+      if (excludedDirectories.has(entry.name)) continue;
       const absolute = path.join(directory, entry.name);
       const relative = path.relative(root, absolute).split(path.sep).join("/");
       if (entry.isSymbolicLink()) {

@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "status": "staged-unverified",
-  "id": "notion-remote-1.0.0",
+  "id": "supernala-public:supernala:notion@1.0.0",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "notion",
   "version": "1.0.0",
   "name": "Notion",
-  "description": "Staged curated Notion managed remote MCP candidate",
+  "description": "Staged curated Notion hosted MCP integration",
   "license": "LicenseRef-Provider-Service",
   "runtime": {
     "_tag": "ManagedRemoteMcp",
@@ -18,14 +18,192 @@
   },
   "endpoint": "https://mcp.notion.com/mcp",
   "oauthRegistrationMode": "dynamic",
-  "scopes": [],
-  "catalog": {
-    "id": "notion-unverified-catalog",
+  "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
+  "authStrategy": {
     "schemaVersion": 1,
-    "digest": "0000000000000000000000000000000000000000000000000000000000000000",
-    "tools": []
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "notion-oauth-v1",
+    "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
+    "requestedScopes": ["default"],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://mcp.notion.com/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://mcp.notion.com/.well-known/oauth-protected-resource",
+    "identity": {
+      "kind": "mcp-tool",
+      "operation": {
+        "endpoint": "https://mcp.notion.com/mcp",
+        "toolName": "notion-fetch",
+        "input": {
+          "id": "self"
+        },
+        "maximumOutputBytes": 65536
+      },
+      "subjectPaths": [
+        ["self", "workspace", "id"],
+        ["self", "user", "id"]
+      ],
+      "displayLabelPath": ["self", "workspace", "name"],
+      "subjectStability": "stable",
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 512
+    },
+    "resources": {
+      "kind": "none"
+    }
   },
-  "config": { "revision": 1, "fields": [] },
+  "oauthProviderDefinition": {
+    "schemaVersion": 1,
+    "protocol": "oauth2-authorization-code",
+    "issuer": "https://mcp.notion.com",
+    "provider": "notion-mcp",
+    "resourceIdentity": "https://mcp.notion.com",
+    "authorizationEndpoint": "https://mcp.notion.com/authorize",
+    "tokenEndpoint": "https://mcp.notion.com/token",
+    "tokenEndpointAuthMethod": "none",
+    "authorizationResponseIssuer": "not-supported",
+    "pkce": {
+      "method": "S256"
+    },
+    "authorizationParameters": [],
+    "scopes": ["default"],
+    "account": {
+      "kind": "declaration-managed"
+    },
+    "tokens": {
+      "accessTokenType": "bearer",
+      "expiresIn": {
+        "required": true,
+        "minimumSeconds": 1,
+        "maximumSeconds": 86400
+      },
+      "grantedScopes": {
+        "whenPresent": "exact-match",
+        "whenOmitted": "requested-scopes"
+      },
+      "initialRefreshToken": "required",
+      "refreshResponseToken": "retain-current-if-omitted"
+    },
+    "refresh": {
+      "kind": "standard-form-post",
+      "invalidGrant": "reauthorization-required",
+      "ambiguousOutcome": "fail-closed-no-replay"
+    },
+    "revocation": {
+      "kind": "none"
+    }
+  },
+  "scopes": ["default"],
+  "catalog": {
+    "id": "notion-documentation-candidate-v1",
+    "schemaVersion": 1,
+    "digest": "496f3be4bd75ba8ccc933a8689516376a9f967947fefc517ac80ab231b9d180e",
+    "tools": [
+      {
+        "id": "notion.notion_fetch",
+        "mcpName": "notion-fetch",
+        "title": "Fetch Notion content",
+        "description": "Fetch one reviewed Notion object or the special self identity record.",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "additionalProperties": false,
+          "required": ["id"]
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "notion.notion_search",
+        "mcpName": "notion-search",
+        "title": "Search Notion",
+        "description": "Search accessible Notion workspace content or users.",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": ["query"]
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "notion.notion_create_pages",
+        "mcpName": "notion-create-pages",
+        "title": "Create Notion pages",
+        "description": "Create one or more pages in an explicitly selected Notion parent.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "parent": {
+              "type": "object"
+            },
+            "pages": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": ["parent", "pages"]
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "notion.notion_update_page",
+        "mcpName": "notion-update-page",
+        "title": "Update a Notion page",
+        "description": "Update properties or content on one identified Notion page.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "additionalProperties": false,
+          "required": ["page_id"]
+        },
+        "maximumOutputBytes": 262144
+      }
+    ]
+  },
+  "config": {
+    "revision": 1,
+    "fields": []
+  },
   "allowedHosts": ["mcp.notion.com"],
-  "verificationNotes": "Endpoint documented by Notion; OAuth metadata suggests DCR, but scopes, live catalog, privacy, and account eligibility remain unverified."
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://developers.notion.com/guides/mcp/build-mcp-client",
+    "https://developers.notion.com/guides/mcp/mcp-supported-tools",
+    "https://mcp.notion.com/.well-known/oauth-protected-resource",
+    "https://mcp.notion.com/.well-known/oauth-authorization-server"
+  ],
+  "verificationNotes": "Documentation-derived candidate tools and exact OAuth metadata are reviewed offline, not a consented tools/list capture. notion-fetch with id self returns a text block containing JSON whose self object carries workspace, user, and current_tool_access. The MCP-audience token is not sent to public REST /v1/users/me. Initial user_id/workspace_id/email_domain token fields must survive refreshes that omit them. Live consent, exact catalog schemas, per-plan tool eligibility, privacy review, and production acceptance remain unverified."
 }

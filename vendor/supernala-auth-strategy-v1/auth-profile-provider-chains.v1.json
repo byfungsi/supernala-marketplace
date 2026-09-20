@@ -1,0 +1,101 @@
+{
+  "fixtureVersion": 1,
+  "profiles": {
+    "workspace-oauth": [
+      {
+        "provider": "mail",
+        "providerRegistrationId": "mail-workspace-oauth-v1",
+        "resourceIdentity": "mail:resource",
+        "requestedScopes": ["synthetic.mail.read"],
+        "tokenEndpointAuthMethod": "client_secret_post",
+        "issuer": "https://identity.mail.example",
+        "authorizationEndpoint": "https://identity.mail.example/oauth/authorize",
+        "tokenEndpoint": "https://identity.mail.example/oauth/token",
+        "identityEndpoint": "https://api.mail.example/v1/account",
+        "subjectPath": ["account", "mailboxId"],
+        "displayLabelPath": ["account", "displayName"]
+      },
+      {
+        "provider": "orbit",
+        "providerRegistrationId": "orbit-workspace-oauth-v1",
+        "resourceIdentity": "orbit:resource",
+        "requestedScopes": ["synthetic.mail.read"],
+        "tokenEndpointAuthMethod": "client_secret_post",
+        "issuer": "https://login.orbit.example",
+        "authorizationEndpoint": "https://login.orbit.example/authorize",
+        "tokenEndpoint": "https://tokens.orbit.example/exchange",
+        "identityEndpoint": "https://graph.orbit.example/me",
+        "subjectPath": ["principal", "id"],
+        "displayLabelPath": ["principal", "handle"]
+      }
+    ],
+    "mcp-oauth": [
+      {
+        "provider": "mail",
+        "providerRegistrationId": "mail-mcp-oauth-v1",
+        "resourceIdentity": "mail:resource",
+        "requestedScopes": ["synthetic.mail.read"],
+        "tokenEndpointAuthMethod": "client_secret_post",
+        "issuer": "https://identity.mail-mcp.example",
+        "authorizationEndpoint": "https://identity.mail-mcp.example/oauth/authorize",
+        "tokenEndpoint": "https://identity.mail-mcp.example/oauth/token",
+        "identityEndpoint": "https://api.mail-mcp.example/v2/profile",
+        "subjectPath": ["profile", "subject"],
+        "displayLabelPath": ["profile", "label"]
+      },
+      {
+        "provider": "orbit",
+        "providerRegistrationId": "orbit-mcp-oauth-v1",
+        "resourceIdentity": "https://mcp.orbit-mcp.example",
+        "requestedScopes": ["synthetic.mail.read"],
+        "tokenEndpointAuthMethod": "none",
+        "issuer": "https://login.orbit-mcp.example",
+        "authorizationEndpoint": "https://login.orbit-mcp.example/authorize",
+        "tokenEndpoint": "https://tokens.orbit-mcp.example/token",
+        "identityEndpoint": "https://graph.orbit-mcp.example/viewer",
+        "subjectPath": ["viewer", "uuid"],
+        "displayLabelPath": ["viewer", "alias"]
+      }
+    ],
+    "api-key": [
+      {
+        "provider": "acme",
+        "providerRegistrationId": "acme-api-key-v1",
+        "verificationEndpoint": "https://api.acme.example/v1/credential",
+        "identityEndpoint": "https://api.acme.example/v1/principal",
+        "subjectPath": ["principal", "id"],
+        "displayLabelPath": ["principal", "name"],
+        "headerName": "x-acme-api-key"
+      },
+      {
+        "provider": "orbit",
+        "providerRegistrationId": "orbit-api-key-v1",
+        "verificationEndpoint": "https://gateway.orbit.example/auth/check",
+        "identityEndpoint": "https://gateway.orbit.example/session/owner",
+        "subjectPath": ["owner", "subject"],
+        "displayLabelPath": ["owner", "handle"],
+        "headerName": "authorization"
+      }
+    ],
+    "device-oauth": [
+      {
+        "provider": "acme",
+        "providerRegistrationId": "acme-device-oauth-v1",
+        "deviceAuthorizationEndpoint": "https://device.acme.example/oauth/device/code",
+        "tokenEndpoint": "https://device.acme.example/oauth/token",
+        "identityEndpoint": "https://api.acme.example/v2/device-user",
+        "subjectPath": ["user", "id"],
+        "displayLabelPath": ["user", "name"]
+      },
+      {
+        "provider": "orbit",
+        "providerRegistrationId": "orbit-device-oauth-v1",
+        "deviceAuthorizationEndpoint": "https://login.orbit.example/device/start",
+        "tokenEndpoint": "https://tokens.orbit.example/device/exchange",
+        "identityEndpoint": "https://graph.orbit.example/device/principal",
+        "subjectPath": ["principal", "uuid"],
+        "displayLabelPath": ["principal", "alias"]
+      }
+    ]
+  }
+}
