@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { format } from "oxfmt";
 
@@ -11,6 +11,7 @@ const marketplaceSchemaPath = resolve(
   "schemas/plugin-auth-strategy-definition.schema.json",
 );
 const providerChainsPath = resolve(repositoryRoot, "fixtures/auth-profile-provider-chains.v1.json");
+const legacySourcePath = resolve(vendorDirectory, "plugin-auth-strategy.v1.source.ts");
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 const decodeManifest = (bytes) => {
@@ -20,6 +21,7 @@ const decodeManifest = (bytes) => {
     typeof value !== "object" ||
     value.contractVersion !== 1 ||
     value.owner !== "@supernala/domain" ||
+    value.sourceFile !== "plugin-auth-strategy.v1.source.txt" ||
     typeof value.sourceSha256 !== "string" ||
     typeof value.schemaSha256 !== "string" ||
     typeof value.providerChainsSha256 !== "string"
@@ -30,13 +32,13 @@ const decodeManifest = (bytes) => {
 };
 
 const loadDistribution = async (directory) => {
-  const source = await readFile(resolve(directory, "plugin-auth-strategy.v1.source.ts"));
+  const manifestBytes = await readFile(resolve(directory, "manifest.json"));
+  const manifest = decodeManifest(manifestBytes);
+  const source = await readFile(resolve(directory, manifest.sourceFile));
   const schema = await readFile(
     resolve(directory, "plugin-auth-strategy-definition.v1.schema.json"),
   );
-  const manifestBytes = await readFile(resolve(directory, "manifest.json"));
   const providerChains = await readFile(resolve(directory, "auth-profile-provider-chains.v1.json"));
-  const manifest = decodeManifest(manifestBytes);
   if (
     sha256(source) !== manifest.sourceSha256 ||
     sha256(schema) !== manifest.schemaSha256 ||
@@ -75,10 +77,8 @@ if (command === "vendor") {
   const distribution = await loadDistribution(resolve(distributionDirectory));
   await mkdir(vendorDirectory, { recursive: true });
   await mkdir(resolve(generatedSourcePath, ".."), { recursive: true });
-  await writeFile(
-    resolve(vendorDirectory, "plugin-auth-strategy.v1.source.ts"),
-    distribution.source,
-  );
+  await rm(legacySourcePath, { force: true });
+  await writeFile(resolve(vendorDirectory, distribution.manifest.sourceFile), distribution.source);
   await writeFile(
     resolve(vendorDirectory, "plugin-auth-strategy-definition.v1.schema.json"),
     distribution.schema,
@@ -93,6 +93,9 @@ if (command === "vendor") {
   await writeFile(providerChainsPath, distribution.providerChains);
   console.log(`vendored auth strategy contract v${distribution.manifest.contractVersion}`);
 } else if (command === "check") {
+  if ((await readdir(vendorDirectory)).includes("plugin-auth-strategy.v1.source.ts")) {
+    throw new Error("legacy TypeScript auth contract distribution source is present");
+  }
   const distribution = await loadDistribution(vendorDirectory);
   const expectedSource = await renderMarketplaceSource(distribution);
   const [actualSource, actualSchema, actualProviderChains] = await Promise.all([
