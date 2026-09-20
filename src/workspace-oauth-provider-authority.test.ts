@@ -94,9 +94,23 @@ it("admits Gmail as exact credential-free Workspace OAuth authority", async () =
 
   expect(await admission.admit(input)).toEqual(Result.succeed(undefined));
   expect(await admission.admit(input)).toEqual(Result.succeed(undefined));
+  expect(await admission.admit({ ...input, sourceRevision: "b".repeat(40) })).toEqual(
+    Result.succeed(undefined),
+  );
   expect(await admission.admit({ ...input, sourceRepository: "other/marketplace" })).toEqual(
     Result.fail("workspace-oauth-provider-admission-failed"),
   );
+  expect(
+    database
+      .prepare(
+        `SELECT source_repository, source_revision
+         FROM plugin_oauth_provider_definitions WHERE provider_definition_digest = ?`,
+      )
+      .get(authority.success.providerDefinitionDigest),
+  ).toEqual({
+    source_repository: "supernala/marketplace",
+    source_revision: "a".repeat(40),
+  });
   expect(
     database
       .prepare(

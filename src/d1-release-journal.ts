@@ -161,11 +161,30 @@ export class D1ReleaseJournal implements ReleaseJournal {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'claimed', 1, NULL, 1, ?, ?)
         ON CONFLICT (release_identity) DO UPDATE SET
           attempts = marketplace_release_journal.attempts + 1,
+          merge_commit = excluded.merge_commit,
+          release_ordinal = excluded.release_ordinal,
+          status = 'claimed',
           failure_type = NULL,
+          generation = marketplace_release_journal.generation + 1,
           updated_at = excluded.updated_at
         WHERE marketplace_release_journal.release_digest = excluded.release_digest
           AND marketplace_release_journal.source_input_digest = excluded.source_input_digest
-          AND marketplace_release_journal.authority_digest = excluded.authority_digest`,
+          AND marketplace_release_journal.authority_digest = excluded.authority_digest
+          AND marketplace_release_journal.definition_id = excluded.definition_id
+          AND marketplace_release_journal.runtime_kind = excluded.runtime_kind
+          AND marketplace_release_journal.version_json = excluded.version_json
+          AND marketplace_release_journal.catalog_digest = excluded.catalog_digest
+          AND marketplace_release_journal.config_digest = excluded.config_digest
+          AND marketplace_release_journal.provenance_json = excluded.provenance_json
+          AND marketplace_release_journal.provenance_digest = excluded.provenance_digest
+          AND marketplace_release_journal.authority_baseline_digest = excluded.authority_baseline_digest
+          AND marketplace_release_journal.authority_diff_digest = excluded.authority_diff_digest
+          AND marketplace_release_journal.artifact_digest IS excluded.artifact_digest
+          AND marketplace_release_journal.artifact_byte_length IS excluded.artifact_byte_length
+          AND marketplace_release_journal.review_id = excluded.review_id
+          AND marketplace_release_journal.reviewer = excluded.reviewer
+          AND marketplace_release_journal.reviewed_at = excluded.reviewed_at
+          AND marketplace_release_journal.status = 'failed'`,
       params: [
         key,
         candidate.identity.marketplaceId,

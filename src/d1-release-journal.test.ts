@@ -173,24 +173,58 @@ it("persists exact durable claims, retries, publication status and monotonic bas
     .run(storedEnvelope.version_json, "supernala-public/supernala/offline-fixture@1.0.0");
   const retry = await journal.claim(release);
   expect(Result.isSuccess(retry)).toBe(true);
-  const laterMergeRetry = await journal.claim({ ...release, mergeCommit: "b".repeat(40) });
+  await journal.markFailed(
+    "supernala-public/supernala/offline-fixture@1.0.0",
+    1,
+    "application-provider-verification-failed",
+  );
+  expect(
+    await journal.claim({
+      ...release,
+      artifactDigest: PluginSha256.make("9".repeat(64)),
+      mergeCommit: "c".repeat(40),
+      releaseOrdinal: 9,
+    }),
+  ).toEqual(Result.fail("immutable-version-conflict"));
+  expect(await journal.list()).toMatchObject([
+    {
+      mergeCommit: "a".repeat(40),
+      releaseOrdinal: 7,
+      status: "failed",
+      attempts: 1,
+      generation: 1,
+      failureType: "application-provider-verification-failed",
+    },
+  ]);
+  const laterMergeRetry = await journal.claim({
+    ...release,
+    mergeCommit: "b".repeat(40),
+    releaseOrdinal: 8,
+  });
   expect(Result.isSuccess(laterMergeRetry)).toBe(true);
   if (Result.isSuccess(laterMergeRetry)) {
-    expect(laterMergeRetry.success.record.mergeCommit).toBe("a".repeat(40));
+    expect(laterMergeRetry.success.record).toMatchObject({
+      mergeCommit: "b".repeat(40),
+      releaseOrdinal: 8,
+      status: "claimed",
+      attempts: 2,
+      generation: 2,
+      failureType: null,
+    });
   }
-  await journal.markArtifactVerified("supernala-public/supernala/offline-fixture@1.0.0", 1);
-  await journal.markPublished("supernala-public/supernala/offline-fixture@1.0.0", 1);
+  await journal.markArtifactVerified("supernala-public/supernala/offline-fixture@1.0.0", 2);
+  await journal.markPublished("supernala-public/supernala/offline-fixture@1.0.0", 2);
   expect(await journal.list()).toMatchObject([
     {
       status: "published",
-      attempts: 3,
+      attempts: 2,
       artifactByteLength: release.artifactByteLength,
     },
   ]);
   expect(
     database.prepare("SELECT release_ordinal FROM marketplace_release_baselines").get(),
   ).toMatchObject({
-    release_ordinal: 7,
+    release_ordinal: 8,
   });
   const conflict: IncrementalReleaseCandidate = {
     ...release,
@@ -312,8 +346,8 @@ it("resumes a partial release after a later merge and reconstructs a missing jou
     {
       identity: { pluginSlug: "offline-fixture-b" },
       status: "published",
-      mergeCommit: "a".repeat(40),
-      releaseOrdinal: 8,
+      mergeCommit: "b".repeat(40),
+      releaseOrdinal: 9,
       attempts: 2,
     },
   ]);

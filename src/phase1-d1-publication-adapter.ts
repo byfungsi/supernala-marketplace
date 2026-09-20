@@ -117,6 +117,10 @@ const OAuthDefinitionPublicationRow = Schema.Struct({
 
 const PositiveRevision = Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(1)));
 
+const PackagedOAuthRegistrationModeRow = Schema.Struct({
+  registration_mode: Schema.Literals(["platform-pre-registered", "workspace-oauth-app"]),
+});
+
 const OAuthRegistrationSemanticRowFields = {
   provider_registration_id: Schema.NonEmptyString,
   provider: Schema.String,
@@ -1789,10 +1793,24 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
       authenticationRequestedScopesJson(authentication),
     );
     if (Result.isFailure(definition)) return Result.fail(definition.failure);
-    if (registrationMode === "dynamic") {
+    let resolvedRegistrationMode = registrationMode;
+    if (resolvedRegistrationMode === undefined) {
+      const rows = await this.database.query({
+        sql: `SELECT registration_mode FROM provider_registrations
+              WHERE provider_registration_id = ? AND status = 'active'`,
+        params: [authentication.providerRegistration],
+      });
+      if (Result.isFailure(rows)) return Result.fail("application-provider-verification-failed");
+      const row = Schema.decodeUnknownResult(PackagedOAuthRegistrationModeRow, {
+        onExcessProperty: "error",
+      })(rows.success[0]);
+      if (Result.isFailure(row)) return Result.fail("application-provider-verification-failed");
+      resolvedRegistrationMode = row.success.registration_mode;
+    }
+    if (resolvedRegistrationMode === "dynamic") {
       return this.#resolveDynamicOAuthAuthentication(authentication, definition.success);
     }
-    if (registrationMode === "workspace-oauth-app") {
+    if (resolvedRegistrationMode === "workspace-oauth-app") {
       const workspace = await this.#resolveWorkspaceOAuthAuthentication(
         authentication,
         definition.success,
@@ -2113,6 +2131,17 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
           this.#rowMatchesResolvedPublicationAuthentication(row, dynamic.success)
           ? dynamic
           : Result.fail("application-provider-verification-failed");
+      }
+      if (registrationMode === undefined) {
+        const current = await this.#resolvePublicationAuthentication(authentication);
+        if (
+          Result.isSuccess(current) &&
+          current.success.materialSource === null &&
+          this.#rowMatchesResolvedPublicationAuthentication(row, current.success)
+        ) {
+          return current;
+        }
+        if (!allowPublishedHistory) return Result.fail("application-provider-verification-failed");
       }
       return allowPublishedHistory
         ? this.#resolveLegacyPublishedOAuthAuthentication(row, authentication)

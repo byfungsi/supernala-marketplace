@@ -38,11 +38,13 @@ import {
   type IncrementalReleaseCandidate,
 } from "./release-machine.js";
 import {
+  buildManagedPackageReleaseBundle,
   calculateAuthorityBaselineDigest,
   calculateReleaseDigest,
+  loadManagedPackageReleaseBundle,
   pluginDefinitionId,
   pluginVersionId,
-  type ReleaseReview,
+  ReleaseReview,
 } from "./release-bundle.js";
 import {
   type ManagedRemotePluginRelease,
@@ -53,6 +55,10 @@ import {
   calculateManagedRemoteSourceInputDigest,
   loadManagedRemoteReleaseBundle,
 } from "./remote-release-bundle.js";
+import {
+  loadReviewedWorkspaceOAuthProviderAuthority,
+  WorkspaceOAuthProviderAuthorityAdmission,
+} from "./workspace-oauth-provider-authority.js";
 
 const OAuthChainFixture = Schema.Struct({
   provider: Schema.String,
@@ -1079,6 +1085,121 @@ const applicationDatabase = async (): Promise<DatabaseSync> => {
   database.exec(authStrategiesMigration.toString("utf8"));
   return database;
 };
+
+it("admits and publishes the reviewed Gmail package through Workspace OAuth authority", async () => {
+  const releaseRoot = await mkdtemp(path.join(os.tmpdir(), "gmail-release-publication-"));
+  const database = await applicationDatabase();
+  const transport = new SQLiteD1Transport(database);
+  const review = Schema.decodeUnknownSync(ReleaseReview, { onExcessProperty: "error" })(
+    JSON.parse(
+      await readFile("releases/reviews/supernala-public__supernala__gmail__0.1.0.json", "utf8"),
+    ),
+  );
+  const releaseIndex = Schema.decodeUnknownSync(
+    Schema.Struct({ sharedInputs: Schema.Array(Schema.String) }),
+  )(JSON.parse(await readFile("releases/index.json", "utf8")));
+  const sharedEntries = [];
+  for (const file of releaseIndex.sharedInputs.toSorted()) {
+    sharedEntries.push({
+      file,
+      digest: await digestPluginBytes(new Uint8Array(await readFile(file))),
+    });
+  }
+  const sharedInputDigest = await digestPluginBytes(
+    new TextEncoder().encode(JSON.stringify(sharedEntries)),
+  );
+  const buildAndReload = async (mergeCommit: string, releaseOrdinal: number) => {
+    const bundleDirectory = path.join(releaseRoot, String(releaseOrdinal));
+    const built = await buildManagedPackageReleaseBundle({
+      sourceDirectory: "plugins/gmail",
+      outputDirectory: bundleDirectory,
+      sharedInputDigest,
+      mergeCommit,
+      releaseOrdinal,
+      review,
+      previousPublished: null,
+    });
+    if (Result.isFailure(built)) throw new Error(built.failure);
+    const loaded = await loadManagedPackageReleaseBundle({
+      bundleDirectory,
+      sourceDirectory: "plugins/gmail",
+      sharedInputDigest,
+      trustedReview: review,
+      expectedMergeCommit: mergeCommit,
+      expectedReleaseOrdinal: releaseOrdinal,
+    });
+    if (Result.isFailure(loaded)) throw new Error(loaded.failure);
+    return loaded.success;
+  };
+  const failedRelease = await buildAndReload("b64ea19051e317a04255979474952941af7e8386", 0);
+  const retryRelease = await buildAndReload("c".repeat(40), 1);
+  expect(retryRelease.authStrategy).toBeUndefined();
+  expect(retryRelease.artifactDigest).toBe(
+    "4c3a568a455cdd549517f75f06428530f7b8ee1b78a57644982f212ee7dd6aa6",
+  );
+  if (retryRelease.authentication.kind !== "oauth") throw new Error("gmail-oauth-required");
+  const authority = await loadReviewedWorkspaceOAuthProviderAuthority({
+    sourceDirectory: "plugins/gmail",
+    authentication: retryRelease.authentication,
+  });
+  if (Result.isFailure(authority)) throw new Error(authority.failure);
+  const admission = new WorkspaceOAuthProviderAuthorityAdmission(
+    transport,
+    "https://supernala.com/v1/plugins/oauth/callback",
+  );
+  expect(
+    await admission.admit({
+      authority: authority.success,
+      sourceRepository: "supernala/marketplace",
+      sourceRevision: failedRelease.mergeCommit,
+      reviewId: failedRelease.reviewId,
+      reviewer: failedRelease.reviewer,
+      reviewedAt: failedRelease.reviewedAt,
+    }),
+  ).toEqual(Result.succeed(undefined));
+  expect(
+    await admission.admit({
+      authority: authority.success,
+      sourceRepository: "supernala/marketplace",
+      sourceRevision: retryRelease.mergeCommit,
+      reviewId: retryRelease.reviewId,
+      reviewer: retryRelease.reviewer,
+      reviewedAt: retryRelease.reviewedAt,
+    }),
+  ).toEqual(Result.succeed(undefined));
+  const journalDatabase = new DatabaseSync(":memory:");
+  journalDatabase.exec(await readFile("tools/infra/migrations/0001_release_journal.sql", "utf8"));
+  const journal = new D1ReleaseJournal(new SQLiteD1Transport(journalDatabase));
+  expect(Result.isSuccess(await journal.claim(failedRelease))).toBe(true);
+  await journal.markFailed(
+    "supernala-public/supernala/gmail@0.1.0",
+    1,
+    "application-provider-verification-failed",
+  );
+  const published = await publishIncrementalRelease({
+    candidate: retryRelease,
+    journal,
+    artifacts: new InMemoryImmutableArtifactStore(),
+    application: new Phase1D1PublicationAdapter(transport),
+  });
+  expect(published).toEqual(Result.succeed({ status: "published" }));
+  expect(await new Phase1D1PublicationAdapter(transport).readPublished(retryRelease)).toEqual(
+    Result.succeed(true),
+  );
+  expect(await journal.list()).toMatchObject([
+    {
+      status: "published",
+      attempts: 2,
+      generation: 2,
+      mergeCommit: "c".repeat(40),
+      releaseOrdinal: 1,
+    },
+  ]);
+  expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+  journalDatabase.close();
+  database.close();
+  await rm(releaseRoot, { recursive: true });
+});
 
 it("pins the managed-remote dynamic OAuth runtime migration bytes", async () => {
   const migration = await readFile(exactManagedRemoteDynamicOAuthRuntimeMigrationFile);
@@ -2123,8 +2244,8 @@ it("runs coherent A/B packages through exact Phase 1 D1 with cross-merge resume 
       {
         identity: { pluginSlug: "offline-fixture-b" },
         status: "published",
-        mergeCommit: "a".repeat(40),
-        releaseOrdinal: 2,
+        mergeCommit: "b".repeat(40),
+        releaseOrdinal: 3,
         attempts: 2,
       },
     ]);

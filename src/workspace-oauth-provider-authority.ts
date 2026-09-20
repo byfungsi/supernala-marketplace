@@ -200,7 +200,7 @@ export class WorkspaceOAuthProviderAuthorityAdmission {
            AND d.provider = ? AND d.resource_identity = ? AND d.display_label_path_present = 1
            AND d.status = 'active' AND d.revision = 1
            AND d.admission_operation_id = ? AND d.source_kind = 'marketplace-release'
-           AND d.source_repository = ? AND d.source_revision = ? AND d.source_path = ?
+           AND d.source_repository = ? AND d.source_path = ?
            AND d.source_content_digest = ? AND d.reviewed_at = ?
            AND r.provider_registration_id = ? AND r.provider = d.provider
            AND r.resource_identity = d.resource_identity
@@ -216,7 +216,6 @@ export class WorkspaceOAuthProviderAuthorityAdmission {
           authority.definition.resourceIdentity,
           input.reviewId,
           input.sourceRepository,
-          input.sourceRevision,
           authority.sourcePath,
           authority.sourceContentDigest,
           input.reviewedAt,
