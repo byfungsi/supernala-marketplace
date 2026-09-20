@@ -31,7 +31,7 @@
     ],
     "clientRegistration": {
       "kind": "dynamic",
-      "authorizationServerMetadataUrl": "https://mcp.atlassian.com/.well-known/oauth-authorization-server"
+      "authorizationServerMetadataUrl": "https://auth.atlassian.com/VCeDsk8ZHncYF1g234fKtc4lNipbBhu3/.well-known/oauth-authorization-server"
     },
     "resourceMetadataUrl": "https://mcp.atlassian.com/.well-known/oauth-protected-resource/v2/mcp",
     "identity": {
@@ -81,7 +81,8 @@
   "evidenceUrls": [
     "https://support.atlassian.com/atlassian-ai-gateway/docs/configure-oauth-2-1/",
     "https://support.atlassian.com/atlassian-ai-gateway/docs/supported-tools/",
-    "https://mcp.atlassian.com/.well-known/oauth-protected-resource/v2/mcp"
+    "https://mcp.atlassian.com/.well-known/oauth-protected-resource/v2/mcp",
+    "https://auth.atlassian.com/VCeDsk8ZHncYF1g234fKtc4lNipbBhu3/.well-known/oauth-authorization-server"
   ],
-  "verificationNotes": "The v2 tools=all endpoint, OAuth 2.1, DCR metadata, and Jira agent-interface scopes are publicly documented. Whether the MCP audience token is accepted by /me and /oauth/token/accessible-resources remains unverified; exact reviewed public MCP identity tools may be required instead. Live consent, schemas/catalog, privacy, Rovo credit behavior, and eligibility remain unverified."
+  "verificationNotes": "The v2 protected-resource metadata delegates to the tenant-scoped auth.atlassian.com issuer recorded above; that issuer advertises PKCE S256 and a DCR endpoint. The v2 tools=all endpoint and Jira agent-interface scopes are publicly documented. Whether the MCP audience token is accepted by /me and /oauth/token/accessible-resources remains unverified; exact reviewed public MCP identity tools may be required instead. Live consent, schemas/catalog, privacy, Rovo credit behavior, and eligibility remain unverified."
 }

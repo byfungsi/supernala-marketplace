@@ -451,10 +451,10 @@ it("validates and prepares existing build-recipe package candidates through the 
   }
 });
 
-it("validates and prepares the Notion and Resend provider-owned remote declarations", async () => {
+it("validates and prepares the staged provider-owned remote declarations", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-provider-expansion-authoring-"));
   try {
-    for (const slug of ["notion", "resend"]) {
+    for (const slug of ["atlassian", "notion", "resend"]) {
       const sourcePath = `plugins/remotes/${slug}.json`;
       const validated = await validatePluginAuthoringSource(sourcePath);
       expect(Result.isSuccess(validated)).toBe(true);
@@ -473,6 +473,18 @@ it("validates and prepares the Notion and Resend provider-owned remote declarati
       if (Result.isFailure(prepared)) throw new Error(prepared.failure);
       expect(prepared.success).toMatchObject({ runtime: "managed-remote-mcp" });
     }
+    const atlassian = validateManagedRemotePluginRelease(
+      JSON.parse(await readFile("plugins/remotes/atlassian.json", "utf8")),
+      "authoring",
+    );
+    if (Result.isFailure(atlassian) || atlassian.success.authStrategy?.profile !== "mcp-oauth") {
+      throw new Error("atlassian-auth-strategy-missing");
+    }
+    expect(atlassian.success.authStrategy.clientRegistration).toEqual({
+      kind: "dynamic",
+      authorizationServerMetadataUrl:
+        "https://auth.atlassian.com/VCeDsk8ZHncYF1g234fKtc4lNipbBhu3/.well-known/oauth-authorization-server",
+    });
     const resend = validateManagedRemotePluginRelease(
       JSON.parse(await readFile("plugins/remotes/resend.json", "utf8")),
       "authoring",
