@@ -25,6 +25,7 @@ export default Alchemy.Stack(
   { providers: Cloudflare.providers(), state: Cloudflare.state() },
   Effect.gen(function* () {
     const deploymentEnvironment = yield* environment;
+    const releaseStage = yield* Alchemy.Stage;
     const appStack = yield* applicationStack;
     const appStage = yield* applicationStage;
     if (appStage !== deploymentEnvironment) {
@@ -41,7 +42,8 @@ export default Alchemy.Stack(
     });
 
     const releaseJournal = yield* Cloudflare.D1.Database("MarketplaceReleaseJournal", {
-      name: `supernala-marketplace-release-${deploymentEnvironment}`,
+      // A rebuilt application gets a fresh release stage without deleting prior publication history.
+      name: `supernala-marketplace-release-${releaseStage}`,
       migrations: join(import.meta.dirname, "migrations"),
     });
 

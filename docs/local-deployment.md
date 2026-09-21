@@ -17,6 +17,14 @@ pnpm exec alchemy deploy --stage production
 
 Infrastructure deployment is separate from Plugin publication. Run it initially and when infrastructure changes, not for every Plugin update.
 
+### After a full application environment reset
+
+An application reset replaces its D1 database and package bucket. The old journal's published records belong to the old resources and cannot serve as the rebuilt environment's verified baseline.
+
+Provision the Marketplace stack under a fresh release stage, for example `--stage production-20260921`, while keeping `MARKETPLACE_ENVIRONMENT=production` and `APPLICATION_ALCHEMY_STAGE=production`. The journal name follows the release stage; application references still follow the application stage. Review a plan that creates only the new journal and retains the previous stack and journal as publication history. Apply the journal migrations through Alchemy.
+
+Update both private credential files from the new stack outputs: journal database ID, application database ID, and package bucket name. Re-scope the dedicated R2 read/write credentials to the new package bucket without broadening their permissions. Then run the normal production release command. Its fresh journal baseline permits the reviewed versions to be published into the rebuilt catalog. Do not fabricate a verified baseline or rewrite the old journal's successful publication records.
+
 ## Private credentials
 
 Create `$HOME/.config/supernala-marketplace` with mode `700`. Securely provision two dotenv files, each mode `600`, owned by the current operator and outside every source checkout. Never put real values in this repository, command arguments, logs, or chat. The CLI rejects symlink files, group/world access, missing values, and unexpected keys.
