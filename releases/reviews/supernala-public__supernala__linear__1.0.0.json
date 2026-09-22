@@ -1,0 +1,3334 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "linear",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "linear-1.0.0-owner-authorized-tools-list-v1",
+  "reviewer": "supernala-owner (authenticated catalog captured; live acceptance pending)",
+  "reviewedAt": 1790075959214,
+  "sourceInputDigest": "28cabafadde81aee618e4f24e0e47adb56490b128d9ede09d3760ebb96fb7aae",
+  "artifactDigest": null,
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "linear-oauth-v1",
+    "providerDefinitionDigest": "4e4b75dcf211c5c00da146e9d53411b848d90e175f7980bf9309e303a2f0f7aa",
+    "requestedScopes": ["read", "write"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "linear-oauth-v1",
+    "providerDefinitionDigest": "4e4b75dcf211c5c00da146e9d53411b848d90e175f7980bf9309e303a2f0f7aa",
+    "requestedScopes": ["read", "write"],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://mcp.linear.app/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://mcp.linear.app/.well-known/oauth-protected-resource/mcp",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Linear connection (workspace identity pending)"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "catalogDigest": "4d3f2e28cb61ee896f2669dc0b7494dd4036da2eb13ffa86a0f21bd27e0593de",
+  "configDigest": "e6ebf9c4674f06e5a34f3a0619d9caa13b618515eeff5f54267e104bd6400221",
+  "provenanceDigest": "8ed9a54d240c54cf339805e7c4b518352b861579564fb7555db2084c65454d47",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "a550e0c82f40e481406e144770a99999c39c2bad7676e314f0f58c4eb8109d03",
+  "authorityAfter": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["read", "write"],
+    "endpoint": "https://mcp.linear.app/mcp",
+    "endpointRegistrationId": "linear-mcp-v1",
+    "providerRegistrationId": "linear-oauth-v1",
+    "providerDefinitionDigest": "4e4b75dcf211c5c00da146e9d53411b848d90e175f7980bf9309e303a2f0f7aa",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "linear-oauth-v1",
+      "providerDefinitionDigest": "4e4b75dcf211c5c00da146e9d53411b848d90e175f7980bf9309e303a2f0f7aa",
+      "requestedScopes": ["read", "write"],
+      "clientRegistration": {
+        "kind": "dynamic",
+        "authorizationServerMetadataUrl": "https://mcp.linear.app/.well-known/oauth-authorization-server"
+      },
+      "resourceMetadataUrl": "https://mcp.linear.app/.well-known/oauth-protected-resource/mcp",
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Linear connection (workspace identity pending)"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "linear.create_attachment_from_upload",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "issue": {
+              "type": "string",
+              "description": "Issue ID or identifier (e.g., LIN-123). P-prefixed identifiers (e.g., P-ENG-123) are projects, not issues"
+            },
+            "assetUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "Linear upload assetUrl returned by prepare_attachment_upload"
+            },
+            "title": {
+              "description": "Attachment title. Defaults to filename or asset URL",
+              "type": "string"
+            },
+            "subtitle": {
+              "description": "Optional attachment subtitle",
+              "type": "string"
+            }
+          },
+          "required": ["issue", "assetUrl"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.create_issue_label",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Label name"
+            },
+            "description": {
+              "description": "Label description",
+              "type": "string"
+            },
+            "color": {
+              "description": "Hex color code",
+              "type": "string"
+            },
+            "teamId": {
+              "description": "Team UUID (omit for workspace label)",
+              "type": "string"
+            },
+            "parent": {
+              "description": "Parent label group name or ID",
+              "type": "string"
+            },
+            "isGroup": {
+              "default": false,
+              "description": "Whether the label is a group",
+              "type": "boolean"
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.delete_attachment",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Attachment ID"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.delete_comment",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Comment ID"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.delete_diff_comment",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "commentId": {
+              "description": "Submitted diff comment ID to delete",
+              "type": "string",
+              "minLength": 1
+            },
+            "draftId": {
+              "description": "Persisted diff comment draft ID to delete",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.delete_status_update",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["project", "initiative"],
+              "description": "Type of status update"
+            },
+            "id": {
+              "type": "string",
+              "description": "Status update ID"
+            }
+          },
+          "required": ["type", "id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.extract_images",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "markdown": {
+              "type": "string",
+              "description": "Markdown content containing image references (e.g., issue description, comment body)"
+            }
+          },
+          "required": ["markdown"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_agent_skill",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Agent skill ID"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_attachment",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Attachment ID"
+            },
+            "format": {
+              "description": "Response format. Defaults to content.",
+              "type": "string",
+              "enum": ["content", "url"]
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_diff",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "urlOrId": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Linear review URL, diff slug, pull request ID, Linear full identifier, or GitHub PR URL"
+            }
+          },
+          "required": ["urlOrId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_diff_threads",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "urlOrId": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Linear review URL, diff slug, pull request ID, Linear full identifier, or GitHub PR URL"
+            },
+            "threadId": {
+              "description": "Optional Linear comment UUID of any comment in the thread (not its `externalThreadId`); a reply's UUID resolves to its thread root",
+              "type": "string"
+            },
+            "resolved": {
+              "description": "Filter returned threads by resolved state",
+              "type": "boolean"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            }
+          },
+          "required": ["urlOrId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_document",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Document ID or slug"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_issue",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Issue ID or identifier (e.g., LIN-123). P-prefixed identifiers (e.g., P-ENG-123) are projects, not issues"
+            },
+            "includeRelations": {
+              "default": false,
+              "description": "Include blocking/related/duplicate relations",
+              "type": "boolean"
+            },
+            "includeCustomerNeeds": {
+              "default": false,
+              "description": "Include associated customer needs",
+              "type": "boolean"
+            },
+            "includeReleases": {
+              "default": false,
+              "description": "Include associated releases",
+              "type": "boolean"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_issue_status",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Status ID"
+            },
+            "name": {
+              "type": "string",
+              "description": "Status name"
+            },
+            "team": {
+              "type": "string",
+              "description": "Team name or ID"
+            }
+          },
+          "required": ["id", "name", "team"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_milestone",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "project": {
+              "type": "string",
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug"
+            },
+            "query": {
+              "type": "string",
+              "description": "Milestone name or ID"
+            }
+          },
+          "required": ["project", "query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_notifications",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "unreadOnly": {
+              "default": false,
+              "description": "Only return unread notifications",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_project",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug"
+            },
+            "includeCustomerNeeds": {
+              "default": false,
+              "description": "Include one page of customer needs attached directly to the project",
+              "type": "boolean"
+            },
+            "customerNeedsLimit": {
+              "default": 10,
+              "description": "Customer needs per page when includeCustomerNeeds is true (default 10, max 50)",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "customerNeedsCursor": {
+              "description": "Next customer-needs page: pass customerNeedsPageInfo.endCursor with includeCustomerNeeds true",
+              "type": "string"
+            },
+            "includeMilestones": {
+              "default": false,
+              "description": "Include milestones",
+              "type": "boolean"
+            },
+            "includeMembers": {
+              "default": false,
+              "description": "Include project members",
+              "type": "boolean"
+            },
+            "includeResources": {
+              "default": false,
+              "description": "Include resources (documents, links, attachments)",
+              "type": "boolean"
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_release",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Release ID or slug"
+            },
+            "includeReleaseNotes": {
+              "default": false,
+              "description": "Include associated release notes",
+              "type": "boolean"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_release_note",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Release notes ID or slug"
+            },
+            "includeReleases": {
+              "default": false,
+              "description": "Include associated releases",
+              "type": "boolean"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_status_updates",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "type": {
+              "type": "string",
+              "enum": ["project", "initiative"],
+              "description": "Type of status update"
+            },
+            "id": {
+              "description": "Status update ID - if provided, returns this specific update",
+              "type": "string"
+            },
+            "project": {
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug",
+              "type": "string"
+            },
+            "initiative": {
+              "description": "Initiative name, ID, identifier (e.g., I-123), or slug",
+              "type": "string"
+            },
+            "user": {
+              "description": "User ID, name, email, or \"me\"",
+              "type": "string"
+            },
+            "createdAt": {
+              "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "updatedAt": {
+              "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "includeArchived": {
+              "default": false,
+              "description": "Include archived items",
+              "type": "boolean"
+            }
+          },
+          "required": ["type"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_team",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Team UUID, key, or name"
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_template",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Template ID or name"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_user",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "User ID, name, email, or \"me\""
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.get_workspace",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "id": "linear.list_agent_skills",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_comments",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "issueId": {
+              "description": "Issue ID or identifier (e.g., LIN-123). P-prefixed identifiers (e.g., P-ENG-123) are projects, not issues (provide exactly one parent)",
+              "type": "string"
+            },
+            "projectId": {
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug (provide exactly one parent)",
+              "type": "string"
+            },
+            "initiativeId": {
+              "description": "Initiative name, ID, identifier (e.g., I-123), or slug (provide exactly one parent)",
+              "type": "string"
+            },
+            "documentId": {
+              "description": "Document ID or slug (provide exactly one parent)",
+              "type": "string"
+            },
+            "milestoneId": {
+              "description": "Milestone UUID (provide exactly one parent). Resolve milestone names via `list_milestones` first.",
+              "type": "string"
+            },
+            "statusUpdateId": {
+              "description": "Status update UUID (provide exactly one parent). Resolve status updates via `get_status_updates` first.",
+              "type": "string"
+            },
+            "statusUpdateType": {
+              "description": "Type of status update named by `statusUpdateId`, as returned by `get_status_updates`. Only valid together with `statusUpdateId`; omit to check both project and initiative status updates.",
+              "type": "string",
+              "enum": ["project", "initiative"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_custom_views",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "query": {
+              "description": "Search custom view names",
+              "type": "string"
+            },
+            "type": {
+              "description": "Entity type displayed by the view",
+              "type": "string",
+              "enum": ["Issue", "Project", "Initiative"]
+            },
+            "team": {
+              "description": "Team name or ID",
+              "type": "string"
+            },
+            "shared": {
+              "description": "True for shared views, false for personal views",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_cycles",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "teamId": {
+              "type": "string",
+              "description": "Team ID"
+            },
+            "type": {
+              "description": "Filter: current, previous, next, or all",
+              "type": "string",
+              "enum": ["current", "previous", "next"]
+            }
+          },
+          "required": ["teamId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_diffs",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "query": {
+              "description": "Broad search by title, branch, PR number, or bare slug",
+              "type": "string"
+            },
+            "owner": {
+              "description": "Filter returned diffs by repository owner",
+              "type": "string"
+            },
+            "repo": {
+              "description": "Filter returned diffs by repository name",
+              "type": "string"
+            },
+            "status": {
+              "description": "Filter returned diffs by pull request status",
+              "type": "string"
+            },
+            "author": {
+              "description": "Filter by author ID, name, email, or \"me\"",
+              "type": "string"
+            },
+            "reviewer": {
+              "description": "Filter by reviewer ID, name, email, or \"me\"",
+              "type": "string"
+            },
+            "reviewState": {
+              "description": "Reviewer state; requires reviewer and defaults to pending when reviewer is set",
+              "type": "string",
+              "enum": ["pending", "approved", "changesRequested", "commented", "dismissed"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_documents",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "query": {
+              "description": "Search query",
+              "type": "string"
+            },
+            "projectId": {
+              "description": "Filter by project ID",
+              "type": "string"
+            },
+            "initiativeId": {
+              "description": "Filter by initiative ID",
+              "type": "string"
+            },
+            "teamId": {
+              "description": "Filter by team ID",
+              "type": "string"
+            },
+            "creatorId": {
+              "description": "Filter by creator ID",
+              "type": "string"
+            },
+            "createdAt": {
+              "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "updatedAt": {
+              "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "includeArchived": {
+              "default": false,
+              "description": "Include archived items",
+              "type": "boolean"
+            },
+            "fields": {
+              "description": "Fields to include in each result. `id` is always included. Omit or pass an empty array for the default response.",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "title",
+                  "content",
+                  "url",
+                  "createdAt",
+                  "updatedAt",
+                  "archivedAt",
+                  "creator",
+                  "updatedBy",
+                  "project",
+                  "initiative",
+                  "team",
+                  "issue"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_issue_labels",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "name": {
+              "description": "Filter by name",
+              "type": "string"
+            },
+            "team": {
+              "description": "Team name or ID",
+              "type": "string"
+            },
+            "includeArchived": {
+              "default": false,
+              "description": "Include archived items",
+              "type": "boolean"
+            },
+            "includeGroups": {
+              "default": false,
+              "description": "Include label groups in the results, marked with `isGroup`. A group cannot be applied directly; retiring or restoring one cascades to its child labels",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_issue_statuses",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "team": {
+              "type": "string",
+              "description": "Team name or ID"
+            }
+          },
+          "required": ["team"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_issues",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "query": {
+              "description": "Search issue title or description. Cannot be combined with customView",
+              "type": "string"
+            },
+            "customView": {
+              "description": "Saved view ID, URL, slug, or exact name. Use list_custom_views to discover views. Applies saved filters and scope; other filters narrow the results. Uses list ordering, not saved display settings",
+              "type": "string",
+              "minLength": 1
+            },
+            "team": {
+              "description": "Team name or ID",
+              "type": "string"
+            },
+            "state": {
+              "description": "State type, name, or ID",
+              "type": "string"
+            },
+            "cycle": {
+              "description": "Cycle name, number, or ID",
+              "type": "string"
+            },
+            "label": {
+              "description": "Label name or ID",
+              "type": "string"
+            },
+            "assignee": {
+              "description": "User ID, name, email, or \"me\"",
+              "type": ["string", "null"]
+            },
+            "delegate": {
+              "description": "Agent name or ID. When the user asks to delegate to \"Linear\" or \"the Linear agent\", this refers to the \"Linear\" app user specifically",
+              "type": "string"
+            },
+            "project": {
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug",
+              "type": "string"
+            },
+            "release": {
+              "description": "Release ID or slug",
+              "type": "string"
+            },
+            "priority": {
+              "description": "0=None, 1=Urgent, 2=High, 3=Medium, 4=Low",
+              "type": "number"
+            },
+            "parentId": {
+              "description": "Parent issue ID or identifier (e.g., LIN-123)",
+              "type": "string"
+            },
+            "fields": {
+              "description": "Fields to include in each result. `id` is always included. Omit or pass an empty array for the default response.",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "uuid",
+                  "title",
+                  "description",
+                  "projectMilestone",
+                  "priority",
+                  "estimate",
+                  "url",
+                  "gitBranchName",
+                  "createdAt",
+                  "updatedAt",
+                  "archivedAt",
+                  "completedAt",
+                  "startedAt",
+                  "canceledAt",
+                  "dueDate",
+                  "slaStartedAt",
+                  "slaMediumRiskAt",
+                  "slaHighRiskAt",
+                  "slaBreachesAt",
+                  "slaType",
+                  "status",
+                  "statusType",
+                  "labels",
+                  "triageIntel",
+                  "createdBy",
+                  "createdById",
+                  "assignee",
+                  "assigneeId",
+                  "delegate",
+                  "delegateId",
+                  "project",
+                  "projectId",
+                  "parentId",
+                  "team",
+                  "teamId",
+                  "cycleId"
+                ]
+              }
+            },
+            "createdAt": {
+              "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "updatedAt": {
+              "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "includeArchived": {
+              "default": false,
+              "description": "Include archived items",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_milestones",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "project": {
+              "type": "string",
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug"
+            }
+          },
+          "required": ["project"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_project_labels",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "name": {
+              "description": "Filter by name",
+              "type": "string"
+            },
+            "team": {
+              "description": "Team name or ID",
+              "type": "string"
+            },
+            "includeArchived": {
+              "default": false,
+              "description": "Include archived items",
+              "type": "boolean"
+            },
+            "includeGroups": {
+              "default": false,
+              "description": "Include label groups in the results, marked with `isGroup`. A group cannot be applied directly; retiring or restoring one cascades to its child labels",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_projects",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 50)",
+              "type": "number",
+              "maximum": 50
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "customView": {
+              "description": "Saved view ID, URL, slug, or exact name. Use list_custom_views to discover views. Applies saved filters and scope; other filters narrow the results. Uses list ordering, not saved display settings",
+              "type": "string",
+              "minLength": 1
+            },
+            "query": {
+              "description": "Search project name",
+              "type": "string"
+            },
+            "state": {
+              "description": "State type, name, or ID",
+              "type": "string"
+            },
+            "initiative": {
+              "description": "Initiative name, ID, identifier (e.g., I-123), or slug",
+              "type": "string"
+            },
+            "team": {
+              "description": "Team name or ID",
+              "type": "string"
+            },
+            "member": {
+              "description": "User ID, name, email, or \"me\"",
+              "type": "string"
+            },
+            "label": {
+              "description": "Label name or ID",
+              "type": "string"
+            },
+            "createdAt": {
+              "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "updatedAt": {
+              "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "includeMilestones": {
+              "default": false,
+              "description": "Include milestones",
+              "type": "boolean"
+            },
+            "includeMembers": {
+              "default": false,
+              "description": "Include project members",
+              "type": "boolean"
+            },
+            "includeArchived": {
+              "default": false,
+              "description": "Include archived items",
+              "type": "boolean"
+            },
+            "fields": {
+              "description": "Fields to include in each result. `id` is always included. Omit or pass an empty array for the default response.",
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "id",
+                  "uuid",
+                  "name",
+                  "summary",
+                  "description",
+                  "url",
+                  "trashed",
+                  "createdAt",
+                  "updatedAt",
+                  "startedAt",
+                  "completedAt",
+                  "canceledAt",
+                  "startDate",
+                  "startDateResolution",
+                  "targetDate",
+                  "targetDateResolution",
+                  "priority",
+                  "sortOrder",
+                  "labels",
+                  "initiatives",
+                  "lead",
+                  "leadTeam",
+                  "status",
+                  "teams",
+                  "members",
+                  "milestones"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_release_notes",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "query": {
+              "description": "Search release notes title",
+              "type": "string"
+            },
+            "pipeline": {
+              "description": "Release pipeline ID, slug, or exact name",
+              "type": "string"
+            },
+            "release": {
+              "description": "Release ID or slug",
+              "type": "string"
+            },
+            "includeContent": {
+              "default": false,
+              "description": "Include markdown release notes content",
+              "type": "boolean"
+            },
+            "includeReleases": {
+              "default": false,
+              "description": "Include associated releases",
+              "type": "boolean"
+            },
+            "createdAt": {
+              "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "updatedAt": {
+              "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "includeArchived": {
+              "default": false,
+              "description": "Include archived items",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_release_pipelines",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "query": {
+              "description": "Search pipeline name",
+              "type": "string"
+            },
+            "team": {
+              "description": "Team name or ID",
+              "type": "string"
+            },
+            "type": {
+              "description": "Pipeline type: continuous | scheduled",
+              "type": "string",
+              "enum": ["continuous", "scheduled"]
+            },
+            "isProduction": {
+              "description": "Filter by production pipeline flag",
+              "type": "boolean"
+            },
+            "includeStages": {
+              "default": false,
+              "description": "Include each pipeline's stages",
+              "type": "boolean"
+            },
+            "includeTeams": {
+              "default": false,
+              "description": "Include each pipeline's teams",
+              "type": "boolean"
+            },
+            "createdAt": {
+              "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "updatedAt": {
+              "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "includeArchived": {
+              "default": false,
+              "description": "Include archived items",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_releases",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "query": {
+              "description": "Search release name or version",
+              "type": "string"
+            },
+            "pipeline": {
+              "description": "Release pipeline ID, slug, or exact name",
+              "type": "string"
+            },
+            "stage": {
+              "description": "Release stage ID or exact name",
+              "type": "string"
+            },
+            "stageType": {
+              "description": "Filter by stage lifecycle type",
+              "type": "string",
+              "enum": ["planned", "started", "completed", "canceled"]
+            },
+            "version": {
+              "description": "Exact version match",
+              "type": "string"
+            },
+            "hasReleaseNotes": {
+              "description": "Filter to releases that do (true) or do not (false) have release notes",
+              "type": "boolean"
+            },
+            "includeReleaseNotes": {
+              "default": false,
+              "description": "Include associated release notes",
+              "type": "boolean"
+            },
+            "createdAt": {
+              "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "updatedAt": {
+              "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "includeArchived": {
+              "default": false,
+              "description": "Include archived items",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_teams",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "query": {
+              "description": "Search query",
+              "type": "string"
+            },
+            "includeArchived": {
+              "default": false,
+              "description": "Include archived items",
+              "type": "boolean"
+            },
+            "createdAt": {
+              "description": "Created after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            },
+            "updatedAt": {
+              "description": "Updated after: ISO-8601 date/duration (e.g., -P1D)",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_templates",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "type": {
+              "description": "Filter by template type. Omit to return every type",
+              "type": "string",
+              "enum": ["issue", "project", "document"]
+            },
+            "team": {
+              "description": "Team name or ID. Returns that team's templates plus workspace-level ones",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.list_users",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "limit": {
+              "default": 50,
+              "description": "Max results (default 50, max 250)",
+              "type": "number",
+              "maximum": 250
+            },
+            "cursor": {
+              "description": "Next page cursor",
+              "type": "string"
+            },
+            "orderBy": {
+              "default": "updatedAt",
+              "description": "Sort: createdAt | updatedAt",
+              "type": "string",
+              "enum": ["createdAt", "updatedAt"]
+            },
+            "query": {
+              "description": "Filter by name or email",
+              "type": "string"
+            },
+            "team": {
+              "description": "Team name or ID",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.mark_notification",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Notification ID"
+            },
+            "read": {
+              "description": "Whether the notification should be marked as read",
+              "type": "boolean"
+            },
+            "snoozedUntilAt": {
+              "description": "ISO-8601 time to snooze until, or null to unsnooze",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.merge_diff",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "urlOrId": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Linear review URL, diff slug, pull request ID, Linear full identifier, or GitHub PR URL"
+            },
+            "mergeMethod": {
+              "description": "Merge method; omit to use the repository default",
+              "type": "string",
+              "enum": ["MERGE", "REBASE", "SQUASH"]
+            }
+          },
+          "required": ["urlOrId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.resolve_diff_thread",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "threadId": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Top-level diff thread/comment ID"
+            },
+            "resolved": {
+              "default": true,
+              "description": "True to resolve the thread; false to reopen it",
+              "type": "boolean"
+            }
+          },
+          "required": ["threadId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.restore_issue_label",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Label or label group ID"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.restore_project_label",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Label or label group ID"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.retire_issue_label",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Label or label group ID"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.retire_project_label",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "type": "string",
+              "description": "Label or label group ID"
+            }
+          },
+          "required": ["id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_comment",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "description": "Comment ID. If provided, updates the existing comment",
+              "type": "string"
+            },
+            "issueId": {
+              "description": "Issue ID or identifier (e.g., LIN-123). P-prefixed identifiers (e.g., P-ENG-123) are projects, not issues (provide exactly one parent)",
+              "type": "string"
+            },
+            "projectId": {
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug (provide exactly one parent)",
+              "type": "string"
+            },
+            "initiativeId": {
+              "description": "Initiative name, ID, identifier (e.g., I-123), or slug (provide exactly one parent)",
+              "type": "string"
+            },
+            "documentId": {
+              "description": "Document ID or slug (provide exactly one parent)",
+              "type": "string"
+            },
+            "milestoneId": {
+              "description": "Milestone UUID (provide exactly one parent). Resolve milestone names via `list_milestones` first.",
+              "type": "string"
+            },
+            "statusUpdateId": {
+              "description": "Status update UUID (provide exactly one parent). Resolve status updates via `get_status_updates` first.",
+              "type": "string"
+            },
+            "statusUpdateType": {
+              "description": "Type of status update named by `statusUpdateId`, as returned by `get_status_updates`. Only valid together with `statusUpdateId`; omit to check both project and initiative status updates.",
+              "type": "string",
+              "enum": ["project", "initiative"]
+            },
+            "parentId": {
+              "description": "Parent comment ID (for replies, only when creating)",
+              "type": "string"
+            },
+            "body": {
+              "type": "string",
+              "description": "Content as Markdown. Do not escape the string — use literal newlines and special characters, not escape sequences. To mention a user, use @displayName (e.g., @johndoe)"
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_diff_comment",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "urlOrId": {
+              "description": "Linear review URL, diff slug, pull request ID, Linear full identifier, or GitHub PR URL",
+              "type": "string",
+              "minLength": 1
+            },
+            "commentId": {
+              "description": "Existing comment ID to edit",
+              "type": "string"
+            },
+            "draftId": {
+              "description": "Existing persisted draft ID to edit or submit",
+              "type": "string"
+            },
+            "draft": {
+              "default": false,
+              "description": "Save as a private persisted draft without submitting",
+              "type": "boolean"
+            },
+            "parentId": {
+              "description": "Top-level comment ID to reply to; also required when submitting a persisted reply draft",
+              "type": "string"
+            },
+            "body": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Content as Markdown. Do not escape the string — use literal newlines and special characters, not escape sequences"
+            },
+            "anchor": {
+              "description": "Optional comment anchor copied from a diff thread or built for a file or diff hunk",
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            },
+            "anchorContent": {
+              "description": "Exact source text of the anchor's end line; stored with an inline draft so it can be re-anchored after the diff receives new revisions",
+              "type": "string"
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_document",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "description": "Document ID or slug to update. Omit to create a new document.",
+              "type": "string"
+            },
+            "title": {
+              "description": "Document title (required when creating)",
+              "type": "string"
+            },
+            "content": {
+              "description": "Content as Markdown. Do not escape the string — use literal newlines and special characters, not escape sequences. To mention a user, use @displayName (e.g., @johndoe)",
+              "type": "string"
+            },
+            "patch": {
+              "description": "Partial edits applied to the current content, in order and atomically (one failing operation aborts the whole save). Every anchor string must match the current content exactly once. Only valid on update, in place of the full content/description field",
+              "minItems": 1,
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "replace"
+                      },
+                      "old_string": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to replace. Must match the current content exactly once"
+                      },
+                      "new_string": {
+                        "type": "string",
+                        "description": "Replacement text. Empty string deletes the match"
+                      },
+                      "replace_all": {
+                        "description": "Replace every occurrence instead of requiring a unique match",
+                        "type": "boolean"
+                      }
+                    },
+                    "required": ["op", "old_string", "new_string"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "insert_before"
+                      },
+                      "anchor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to insert before. Must match the current content exactly once"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert directly before the anchor. Include separators (e.g. \"\\n\\n\")"
+                      }
+                    },
+                    "required": ["op", "anchor", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "insert_after"
+                      },
+                      "anchor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to insert after. Must match the current content exactly once"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert directly after the anchor. Include separators (e.g. \"\\n\\n\")"
+                      }
+                    },
+                    "required": ["op", "anchor", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "prepend"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert at the very start of the content"
+                      }
+                    },
+                    "required": ["op", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "append"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert at the very end of the content"
+                      }
+                    },
+                    "required": ["op", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "replace_range"
+                      },
+                      "from": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text where the range starts (inclusive). Must match exactly once"
+                      },
+                      "to": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text where the range ends (exclusive, stays in place). Must match exactly once after `from`"
+                      },
+                      "new_string": {
+                        "type": "string",
+                        "description": "Text replacing the range. Empty string deletes it"
+                      }
+                    },
+                    "required": ["op", "from", "to", "new_string"]
+                  }
+                ]
+              }
+            },
+            "project": {
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug",
+              "type": "string"
+            },
+            "issue": {
+              "description": "Issue ID or identifier (e.g., LIN-123). P-prefixed identifiers (e.g., P-ENG-123) are projects, not issues",
+              "type": "string"
+            },
+            "initiative": {
+              "description": "Initiative name, ID, identifier (e.g., I-123), or slug",
+              "type": "string"
+            },
+            "cycle": {
+              "description": "Cycle name, number, or ID. When passing a name or number, also pass `team` to disambiguate.",
+              "type": "string"
+            },
+            "team": {
+              "description": "Team name or ID. Attaches the document to the team, unless `cycle` is also passed, in which case it disambiguates the cycle.",
+              "type": "string"
+            },
+            "icon": {
+              "description": "Icon name or emoji code (e.g. \"Rocket\" or \":eagle:\"), not a raw Unicode emoji",
+              "type": "string"
+            },
+            "color": {
+              "description": "Hex color",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_issue",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "description": "Only for updating an existing issue. Pass the issue ID or identifier (e.g., LIN-123). Do NOT pass this parameter when creating a new issue.",
+              "type": "string"
+            },
+            "title": {
+              "description": "Issue title (required when creating, unless template is set)",
+              "type": "string"
+            },
+            "description": {
+              "description": "Content as Markdown. Do not escape the string — use literal newlines and special characters, not escape sequences. To mention a user, use @displayName (e.g., @johndoe)",
+              "type": "string"
+            },
+            "patch": {
+              "description": "Partial edits applied to the current content, in order and atomically (one failing operation aborts the whole save). Every anchor string must match the current content exactly once. Only valid on update, in place of the full content/description field",
+              "minItems": 1,
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "replace"
+                      },
+                      "old_string": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to replace. Must match the current content exactly once"
+                      },
+                      "new_string": {
+                        "type": "string",
+                        "description": "Replacement text. Empty string deletes the match"
+                      },
+                      "replace_all": {
+                        "description": "Replace every occurrence instead of requiring a unique match",
+                        "type": "boolean"
+                      }
+                    },
+                    "required": ["op", "old_string", "new_string"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "insert_before"
+                      },
+                      "anchor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to insert before. Must match the current content exactly once"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert directly before the anchor. Include separators (e.g. \"\\n\\n\")"
+                      }
+                    },
+                    "required": ["op", "anchor", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "insert_after"
+                      },
+                      "anchor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to insert after. Must match the current content exactly once"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert directly after the anchor. Include separators (e.g. \"\\n\\n\")"
+                      }
+                    },
+                    "required": ["op", "anchor", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "prepend"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert at the very start of the content"
+                      }
+                    },
+                    "required": ["op", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "append"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert at the very end of the content"
+                      }
+                    },
+                    "required": ["op", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "replace_range"
+                      },
+                      "from": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text where the range starts (inclusive). Must match exactly once"
+                      },
+                      "to": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text where the range ends (exclusive, stays in place). Must match exactly once after `from`"
+                      },
+                      "new_string": {
+                        "type": "string",
+                        "description": "Text replacing the range. Empty string deletes it"
+                      }
+                    },
+                    "required": ["op", "from", "to", "new_string"]
+                  }
+                ]
+              }
+            },
+            "team": {
+              "description": "Team name or ID (required when creating)",
+              "type": "string"
+            },
+            "template": {
+              "description": "Template name or ID. Applied on create only. The template fills in the content, fields, and sub-issues server-side. A `description` replaces the template body rather than merging with it, but an empty `description` keeps the template body. Labels merge with the template's own",
+              "type": "string"
+            },
+            "cycle": {
+              "description": "Cycle name, number, or ID. Null to remove",
+              "type": ["string", "null"]
+            },
+            "milestone": {
+              "description": "Milestone name or ID",
+              "type": "string"
+            },
+            "priority": {
+              "description": "0=None, 1=Urgent, 2=High, 3=Medium, 4=Low",
+              "type": "number"
+            },
+            "project": {
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug. Null to remove",
+              "type": ["string", "null"]
+            },
+            "state": {
+              "description": "State type, name, or ID",
+              "type": "string"
+            },
+            "assignee": {
+              "description": "User ID, name, email, or \"me\". Null to remove",
+              "type": ["string", "null"]
+            },
+            "delegate": {
+              "description": "Agent name or ID. When the user asks to delegate to \"Linear\" or \"the Linear agent\", this refers to the \"Linear\" app user specifically. Null to remove",
+              "type": ["string", "null"]
+            },
+            "labels": {
+              "description": "Label names or IDs as a JSON array of strings (e.g. [\"Bug\", \"Urgent\"]). Replaces the full label set; existing labels not included are removed. Omit to leave labels unchanged. Cannot be combined with addLabels/removeLabels; prefer those for incremental changes",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "addLabels": {
+              "description": "Label names or IDs as a JSON array of strings (e.g. [\"Bug\", \"Urgent\"]) to add. Append-only; existing labels are never removed. Cannot be combined with a team change",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removeLabels": {
+              "description": "Label names or IDs as a JSON array of strings (e.g. [\"Bug\", \"Urgent\"]) to remove. Only valid when updating an existing issue. Cannot be combined with a team change",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "dueDate": {
+              "description": "Due date (ISO format). On update, pass null to remove the due date",
+              "type": ["string", "null"]
+            },
+            "slaBreachesAt": {
+              "description": "ISO-8601 timestamp when the SLA will breach. On update, pass null to remove the SLA",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "slaType": {
+              "description": "SLA day counting type: \"all\" or \"onlyBusinessDays\". Only use with slaBreachesAt; null means unset",
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": ["all", "onlyBusinessDays"]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "parentId": {
+              "description": "Parent issue ID or identifier (e.g., LIN-123). Null to remove",
+              "type": ["string", "null"]
+            },
+            "estimate": {
+              "description": "Issue estimate value. On create, pass null or omit for no estimate. On update, pass null to clear the estimate; omitting leaves it unchanged. 0 is a real estimate only on teams that allow zero estimates.",
+              "type": ["number", "null"]
+            },
+            "links": {
+              "description": "Link attachments to add [{url, title}]. Append-only; existing links are never removed",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": ["url", "title"]
+              }
+            },
+            "setReleases": {
+              "description": "Replace all releases on the issue with these. Cannot be combined with addReleases/removeReleases",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "addReleases": {
+              "description": "Release IDs or slugs to add. Append-only; existing releases are never removed",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removeReleases": {
+              "description": "Release IDs or slugs to remove. Only valid when updating an existing issue",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "blocks": {
+              "description": "Issue IDs/identifiers this blocks. Append-only; existing relations are never removed",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "blockedBy": {
+              "description": "Issue IDs/identifiers blocking this. Append-only; existing relations are never removed",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "relatedTo": {
+              "description": "Related issue IDs/identifiers. Append-only; existing relations are never removed",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "duplicateOf": {
+              "description": "Duplicate of issue ID/identifier. Null to remove",
+              "type": ["string", "null"]
+            },
+            "removeBlocks": {
+              "description": "Issue IDs/identifiers to stop blocking",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removeBlockedBy": {
+              "description": "Issue IDs/identifiers to remove as blockers of this issue",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removeRelatedTo": {
+              "description": "Related issue IDs/identifiers to remove",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_issue_label",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "description": "Label name or ID. If provided, updates the existing label",
+              "type": "string"
+            },
+            "name": {
+              "description": "Label name (required when creating)",
+              "type": "string"
+            },
+            "description": {
+              "description": "Label description. Null to clear it",
+              "type": ["string", "null"]
+            },
+            "color": {
+              "description": "Hex color code",
+              "type": "string"
+            },
+            "teamId": {
+              "description": "Team UUID (omit for workspace label). When updating, only disambiguates `id` by name; a label's team cannot be changed",
+              "type": "string"
+            },
+            "parent": {
+              "description": "Parent label group name or ID. Null to remove from its group",
+              "type": ["string", "null"]
+            },
+            "isGroup": {
+              "description": "Whether the label is a group",
+              "type": "boolean"
+            },
+            "groupType": {
+              "description": "Selection mode for label groups. Defaults to singleSelect when creating; omit to keep it unchanged when updating",
+              "type": "string",
+              "enum": ["singleSelect", "multiSelect"]
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_milestone",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "project": {
+              "type": "string",
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug"
+            },
+            "id": {
+              "description": "Milestone name or ID",
+              "type": "string"
+            },
+            "name": {
+              "description": "Milestone name (required when creating)",
+              "type": "string"
+            },
+            "description": {
+              "description": "Milestone description",
+              "type": "string"
+            },
+            "targetDate": {
+              "description": "Target completion date (ISO format, null to remove)",
+              "type": ["string", "null"]
+            }
+          },
+          "required": ["project"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_project",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug. If provided, updates the existing project",
+              "type": "string"
+            },
+            "name": {
+              "description": "Project name (required when creating)",
+              "type": "string"
+            },
+            "template": {
+              "description": "Template name or ID. Applied on create only. The template fills in the content, fields, and sub-issues server-side. A `description` replaces the template body rather than merging with it, but an empty `description` keeps the template body. Labels merge with the template's own",
+              "type": "string"
+            },
+            "icon": {
+              "description": "Icon name or emoji code (e.g. \"Rocket\" or \":eagle:\"), not a raw Unicode emoji",
+              "type": "string"
+            },
+            "color": {
+              "description": "Hex color",
+              "type": "string"
+            },
+            "summary": {
+              "description": "Short summary (max 255 chars)",
+              "type": "string"
+            },
+            "description": {
+              "description": "Content as Markdown. Do not escape the string — use literal newlines and special characters, not escape sequences. To mention a user, use @displayName (e.g., @johndoe)",
+              "type": "string"
+            },
+            "patch": {
+              "description": "Partial edits applied to the current content, in order and atomically (one failing operation aborts the whole save). Every anchor string must match the current content exactly once. Only valid on update, in place of the full content/description field",
+              "minItems": 1,
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "replace"
+                      },
+                      "old_string": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to replace. Must match the current content exactly once"
+                      },
+                      "new_string": {
+                        "type": "string",
+                        "description": "Replacement text. Empty string deletes the match"
+                      },
+                      "replace_all": {
+                        "description": "Replace every occurrence instead of requiring a unique match",
+                        "type": "boolean"
+                      }
+                    },
+                    "required": ["op", "old_string", "new_string"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "insert_before"
+                      },
+                      "anchor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to insert before. Must match the current content exactly once"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert directly before the anchor. Include separators (e.g. \"\\n\\n\")"
+                      }
+                    },
+                    "required": ["op", "anchor", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "insert_after"
+                      },
+                      "anchor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to insert after. Must match the current content exactly once"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert directly after the anchor. Include separators (e.g. \"\\n\\n\")"
+                      }
+                    },
+                    "required": ["op", "anchor", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "prepend"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert at the very start of the content"
+                      }
+                    },
+                    "required": ["op", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "append"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert at the very end of the content"
+                      }
+                    },
+                    "required": ["op", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "replace_range"
+                      },
+                      "from": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text where the range starts (inclusive). Must match exactly once"
+                      },
+                      "to": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text where the range ends (exclusive, stays in place). Must match exactly once after `from`"
+                      },
+                      "new_string": {
+                        "type": "string",
+                        "description": "Text replacing the range. Empty string deletes it"
+                      }
+                    },
+                    "required": ["op", "from", "to", "new_string"]
+                  }
+                ]
+              }
+            },
+            "state": {
+              "description": "Project status name, type, or ID. Names resolve within the lead team's project statuses. If the lead team is unknown, standard labels resolve as status types; custom names require a status ID or leadTeam",
+              "type": "string"
+            },
+            "startDate": {
+              "description": "Start date (ISO format). Pair with startDateResolution to indicate precision (e.g. month, quarter)",
+              "type": "string"
+            },
+            "startDateResolution": {
+              "description": "Start date resolution",
+              "type": "string",
+              "enum": ["halfYear", "month", "quarter", "year"]
+            },
+            "targetDate": {
+              "description": "Target date (ISO format). Pair with targetDateResolution to indicate precision (e.g. month, quarter)",
+              "type": "string"
+            },
+            "targetDateResolution": {
+              "description": "Target date resolution",
+              "type": "string",
+              "enum": ["halfYear", "month", "quarter", "year"]
+            },
+            "priority": {
+              "description": "0=None, 1=Urgent, 2=High, 3=Medium, 4=Low",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 4
+            },
+            "addTeams": {
+              "description": "Team name or ID to add",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removeTeams": {
+              "description": "Team name or ID to remove",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "setTeams": {
+              "description": "Replace all teams with these. Cannot combine with addTeams/removeTeams",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "leadTeam": {
+              "description": "Team that leads the project. Team name or ID. Overrides the default lead team; added to the project's teams when not among them",
+              "type": "string"
+            },
+            "labels": {
+              "description": "Label names or IDs as a JSON array of strings (e.g. [\"Bug\", \"Urgent\"]). Replaces the full label set; existing labels not included are removed. Omit to leave labels unchanged",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "lead": {
+              "description": "User ID, name, email, or \"me\". Null to remove, except on create with a template that names a lead",
+              "type": ["string", "null"]
+            },
+            "addInitiatives": {
+              "description": "Initiatives to add. Initiative name, ID, identifier (e.g., I-123), or slug",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removeInitiatives": {
+              "description": "Initiatives to remove. Initiative name, ID, identifier (e.g., I-123), or slug",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "setInitiatives": {
+              "description": "Replace all initiatives with these. Initiative name, ID, identifier (e.g., I-123), or slug. Cannot combine with addInitiatives/removeInitiatives",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "links": {
+              "description": "External resource links to add [{url, title}]. Append-only; existing links are never removed",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  },
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": ["url", "title"]
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_project_label",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "description": "Label name or ID. If provided, updates the existing label",
+              "type": "string"
+            },
+            "name": {
+              "description": "Label name (required when creating)",
+              "type": "string"
+            },
+            "description": {
+              "description": "Label description. Null to clear it",
+              "type": ["string", "null"]
+            },
+            "color": {
+              "description": "Hex color code",
+              "type": "string"
+            },
+            "teamId": {
+              "description": "Team UUID (omit for workspace label). When updating, only disambiguates `id` by name; a label's team cannot be changed",
+              "type": "string"
+            },
+            "parent": {
+              "description": "Parent label group name or ID. Null to remove from its group",
+              "type": ["string", "null"]
+            },
+            "isGroup": {
+              "description": "Whether the label is a group",
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_release",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "description": "Release ID or slug to update. Omit to create a new release.",
+              "type": "string"
+            },
+            "name": {
+              "description": "Release name (required when creating)",
+              "type": "string"
+            },
+            "description": {
+              "description": "Release description",
+              "type": "string"
+            },
+            "version": {
+              "description": "Version identifier",
+              "type": "string"
+            },
+            "pipeline": {
+              "description": "Release pipeline ID, slug, or exact name (required when creating)",
+              "type": "string"
+            },
+            "stage": {
+              "description": "Release stage ID, exact name, or lifecycle type within the release pipeline",
+              "type": "string"
+            },
+            "startDate": {
+              "description": "Estimated start date (ISO YYYY-MM-DD, null to remove)",
+              "type": ["string", "null"]
+            },
+            "targetDate": {
+              "description": "Estimated completion date (ISO YYYY-MM-DD, null to remove)",
+              "type": ["string", "null"]
+            },
+            "createdAt": {
+              "description": "Import/create timestamp (ISO DateTime)",
+              "type": "string"
+            },
+            "startedAt": {
+              "description": "Started timestamp (ISO DateTime, null to remove)",
+              "type": ["string", "null"]
+            },
+            "completedAt": {
+              "description": "Completed timestamp (ISO DateTime, null to remove)",
+              "type": ["string", "null"]
+            },
+            "commitSha": {
+              "description": "Commit SHA associated with the release",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_release_note",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "id": {
+              "description": "Release notes ID or slug to update. Omit to create new release notes.",
+              "type": "string"
+            },
+            "pipeline": {
+              "description": "Release pipeline ID, slug, or exact name (required when creating)",
+              "type": "string"
+            },
+            "title": {
+              "description": "Release notes title",
+              "type": "string"
+            },
+            "content": {
+              "description": "Content as Markdown. Do not escape the string — use literal newlines and special characters, not escape sequences. To mention a user, use @displayName (e.g., @johndoe)",
+              "type": "string"
+            },
+            "patch": {
+              "description": "Partial edits applied to the current content, in order and atomically (one failing operation aborts the whole save). Every anchor string must match the current content exactly once. Only valid on update, in place of the full content/description field",
+              "minItems": 1,
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "replace"
+                      },
+                      "old_string": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to replace. Must match the current content exactly once"
+                      },
+                      "new_string": {
+                        "type": "string",
+                        "description": "Replacement text. Empty string deletes the match"
+                      },
+                      "replace_all": {
+                        "description": "Replace every occurrence instead of requiring a unique match",
+                        "type": "boolean"
+                      }
+                    },
+                    "required": ["op", "old_string", "new_string"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "insert_before"
+                      },
+                      "anchor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to insert before. Must match the current content exactly once"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert directly before the anchor. Include separators (e.g. \"\\n\\n\")"
+                      }
+                    },
+                    "required": ["op", "anchor", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "insert_after"
+                      },
+                      "anchor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text to insert after. Must match the current content exactly once"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert directly after the anchor. Include separators (e.g. \"\\n\\n\")"
+                      }
+                    },
+                    "required": ["op", "anchor", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "prepend"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert at the very start of the content"
+                      }
+                    },
+                    "required": ["op", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "append"
+                      },
+                      "text": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Text to insert at the very end of the content"
+                      }
+                    },
+                    "required": ["op", "text"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "op": {
+                        "type": "string",
+                        "const": "replace_range"
+                      },
+                      "from": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text where the range starts (inclusive). Must match exactly once"
+                      },
+                      "to": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Exact text where the range ends (exclusive, stays in place). Must match exactly once after `from`"
+                      },
+                      "new_string": {
+                        "type": "string",
+                        "description": "Text replacing the range. Empty string deletes it"
+                      }
+                    },
+                    "required": ["op", "from", "to", "new_string"]
+                  }
+                ]
+              }
+            },
+            "releases": {
+              "description": "Release IDs or slugs to include in the note",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "rangeFromRelease": {
+              "description": "Oldest release ID or slug in the note range",
+              "type": "string"
+            },
+            "rangeToRelease": {
+              "description": "Newest release ID or slug in the note range",
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.save_status_update",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["project", "initiative"],
+              "description": "Type of status update"
+            },
+            "id": {
+              "description": "Status update ID - if provided, updates this existing update",
+              "type": "string"
+            },
+            "project": {
+              "description": "Project name, ID, identifier (e.g., P-ENG-123), or slug",
+              "type": "string"
+            },
+            "initiative": {
+              "description": "Initiative name, ID, identifier (e.g., I-123), or slug",
+              "type": "string"
+            },
+            "body": {
+              "description": "Content as Markdown. Do not escape the string — use literal newlines and special characters, not escape sequences. To mention a user, use @displayName (e.g., @johndoe)",
+              "type": "string"
+            },
+            "health": {
+              "description": "onTrack | atRisk | offTrack",
+              "type": "string",
+              "enum": ["onTrack", "atRisk", "offTrack"]
+            },
+            "isDiffHidden": {
+              "description": "Deprecated. Hide diff with previous update (create only)",
+              "type": "boolean"
+            }
+          },
+          "required": ["type"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.search_documentation",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search query"
+            },
+            "page": {
+              "default": 0,
+              "description": "Page number",
+              "type": "number"
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.share_issue",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "issue": {
+              "type": "string",
+              "description": "Issue ID or identifier (e.g., LIN-123). P-prefixed identifiers (e.g., P-ENG-123) are projects, not issues"
+            },
+            "user": {
+              "type": "string",
+              "description": "User ID, name, email, or \"me\" Must be an email address or UUID."
+            }
+          },
+          "required": ["issue", "user"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.submit_diff_review",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "urlOrId": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Linear review URL, diff slug, pull request ID, Linear full identifier, or GitHub PR URL"
+            },
+            "decision": {
+              "type": "string",
+              "enum": ["approved", "changesRequested", "commented"],
+              "description": "Review decision: approved, changesRequested, or commented"
+            },
+            "body": {
+              "description": "Content as Markdown. Do not escape the string — use literal newlines and special characters, not escape sequences. Required when requesting changes or commenting",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": ["urlOrId", "decision"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.unshare_issue",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "issue": {
+              "type": "string",
+              "description": "Issue ID or identifier (e.g., LIN-123). P-prefixed identifiers (e.g., P-ENG-123) are projects, not issues"
+            },
+            "user": {
+              "type": "string",
+              "description": "User ID, name, email, or \"me\" Must be an email address or UUID."
+            }
+          },
+          "required": ["issue", "user"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "linear.update_diff",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "urlOrId": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Linear review URL, diff slug, pull request ID, Linear full identifier, or GitHub PR URL"
+            },
+            "title": {
+              "description": "New diff title",
+              "type": "string",
+              "minLength": 1
+            },
+            "description": {
+              "description": "New description as Markdown; an empty string clears it",
+              "type": "string"
+            },
+            "addedReviewRequests": {
+              "description": "Request or re-request reviews; existing pending requests are unchanged",
+              "minItems": 1,
+              "maxItems": 25,
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "user": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Workspace user ID, name, email, or \"me\""
+                      }
+                    },
+                    "required": ["user"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "externalUserId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "description": "External user ID from get_diff reviewer metadata"
+                      }
+                    },
+                    "required": ["externalUserId"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "githubTeamId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "description": "GitHub team ID from get_diff reviewer metadata"
+                      }
+                    },
+                    "required": ["githubTeamId"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "removedReviewRequests": {
+              "description": "Withdraw pending review requests; submitted reviews are preserved",
+              "minItems": 1,
+              "maxItems": 25,
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "user": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Workspace user ID, name, email, or \"me\""
+                      }
+                    },
+                    "required": ["user"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "externalUserId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "description": "External user ID from get_diff reviewer metadata"
+                      }
+                    },
+                    "required": ["externalUserId"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "githubTeamId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "description": "GitHub team ID from get_diff reviewer metadata"
+                      }
+                    },
+                    "required": ["githubTeamId"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "addedIssueLinks": {
+              "description": "Add issue links or change the relationship of an existing link",
+              "minItems": 1,
+              "maxItems": 25,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "issue": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "Linear issue identifier or UUID"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["closes", "contributes", "links", "reopens"],
+                    "description": "Relationship: closes, contributes, links, or reopens"
+                  }
+                },
+                "required": ["issue", "type"],
+                "additionalProperties": false
+              }
+            },
+            "removedIssueLinks": {
+              "description": "Linear issue identifiers or UUIDs to unlink",
+              "minItems": 1,
+              "maxItems": 25,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "statusAction": {
+              "description": "Status transition to perform after metadata is updated",
+              "type": "string",
+              "enum": ["markReadyForReview", "convertToDraft", "close", "reopen"]
+            }
+          },
+          "required": ["urlOrId"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["mcp.linear.app"],
+    "config": []
+  },
+  "authorityDigest": "1f5f3b3276e88850f4a9b01a74c4002c7c42f04af5ca25f5cca86aec6b2fcf41",
+  "authorityDiffDigest": "186295e59340994a0f3dcd3834bef8fb26e733ea2574105bc75fb1a5a629fee7",
+  "decision": "approved",
+  "releaseDigest": "75402e6d0fc1df0f0445c327551189a22a0ecdcf5a337f6d5c419040d563ea22"
+}
