@@ -156,7 +156,7 @@ describe("authority and protocol gates", () => {
 
   it("enforces each remote candidate's reviewed publication status and exact endpoint host", async () => {
     for (const [name, publicationEligible] of [
-      ["linear", false],
+      ["linear", true],
       ["notion", true],
       ["atlassian", false],
       ["gmail", false],
@@ -180,13 +180,13 @@ describe("authority and protocol gates", () => {
     }
   });
 
-  it("keeps Linear bound to its documented dynamic OAuth authority while unverified", async () => {
+  it("keeps Linear bound to its captured dynamic OAuth authority and reviewed catalog", async () => {
     const value: unknown = JSON.parse(await readFile("plugins/remotes/linear.json", "utf8"));
     const decoded = validateManagedRemotePluginRelease(value, "authoring");
     expect(Result.isSuccess(decoded)).toBe(true);
     if (Result.isFailure(decoded)) return;
 
-    expect(decoded.success.status).toBe("staged-unverified");
+    expect(decoded.success.status).toBe("reviewed-publishable");
     expect(decoded.success.endpoint).toBe("https://mcp.linear.app/mcp");
     expect(decoded.success.oauthRegistrationMode).toBe("dynamic");
     expect(decoded.success.scopes).toEqual(["read", "write"]);
@@ -210,10 +210,16 @@ describe("authority and protocol gates", () => {
       pkce: { method: "S256" },
       scopes: ["read", "write"],
     });
-    expect(decoded.success.catalog.tools).toEqual([]);
-    expect(validateManagedRemotePluginRelease(decoded.success, "publication")).toEqual(
-      Result.fail("remote-release-not-reviewed"),
-    );
+    expect(decoded.success.catalog.tools).toHaveLength(65);
+    expect(
+      decoded.success.catalog.tools.find((tool) => tool.mcpName === "merge_diff"),
+    ).toMatchObject({
+      classification: "destructive",
+      defaultPolicy: "require-approval",
+    });
+    expect(
+      Result.isSuccess(validateManagedRemotePluginRelease(decoded.success, "publication")),
+    ).toBe(true);
   });
 
   for (const name of ["notion", "resend"]) {

@@ -47,8 +47,8 @@
     {
       "sourceDirectory": "plugins/remotes/linear.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": false,
-      "reason": "official docs establish endpoint, dynamic OAuth, PKCE, and read/write scopes; exact authenticated tool schemas, token lifecycle, workspace identity, and privacy acceptance remain unverified"
+      "publicationEligible": true,
+      "reason": "Owner-authorized authenticated tools/list capture with 65-tool reviewed-subset authority; live consent, workspace identity, privacy review, and production acceptance remain pending"
     },
     {
       "sourceDirectory": "plugins/remotes/notion.json",
