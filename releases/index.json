@@ -48,7 +48,7 @@
       "sourceDirectory": "plugins/remotes/linear.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": false,
-      "reason": "provider facts and catalog remain staged-unverified"
+      "reason": "official docs establish endpoint, dynamic OAuth, PKCE, and read/write scopes; exact authenticated tool schemas, token lifecycle, workspace identity, and privacy acceptance remain unverified"
     },
     {
       "sourceDirectory": "plugins/remotes/notion.json",

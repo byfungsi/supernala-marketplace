@@ -180,6 +180,42 @@ describe("authority and protocol gates", () => {
     }
   });
 
+  it("keeps Linear bound to its documented dynamic OAuth authority while unverified", async () => {
+    const value: unknown = JSON.parse(await readFile("plugins/remotes/linear.json", "utf8"));
+    const decoded = validateManagedRemotePluginRelease(value, "authoring");
+    expect(Result.isSuccess(decoded)).toBe(true);
+    if (Result.isFailure(decoded)) return;
+
+    expect(decoded.success.status).toBe("staged-unverified");
+    expect(decoded.success.endpoint).toBe("https://mcp.linear.app/mcp");
+    expect(decoded.success.oauthRegistrationMode).toBe("dynamic");
+    expect(decoded.success.scopes).toEqual(["read", "write"]);
+    expect(decoded.success.authStrategy).toMatchObject({
+      profile: "mcp-oauth",
+      providerRegistrationId: "linear-oauth-v1",
+      requestedScopes: ["read", "write"],
+      clientRegistration: {
+        kind: "dynamic",
+        authorizationServerMetadataUrl:
+          "https://mcp.linear.app/.well-known/oauth-authorization-server",
+      },
+      resourceMetadataUrl: "https://mcp.linear.app/.well-known/oauth-protected-resource/mcp",
+    });
+    expect(decoded.success.oauthProviderDefinition).toMatchObject({
+      issuer: "https://mcp.linear.app",
+      authorizationEndpoint: "https://mcp.linear.app/authorize",
+      tokenEndpoint: "https://mcp.linear.app/token",
+      tokenEndpointAuthMethod: "none",
+      authorizationResponseIssuer: "required",
+      pkce: { method: "S256" },
+      scopes: ["read", "write"],
+    });
+    expect(decoded.success.catalog.tools).toEqual([]);
+    expect(validateManagedRemotePluginRelease(decoded.success, "publication")).toEqual(
+      Result.fail("remote-release-not-reviewed"),
+    );
+  });
+
   for (const name of ["notion", "resend"]) {
     it(`pins ${name} provider authority and rejects host, ownership, and scope drift`, async () => {
       const value: unknown = JSON.parse(await readFile(`plugins/remotes/${name}.json`, "utf8"));

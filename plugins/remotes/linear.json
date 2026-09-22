@@ -7,7 +7,7 @@
   "pluginSlug": "linear",
   "version": "1.0.0",
   "name": "Linear",
-  "description": "Staged curated Linear managed remote MCP candidate",
+  "description": "Curated Linear hosted MCP integration",
   "license": "LicenseRef-Provider-Service",
   "runtime": {
     "_tag": "ManagedRemoteMcp",
@@ -18,14 +18,91 @@
   },
   "endpoint": "https://mcp.linear.app/mcp",
   "oauthRegistrationMode": "dynamic",
-  "scopes": [],
+  "providerDefinitionDigest": "4e4b75dcf211c5c00da146e9d53411b848d90e175f7980bf9309e303a2f0f7aa",
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "linear-oauth-v1",
+    "providerDefinitionDigest": "4e4b75dcf211c5c00da146e9d53411b848d90e175f7980bf9309e303a2f0f7aa",
+    "requestedScopes": ["read", "write"],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://mcp.linear.app/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://mcp.linear.app/.well-known/oauth-protected-resource/mcp",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Linear connection (workspace identity pending)"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "oauthProviderDefinition": {
+    "schemaVersion": 1,
+    "protocol": "oauth2-authorization-code",
+    "issuer": "https://mcp.linear.app",
+    "provider": "linear-mcp",
+    "resourceIdentity": "https://mcp.linear.app/mcp",
+    "authorizationEndpoint": "https://mcp.linear.app/authorize",
+    "tokenEndpoint": "https://mcp.linear.app/token",
+    "tokenEndpointAuthMethod": "none",
+    "authorizationResponseIssuer": "required",
+    "pkce": {
+      "method": "S256"
+    },
+    "authorizationParameters": [],
+    "scopes": ["read", "write"],
+    "account": {
+      "kind": "declaration-managed"
+    },
+    "tokens": {
+      "accessTokenType": "bearer",
+      "expiresIn": {
+        "required": true,
+        "minimumSeconds": 1,
+        "maximumSeconds": 86400
+      },
+      "grantedScopes": {
+        "whenPresent": "exact-match",
+        "whenOmitted": "requested-scopes"
+      },
+      "initialRefreshToken": "required",
+      "refreshResponseToken": "retain-current-if-omitted"
+    },
+    "refresh": {
+      "kind": "standard-form-post",
+      "invalidGrant": "reauthorization-required",
+      "ambiguousOutcome": "fail-closed-no-replay"
+    },
+    "revocation": {
+      "kind": "standard-form-post",
+      "endpoint": "https://mcp.linear.app/token",
+      "token": "refresh-token",
+      "clientAuthentication": "token-only",
+      "outcome": "best-effort-observed"
+    }
+  },
+  "scopes": ["read", "write"],
   "catalog": {
     "id": "linear-unverified-catalog",
     "schemaVersion": 1,
     "digest": "0000000000000000000000000000000000000000000000000000000000000000",
     "tools": []
   },
-  "config": { "revision": 1, "fields": [] },
+  "config": {
+    "revision": 1,
+    "fields": []
+  },
   "allowedHosts": ["mcp.linear.app"],
-  "verificationNotes": "Endpoint and DCR mode documented by Linear; scopes, live catalog, privacy, and account eligibility not verified."
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://linear.app/docs/mcp",
+    "https://mcp.linear.app/.well-known/oauth-protected-resource",
+    "https://mcp.linear.app/.well-known/oauth-authorization-server"
+  ],
+  "verificationNotes": "Linear documents Streamable HTTP at /mcp, dynamic OAuth 2.1 client registration, PKCE S256, read/write scopes, refresh tokens, and a deprecated /sse fallback. The provider metadata confirms the OAuth endpoints and supported read/write scopes. Exact authenticated tools/list schemas, token response lifetime and refresh payloads, workspace identity/resource projection, privacy review, and account eligibility remain unverified; the empty catalog is intentionally fail-closed until those facts are reviewed."
 }
