@@ -16,12 +16,12 @@
     {
       "source": "plugins/gmail/package-manifest.json",
       "destination": "plugin.json",
-      "sha256": "aeb73f82529c9e3bd58e367ac19b386a72d4c5ad79262eb585904b2e99acd1dc"
+      "sha256": "828f5054bef45eedc3cbc3eb140e91f1b984d5b6c03d0abe268c15646a195854"
     },
     {
       "source": "plugins/gmail/catalog.json",
       "destination": "catalog.json",
-      "sha256": "e808b72a105eafde546b63245238f87906bddcf82e1766f93a7d0ce10882a952"
+      "sha256": "b067434f01d2e7048b3a65f71536daad558ab6391ef7660f6d4e559632ce90df"
     },
     {
       "source": "plugins/gmail/config.json",

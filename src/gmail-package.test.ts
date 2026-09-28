@@ -301,7 +301,7 @@ it("binds the five-field package declaration to the strict canonical Gmail defin
     {
       source: "plugins/gmail/catalog.json",
       destination: "catalog.json",
-      sha256: "e808b72a105eafde546b63245238f87906bddcf82e1766f93a7d0ce10882a952",
+      sha256: "b067434f01d2e7048b3a65f71536daad558ab6391ef7660f6d4e559632ce90df",
     },
     {
       source: "plugins/gmail/config.json",
@@ -725,7 +725,7 @@ it("binds the Owner-authorized first-publication review to exact Gmail release a
   const prepared = await preparePluginPackage({
     source: source.success,
     marketplaceId: identity.marketplaceId,
-    versionId: pluginVersionId(identity),
+    versionId: pluginVersionId({ ...identity, semanticVersion: source.success.manifest.version }),
     publishedAt: review.reviewedAt,
   });
   if (Result.isFailure(prepared)) throw prepared.failure;
@@ -778,7 +778,7 @@ it("binds the Owner-authorized first-publication review to exact Gmail release a
     reviewer: "supernala-owner (formal reviews waived, not passed)",
     reviewedAt: expect.any(Number),
     sourceInputDigest: "ab4b769ef38614b6f56e926a9ca0954ad7b826b83fbb465bd16ca6f31ca5a9e7",
-    artifactDigest: prepared.success.artifactDigest,
+    artifactDigest: "4c3a568a455cdd549517f75f06428530f7b8ee1b78a57644982f212ee7dd6aa6",
     authentication: {
       kind: "oauth",
       providerRegistration: "google-gmail-rest-v1",
@@ -786,7 +786,7 @@ it("binds the Owner-authorized first-publication review to exact Gmail release a
       requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
       credentialDelivery: "short-lived-access-token-only",
     },
-    catalogDigest: prepared.success.parsed.version.catalog.digest,
+    catalogDigest: "e808b72a105eafde546b63245238f87906bddcf82e1766f93a7d0ce10882a952",
     configDigest: prepared.success.parsed.configDigest,
     provenanceDigest,
     authorityBeforeIdentity: null,

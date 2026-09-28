@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "gmail",
   "publisher": "supernala",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "name": "Gmail",
   "description": "Narrow first-party Gmail message and draft search and reading tools",
   "license": "MIT",
@@ -25,7 +25,7 @@
   },
   "catalog": {
     "path": "catalog.json",
-    "sha256": "e808b72a105eafde546b63245238f87906bddcf82e1766f93a7d0ce10882a952"
+    "sha256": "b067434f01d2e7048b3a65f71536daad558ab6391ef7660f6d4e559632ce90df"
   },
   "config": {
     "path": "config.json",

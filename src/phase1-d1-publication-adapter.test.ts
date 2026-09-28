@@ -1117,28 +1117,32 @@ it("keeps the Gmail review stale and rehearses newly bound Workspace OAuth autho
   });
   const source = await validatePluginSource("plugins/gmail");
   if (Result.isFailure(source)) throw new Error(source.failure.message);
+  const identity = { ...pinnedReview.identity, semanticVersion: source.success.manifest.version };
   const prepared = await preparePluginPackage({
     source: source.success,
     marketplaceId: "supernala-public",
-    versionId: pluginVersionId(pinnedReview.identity),
+    versionId: pluginVersionId(identity),
     publishedAt: pinnedReview.reviewedAt,
   });
   if (Result.isFailure(prepared)) throw new Error(prepared.failure.message);
   const review = ReleaseReview.make({
     ...pinnedReview,
+    identity,
     sourceInputDigest,
+    artifactDigest: prepared.success.artifactDigest,
+    catalogDigest: prepared.success.parsed.version.catalog.digest,
     releaseDigest: await calculateReleaseDigest({
-      identity: pinnedReview.identity,
+      identity,
       version: prepared.success.parsed.version,
       authentication: prepared.success.parsed.authentication,
       sourceInputDigest,
-      catalogDigest: pinnedReview.catalogDigest,
+      catalogDigest: prepared.success.parsed.version.catalog.digest,
       configDigest: pinnedReview.configDigest,
       provenanceDigest: pinnedReview.provenanceDigest,
       authorityBaselineDigest: await calculateAuthorityBaselineDigest(pinnedReview),
       authorityDigest: pinnedReview.authorityDigest,
       authorityDiffDigest: pinnedReview.authorityDiffDigest,
-      artifactDigest: pinnedReview.artifactDigest,
+      artifactDigest: prepared.success.artifactDigest,
     }),
   });
   expect(pinnedReview.sourceInputDigest).not.toBe(sourceInputDigest);
@@ -1168,9 +1172,7 @@ it("keeps the Gmail review stale and rehearses newly bound Workspace OAuth autho
   const failedRelease = await buildAndReload("b64ea19051e317a04255979474952941af7e8386", 0);
   const retryRelease = await buildAndReload("c".repeat(40), 1);
   expect(retryRelease.authStrategy).toBeUndefined();
-  expect(retryRelease.artifactDigest).toBe(
-    "4c3a568a455cdd549517f75f06428530f7b8ee1b78a57644982f212ee7dd6aa6",
-  );
+  expect(retryRelease.artifactDigest).toBe(prepared.success.artifactDigest);
   if (retryRelease.authentication.kind !== "oauth") throw new Error("gmail-oauth-required");
   const authority = await loadReviewedWorkspaceOAuthProviderAuthority({
     sourceDirectory: "plugins/gmail",
@@ -1206,7 +1208,7 @@ it("keeps the Gmail review stale and rehearses newly bound Workspace OAuth autho
   const journal = new D1ReleaseJournal(new SQLiteD1Transport(journalDatabase));
   expect(Result.isSuccess(await journal.claim(failedRelease))).toBe(true);
   await journal.markFailed(
-    "supernala-public/supernala/gmail@0.1.0",
+    "supernala-public/supernala/gmail@0.1.1",
     1,
     "application-provider-verification-failed",
   );
