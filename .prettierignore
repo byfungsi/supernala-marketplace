@@ -1,0 +1,3 @@
+# Application-owned OpenAPI schema is vendored byte-for-byte; formatting changes its digest.
+compatibility/openapi-v1/plugin-openapi-contract.v1.schema.json
+schemas/openapi-contract.schema.json

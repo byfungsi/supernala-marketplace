@@ -106,7 +106,7 @@ export const PluginToolPolicy = Schema.Literals(["allow", "require-approval", "b
 /** Owner-selectable policy after stricter reviewed constraints are applied. */
 export type PluginToolPolicy = typeof PluginToolPolicy.Type;
 
-/** Immutable runtime descriptor with exactly the two accepted managed runtime kinds. */
+/** Immutable runtime descriptor for package, remote MCP, or declarative OpenAPI. */
 export const PluginRuntimeDescriptor = Schema.TaggedUnion({
   ManagedPackage: {
     kind: Schema.Literal("managed-package"),
@@ -121,8 +121,14 @@ export const PluginRuntimeDescriptor = Schema.TaggedUnion({
     providerRegistrationId: ProviderRegistrationId,
     transport: Schema.Literal("streamable-http"),
   },
+  ManagedOpenApi: {
+    kind: Schema.Literal("managed-openapi"),
+    artifactDigest: PluginSha256,
+    manifestDigest: PluginSha256,
+    providerRegistrationId: ProviderRegistrationId,
+  },
 });
-/** Immutable runtime descriptor with exactly the two accepted managed runtime kinds. */
+/** Immutable runtime descriptor for package, remote MCP, or declarative OpenAPI. */
 export type PluginRuntimeDescriptor = typeof PluginRuntimeDescriptor.Type;
 
 /** One bounded JSON Schema object retained in a reviewed normalized catalog. */

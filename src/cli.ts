@@ -11,6 +11,11 @@ import { validateManagedRemotePluginRelease } from "./remote-release.js";
 import { captureRemoteMcpCatalog } from "./remote-catalog-capture.js";
 import { canonicalPluginJson, digestPluginBytes, PluginSha256 } from "./plugin-contract.js";
 import { generateMarketplaceJsonSchemas } from "./schema-exports.js";
+import { parsePluginOpenApiContract } from "./plugin-openapi-contract.js";
+import {
+  inspectPluginOpenApiHostedCandidates,
+  refreshPluginOpenApiHostedSource,
+} from "./plugin-openapi-source.js";
 import {
   type PluginAuthoringAuthProfile,
   preparePluginAuthoringSource,
@@ -77,13 +82,24 @@ const validateCommand = async (directory: string): Promise<void> => {
   });
 };
 
-const prepareCommand = async (directory: string, output: string): Promise<void> => {
+const prepareCommand = async (
+  directory: string,
+  output: string,
+  refresh: boolean,
+): Promise<void> => {
+  const discovery = refresh
+    ? unwrapResult(
+        await refreshPluginOpenApiHostedSource({ sourcePath: directory }),
+        (error) => error,
+      )
+    : null;
   const prepared = unwrapResult(
     await preparePluginAuthoringSource({ sourcePath: directory, outputFile: output }),
     (error) => error,
   );
   writeJson({
     ...prepared,
+    ...(discovery === null ? {} : { discovery }),
     output: path.basename(output),
     publication: "not-performed",
   });
@@ -94,7 +110,9 @@ const createCommand = async (arguments_: ReadonlyArray<string>): Promise<void> =
   if (arguments_[1] !== "--runtime") fail("expected---runtime");
   const runtimeArgument = requireArgument(arguments_, 2, "runtime");
   const runtime: PluginAuthoringRuntime =
-    runtimeArgument === "managed-package" || runtimeArgument === "managed-remote-mcp"
+    runtimeArgument === "managed-package" ||
+    runtimeArgument === "managed-remote-mcp" ||
+    runtimeArgument === "managed-openapi"
       ? runtimeArgument
       : fail("runtime-invalid");
   let auth: PluginAuthoringAuthProfile | undefined;
@@ -109,13 +127,20 @@ const createCommand = async (arguments_: ReadonlyArray<string>): Promise<void> =
         ? authArgument
         : fail("auth-profile-invalid");
   }
-  if (arguments_.length !== (auth === undefined ? 3 : 5)) fail("unexpected-create-arguments");
+  const sourceIndex = auth === undefined ? 3 : 5;
+  const sourceUrl =
+    arguments_[sourceIndex] === "--source-url"
+      ? requireArgument(arguments_, sourceIndex + 1, "source-url")
+      : undefined;
+  if (arguments_.length !== sourceIndex + (sourceUrl === undefined ? 0 : 2))
+    fail("unexpected-create-arguments");
   const created = unwrapResult(
     await scaffoldPluginAuthoringSource({
       rootDirectory: "plugins",
       slug,
       runtime,
       ...(auth === undefined ? {} : { auth }),
+      ...(sourceUrl === undefined ? {} : { sourceUrl }),
     }),
     (error) => error,
   );
@@ -130,6 +155,27 @@ const createCommand = async (arguments_: ReadonlyArray<string>): Promise<void> =
 
 const inspectCommand = async (archive: string): Promise<void> => {
   const bytes = new Uint8Array(await fs.readFile(archive));
+  if (archive.endsWith(".json")) {
+    const contract = unwrapResult(
+      parsePluginOpenApiContract(
+        Schema.decodeUnknownSync(Schema.Json)(JSON.parse(new TextDecoder().decode(bytes))),
+      ),
+      (error) => error.reason,
+    );
+    writeJson({
+      runtime: "managed-openapi",
+      artifactDigest: await digestPluginBytes(bytes),
+      sourceDigest: contract.sourceDigest,
+      catalogDigest: contract.catalog.digest,
+      operations: contract.bindings.map((binding) => ({
+        toolId: binding.toolId,
+        method: binding.method,
+        origin: binding.origin,
+        authentication: binding.authentication,
+      })),
+    });
+    return;
+  }
   const parsed = await parsePackagedPluginArchive({
     archiveBytes: bytes,
     marketplaceId: "supernala-public",
@@ -232,7 +278,16 @@ const exportSchemasCommand = async (): Promise<void> => {
   for (const [file, schema] of Object.entries(generateMarketplaceJsonSchemas())) {
     await fs.writeFile(path.join("schemas", file), `${JSON.stringify(schema, null, 2)}\n`);
   }
-  writeJson({ generated: Object.keys(generateMarketplaceJsonSchemas()).toSorted() });
+  await fs.copyFile(
+    "compatibility/openapi-v1/plugin-openapi-contract.v1.schema.json",
+    "schemas/openapi-contract.schema.json",
+  );
+  writeJson({
+    generated: [
+      ...Object.keys(generateMarketplaceJsonSchemas()),
+      "openapi-contract.schema.json",
+    ].toSorted(),
+  });
 };
 
 const verifyPlanCommand = async (planFile: string, reviewId: string): Promise<void> => {
@@ -333,10 +388,28 @@ const main = async (): Promise<void> => {
     case "create":
       return createCommand(arguments_);
     case "prepare":
+      if (
+        arguments_.length !== 2 &&
+        !(arguments_.length === 3 && arguments_[2] === "--refresh-source")
+      )
+        fail("unexpected-prepare-arguments");
       return prepareCommand(
         requireArgument(arguments_, 0, "source-directory"),
         requireArgument(arguments_, 1, "output-file"),
+        arguments_[2] === "--refresh-source",
       );
+    case "discover-openapi": {
+      if (arguments_.length !== 2 || arguments_[1] !== "--refresh-source")
+        fail("expected-discover-openapi-refresh-source");
+      const report = unwrapResult(
+        await inspectPluginOpenApiHostedCandidates({
+          sourcePath: requireArgument(arguments_, 0, "source-directory"),
+        }),
+        (error) => error,
+      );
+      writeJson(report);
+      return;
+    }
     case "inspect":
       return inspectCommand(requireArgument(arguments_, 0, "archive-file"));
     case "diff-authority":
@@ -366,7 +439,7 @@ const main = async (): Promise<void> => {
       );
     default:
       return fail(
-        "expected deploy|create|validate|prepare|inspect|diff-authority|conformance|validate-remotes|capture-remote-catalog|plan-publication|verify-plan|public-safety|export-schemas",
+        "expected deploy|create|validate|prepare|discover-openapi|inspect|diff-authority|conformance|validate-remotes|capture-remote-catalog|plan-publication|verify-plan|public-safety|export-schemas",
       );
   }
 };

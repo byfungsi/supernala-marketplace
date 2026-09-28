@@ -50,5 +50,14 @@
     "apps/api/application-migrations/0054_managed_remote_dynamic_oauth_runtime.sql": "ebb05d11919d00f43a96f02bb3b874c5024d0d23424c3920ed7abc6076686b5c",
     "apps/api/application-migrations/0055_plugin_auth_strategies.sql": "cb344ff8b1e3ee8e0c072cc2f2639143a27444ce985a2e1c02bdaa99996c4909",
     "apps/api/application-migrations/0052_workspace_file_usage_initialization.sql": "0c5b429b3b2959d420dbf9d756d41a2f8ff988cdb90705d386c37064f56dea5c"
+  },
+  "openApiDraftUncommitted": {
+    "applicationHead": "500d4fd3715ef2ed97f99a16bdc2dfba130fa367",
+    "files": {
+      "apps/api/application-migrations/0081_managed_openapi_plugins.sql": "c28bd7113983f548360d2276179ee9002494abbcbdd55e764142fc9392daa96d",
+      "apps/api/src/plugin-openapi-admission.ts": "7894b0c44c041ce5495e0ab327f189329469f08d988625e16c228568b6c3144f",
+      "apps/api/src/plugin-openapi-bundle.ts": "f92630715072679587896ca9268dc9cec1dbcdf223c2d4cca1d404b95ad5f8df"
+    },
+    "contractManifest": "compatibility/openapi-v1/manifest.json"
   }
 }

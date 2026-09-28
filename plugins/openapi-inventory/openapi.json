@@ -1,0 +1,119 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Inventory",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://inventory.example.com"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "InventoryKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key"
+      }
+    }
+  },
+  "paths": {
+    "/items": {
+      "get": {
+        "operationId": "items_list",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/items/{id}": {
+      "get": {
+        "operationId": "items_get",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "mode", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "security": [{ "InventoryKey": [] }],
+        "responses": {
+          "200": {
+            "description": "Item",
+            "content": {
+              "application/json": { "schema": { "type": "object" } }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "items_update",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "mode", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "security": [
+          {
+            "InventoryKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "中": {
+                    "type": "string"
+                  },
+                  "é": {
+                    "type": "string"
+                  },
+                  "a": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "Z": {
+                    "type": "integer",
+                    "minimum": 0
+                  }
+                },
+                "required": ["a"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

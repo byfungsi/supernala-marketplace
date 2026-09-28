@@ -12,8 +12,10 @@ import {
   validateManagedRemotePluginRelease,
 } from "./remote-release.js";
 import type { PluginAuthProfile } from "./plugin-auth-strategy.js";
+import { loadPluginOpenApiSource } from "./plugin-openapi-source.js";
+import { parsePluginOpenApiHostedUrl } from "./plugin-openapi-hosted-fetch.js";
 
-export type PluginAuthoringRuntime = "managed-package" | "managed-remote-mcp";
+export type PluginAuthoringRuntime = "managed-package" | "managed-remote-mcp" | "managed-openapi";
 /** Authentication profile scaffolded as a credential-free reviewed declaration. */
 export type PluginAuthoringAuthProfile = PluginAuthProfile;
 
@@ -76,6 +78,21 @@ const sourceHasFile = async (directory: string, file: string): Promise<boolean> 
 export async function validatePluginAuthoringSource(
   sourcePath: string,
 ): Promise<Result.Result<ValidatedPluginAuthoringSource, string>> {
+  if (await sourceHasFile(sourcePath, "openapi-source.json")) {
+    const loaded = await loadPluginOpenApiSource(sourcePath);
+    if (Result.isFailure(loaded)) return Result.fail(loaded.failure);
+    return Result.succeed({
+      runtime: "managed-openapi",
+      plugin: `${loaded.success.source.publisherNamespace}/${loaded.success.source.pluginSlug}`,
+      version: loaded.success.source.version,
+      tools: loaded.success.compiled.contract.catalog.tools.length,
+      publicationEligible: loaded.success.source.status === "reviewed-publishable",
+      publicationBlocker:
+        loaded.success.source.status === "reviewed-publishable"
+          ? null
+          : "openapi-source-not-reviewed",
+    });
+  }
   if (
     (await sourceHasFile(sourcePath, "plugin.json")) ||
     (await sourceHasFile(sourcePath, "build-recipe.json"))
@@ -120,6 +137,11 @@ export async function preparePluginAuthoringSource(input: {
 }): Promise<
   Result.Result<
     | {
+        readonly runtime: "managed-openapi";
+        readonly artifactDigest: string;
+        readonly byteLength: number;
+      }
+    | {
         readonly runtime: "managed-package";
         readonly artifactDigest: string;
         readonly byteLength: number;
@@ -132,6 +154,21 @@ export async function preparePluginAuthoringSource(input: {
     string
   >
 > {
+  if (await sourceHasFile(input.sourcePath, "openapi-source.json")) {
+    const loaded = await loadPluginOpenApiSource(input.sourcePath);
+    if (Result.isFailure(loaded)) return Result.fail(loaded.failure);
+    try {
+      await fs.mkdir(path.dirname(path.resolve(input.outputFile)), { recursive: true });
+      await fs.writeFile(input.outputFile, loaded.success.compiled.bundleBytes, { flag: "wx" });
+    } catch {
+      return Result.fail("prepared-output-already-exists");
+    }
+    return Result.succeed({
+      runtime: "managed-openapi",
+      artifactDigest: loaded.success.compiled.artifactDigest,
+      byteLength: loaded.success.compiled.bundleBytes.byteLength,
+    });
+  }
   if (
     (await sourceHasFile(input.sourcePath, "plugin.json")) ||
     (await sourceHasFile(input.sourcePath, "build-recipe.json"))
@@ -189,6 +226,7 @@ export async function scaffoldPluginAuthoringSource(input: {
   readonly slug: string;
   readonly runtime: PluginAuthoringRuntime;
   readonly auth?: PluginAuthoringAuthProfile;
+  readonly sourceUrl?: string;
 }): Promise<
   Result.Result<{ readonly directory: string; readonly files: ReadonlyArray<string> }, string>
 > {
@@ -201,6 +239,14 @@ export async function scaffoldPluginAuthoringSource(input: {
   ) {
     return Result.fail("managed-package-auth-profile-unsupported");
   }
+  if (input.runtime === "managed-openapi" && input.auth !== "api-key") {
+    return Result.fail("openapi-api-key-profile-required");
+  }
+  if (
+    input.sourceUrl !== undefined &&
+    (input.runtime !== "managed-openapi" || parsePluginOpenApiHostedUrl(input.sourceUrl) === null)
+  )
+    return Result.fail("openapi-hosted-url-invalid");
   const directory = path.join(path.resolve(input.rootDirectory), slug.success);
   try {
     await fs.mkdir(directory, { recursive: false });
@@ -208,6 +254,44 @@ export async function scaffoldPluginAuthoringSource(input: {
     return Result.fail("plugin-source-already-exists");
   }
   try {
+    if (input.runtime === "managed-openapi") {
+      let initialScheme = "ApiKey";
+      if (input.sourceUrl !== undefined) initialScheme = "SELECT_SECURITY_SCHEME";
+      await writeJsonFile(path.join(directory, "openapi-source.json"), {
+        schemaVersion: 1,
+        status: "staged-unverified",
+        marketplaceId: "supernala-public",
+        publisherNamespace: "supernala",
+        pluginSlug: slug.success,
+        version: "1.0.0",
+        pluginVersionId: `supernala-public:supernala:${slug.success}@1.0.0`,
+        catalogSnapshotId: `${slug.success}-catalog-v1`,
+        providerRegistrationId: `${slug.success}-credentials-v1`,
+        name: slug.success,
+        description: `Staged ${slug.success} OpenAPI candidate`,
+        license: "LicenseRef-Provider-Service",
+        credential: {
+          field: "token",
+          label: "API token",
+          minimumLength: 1,
+          maximumLength: 200,
+          displayLabel: `${slug.success} account`,
+          securityScheme: initialScheme,
+        },
+        operations: [],
+        ...(input.sourceUrl === undefined ? {} : { hostedSourceUrl: input.sourceUrl }),
+      });
+      await writeJsonFile(path.join(directory, "openapi.json"), {
+        openapi: "3.1.0",
+        info: { title: slug.success, version: "1.0.0" },
+        servers: [{ url: "https://example.invalid" }],
+        components: {
+          securitySchemes: { ApiKey: { type: "apiKey", in: "header", name: "x-api-key" } },
+        },
+        paths: {},
+      });
+      return Result.succeed({ directory, files: ["openapi-source.json", "openapi.json"] });
+    }
     const authStrategy =
       input.auth === undefined
         ? undefined

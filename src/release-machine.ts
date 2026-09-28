@@ -27,7 +27,7 @@ export const PluginReleaseIdentity = Schema.Struct({
 });
 export interface PluginReleaseIdentity extends Schema.Schema.Type<typeof PluginReleaseIdentity> {}
 
-export type ReleaseKind = "managed-package" | "managed-remote-mcp";
+export type ReleaseKind = "managed-package" | "managed-remote-mcp" | "managed-openapi";
 
 interface IncrementalReleaseCandidateBase {
   readonly identity: PluginReleaseIdentity;
@@ -54,6 +54,12 @@ interface IncrementalReleaseCandidateBase {
 
 /** Fully validated immutable candidate with runtime-specific artifact state. */
 export type IncrementalReleaseCandidate =
+  | (IncrementalReleaseCandidateBase & {
+      readonly kind: "managed-openapi";
+      readonly artifactDigest: typeof PluginSha256.Type;
+      readonly artifactByteLength: number;
+      readonly artifactBytes: Uint8Array | null;
+    })
   | (IncrementalReleaseCandidateBase & {
       readonly kind: "managed-package";
       readonly artifactDigest: typeof PluginSha256.Type;
@@ -102,6 +108,12 @@ const ReleaseJournalRecordFields = {
 } as const;
 
 export const ReleaseJournalRecordSchema = Schema.Union([
+  Schema.Struct({
+    ...ReleaseJournalRecordFields,
+    kind: Schema.Literal("managed-openapi"),
+    artifactDigest: PluginSha256,
+    artifactByteLength: Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(1))),
+  }),
   Schema.Struct({
     ...ReleaseJournalRecordFields,
     kind: Schema.Literal("managed-package"),
@@ -201,6 +213,7 @@ export interface ImmutableArtifactStore {
   readonly ensureVerified: (
     digest: typeof PluginSha256.Type,
     bytes: Uint8Array,
+    kind?: ReleaseKind,
   ) => Promise<Result.Result<"reused" | "uploaded", string>>;
 }
 
@@ -209,6 +222,7 @@ export interface ImmutableArtifactReader {
   readonly verifyExisting: (
     digest: typeof PluginSha256.Type,
     expectedByteLength: number,
+    kind?: ReleaseKind,
   ) => Promise<Result.Result<boolean, string>>;
 }
 
@@ -257,13 +271,14 @@ export async function publishIncrementalRelease(input: {
   if (claim.success.alreadyPublished) {
     const published = await input.application.readPublished(input.candidate);
     if (Result.isSuccess(published) && published.success) {
-      if (input.candidate.kind === "managed-package") {
+      if (input.candidate.kind !== "managed-remote-mcp") {
         if (input.candidate.artifactBytes === null || input.candidate.artifactDigest === null) {
           return Result.fail("package-artifact-missing");
         }
         const artifact = await input.artifacts.ensureVerified(
           input.candidate.artifactDigest,
           input.candidate.artifactBytes,
+          input.candidate.kind,
         );
         if (Result.isFailure(artifact)) return Result.fail(artifact.failure);
       }
@@ -275,7 +290,7 @@ export async function publishIncrementalRelease(input: {
     await input.journal.markFailed(key, generation, stage.failure);
     return Result.fail(stage.failure);
   }
-  if (input.candidate.kind === "managed-package") {
+  if (input.candidate.kind !== "managed-remote-mcp") {
     if (input.candidate.artifactBytes === null || input.candidate.artifactDigest === null) {
       await input.journal.markFailed(key, generation, "package-artifact-missing");
       return Result.fail("package-artifact-missing");
@@ -283,6 +298,7 @@ export async function publishIncrementalRelease(input: {
     const artifact = await input.artifacts.ensureVerified(
       input.candidate.artifactDigest,
       input.candidate.artifactBytes,
+      input.candidate.kind,
     );
     if (Result.isFailure(artifact)) {
       await input.journal.markFailed(key, generation, artifact.failure);

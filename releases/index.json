@@ -15,6 +15,12 @@
   ],
   "plugins": [
     {
+      "sourceDirectory": "plugins/openapi-inventory",
+      "kind": "managed-openapi",
+      "publicationEligible": false,
+      "reason": "synthetic compiler and publication rehearsal only; no real provider or review authority"
+    },
+    {
       "sourceDirectory": "plugins/offline-fixture",
       "kind": "managed-package",
       "publicationEligible": false,

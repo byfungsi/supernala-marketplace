@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "status": "staged-unverified",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "inventory",
+  "version": "1.0.0",
+  "pluginVersionId": "supernala-public:supernala:inventory@1.0.0",
+  "catalogSnapshotId": "inventory-catalog-1",
+  "providerRegistrationId": "inventory-provider",
+  "name": "Inventory",
+  "description": "Synthetic inventory API",
+  "license": "LicenseRef-Synthetic-Fixture",
+  "credential": {
+    "field": "token",
+    "label": "Inventory token",
+    "minimumLength": 8,
+    "maximumLength": 200,
+    "displayLabel": "Inventory account",
+    "securityScheme": "InventoryKey"
+  },
+  "operations": [
+    {
+      "operationId": "items_get",
+      "toolId": "items.get",
+      "title": "Get item",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1024
+    },
+    {
+      "operationId": "items_list",
+      "toolId": "items.list",
+      "title": "List items",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1024
+    },
+    {
+      "operationId": "items_update",
+      "toolId": "items.update",
+      "title": "Update item",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 1024
+    }
+  ]
+}

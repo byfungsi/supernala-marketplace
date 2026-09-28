@@ -1,0 +1,14 @@
+{
+  "contractVersion": 1,
+  "owner": "@supernala/domain",
+  "sourcePath": "packages/domain/src/plugin-openapi.ts",
+  "sourceSha256": "8bb1c4535a4f35101bb781dc7d19cb28e4715c1adc7f9efc5eba2dc630e151a3",
+  "schemaSha256": "17fc64d9cf327a590b99862054a9e05633bee3d8ca83d07e8502b7bbd73d00ca",
+  "canonicalSourceSha256": "83e86e514fe437177211df18d6a776de810cf2cb4f243d7b52a422d612e720b9",
+  "comparatorSourceSha256": "803954807e6c501ab77b3b509d48ba12e547646cdf9581e4dac8a05286c8ed53",
+  "goldenSeedSha256": "cc7ccf4ed802c6262d23d8d95d7a82c5333207a36b4ecb56507adc13aa2866b5",
+  "goldenFixtureSha256": "5d7be2173ff4cee1885a34e80107eba562743fbf5cfc7b4b5eb9963c61787ed4",
+  "goldenArtifactSha256": "7f9fdcd184bab697c6da00cd177059e4a052ae3f126b5c8c3fb3a7ce1802bba4",
+  "goldenSourceSha256": "de6e3c42db3a5d5ad42590062d2e8ac980f1affa796331a62eefa33f161a645f",
+  "goldenCatalogSha256": "64a98955eac37466707955ee4de9afcb3e7515f424fe7f6469b1ac1dded6571f"
+}

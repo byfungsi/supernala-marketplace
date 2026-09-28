@@ -196,6 +196,39 @@
                 "transport"
               ],
               "additionalProperties": true
+            },
+            {
+              "type": "object",
+              "properties": {
+                "_tag": {
+                  "type": "string",
+                  "enum": ["ManagedOpenApi"]
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": ["managed-openapi"]
+                },
+                "artifactDigest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "manifestDigest": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "providerRegistrationId": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "_tag",
+                "kind",
+                "artifactDigest",
+                "manifestDigest",
+                "providerRegistrationId"
+              ],
+              "additionalProperties": true
             }
           ]
         },

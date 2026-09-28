@@ -22,6 +22,17 @@ The adapter targets documented Cloudflare D1/R2 interfaces and remains disabled 
 environments are explicitly approved; Cloudflare D1 tokens are not assumed to enforce table-level
 authority. `plan-publication` remains a checked offline contract artifact.
 
+The new **uncommitted OpenAPI draft** is additive to this historical two-runtime pin. Its application
+worktree HEAD and byte hashes are recorded separately in `openApiDraftUncommitted` in
+`compatibility/phase-1-sources.json`. `compatibility/openapi-v1/` vendors the application schema,
+contract source, canonical-order source, golden fixture, and manifest. The broad OAuth comparator
+source remains upstream; its hash is pinned in the manifest and checked by the vendor tool. The Marketplace
+semantic implementation checks the same accepted/rejected golden inputs and uses unsigned UTF-8
+key ordering only for OpenAPI catalog bytes; the packaged and remote canonicalizer is unchanged.
+`fixtures/sql/phase1-0081-managed-openapi-plugins.sql` pins the additive application guard for
+offline SQLite rehearsals. Neither the historical checkpoint nor this worktree identifies a deployed
+application migration or a live publication authority.
+
 Migration `0054_managed_remote_dynamic_oauth_runtime.sql` binds the published version's reviewed
 provider definition to the platform dynamic registration after DCR, records the Vault-backed material
 origin, and retains that exact client authority through callback, refresh, and disconnect.

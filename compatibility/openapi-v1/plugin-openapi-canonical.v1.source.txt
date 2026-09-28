@@ -1,0 +1,18 @@
+import { Schema } from "effect"
+import { compareUtf8Bytes } from "./plugin-oauth.ts"
+
+/** Stable OpenAPI key ordering by unsigned UTF-8 bytes, independent of locale and ICU. */
+export const comparePluginOpenApiUtf8Keys = compareUtf8Bytes
+
+/** OpenAPI canonical JSON preserves array order and sorts every object by UTF-8 key bytes. */
+export const canonicalPluginOpenApiJson = (value: Schema.Json): string => {
+  if (Array.isArray(value)) return `[${value.map(canonicalPluginOpenApiJson).join(",")}]`
+  if (Schema.is(Schema.JsonObject)(value)) {
+    return `{${Object.entries(value)
+      .toSorted(([left], [right]) => comparePluginOpenApiUtf8Keys(left, right))
+      .map(([key, entry]) => `${JSON.stringify(key)}:${canonicalPluginOpenApiJson(entry)}`)
+      .join(",")}}`
+  }
+
+  return JSON.stringify(value)
+}

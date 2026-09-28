@@ -5,6 +5,7 @@ import {
   CloudflareD1RestTransport,
   CloudflareR2S3ArtifactStore,
   pluginArtifactObjectKey,
+  pluginOpenApiObjectKey,
   type SanitizedHttpTransport,
 } from "./cloudflare-adapters.js";
 import { digestPluginBytes } from "./plugin-contract.js";
@@ -97,6 +98,34 @@ it("never overwrites corrupt existing content at a digest key", async () => {
     Result.fail("artifact-readback-size-mismatch"),
   );
   expect(transport.putCount).toBe(0);
+});
+
+it("uses the OpenAPI content key and rejects existing wrong bytes without overwriting", async () => {
+  const transport = new ControlledS3Transport();
+  const bytes = new TextEncoder().encode("immutable openapi bundle");
+  const digest = await digestPluginBytes(bytes);
+  transport.objects.set(
+    pluginOpenApiObjectKey(digest),
+    Uint8Array.from(bytes, (byte) => byte ^ 1),
+  );
+  const store = new CloudflareR2S3ArtifactStore(
+    {
+      accountId: "synthetic-account",
+      bucketName: "synthetic-private-bucket",
+      accessKeyId: "synthetic-access-key-id",
+      secretAccessKey: "synthetic-secret-access-key",
+    },
+    transport as never as S3Client,
+  );
+  expect(await store.ensureVerified(digest, bytes, "managed-openapi")).toEqual(
+    Result.fail("artifact-readback-mismatch"),
+  );
+  expect(transport.putCount).toBe(0);
+  transport.objects.delete(pluginOpenApiObjectKey(digest));
+  expect(await store.ensureVerified(digest, bytes, "managed-openapi")).toEqual(
+    Result.succeed("uploaded"),
+  );
+  expect(transport.objects.has(pluginOpenApiObjectKey(digest))).toBe(true);
 });
 
 it("sends the documented D1 batch object and preserves per-statement changes", async () => {

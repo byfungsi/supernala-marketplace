@@ -46,6 +46,7 @@ export async function verifyPublishedReleaseBaseline(input: {
     const artifactState = await input.artifacts.verifyExisting(
       record.artifactDigest,
       record.artifactByteLength,
+      record.kind,
     );
     if (Result.isFailure(artifactState)) return Result.fail("baseline-artifact-read-failed");
     if (!artifactState.success) return Result.fail("baseline-artifact-state-mismatch");

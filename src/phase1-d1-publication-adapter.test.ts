@@ -39,6 +39,7 @@ import {
 } from "./release-machine.js";
 import {
   buildManagedPackageReleaseBundle,
+  calculateManagedPackageSourceInputDigest,
   calculateAuthorityBaselineDigest,
   calculateReleaseDigest,
   loadManagedPackageReleaseBundle,
@@ -1086,11 +1087,11 @@ const applicationDatabase = async (): Promise<DatabaseSync> => {
   return database;
 };
 
-it("admits and publishes the reviewed Gmail package through Workspace OAuth authority", async () => {
+it("keeps the Gmail review stale and rehearses newly bound Workspace OAuth authority", async () => {
   const releaseRoot = await mkdtemp(path.join(os.tmpdir(), "gmail-release-publication-"));
   const database = await applicationDatabase();
   const transport = new SQLiteD1Transport(database);
-  const review = Schema.decodeUnknownSync(ReleaseReview, { onExcessProperty: "error" })(
+  const pinnedReview = Schema.decodeUnknownSync(ReleaseReview, { onExcessProperty: "error" })(
     JSON.parse(
       await readFile("releases/reviews/supernala-public__supernala__gmail__0.1.0.json", "utf8"),
     ),
@@ -1108,6 +1109,39 @@ it("admits and publishes the reviewed Gmail package through Workspace OAuth auth
   const sharedInputDigest = await digestPluginBytes(
     new TextEncoder().encode(JSON.stringify(sharedEntries)),
   );
+  // Changed shared release code correctly invalidates the historical Gmail review. Exercise the
+  // existing runtime with a newly bound in-memory review, never rewriting the protected file.
+  const sourceInputDigest = await calculateManagedPackageSourceInputDigest({
+    sourceDirectory: "plugins/gmail",
+    sharedInputDigest,
+  });
+  const source = await validatePluginSource("plugins/gmail");
+  if (Result.isFailure(source)) throw new Error(source.failure.message);
+  const prepared = await preparePluginPackage({
+    source: source.success,
+    marketplaceId: "supernala-public",
+    versionId: pluginVersionId(pinnedReview.identity),
+    publishedAt: pinnedReview.reviewedAt,
+  });
+  if (Result.isFailure(prepared)) throw new Error(prepared.failure.message);
+  const review = ReleaseReview.make({
+    ...pinnedReview,
+    sourceInputDigest,
+    releaseDigest: await calculateReleaseDigest({
+      identity: pinnedReview.identity,
+      version: prepared.success.parsed.version,
+      authentication: prepared.success.parsed.authentication,
+      sourceInputDigest,
+      catalogDigest: pinnedReview.catalogDigest,
+      configDigest: pinnedReview.configDigest,
+      provenanceDigest: pinnedReview.provenanceDigest,
+      authorityBaselineDigest: await calculateAuthorityBaselineDigest(pinnedReview),
+      authorityDigest: pinnedReview.authorityDigest,
+      authorityDiffDigest: pinnedReview.authorityDiffDigest,
+      artifactDigest: pinnedReview.artifactDigest,
+    }),
+  });
+  expect(pinnedReview.sourceInputDigest).not.toBe(sourceInputDigest);
   const buildAndReload = async (mergeCommit: string, releaseOrdinal: number) => {
     const bundleDirectory = path.join(releaseRoot, String(releaseOrdinal));
     const built = await buildManagedPackageReleaseBundle({

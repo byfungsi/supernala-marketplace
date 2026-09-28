@@ -22,6 +22,7 @@ import type {
   ApplicationPublicationAdapter,
   IncrementalReleaseCandidate,
 } from "./release-machine.js";
+import { PluginOpenApiPublication } from "./plugin-openapi-publication.js";
 
 const failBatchGuard = (
   condition: string,
@@ -238,6 +239,9 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
   constructor(private readonly database: D1BatchTransport) {}
 
   stage(candidate: IncrementalReleaseCandidate) {
+    if (candidate.kind === "managed-openapi") {
+      return new PluginOpenApiPublication(this.database).stage(candidate);
+    }
     return this.#stage(candidate, false, null);
   }
 
@@ -1150,6 +1154,9 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
   }
 
   async finalize(candidate: IncrementalReleaseCandidate) {
+    if (candidate.kind === "managed-openapi") {
+      return new PluginOpenApiPublication(this.database).finalize(candidate);
+    }
     if (candidate.version.runtime.kind === "managed-remote-mcp") {
       return this.#finalizeManagedRemote(candidate);
     }
@@ -1538,6 +1545,9 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
   }
 
   async readPublished(candidate: IncrementalReleaseCandidate) {
+    if (candidate.kind === "managed-openapi") {
+      return new PluginOpenApiPublication(this.database).readPublished(candidate);
+    }
     const row = await this.#loadVersion(candidate.version.id);
     if (Result.isFailure(row)) return Result.fail(row.failure);
     return Result.succeed(
@@ -1642,6 +1652,9 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
   async readPublicationState(
     candidate: IncrementalReleaseCandidate,
   ): Promise<Result.Result<"published" | "revoked" | "mismatch", string>> {
+    if (candidate.kind === "managed-openapi") {
+      return new PluginOpenApiPublication(this.database).readPublicationState(candidate);
+    }
     const row = await this.#loadVersion(candidate.version.id);
     if (Result.isFailure(row)) return Result.fail(row.failure);
     if (

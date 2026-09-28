@@ -6,13 +6,23 @@ import {
 } from "@aws-sdk/client-s3";
 import { Result, Schema } from "effect";
 import { digestPluginBytes, type PluginSha256 } from "./plugin-contract.js";
-import type { ImmutableArtifactReader, ImmutableArtifactStore } from "./release-machine.js";
+import type {
+  ImmutableArtifactReader,
+  ImmutableArtifactStore,
+  ReleaseKind,
+} from "./release-machine.js";
 
 const maximumPluginArtifactBytes = 64 * 1_048_576;
 
 /** Exact Phase 1 private content-addressed package key. */
 export const pluginArtifactObjectKey = (digest: PluginSha256): string =>
   `plugin-packages/sha256/${digest.slice(0, 2)}/${digest}.plugin`;
+
+/** Content-addressed key used only by the new OpenAPI runtime. */
+export const pluginOpenApiObjectKey = (digest: PluginSha256): string => `openapi/${digest}`;
+
+const releaseObjectKey = (digest: PluginSha256, kind?: ReleaseKind): string =>
+  kind === "managed-openapi" ? pluginOpenApiObjectKey(digest) : pluginArtifactObjectKey(digest);
 
 /** Explicit credentials are injected only into the trusted publisher process. */
 export interface CloudflareR2S3Configuration {
@@ -73,6 +83,7 @@ export class CloudflareR2S3ArtifactStore
   verifyExisting(
     digest: PluginSha256,
     expectedByteLength: number,
+    kind?: ReleaseKind,
   ): Promise<Result.Result<boolean, string>> {
     if (
       !Number.isSafeInteger(expectedByteLength) ||
@@ -81,12 +92,13 @@ export class CloudflareR2S3ArtifactStore
     ) {
       return Promise.resolve(Result.fail("artifact-expected-size-invalid"));
     }
-    return this.#readAndVerify(pluginArtifactObjectKey(digest), digest, expectedByteLength);
+    return this.#readAndVerify(releaseObjectKey(digest, kind), digest, expectedByteLength);
   }
 
   async ensureVerified(
     digest: PluginSha256,
     bytes: Uint8Array,
+    kind?: ReleaseKind,
   ): Promise<Result.Result<"reused" | "uploaded", string>> {
     if ((await digestPluginBytes(bytes)) !== digest) {
       return Result.fail("artifact-input-digest-mismatch");
@@ -94,7 +106,7 @@ export class CloudflareR2S3ArtifactStore
     if (bytes.byteLength < 1 || bytes.byteLength > maximumPluginArtifactBytes) {
       return Result.fail("artifact-input-size-invalid");
     }
-    const key = pluginArtifactObjectKey(digest);
+    const key = releaseObjectKey(digest, kind);
     const existing = await this.#readAndVerify(key, digest, bytes.byteLength);
     if (Result.isFailure(existing)) return Result.fail(existing.failure);
     if (existing.success) return Result.succeed("reused" as const);

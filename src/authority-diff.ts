@@ -12,10 +12,12 @@ import {
   type PackageManifest,
 } from "./package-archive.js";
 import type { ManagedRemotePluginRelease } from "./remote-release.js";
+import type { PluginOpenApiContract } from "./plugin-openapi-contract.js";
 
 /** Complete reviewed authority surface for one authoring release. */
 export const PluginAuthoritySnapshot = Schema.Struct({
-  runtimeKind: Schema.Literals(["managed-package", "managed-remote-mcp"]),
+  runtimeKind: Schema.Literals(["managed-package", "managed-remote-mcp", "managed-openapi"]),
+  openApiBindings: Schema.optionalKey(Schema.Array(Schema.JsonObject)),
   authenticationKind: Schema.String,
   requestedScopes: Schema.Array(Schema.String),
   endpoint: Schema.NullOr(Schema.String),
@@ -145,6 +147,33 @@ export function deriveManagedRemoteAuthoritySnapshot(
   });
 }
 
+/** Projects OpenAPI operation, credential placement, schema, host, and sensitivity authority. */
+export function derivePluginOpenApiAuthoritySnapshot(
+  contract: PluginOpenApiContract,
+): PluginAuthoritySnapshot {
+  return PluginAuthoritySnapshot.make({
+    runtimeKind: "managed-openapi",
+    authenticationKind: "api-key",
+    requestedScopes: [],
+    endpoint: null,
+    endpointRegistrationId: null,
+    providerRegistrationId: contract.authStrategy.providerRegistrationId,
+    providerDefinitionDigest: null,
+    authStrategy: contract.authStrategy,
+    openApiBindings: contract.bindings.map((binding) => ({ ...binding })),
+    tools: contract.catalog.tools.map((tool) => ({
+      id: tool.id,
+      classification: tool.classification,
+      defaultPolicy: tool.defaultPolicy,
+      inputSchema: tool.inputSchema,
+    })),
+    allowedHosts: [
+      ...new Set(contract.bindings.map((binding) => new URL(binding.origin).hostname)),
+    ].toSorted(),
+    config: [],
+  });
+}
+
 /** Derive the unique no-prior-publication authority baseline for a runtime family. */
 export function deriveBootstrapAuthoritySnapshot(
   after: PluginAuthoritySnapshot,
@@ -158,6 +187,7 @@ export function deriveBootstrapAuthoritySnapshot(
     providerRegistrationId: null,
     providerDefinitionDigest: null,
     ...(after.authStrategy === undefined ? {} : { authStrategy: null }),
+    ...(after.openApiBindings === undefined ? {} : { openApiBindings: [] }),
     tools: [],
     allowedHosts: [],
     config: [],
@@ -179,7 +209,14 @@ export async function diffPluginAuthority(
   const changedTools = [...afterTools.entries()]
     .filter(([id, tool]) => {
       const previous = beforeTools.get(id);
-      return previous !== undefined && canonicalPluginJson(previous) !== canonicalPluginJson(tool);
+      const previousBinding =
+        before.openApiBindings?.find((binding) => binding.toolId === id) ?? null;
+      const nextBinding = after.openApiBindings?.find((binding) => binding.toolId === id) ?? null;
+      return (
+        previous !== undefined &&
+        (canonicalPluginJson(previous) !== canonicalPluginJson(tool) ||
+          canonicalPluginJson(previousBinding) !== canonicalPluginJson(nextBinding))
+      );
     })
     .map(([id]) => id)
     .toSorted();
@@ -209,6 +246,9 @@ export async function diffPluginAuthority(
     providerRegistrationId: snapshot.providerRegistrationId,
     providerDefinitionDigest: snapshot.providerDefinitionDigest,
     ...(snapshot.authStrategy === undefined ? {} : { authStrategy: snapshot.authStrategy }),
+    ...(snapshot.openApiBindings === undefined
+      ? {}
+      : { openApiBindings: snapshot.openApiBindings }),
   });
   const changedRuntimeAuthority =
     canonicalPluginJson(runtimeAuthority(before)) !== canonicalPluginJson(runtimeAuthority(after));

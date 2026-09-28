@@ -761,13 +761,23 @@ it("binds the Owner-authorized first-publication review to exact Gmail release a
     artifactDigest: prepared.success.artifactDigest,
   });
 
+  // Shared release code changed; the protected Gmail review remains pinned to the previous
+  // source input. It must be re-approved before a real release, never silently rewritten.
+  expect(review.sourceInputDigest).not.toBe(sourceInputDigest);
+  expect(review.releaseDigest).not.toBe(releaseDigest);
+  expect(review.sourceInputDigest).toBe(
+    "ab4b769ef38614b6f56e926a9ca0954ad7b826b83fbb465bd16ca6f31ca5a9e7",
+  );
+  expect(review.releaseDigest).toBe(
+    "0b43c4c593afd4ff99826081349675db4ac9586a3e83cacf944b9a3990dd50b4",
+  );
   expect(review).toEqual({
     schemaVersion: 1,
     identity,
     reviewId: "gmail-0.1.0-owner-authorized-waiver-v1",
     reviewer: "supernala-owner (formal reviews waived, not passed)",
     reviewedAt: expect.any(Number),
-    sourceInputDigest,
+    sourceInputDigest: "ab4b769ef38614b6f56e926a9ca0954ad7b826b83fbb465bd16ca6f31ca5a9e7",
     artifactDigest: prepared.success.artifactDigest,
     authentication: {
       kind: "oauth",
@@ -786,7 +796,7 @@ it("binds the Owner-authorized first-publication review to exact Gmail release a
     authorityAfter,
     authorityDigest,
     authorityDiffDigest: authorityDiff.diffDigest,
-    releaseDigest,
+    releaseDigest: "0b43c4c593afd4ff99826081349675db4ac9586a3e83cacf944b9a3990dd50b4",
     decision: "approved",
   });
   expect(review.reviewedAt).toBeGreaterThan(0);

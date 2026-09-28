@@ -28,6 +28,12 @@ import {
 } from "./release-machine.js";
 import { validatePublicationAuthorityLineage } from "./release-lineage.js";
 import { validateManagedRemotePluginRelease } from "./remote-release.js";
+import { loadPluginOpenApiSource } from "./plugin-openapi-source.js";
+import {
+  buildPluginOpenApiReleaseBundle,
+  calculatePluginOpenApiSourceInputDigest,
+  loadPluginOpenApiReleaseBundle,
+} from "./plugin-openapi-release-bundle.js";
 import {
   buildManagedRemoteReleaseBundle,
   calculateManagedRemoteSourceInputDigest,
@@ -52,7 +58,7 @@ const ReleaseIndex = Schema.Struct({
   plugins: Schema.Array(
     Schema.Struct({
       sourceDirectory: Schema.NonEmptyString,
-      kind: Schema.Literals(["managed-package", "managed-remote-mcp"]),
+      kind: Schema.Literals(["managed-package", "managed-remote-mcp", "managed-openapi"]),
       publicationEligible: Schema.Boolean,
       reason: Schema.NonEmptyString,
     }),
@@ -188,7 +194,10 @@ const selectAndBuild = async (input: {
   const states: Array<ReleaseSourceState> = [];
   const sourceByKey = new Map<
     string,
-    { readonly kind: "managed-package" | "managed-remote-mcp"; readonly path: string }
+    {
+      readonly kind: "managed-package" | "managed-remote-mcp" | "managed-openapi";
+      readonly path: string;
+    }
   >();
   for (const plugin of index.plugins) {
     if (!plugin.publicationEligible) continue;
@@ -224,6 +233,32 @@ const selectAndBuild = async (input: {
           },
         );
       }
+      continue;
+    }
+    if (plugin.kind === "managed-openapi") {
+      const loaded = unwrap(
+        await loadPluginOpenApiSource(plugin.sourceDirectory),
+        (error) => error,
+      );
+      const identity = {
+        marketplaceId: loaded.source.marketplaceId,
+        publisherNamespace: loaded.source.publisherNamespace,
+        pluginSlug: loaded.source.pluginSlug,
+        semanticVersion: loaded.source.version,
+      };
+      states.push({
+        identity,
+        kind: "managed-openapi",
+        publicationEligible: loaded.source.status === "reviewed-publishable",
+        sourceInputDigest: await calculatePluginOpenApiSourceInputDigest({
+          sourceDirectory: plugin.sourceDirectory,
+          sharedInputDigest,
+        }),
+      });
+      sourceByKey.set(
+        `${identity.publisherNamespace}/${identity.pluginSlug}@${identity.semanticVersion}`,
+        { kind: "managed-openapi", path: plugin.sourceDirectory },
+      );
       continue;
     }
     const source = unwrap(
@@ -296,25 +331,35 @@ const selectAndBuild = async (input: {
             authorityDigest: previousAuthorityRecord.authorityDigest,
           };
     const candidate = unwrap(
-      source.kind === "managed-package"
-        ? await buildManagedPackageReleaseBundle({
+      source.kind === "managed-openapi"
+        ? await buildPluginOpenApiReleaseBundle({
             sourceDirectory: source.path,
             outputDirectory: output,
             sharedInputDigest,
             mergeCommit: input.mergeCommit,
             releaseOrdinal: input.releaseOrdinal,
             review,
-            previousPublished: previousAuthorityRecord ?? null,
-          })
-        : await buildManagedRemoteReleaseBundle({
-            sourceFile: source.path,
-            outputDirectory: output,
-            sharedInputDigest,
-            mergeCommit: input.mergeCommit,
-            releaseOrdinal: input.releaseOrdinal,
-            review,
             previousPublished,
-          }),
+          })
+        : source.kind === "managed-package"
+          ? await buildManagedPackageReleaseBundle({
+              sourceDirectory: source.path,
+              outputDirectory: output,
+              sharedInputDigest,
+              mergeCommit: input.mergeCommit,
+              releaseOrdinal: input.releaseOrdinal,
+              review,
+              previousPublished: previousAuthorityRecord ?? null,
+            })
+          : await buildManagedRemoteReleaseBundle({
+              sourceFile: source.path,
+              outputDirectory: output,
+              sharedInputDigest,
+              mergeCommit: input.mergeCommit,
+              releaseOrdinal: input.releaseOrdinal,
+              review,
+              previousPublished,
+            }),
       (error) => error,
     );
     outputs.push({
@@ -368,7 +413,10 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
   const sharedInputDigest = await digestSharedInputs(index.sharedInputs);
   const sourceByKey = new Map<
     string,
-    { readonly kind: "managed-package" | "managed-remote-mcp"; readonly path: string }
+    {
+      readonly kind: "managed-package" | "managed-remote-mcp" | "managed-openapi";
+      readonly path: string;
+    }
   >();
   for (const plugin of index.plugins) {
     if (!plugin.publicationEligible) continue;
@@ -386,6 +434,17 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
           path: sourceFile,
         });
       }
+      continue;
+    }
+    if (plugin.kind === "managed-openapi") {
+      const loaded = unwrap(
+        await loadPluginOpenApiSource(plugin.sourceDirectory),
+        (error) => error,
+      );
+      sourceByKey.set(
+        `${loaded.source.publisherNamespace}/${loaded.source.pluginSlug}@${loaded.source.version}`,
+        { kind: "managed-openapi", path: plugin.sourceDirectory },
+      );
       continue;
     }
     const source = unwrap(
@@ -440,8 +499,8 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
     const safetyFindings = await inspectPublicRepositorySafety(bundleDirectory);
     if (safetyFindings.length > 0) fail("release-artifact-public-safety-failed");
     const loaded = unwrap(
-      source.kind === "managed-package"
-        ? await loadManagedPackageReleaseBundle({
+      source.kind === "managed-openapi"
+        ? await loadPluginOpenApiReleaseBundle({
             bundleDirectory,
             sourceDirectory: source.path,
             sharedInputDigest,
@@ -449,14 +508,23 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
             expectedMergeCommit: mergeCommit,
             expectedReleaseOrdinal: releaseOrdinal,
           })
-        : await loadManagedRemoteReleaseBundle({
-            bundleDirectory,
-            sourceFile: source.path,
-            sharedInputDigest,
-            trustedReview,
-            expectedMergeCommit: mergeCommit,
-            expectedReleaseOrdinal: releaseOrdinal,
-          }),
+        : source.kind === "managed-package"
+          ? await loadManagedPackageReleaseBundle({
+              bundleDirectory,
+              sourceDirectory: source.path,
+              sharedInputDigest,
+              trustedReview,
+              expectedMergeCommit: mergeCommit,
+              expectedReleaseOrdinal: releaseOrdinal,
+            })
+          : await loadManagedRemoteReleaseBundle({
+              bundleDirectory,
+              sourceFile: source.path,
+              sharedInputDigest,
+              trustedReview,
+              expectedMergeCommit: mergeCommit,
+              expectedReleaseOrdinal: releaseOrdinal,
+            }),
       (error) => error,
     );
     if (loaded.releaseDigest !== bundle.releaseDigest || loaded.reviewId !== bundle.reviewId) {
