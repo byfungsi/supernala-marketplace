@@ -56,6 +56,13 @@ const failBatchGuard = (
   params,
 });
 
+const ExistingWorkspaceOAuthAdmission = Schema.Struct({
+  admission_operation_id: Schema.String,
+  admitted_by: Schema.String,
+  source_revision: Schema.String,
+  reviewed_at: Schema.Number,
+});
+
 /** Loads and cross-checks credential-free Workspace OAuth authority from reviewed Plugin source. */
 export async function loadReviewedWorkspaceOAuthProviderAuthority(input: {
   readonly sourceDirectory: string;
@@ -141,6 +148,30 @@ export class WorkspaceOAuthProviderAuthorityAdmission {
     }
     const { authority } = input;
     const scopesJson = canonicalPluginJson(authority.definition.scopes);
+    const existing = await this.database.query({
+      sql: `SELECT admission_operation_id, admitted_by, source_revision, reviewed_at
+            FROM plugin_oauth_provider_definitions WHERE provider_definition_digest = ? LIMIT 1`,
+      params: [authority.providerDefinitionDigest],
+    });
+    if (Result.isFailure(existing) || existing.success.length > 1) {
+      return Result.fail("workspace-oauth-provider-admission-failed");
+    }
+    let admission: typeof ExistingWorkspaceOAuthAdmission.Type;
+    try {
+      admission =
+        existing.success.length === 0
+          ? {
+              admission_operation_id: input.reviewId,
+              admitted_by: input.reviewer,
+              source_revision: input.sourceRevision,
+              reviewed_at: input.reviewedAt,
+            }
+          : Schema.decodeUnknownSync(ExistingWorkspaceOAuthAdmission, {
+              onExcessProperty: "error",
+            })(existing.success[0]);
+    } catch {
+      return Result.fail("workspace-oauth-provider-admission-failed");
+    }
     const result = await this.database.batch([
       {
         sql: `INSERT INTO plugin_oauth_provider_definitions
@@ -199,9 +230,10 @@ export class WorkspaceOAuthProviderAuthorityAdmission {
            AND d.canonical_definition_json = ? AND d.scopes_json = ?
            AND d.provider = ? AND d.resource_identity = ? AND d.display_label_path_present = 1
            AND d.status = 'active' AND d.revision = 1
-           AND d.admission_operation_id = ? AND d.source_kind = 'marketplace-release'
-           AND d.source_repository = ? AND d.source_path = ?
-           AND d.source_content_digest = ? AND d.reviewed_at = ?
+            AND d.admission_operation_id = ? AND d.admitted_by = ?
+            AND d.source_kind = 'marketplace-release'
+            AND d.source_repository = ? AND d.source_revision = ? AND d.source_path = ?
+            AND d.source_content_digest = ? AND d.reviewed_at = ?
            AND r.provider_registration_id = ? AND r.provider = d.provider
            AND r.resource_identity = d.resource_identity
            AND r.registration_mode = 'workspace-oauth-app' AND r.callback_url = ?
@@ -214,11 +246,13 @@ export class WorkspaceOAuthProviderAuthorityAdmission {
           scopesJson,
           authority.definition.provider,
           authority.definition.resourceIdentity,
-          input.reviewId,
+          admission.admission_operation_id,
+          admission.admitted_by,
           input.sourceRepository,
+          admission.source_revision,
           authority.sourcePath,
           authority.sourceContentDigest,
-          input.reviewedAt,
+          admission.reviewed_at,
           authority.providerRegistrationId,
           this.callbackUrl,
         ],
