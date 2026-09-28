@@ -1569,26 +1569,69 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
     }
     const scopesJson = authenticationRequestedScopesJson(providerRegistration);
     if (registrationMode === "dynamic") {
+      const reviewedDefinition = candidate.oauthProviderDefinition;
+      const reviewedMetadataUrl =
+        candidate.authStrategy?.profile === "mcp-oauth"
+          ? candidate.authStrategy.clientRegistration.kind === "dynamic"
+            ? candidate.authStrategy.clientRegistration.authorizationServerMetadataUrl
+            : (candidate.authStrategy.resourceMetadataUrl ?? null)
+          : null;
+      const reviewedMaterialOrigin =
+        candidate.authStrategy?.profile === "mcp-oauth"
+          ? candidate.authStrategy.clientRegistration.kind === "dynamic"
+            ? "dynamic-registration"
+            : "client-id-metadata-document"
+          : null;
       return failBatchGuard(
         `SELECT 1 FROM provider_registrations p
-         JOIN plugin_oauth_provider_definitions od
-           ON od.provider_definition_digest = ? AND od.revision = ?
-         WHERE p.provider_registration_id = ? AND p.registration_mode = 'dynamic'
-           AND p.source = 'platform' AND p.status = 'active'
-           AND p.authorization_metadata_url IS NOT NULL
-           AND p.client_credential_reference IS NULL
-           AND p.oauth_provider_definition_digest IS NULL
-           AND p.oauth_provider_definition_revision IS NULL
-           AND p.oauth_authority_revision IS NULL
-           AND p.provider = od.provider AND p.resource_identity = od.resource_identity
-           AND p.approved_scopes_json = ? AND od.scopes_json = ?
-           AND od.status = 'active' AND od.display_label_path_present = 1`,
+          JOIN plugin_oauth_provider_definitions od
+            ON od.provider_definition_digest = ? AND od.revision = ?
+          WHERE p.provider_registration_id = ? AND p.registration_mode = 'dynamic'
+            AND p.source = 'platform' AND p.status = 'active'
+            AND p.authorization_metadata_url IS NOT NULL
+            AND p.dynamic_registration_claim IS NULL
+            AND p.dynamic_registration_claimed_at IS NULL
+            AND p.provider = od.provider AND p.resource_identity = od.resource_identity
+            AND p.approved_scopes_json = ? AND od.scopes_json = ?
+            AND od.status = 'active' AND od.display_label_path_present = 1
+            AND (
+              (p.client_credential_reference IS NULL
+               AND p.oauth_provider_definition_digest IS NULL
+               AND p.oauth_provider_definition_revision IS NULL
+               AND p.oauth_authority_revision IS NULL)
+              OR
+              (? IS NOT NULL AND ? IS NOT NULL
+               AND p.authorization_metadata_url = ?
+               AND p.client_credential_reference IS NOT NULL
+               AND length(p.client_credential_reference) > 0
+               AND p.metadata_digest IS NOT NULL
+               AND p.oauth_provider_definition_digest = od.provider_definition_digest
+               AND p.oauth_provider_definition_revision = od.revision
+               AND p.oauth_authority_revision >= 1
+               AND EXISTS (
+                 SELECT 1 FROM plugin_oauth_registration_material_sources ms
+                 WHERE ms.provider_registration_id = p.provider_registration_id
+                   AND ms.oauth_authority_revision = p.oauth_authority_revision
+                   AND ms.provider_definition_digest = od.provider_definition_digest
+                   AND ms.provider_definition_revision = od.revision
+                   AND ms.source_revision >= 1
+                   AND ms.source_kind = 'deployment-environment'
+                   AND ms.material_origin = ?
+                   AND ms.token_endpoint_auth_method = ?
+                   AND ms.status = 'active'
+               ))
+            )`,
         [
           providerRegistration.providerDefinitionDigest,
           authentication.providerDefinitionRevision,
           providerRegistration.providerRegistration,
           scopesJson,
           scopesJson,
+          reviewedDefinition === undefined ? null : reviewedDefinition.tokenEndpointAuthMethod,
+          reviewedMetadataUrl,
+          reviewedMetadataUrl,
+          reviewedMaterialOrigin,
+          reviewedDefinition === undefined ? null : reviewedDefinition.tokenEndpointAuthMethod,
         ],
       );
     }

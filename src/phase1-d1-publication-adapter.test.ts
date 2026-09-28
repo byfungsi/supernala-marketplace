@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { cp, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -183,6 +183,37 @@ class RecordingSQLiteD1Transport extends SQLiteD1Transport {
   override async batch(statements: ReadonlyArray<D1Statement>) {
     this.batches.push(statements);
     return super.batch(statements);
+  }
+}
+
+class DiagnosticSQLiteD1Transport extends SQLiteD1Transport {
+  failedStatementIndex: number | null = null;
+  failedStatementError: string | null = null;
+  beforeNextBatch: (() => void) | undefined;
+
+  override async batch(statements: ReadonlyArray<D1Statement>) {
+    const beforeBatch = this.beforeNextBatch;
+    this.beforeNextBatch = undefined;
+    beforeBatch?.();
+    this.database.exec("BEGIN IMMEDIATE");
+    try {
+      const results = statements.map((statement, index) => {
+        try {
+          const result = this.database.prepare(statement.sql).run(...statement.params);
+          return { changes: Number(result.changes) };
+        } catch (cause) {
+          this.failedStatementIndex = index;
+          this.failedStatementError =
+            cause instanceof Error ? cause.message : "sqlite-batch-failed";
+          throw cause;
+        }
+      });
+      this.database.exec("COMMIT");
+      return Result.succeed(results);
+    } catch {
+      this.database.exec("ROLLBACK");
+      return Result.fail("sqlite-batch-failed");
+    }
   }
 }
 
@@ -1089,6 +1120,38 @@ const applicationDatabase = async (): Promise<DatabaseSync> => {
   return database;
 };
 
+const applicationDatabaseWithOpenApi = async (): Promise<DatabaseSync> => {
+  const migrationsDirectory = process.env.MARKETPLACE_APPLICATION_MIGRATIONS_DIR;
+  if (migrationsDirectory !== undefined) {
+    const database = new DatabaseSync(":memory:");
+    database.exec("PRAGMA foreign_keys = ON");
+    for (const filename of (await readdir(migrationsDirectory))
+      .filter((name) => name.endsWith(".sql") && name <= "0081_managed_openapi_plugins.sql")
+      .toSorted()) {
+      database.exec(await readFile(path.join(migrationsDirectory, filename), "utf8"));
+    }
+    return database;
+  }
+  const database = await applicationDatabase();
+  for (const trigger of [
+    "plugin_installation_requires_published_version",
+    "plugin_default_grants_after_ready_connection_insert",
+    "plugin_default_grants_after_connection_ready",
+    "plugin_default_grants_after_agent_insert",
+    "plugin_publication_intent_oauth_source_insert",
+    "plugin_oauth_connection_ready_insert",
+    "plugin_oauth_connection_ready_update",
+  ]) {
+    database.exec(
+      `CREATE TRIGGER IF NOT EXISTS ${trigger} BEFORE INSERT ON plugin_versions BEGIN SELECT 1; END`,
+    );
+  }
+  database.exec(`CREATE TABLE agent_profiles (agent_id TEXT PRIMARY KEY, owner_id TEXT, status TEXT, created_at INTEGER);
+    CREATE TABLE "user" (id TEXT PRIMARY KEY)`);
+  database.exec(await readFile("fixtures/sql/phase1-0081-managed-openapi-plugins.sql", "utf8"));
+  return database;
+};
+
 it("keeps the Gmail review stale and rehearses newly bound Workspace OAuth authority", async () => {
   const releaseRoot = await mkdtemp(path.join(os.tmpdir(), "gmail-release-publication-"));
   const database = await applicationDatabase();
@@ -1954,6 +2017,170 @@ for (const remote of providerExpansionDeclarations) {
     driftDatabase.close();
   });
 }
+
+const boundLinearPublication = async () => {
+  const currentSource = JSON.parse(await readFile("plugins/remotes/linear.json", "utf8"));
+  const previousDeclaration = validateManagedRemotePluginRelease(
+    {
+      ...currentSource,
+      id: "supernala-public:supernala:linear@1.0.0",
+      version: "1.0.0",
+    },
+    "publication",
+  );
+  const successorDeclaration = validateManagedRemotePluginRelease(currentSource, "publication");
+  if (Result.isFailure(previousDeclaration) || Result.isFailure(successorDeclaration)) {
+    throw new Error("linear-production-declarations-invalid");
+  }
+  const previous = await providerExpansionCandidate(previousDeclaration.success);
+  const successor = await providerExpansionCandidate(successorDeclaration.success);
+  expect(previous.version.catalog).toEqual(successor.version.catalog);
+  expect(successor.version.catalog.tools).toHaveLength(65);
+  expect(successor.catalogDigest).toBe(
+    "4d3f2e28cb61ee896f2669dc0b7494dd4036da2eb13ffa86a0f21bd27e0593de",
+  );
+  const database = await applicationDatabaseWithOpenApi();
+  const transport = new DiagnosticSQLiteD1Transport(database);
+  const adapter = new Phase1D1PublicationAdapter(transport);
+  expect(await adapter.stage(previous)).toEqual(Result.succeed(undefined));
+  expect(await adapter.finalize(previous)).toEqual(Result.succeed(undefined));
+  const registrationId = "linear-oauth-v1";
+  const definitionDigest = "4e4b75dcf211c5c00da146e9d53411b848d90e175f7980bf9309e303a2f0f7aa";
+  database
+    .prepare(
+      `UPDATE provider_registrations
+       SET revision = 3, oauth_authority_revision = 1,
+           oauth_provider_definition_digest = ?, oauth_provider_definition_revision = 1,
+           client_credential_reference = 'local-test-reference',
+           authorization_endpoint = 'https://mcp.linear.app/authorize',
+           token_endpoint = 'https://mcp.linear.app/token',
+           metadata_digest = ?
+       WHERE provider_registration_id = ?`,
+    )
+    .run(definitionDigest, "a".repeat(64), registrationId);
+  database
+    .prepare(
+      `INSERT INTO plugin_oauth_registration_material_sources
+         (provider_registration_id, source_revision, oauth_authority_revision,
+          provider_definition_digest, provider_definition_revision, source_kind,
+          material_version, declaration_id, token_endpoint_auth_method,
+          deployment_revision, status, attestation_operation_id, attested_by,
+          attested_at, created_at, updated_at, material_origin)
+       VALUES (?, 1, 1, ?, 1, 'deployment-environment', 'local-test-v1',
+               'local-test-declaration', 'none', 'local-test-deployment', 'active',
+               'local-test-attestation', 'local-test-reviewer', 1, 1, 1,
+               'dynamic-registration')`,
+    )
+    .run(registrationId, definitionDigest);
+  expect(await adapter.readPublished(previous)).toEqual(Result.succeed(true));
+  return { database, transport, adapter, previous, successor };
+};
+
+it("stages the approved Linear patch against a dynamically bound published registration", async () => {
+  const { database, transport, adapter, previous, successor } = await boundLinearPublication();
+  const boundRegistration = database
+    .prepare(
+      "SELECT * FROM provider_registrations WHERE provider_registration_id = 'linear-oauth-v1'",
+    )
+    .get();
+  const boundMaterial = database
+    .prepare(
+      "SELECT * FROM plugin_oauth_registration_material_sources WHERE provider_registration_id = 'linear-oauth-v1'",
+    )
+    .all();
+  const staged = await adapter.stage(successor);
+  expect(staged).toEqual(Result.succeed(undefined));
+  expect(transport.failedStatementIndex).toBeNull();
+  expect(await adapter.finalize(successor)).toEqual(Result.succeed(undefined));
+  expect(await adapter.readPublished(successor)).toEqual(Result.succeed(true));
+  expect(await adapter.readPublished(previous)).toEqual(Result.succeed(true));
+  expect(
+    database
+      .prepare(
+        "SELECT * FROM provider_registrations WHERE provider_registration_id = 'linear-oauth-v1'",
+      )
+      .get(),
+  ).toEqual(boundRegistration);
+  expect(
+    database
+      .prepare(
+        "SELECT * FROM plugin_oauth_registration_material_sources WHERE provider_registration_id = 'linear-oauth-v1'",
+      )
+      .all(),
+  ).toEqual(boundMaterial);
+  expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+  database.close();
+});
+
+it("atomically rejects a bound Linear registration revoked or stripped of active material during staging", async () => {
+  for (const drift of ["registration-revoked", "material-retired"] as const) {
+    const { database, transport, adapter, previous, successor } = await boundLinearPublication();
+    transport.beforeNextBatch = () => {
+      if (drift === "registration-revoked") {
+        database
+          .prepare(
+            `UPDATE provider_registrations
+             SET status = 'revoked', oauth_authority_revision = 2, revision = 4
+             WHERE provider_registration_id = 'linear-oauth-v1'`,
+          )
+          .run();
+      } else {
+        database
+          .prepare(
+            `UPDATE plugin_oauth_registration_material_sources
+             SET status = 'retired', retired_at = 2, retirement_reason = 'local-test-retirement',
+                 updated_at = 2
+             WHERE provider_registration_id = 'linear-oauth-v1' AND source_revision = 1`,
+          )
+          .run();
+      }
+    };
+    expect(await adapter.stage(successor)).toEqual(Result.fail("application-stage-failed"));
+    expect(transport.failedStatementIndex).toBe(drift === "registration-revoked" ? 73 : 76);
+    expect(
+      database
+        .prepare("SELECT plugin_version_id FROM plugin_versions ORDER BY plugin_version_id")
+        .all(),
+    ).toEqual([{ plugin_version_id: previous.version.id }]);
+    expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+    database.close();
+  }
+});
+
+it("retains immutable Linear OAuth identity and auth strategy while reusing the bound registration", async () => {
+  const { database, adapter, successor } = await boundLinearPublication();
+  for (const [column, replacement] of [
+    ["approved_scopes_json", '["read"]'],
+    ["oauth_provider_definition_digest", "f".repeat(64)],
+  ] as const) {
+    expect(() =>
+      database
+        .prepare(
+          `UPDATE provider_registrations SET ${column} = ? WHERE provider_registration_id = 'linear-oauth-v1'`,
+        )
+        .run(replacement),
+    ).toThrow();
+  }
+  expect(() =>
+    database
+      .prepare(
+        `UPDATE provider_registrations
+         SET dynamic_registration_claim = 'local-test-claim', dynamic_registration_claimed_at = 2
+         WHERE provider_registration_id = 'linear-oauth-v1'`,
+      )
+      .run(),
+  ).toThrow("OAuth Provider Registration semantic authority is immutable");
+  expect(() =>
+    database
+      .prepare(
+        `UPDATE plugin_auth_strategy_definitions SET status = 'revoked'
+         WHERE auth_definition_digest = ?`,
+      )
+      .run("43e7c4aae4e642cbaeeb9ced47c2aa48af8d45613654879b2305c33a3e6e491e"),
+  ).toThrow("Plugin authentication strategy definition is immutable");
+  expect(await adapter.stage(successor)).toEqual(Result.succeed(undefined));
+  database.close();
+});
 
 it("reuses the published catalog identity for an unchanged remote patch", async () => {
   const currentSource = JSON.parse(await readFile("plugins/remotes/notion.json", "utf8"));
