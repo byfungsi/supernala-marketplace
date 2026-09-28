@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:linear@1.0.1",
+  "id": "supernala-public:supernala:linear@1.0.2",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "linear",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "Linear",
   "description": "Curated Linear hosted MCP integration",
   "license": "LicenseRef-Provider-Service",
@@ -85,7 +85,7 @@
   },
   "scopes": ["read", "write"],
   "catalog": {
-    "id": "linear-tools-list-v2",
+    "id": "linear-tools-list-v1",
     "schemaVersion": 1,
     "digest": "4d3f2e28cb61ee896f2669dc0b7494dd4036da2eb13ffa86a0f21bd27e0593de",
     "tools": [

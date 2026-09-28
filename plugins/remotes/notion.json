@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:notion@1.0.1",
+  "id": "supernala-public:supernala:notion@1.0.2",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "notion",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "Notion",
   "description": "Curated Notion hosted MCP integration",
   "license": "LicenseRef-Provider-Service",
@@ -97,7 +97,7 @@
   },
   "scopes": ["default"],
   "catalog": {
-    "id": "notion-documentation-candidate-v2",
+    "id": "notion-documentation-candidate-v1",
     "schemaVersion": 1,
     "digest": "496f3be4bd75ba8ccc933a8689516376a9f967947fefc517ac80ab231b9d180e",
     "tools": [

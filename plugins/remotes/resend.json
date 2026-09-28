@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:resend@1.0.1",
+  "id": "supernala-public:supernala:resend@1.0.2",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "resend",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "Resend",
   "description": "Curated Resend hosted MCP email integration",
   "license": "LicenseRef-Provider-Service",
@@ -85,7 +85,7 @@
   },
   "scopes": ["emails:send"],
   "catalog": {
-    "id": "resend-documentation-candidate-v2",
+    "id": "resend-documentation-candidate-v1",
     "schemaVersion": 1,
     "digest": "cd04f64f8af8c90bb0c100ccef838bdbb912eccd1aeed35fbbb8d7fbedc78f62",
     "tools": [

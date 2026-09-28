@@ -18,7 +18,9 @@ import {
   canonicalPluginJson,
   digestPluginBytes,
   PluginSha256,
+  PluginSemanticVersion,
   PluginVersion,
+  PluginVersionId,
   ProviderRegistrationId,
   RemoteMcpEndpointRegistrationId,
 } from "./plugin-contract.js";
@@ -1952,6 +1954,115 @@ for (const remote of providerExpansionDeclarations) {
     driftDatabase.close();
   });
 }
+
+it("reuses the published catalog identity for an unchanged remote patch", async () => {
+  const currentSource = JSON.parse(await readFile("plugins/remotes/notion.json", "utf8"));
+  const previousSource = {
+    ...currentSource,
+    id: "supernala-public:supernala:notion@1.0.0",
+    version: "1.0.0",
+  };
+  const conflictingSource = {
+    ...currentSource,
+    id: "supernala-public:supernala:notion@1.0.1",
+    version: "1.0.1",
+    catalog: { ...currentSource.catalog, id: "notion-documentation-candidate-v2" },
+  };
+  const previousDeclaration = validateManagedRemotePluginRelease(previousSource, "publication");
+  const conflictingDeclaration = validateManagedRemotePluginRelease(
+    conflictingSource,
+    "publication",
+  );
+  const successorDeclaration = validateManagedRemotePluginRelease(currentSource, "publication");
+  if (
+    Result.isFailure(previousDeclaration) ||
+    Result.isFailure(conflictingDeclaration) ||
+    Result.isFailure(successorDeclaration)
+  ) {
+    throw new Error("notion-patch-declarations-invalid");
+  }
+  const previous = await providerExpansionCandidate(previousDeclaration.success);
+  const conflicting = await providerExpansionCandidate(conflictingDeclaration.success);
+  const successor = await providerExpansionCandidate(successorDeclaration.success);
+  expect(previous.catalogDigest).toBe(conflicting.catalogDigest);
+  expect(previous.catalogDigest).toBe(successor.catalogDigest);
+  expect(previous.version.catalog.id).not.toBe(conflicting.version.catalog.id);
+  expect(previous.version.catalog.id).toBe(successor.version.catalog.id);
+  const database = await applicationDatabase();
+  const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+  expect(await adapter.stage(previous)).toEqual(Result.succeed(undefined));
+  expect(await adapter.finalize(previous)).toEqual(Result.succeed(undefined));
+  expect(await adapter.readPublished(previous)).toEqual(Result.succeed(true));
+  expect(() =>
+    database
+      .prepare(
+        `INSERT INTO plugin_catalog_snapshots
+           (catalog_snapshot_id, catalog_digest, schema_version, created_at)
+         VALUES (?, ?, 1, 2) ON CONFLICT (catalog_snapshot_id) DO NOTHING`,
+      )
+      .run(conflicting.version.catalog.id, conflicting.catalogDigest),
+  ).toThrow("UNIQUE constraint failed: plugin_catalog_snapshots.catalog_digest");
+  expect(await adapter.stage(conflicting)).toEqual(Result.fail("application-stage-failed"));
+  expect(await adapter.stage(successor)).toEqual(Result.succeed(undefined));
+  expect(await adapter.finalize(successor)).toEqual(Result.succeed(undefined));
+  expect(await adapter.readPublished(successor)).toEqual(Result.succeed(true));
+  expect(await adapter.readPublished(previous)).toEqual(Result.succeed(true));
+  const changedCatalogDigest = PluginSha256.make("f".repeat(64));
+  const differentContent = {
+    ...successor,
+    identity: PluginReleaseIdentity.make({
+      marketplaceId: successor.identity.marketplaceId,
+      publisherNamespace: successor.identity.publisherNamespace,
+      pluginSlug: successor.identity.pluginSlug,
+      semanticVersion: PluginSemanticVersion.make("1.0.3"),
+    }),
+    sourceInputDigest: PluginSha256.make("e".repeat(64)),
+    releaseDigest: PluginSha256.make("d".repeat(64)),
+    catalogDigest: changedCatalogDigest,
+    version: PluginVersion.make({
+      id: PluginVersionId.make("supernala-public:supernala:notion@1.0.3"),
+      marketplaceId: successor.version.marketplaceId,
+      publisherNamespace: successor.version.publisherNamespace,
+      pluginSlug: successor.version.pluginSlug,
+      version: PluginSemanticVersion.make("1.0.3"),
+      name: successor.version.name,
+      description: successor.version.description,
+      license: successor.version.license,
+      runtime: successor.version.runtime,
+      catalog: {
+        id: successor.version.catalog.id,
+        schemaVersion: successor.version.catalog.schemaVersion,
+        digest: changedCatalogDigest,
+        tools: successor.version.catalog.tools,
+      },
+      config: successor.version.config,
+      allowedHosts: successor.version.allowedHosts,
+      status: "published",
+      publishedAt: successor.version.publishedAt,
+    }),
+  };
+  expect(await adapter.stage(differentContent)).toEqual(Result.fail("application-stage-failed"));
+  expect(
+    database
+      .prepare("SELECT catalog_snapshot_id, catalog_digest FROM plugin_catalog_snapshots")
+      .all(),
+  ).toEqual([
+    {
+      catalog_snapshot_id: previous.version.catalog.id,
+      catalog_digest: previous.catalogDigest,
+    },
+  ]);
+  expect(
+    database
+      .prepare("SELECT plugin_version_id FROM plugin_versions ORDER BY plugin_version_id")
+      .all(),
+  ).toEqual([
+    { plugin_version_id: previous.version.id },
+    { plugin_version_id: successor.version.id },
+  ]);
+  expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+  database.close();
+});
 
 for (const fixture of publishedProviderChains["mcp-oauth"]) {
   it(`publishes and reads back the canonical ${fixture.provider} MCP OAuth chain`, async () => {
