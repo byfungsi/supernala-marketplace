@@ -1,99 +1,133 @@
 {
   "schemaVersion": 1,
-  "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:resend@1.0.3",
-  "marketplaceId": "supernala-public",
-  "publisherNamespace": "supernala",
-  "pluginSlug": "resend",
-  "version": "1.0.3",
-  "name": "Resend",
-  "description": "Curated Resend hosted MCP email integration",
-  "license": "LicenseRef-Provider-Service",
-  "runtime": {
-    "_tag": "ManagedRemoteMcp",
-    "kind": "managed-remote-mcp",
-    "endpointRegistrationId": "resend-mcp-v1",
-    "providerRegistrationId": "resend-oauth-cimd-v1",
-    "transport": "streamable-http"
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "resend",
+    "semanticVersion": "1.0.3"
   },
-  "endpoint": "https://mcp.resend.com/mcp",
-  "oauthRegistrationMode": "cimd",
-  "providerDefinitionDigest": "6770e9ee1659f427aa817e9d12df2a9a2b775bc209a1cd946039c7e58aa58ec1",
-  "authStrategy": {
-    "schemaVersion": 1,
-    "profile": "mcp-oauth",
-    "providerRegistrationId": "resend-oauth-cimd-v1",
+  "reviewId": "resend-1.0.3-consented-send-email-authority-v1",
+  "reviewer": "OpenCode independent supervising source and authority review",
+  "reviewedAt": 1790668257176,
+  "sourceInputDigest": "5f8d1781787dff8e8493907182f3d04e5bde96f3738a72d363d03ac61949a200",
+  "artifactDigest": null,
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "resend-oauth-cimd-v1",
     "providerDefinitionDigest": "6770e9ee1659f427aa817e9d12df2a9a2b775bc209a1cd946039c7e58aa58ec1",
     "requestedScopes": ["emails:send"],
-    "clientRegistration": {
-      "kind": "cimd",
-      "clientIdMetadataDocumentUrl": "https://supernala.com/.well-known/oauth-client/resend.json"
-    },
-    "resourceMetadataUrl": "https://mcp.resend.com/.well-known/oauth-protected-resource",
-    "identity": {
-      "kind": "opaque-connection",
-      "displayLabel": "Resend team (live identity pending)"
-    },
-    "resources": {
-      "kind": "none"
-    }
+    "credentialDelivery": "short-lived-access-token-only"
   },
-  "oauthProviderDefinition": {
-    "schemaVersion": 1,
-    "protocol": "oauth2-authorization-code",
-    "issuer": "https://api.resend.com",
-    "provider": "resend-mcp",
-    "resourceIdentity": "https://mcp.resend.com",
-    "authorizationEndpoint": "https://api.resend.com/oauth/authorize",
-    "tokenEndpoint": "https://api.resend.com/oauth/token",
-    "tokenEndpointAuthMethod": "none",
-    "authorizationResponseIssuer": "required",
-    "pkce": {
-      "method": "S256"
-    },
-    "authorizationParameters": [],
-    "scopes": ["emails:send"],
-    "account": {
-      "kind": "declaration-managed"
-    },
-    "tokens": {
-      "accessTokenType": "bearer",
-      "expiresIn": {
-        "required": true,
-        "minimumSeconds": 1,
-        "maximumSeconds": 3600
-      },
-      "grantedScopes": {
-        "whenPresent": "exact-match",
-        "whenOmitted": "requested-scopes"
-      },
-      "initialRefreshToken": "required",
-      "refreshResponseToken": "retain-current-if-omitted"
-    },
-    "refresh": {
-      "kind": "standard-form-post",
-      "invalidGrant": "reauthorization-required",
-      "ambiguousOutcome": "fail-closed-no-replay"
-    },
-    "revocation": {
-      "kind": "standard-form-post",
-      "endpoint": "https://api.resend.com/oauth/revoke",
-      "token": "refresh-token",
-      "clientAuthentication": "registration-method",
-      "outcome": "best-effort-observed"
-    }
+  "catalogDigest": "cdc861797ea5806bd737f70f3975734979c0765a726be2c5c78fafc35a4223f1",
+  "configDigest": "e6ebf9c4674f06e5a34f3a0619d9caa13b618515eeff5f54267e104bd6400221",
+  "provenanceDigest": "6df43d87ce13a9736c4d7232023487c023ccb78df0ecef3170d033ff86498cff",
+  "authorityBeforeIdentity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "resend",
+    "semanticVersion": "1.0.2"
   },
-  "scopes": ["emails:send"],
-  "catalog": {
-    "id": "resend-consented-send-email-v1",
-    "schemaVersion": 1,
-    "digest": "cdc861797ea5806bd737f70f3975734979c0765a726be2c5c78fafc35a4223f1",
+  "authorityBeforeReleaseDigest": "3577ad80fe2d39efa1e2b4774074979bbc5df07dc9eb966af58ffa397ce60548",
+  "authorityBefore": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["emails:send"],
+    "endpoint": "https://mcp.resend.com/mcp",
+    "endpointRegistrationId": "resend-mcp-v1",
+    "providerRegistrationId": "resend-oauth-cimd-v1",
+    "providerDefinitionDigest": "6770e9ee1659f427aa817e9d12df2a9a2b775bc209a1cd946039c7e58aa58ec1",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "resend-oauth-cimd-v1",
+      "providerDefinitionDigest": "6770e9ee1659f427aa817e9d12df2a9a2b775bc209a1cd946039c7e58aa58ec1",
+      "requestedScopes": ["emails:send"],
+      "clientRegistration": {
+        "kind": "cimd",
+        "clientIdMetadataDocumentUrl": "https://supernala.com/.well-known/oauth-client/resend.json"
+      },
+      "resourceMetadataUrl": "https://mcp.resend.com/.well-known/oauth-protected-resource",
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Resend team (live identity pending)"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
     "tools": [
       {
         "id": "resend.send_email",
-        "mcpName": "send-email",
-        "title": "Send email",
-        "description": "Send one transactional email immediately or schedule it; excludes broadcasts, domains, API keys, and administration.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 320
+            },
+            "to": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 50,
+              "items": {
+                "type": "string",
+                "minLength": 3,
+                "maxLength": 320
+              }
+            },
+            "subject": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 998
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100000
+            }
+          },
+          "additionalProperties": false,
+          "required": ["from", "to", "subject", "text"]
+        }
+      }
+    ],
+    "allowedHosts": ["mcp.resend.com"],
+    "config": []
+  },
+  "authorityBeforeDigest": "8a50225312187cf849287f5d260dc47bdac701f860c14735ab00d0756d22e11b",
+  "authorityAfter": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["emails:send"],
+    "endpoint": "https://mcp.resend.com/mcp",
+    "endpointRegistrationId": "resend-mcp-v1",
+    "providerRegistrationId": "resend-oauth-cimd-v1",
+    "providerDefinitionDigest": "6770e9ee1659f427aa817e9d12df2a9a2b775bc209a1cd946039c7e58aa58ec1",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "resend-oauth-cimd-v1",
+      "providerDefinitionDigest": "6770e9ee1659f427aa817e9d12df2a9a2b775bc209a1cd946039c7e58aa58ec1",
+      "requestedScopes": ["emails:send"],
+      "clientRegistration": {
+        "kind": "cimd",
+        "clientIdMetadataDocumentUrl": "https://supernala.com/.well-known/oauth-client/resend.json"
+      },
+      "resourceMetadataUrl": "https://mcp.resend.com/.well-known/oauth-protected-resource",
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Resend team (live identity pending)"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "resend.send_email",
         "classification": "write",
         "defaultPolicy": "require-approval",
         "inputSchema": {
@@ -238,27 +272,14 @@
             }
           },
           "required": ["to", "subject", "text", "from", "context", "llm_model"]
-        },
-        "maximumOutputBytes": 262144
+        }
       }
-    ]
+    ],
+    "allowedHosts": ["mcp.resend.com"],
+    "config": []
   },
-  "config": {
-    "revision": 1,
-    "fields": []
-  },
-  "allowedHosts": ["mcp.resend.com"],
-  "protocolPolicy": {
-    "catalogCompatibility": "reviewed-subset",
-    "maximumCatalogPages": 10
-  },
-  "evidenceUrls": [
-    "https://resend.com/docs/mcp-server",
-    "https://resend.com/docs/guides/building-a-resend-oauth-client",
-    "https://resend.com/docs/api-reference/oauth/token",
-    "https://github.com/resend/resend-mcp/blob/main/src/tools/emails.ts",
-    "https://mcp.resend.com/.well-known/oauth-protected-resource",
-    "https://api.resend.com/.well-known/oauth-authorization-server"
-  ],
-  "verificationNotes": "Owner-consented emails:send tools/list captured one page of 129 names and the exact send-email input schema after three production attempts were blocked before dispatch by input-schema-changed. Only resend.send_email is reviewed; all other hosted tools remain outside the published catalog. The six required arguments include analytics context and llm_model: context must describe an abstract purpose without identifying information, and llm_model is unknown when uncertain. Optional conversation_id must not be invented. CIMD, OAuth provider, scope, transport, and opaque identity are unchanged. Live 1.0.3 publication, invocation, privacy review, team identity, and production acceptance remain pending."
+  "authorityDigest": "be1b1719cebdab091546586010f3b5557ea7a85b63cf5ab6f041b644fc66ffaf",
+  "authorityDiffDigest": "7f650939f6346effed5157b39a7fcd4521dad1759a6b34bddbc306e912a1d1bc",
+  "releaseDigest": "ebc2ab91763ac6e43d26a5cf8d690f44c7f50f7a2468ec72b89c2986466959e7",
+  "decision": "approved"
 }
