@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:notion@1.0.2",
+  "status": "staged-unverified",
+  "id": "supernala-public:supernala:notion@1.0.3",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "notion",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "name": "Notion",
   "description": "Curated Notion hosted MCP integration",
   "license": "LicenseRef-Provider-Service",
@@ -97,28 +97,62 @@
   },
   "scopes": ["default"],
   "catalog": {
-    "id": "notion-documentation-candidate-v1",
+    "id": "notion-live-tools-list-v1",
     "schemaVersion": 1,
-    "digest": "496f3be4bd75ba8ccc933a8689516376a9f967947fefc517ac80ab231b9d180e",
+    "digest": "4f36569bbd3f22d44a5be0620ac80431c9d252d64c429944589878cb2dd06100",
     "tools": [
+      {
+        "id": "notion.notion_get_tool_access",
+        "mcpName": "notion-get-tool-access",
+        "title": "Check Notion tool access",
+        "description": "Read connection tool availability and parameter restrictions before searching or using plan-dependent tools.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "tool_names": {
+              "description": "Optional RunTool names to include, such as search and ai_search. Omit to return all tools visible to this connection. Unknown or unexposed names are omitted. An empty list returns an empty map.",
+              "maxItems": 100,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
       {
         "id": "notion.notion_fetch",
         "mcpName": "notion-fetch",
         "title": "Fetch Notion content",
         "description": "Fetch one reviewed Notion object or the special self identity record.",
         "classification": "read",
-        "defaultPolicy": "require-approval",
+        "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
           "properties": {
             "id": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 200
+              "description": "The ID or URL of the Notion page, database, or data source to fetch. Supports notion.so URLs, Notion Sites URLs (*.notion.site), raw UUIDs, and data source URLs (collection://...). Pass a notion://docs/* URI to read that documentation resource."
+            },
+            "include_transcript": {
+              "description": "Whether to include meeting note transcripts. Defaults to false. When true, full transcripts are included; when false, a placeholder with the meeting note URL is shown instead.",
+              "type": "boolean"
+            },
+            "include_discussions": {
+              "description": "Whether to include discussion/comment indicators in the page output. When true, adds a <page-discussions> summary with discussion count, preview snippets, and discussion:// URLs. Use with the get_comments tool to retrieve full discussion content. Defaults to false.",
+              "type": "boolean"
             }
           },
-          "additionalProperties": false,
-          "required": ["id"]
+          "required": ["id"],
+          "additionalProperties": {}
         },
         "maximumOutputBytes": 262144
       },
@@ -126,65 +160,137 @@
         "id": "notion.notion_search",
         "mcpName": "notion-search",
         "title": "Search Notion",
-        "description": "Search accessible Notion workspace content or users.",
+        "description": "Before searching, call notion-get-tool-access with {} and use its current_tool_access map to check search routing and restricted parameters. Search accessible Notion workspace content or users; plan-dependent filters may be dropped with notices.",
         "classification": "read",
-        "defaultPolicy": "require-approval",
+        "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
           "properties": {
             "query": {
               "type": "string",
-              "minLength": 1,
-              "maxLength": 500
-            }
-          },
-          "additionalProperties": false,
-          "required": ["query"]
-        },
-        "maximumOutputBytes": 262144
-      },
-      {
-        "id": "notion.notion_create_pages",
-        "mcpName": "notion-create-pages",
-        "title": "Create Notion pages",
-        "description": "Create one or more pages in an explicitly selected Notion parent.",
-        "classification": "write",
-        "defaultPolicy": "require-approval",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "parent": {
-              "type": "object"
+              "description": "Short, specific keywords for Notion content search. For user search, enter a name or email address. Provide a non-empty query unless intentionally browsing with filters or a non-relevance sort."
             },
-            "pages": {
-              "type": "array",
-              "minItems": 1,
-              "maxItems": 20
-            }
-          },
-          "additionalProperties": false,
-          "required": ["parent", "pages"]
-        },
-        "maximumOutputBytes": 262144
-      },
-      {
-        "id": "notion.notion_update_page",
-        "mcpName": "notion-update-page",
-        "title": "Update a Notion page",
-        "description": "Update properties or content on one identified Notion page.",
-        "classification": "write",
-        "defaultPolicy": "require-approval",
-        "inputSchema": {
-          "type": "object",
-          "properties": {
-            "page_id": {
+            "query_type": {
+              "description": "Specify type of the query as either \"internal\" or \"user\". Always include this input if performing \"user\" search.",
               "type": "string",
-              "minLength": 1,
-              "maxLength": 200
+              "enum": ["internal", "user"]
+            },
+            "data_source_url": {
+              "description": "Optionally restrict keyword search to a data source URL returned in a <data-source> tag.",
+              "type": "string"
+            },
+            "page_url": {
+              "description": "Optionally restrict keyword search to a page and its descendants. Accepts a Notion page URL or ID.",
+              "type": "string"
+            },
+            "teamspace_id": {
+              "description": "Optionally, provide the ID of a teamspace to restrict search results to. This will perform a search over content within the specified teamspace only. Accepts the teamspace ID (UUIDv4) with or without dashes.",
+              "type": "string"
+            },
+            "filters": {
+              "description": "Optional exact filters for Notion workspace search. Omit unless required by the request. Keep filter fields nested here; do not send them at the top level. Some filters require Business access.",
+              "type": "object",
+              "properties": {
+                "created_date_range": {
+                  "description": "Optional filter to only produce search results created within the specified date range.",
+                  "type": "object",
+                  "properties": {
+                    "start_date": {
+                      "description": "The start date of the date range as an ISO 8601 date string, if any.",
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    },
+                    "end_date": {
+                      "description": "The end date of the date range as an ISO 8601 date string, if any.",
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "created_by_user_ids": {
+                  "description": "Optional filter to only produce search results created by the Notion users that have the specified user IDs.",
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "edited_by_user_ids": {
+                  "description": "Optional filter to only produce search results edited by the Notion users that have the specified user IDs. Available on the Business plan.",
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "last_edited_date_range": {
+                  "description": "Optional filter to only produce search results last edited within the specified date range. Available on the Business plan.",
+                  "type": "object",
+                  "properties": {
+                    "start_date": {
+                      "description": "The start date of the date range as an ISO 8601 date string, if any.",
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    },
+                    "end_date": {
+                      "description": "The end date of the date range as an ISO 8601 date string, if any.",
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    }
+                  },
+                  "additionalProperties": false
+                },
+                "teamspace_ids": {
+                  "description": "Optional filter to only produce search results inside one of the specified teamspaces. Selecting more than one teamspace is available on the Business plan; use teamspace_id for one teamspace on other plans.",
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "title_only": {
+                  "description": "When true, match the query only against page and database titles instead of page content. Available on the Business plan.",
+                  "type": "boolean"
+                },
+                "content_status": {
+                  "description": "Which pages to include by status. Omit for the default live pages. Supplying this field, even with the default value, requires Business access.",
+                  "type": "string",
+                  "enum": [
+                    "all_with_archived",
+                    "all_without_archived",
+                    "verified_only",
+                    "archived_only"
+                  ]
+                }
+              },
+              "additionalProperties": {}
+            },
+            "sort": {
+              "description": "Result ordering for Notion workspace search. Omit for the default \"relevance\" ordering. \"last_edited\" and \"created\" require Business access.",
+              "type": "string",
+              "enum": ["relevance", "last_edited", "created"]
+            },
+            "page_size": {
+              "description": "Maximum number of results to return (default 10). Lower values reduce response size.",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "max_highlight_length": {
+              "description": "Maximum character length for result highlights (default 200). Set to 0 to omit highlights entirely.",
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 500
             }
           },
-          "additionalProperties": false,
-          "required": ["page_id"]
+          "required": ["query"],
+          "additionalProperties": {}
         },
         "maximumOutputBytes": 262144
       }
@@ -205,5 +311,5 @@
     "https://mcp.notion.com/.well-known/oauth-protected-resource",
     "https://mcp.notion.com/.well-known/oauth-authorization-server"
   ],
-  "verificationNotes": "Owner authorized publication-first testing through the normal Supernala UI. The admitted catalog remains documentation-derived, not a consented tools/list capture. notion-fetch with id self returns a text block containing JSON whose self object carries workspace, user, and current_tool_access. The MCP-audience token is not sent to public REST /v1/users/me. Initial user_id/workspace_id/email_domain token fields must survive refreshes that omit them. Live consent, hosted catalog equality, per-plan tool eligibility, privacy review, and production acceptance remain pending and must not be inferred from reviewed-publishable status."
+  "verificationNotes": "Staged from an owner-consented OAuth tools/list capture of 45 definitions; only three read-only tools are cataloged with exact observed input schemas. get-tool-access is the documented read-only prerequisite for search routing and plan restrictions. Read-only search and get-tool-access probes returned isError:false; search result shape and count and end-to-end application invocation are unverified. The formerly cataloged create-pages and update-page tools are omitted: their captured schemas contain anyOf and propertyNames, unsupported by the pinned application argument validator; update-page now also requires command. No production publication, Store, or invocation acceptance is claimed."
 }

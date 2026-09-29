@@ -456,7 +456,7 @@ it("validates and prepares provider-owned remote declarations at their reviewed 
   try {
     for (const [slug, publicationEligible, publicationBlocker] of [
       ["atlassian", false, "remote-release-not-reviewed"],
-      ["notion", true, null],
+      ["notion", false, "remote-release-not-reviewed"],
       ["resend", true, null],
     ] as const) {
       const sourcePath = `plugins/remotes/${slug}.json`;
