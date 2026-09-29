@@ -15,11 +15,7 @@
     "kind": "oauth",
     "providerRegistration": "google-gmail-send-rest-v1",
     "providerDefinitionDigest": "06d492580bf6f92ed1ce57f5866419ac846ef96ddfb30a2faae54f785146892e",
-    "requestedScopes": [
-      "email",
-      "https://www.googleapis.com/auth/gmail.send",
-      "openid"
-    ],
+    "requestedScopes": ["email", "https://www.googleapis.com/auth/gmail.send", "openid"],
     "credentialDelivery": "short-lived-access-token-only"
   },
   "catalogDigest": "e217befb993f97958d1b0ae6fbc2034d3d0ad3787793ac700a7c057f8860358d",
@@ -43,11 +39,7 @@
   "authorityAfter": {
     "runtimeKind": "managed-package",
     "authenticationKind": "oauth",
-    "requestedScopes": [
-      "email",
-      "https://www.googleapis.com/auth/gmail.send",
-      "openid"
-    ],
+    "requestedScopes": ["email", "https://www.googleapis.com/auth/gmail.send", "openid"],
     "endpoint": null,
     "endpointRegistrationId": null,
     "providerRegistrationId": "google-gmail-send-rest-v1",
@@ -81,19 +73,12 @@
               "maxLength": 65536
             }
           },
-          "required": [
-            "from",
-            "to",
-            "subject",
-            "bodyText"
-          ],
+          "required": ["from", "to", "subject", "bodyText"],
           "additionalProperties": false
         }
       }
     ],
-    "allowedHosts": [
-      "gmail.googleapis.com"
-    ],
+    "allowedHosts": ["gmail.googleapis.com"],
     "config": []
   },
   "authorityDigest": "db78e1f8d5028a224dc968b8638c202f7ecf46de773cd42d646123527caf02b9",
