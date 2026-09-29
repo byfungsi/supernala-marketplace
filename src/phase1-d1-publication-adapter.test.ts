@@ -2033,6 +2033,91 @@ for (const remote of providerExpansionDeclarations) {
   });
 }
 
+it("reads back a published Resend CIMD release after its client materializes", async () => {
+  const resend = providerExpansionDeclarations.find((remote) => remote.pluginSlug === "resend");
+  if (resend === undefined) throw new Error("resend-cimd-test-declaration-missing");
+  const release = await providerExpansionCandidate(resend);
+  const database = await applicationDatabaseWithOpenApi();
+  try {
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.readPublicationState(release)).toEqual(Result.succeed("published"));
+
+    const registrationId = "resend-oauth-cimd-v1";
+    const definitionDigest =
+      release.authentication.kind === "oauth"
+        ? release.authentication.providerDefinitionDigest
+        : null;
+    if (definitionDigest === null) throw new Error("resend-cimd-test-definition-missing");
+    expect(
+      database
+        .prepare(
+          "SELECT registration_mode, source, oauth_provider_definition_digest, oauth_authority_revision FROM provider_registrations WHERE provider_registration_id = ?",
+        )
+        .get(registrationId),
+    ).toMatchObject({ registration_mode: "dynamic", source: "platform" });
+    database
+      .prepare(
+        `UPDATE provider_registrations
+       SET revision = 2, oauth_authority_revision = 1,
+           oauth_provider_definition_digest = ?, oauth_provider_definition_revision = 1,
+           client_credential_reference = 'local-cimd-reference', metadata_digest = ?,
+           authorization_endpoint = 'https://api.resend.com/oauth/authorize',
+           token_endpoint = 'https://api.resend.com/oauth/token'
+       WHERE provider_registration_id = ?`,
+      )
+      .run(definitionDigest, "a".repeat(64), registrationId);
+    database
+      .prepare(
+        `INSERT INTO plugin_oauth_registration_material_sources
+         (provider_registration_id, source_revision, oauth_authority_revision,
+          provider_definition_digest, provider_definition_revision, source_kind,
+          material_version, declaration_id, token_endpoint_auth_method,
+          deployment_revision, status, attestation_operation_id, attested_by,
+          attested_at, created_at, updated_at, material_origin)
+       VALUES (?, 1, 1, ?, 1, 'deployment-environment', 'local-cimd-v1',
+               'local-cimd-declaration', 'none', 'local-cimd-deployment', 'active',
+               'local-cimd-attestation', 'local-test-reviewer', 1, 1, 1,
+               'client-id-metadata-document')`,
+      )
+      .run(registrationId, definitionDigest);
+    expect(await adapter.readPublicationState(release)).toEqual(Result.succeed("published"));
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+
+    // Simulate corrupt persistence that the production migration normally prevents. The
+    // readback must still fail closed for each nonmatching material-source authority.
+    database.exec("PRAGMA foreign_keys = OFF");
+    for (const [column, value] of [
+      ["material_origin", "deployment-environment"],
+      ["oauth_authority_revision", 2],
+      ["provider_definition_digest", "f".repeat(64)],
+      ["status", "retired"],
+    ] as const) {
+      database.exec("SAVEPOINT corrupt_cimd_source");
+      try {
+        database.exec("DROP TRIGGER plugin_oauth_material_source_lifecycle");
+        database
+          .prepare(
+            `UPDATE plugin_oauth_registration_material_sources SET ${column} = ?
+           ${column === "status" ? ", retired_at = 2, retirement_reason = 'local-test-retirement'" : ""}
+           WHERE provider_registration_id = ? AND source_revision = 1`,
+          )
+          .run(value, registrationId);
+        expect(await adapter.readPublicationState(release)).toEqual(Result.succeed("mismatch"));
+      } finally {
+        database.exec("ROLLBACK TO corrupt_cimd_source");
+        database.exec("RELEASE corrupt_cimd_source");
+      }
+    }
+    database.exec("PRAGMA foreign_keys = ON");
+    expect(await adapter.readPublicationState(release)).toEqual(Result.succeed("published"));
+    expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+  } finally {
+    database.close();
+  }
+});
+
 const boundLinearPublication = async () => {
   const currentSource = JSON.parse(await readFile("plugins/remotes/linear.json", "utf8"));
   const previousDeclaration = validateManagedRemotePluginRelease(

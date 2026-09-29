@@ -23,8 +23,8 @@
     {
       "sourceDirectory": "plugins/resend-api",
       "kind": "managed-openapi",
-      "publicationEligible": true,
-      "reason": "independent exact source and authority review approved with verified active credential-free provider registration; live API and installation acceptance pending"
+      "publicationEligible": false,
+      "reason": "Owner paused API-key REST publication pending Resend OAuth MCP acceptance; reviewed API artifact and provider files are retained"
     },
     {
       "sourceDirectory": "plugins/offline-fixture",
@@ -72,7 +72,7 @@
       "sourceDirectory": "plugins/remotes/resend.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
-      "reason": "Owner-authorized documentation-derived source and narrow emails:send authority admission after CIMD deployment; live consent, hosted catalog equality, team identity, privacy review, and production acceptance remain pending"
+      "reason": "Owner-consented live send-email schema and independent source and authority review approved for narrow emails:send 1.0.3; prior invocation blocked before dispatch and new publication and acceptance remain pending"
     }
   ]
 }

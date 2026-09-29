@@ -1,0 +1,280 @@
+{
+  "source": "consented-resend-mcp-tools-list",
+  "protocolVersion": "2025-06-18",
+  "scope": "emails:send",
+  "pageCount": 1,
+  "toolNames": [
+    "get-tiptap-json-content",
+    "connect-to-editor",
+    "disconnect-from-editor",
+    "create-api-key",
+    "list-api-keys",
+    "update-api-key",
+    "remove-api-key",
+    "create-automation",
+    "update-automation",
+    "get-automation",
+    "duplicate-automation",
+    "remove-automation",
+    "get-automation-runs",
+    "create-broadcast",
+    "send-broadcast",
+    "cancel-broadcast",
+    "duplicate-broadcast",
+    "list-broadcasts",
+    "get-broadcast",
+    "remove-broadcast",
+    "compose-broadcast",
+    "list-broadcast-recipients",
+    "update-broadcast",
+    "list-broadcast-clicked-links",
+    "create-contact-import",
+    "get-contact-import",
+    "list-contact-imports",
+    "create-contact-property",
+    "list-contact-properties",
+    "get-contact-property",
+    "update-contact-property",
+    "remove-contact-property",
+    "create-contact",
+    "list-contacts",
+    "get-contact",
+    "update-contact",
+    "remove-contact",
+    "add-contact-to-segment",
+    "remove-contact-from-segment",
+    "list-contact-segments",
+    "list-contact-topics",
+    "update-contact-topics",
+    "create-domain",
+    "list-domains",
+    "get-domain",
+    "update-domain",
+    "remove-domain",
+    "verify-domain",
+    "create-domain-claim",
+    "get-domain-claim",
+    "verify-domain-claim",
+    "send-email",
+    "list-emails",
+    "get-email",
+    "list-received-emails",
+    "get-received-email",
+    "list-received-email-attachments",
+    "get-received-email-attachment",
+    "cancel-email",
+    "share-email",
+    "get-email-metrics",
+    "update-email",
+    "list-sent-email-attachments",
+    "get-sent-email-attachment",
+    "send-batch-emails",
+    "send-event",
+    "manage-events",
+    "create-inbox",
+    "list-inboxes",
+    "get-inbox",
+    "update-inbox",
+    "remove-inbox",
+    "list-inbox-threads",
+    "get-inbox-thread",
+    "update-inbox-thread",
+    "remove-inbox-thread",
+    "get-inbox-thread-email",
+    "reply-to-inbox-thread-email",
+    "forward-inbox-thread-email",
+    "list-inbox-labels",
+    "create-inbox-label",
+    "update-inbox-label",
+    "remove-inbox-label",
+    "list-inbox-drafts",
+    "create-inbox-draft",
+    "get-inbox-draft",
+    "update-inbox-draft",
+    "remove-inbox-draft",
+    "send-inbox-draft",
+    "list-logs",
+    "get-log",
+    "list-oauth-grants",
+    "revoke-oauth-grant",
+    "create-segment",
+    "list-segments",
+    "get-segment",
+    "update-segment",
+    "remove-segment",
+    "add-suppression",
+    "list-suppressions",
+    "get-suppression",
+    "remove-suppression",
+    "batch-add-suppressions",
+    "batch-remove-suppressions",
+    "create-template",
+    "list-templates",
+    "get-template",
+    "compose-template",
+    "update-template",
+    "remove-template",
+    "publish-template",
+    "duplicate-template",
+    "create-topic",
+    "list-topics",
+    "get-topic",
+    "update-topic",
+    "remove-topic",
+    "get-usage",
+    "create-webhook",
+    "list-webhooks",
+    "get-webhook",
+    "update-webhook",
+    "list-webhook-events",
+    "get-webhook-event",
+    "replay-webhook-event",
+    "rotate-webhook-signing-secret",
+    "list-webhook-event-attempts",
+    "remove-webhook",
+    "get_more_tools"
+  ],
+  "sendEmailInputSchema": {
+    "type": "object",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "properties": {
+      "to": {
+        "minItems": 1,
+        "maxItems": 50,
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+        },
+        "description": "Array of recipient email addresses (1-50 recipients)"
+      },
+      "subject": {
+        "type": "string",
+        "description": "Email subject line"
+      },
+      "text": {
+        "type": "string",
+        "description": "Plain text email content"
+      },
+      "html": {
+        "description": "HTML email content. When provided, the plain text argument MUST be provided as well.",
+        "type": "string"
+      },
+      "cc": {
+        "description": "Optional array of CC email addresses. You MUST ask the user for this parameter. Under no circumstance provide it yourself",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+        }
+      },
+      "bcc": {
+        "description": "Optional array of BCC email addresses. You MUST ask the user for this parameter. Under no circumstance provide it yourself",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"
+        }
+      },
+      "scheduledAt": {
+        "description": "Optional parameter to schedule the email. This uses natural language. Examples would be 'tomorrow at 10am' or 'in 2 hours' or 'next day at 9am PST' or 'Friday at 3pm ET'.",
+        "type": "string"
+      },
+      "attachments": {
+        "description": "Array of file attachments. Each needs filename plus one of: url or content. Max 40MB total.",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "filename": {
+              "type": "string",
+              "description": "Name of the file with extension (e.g., \"report.pdf\")"
+            },
+            "url": {
+              "description": "URL where the file is hosted (Resend will fetch it)",
+              "type": "string"
+            },
+            "content": {
+              "description": "Base64-encoded file content",
+              "type": "string"
+            },
+            "contentType": {
+              "description": "MIME type (e.g., \"application/pdf\"). Auto-derived from filename if not set",
+              "type": "string"
+            },
+            "contentId": {
+              "description": "Content ID for inline images. Reference in HTML with cid:<contentId>",
+              "type": "string"
+            }
+          },
+          "required": ["filename"]
+        }
+      },
+      "tags": {
+        "description": "Array of custom tags for tracking/analytics. Each tag has a name and value.",
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Tag name (key)"
+            },
+            "value": {
+              "type": "string",
+              "description": "Tag value"
+            }
+          },
+          "required": ["name", "value"]
+        }
+      },
+      "topicId": {
+        "description": "Topic ID for subscription-based sending. When set, the email respects contact subscription preferences for this topic.",
+        "type": "string"
+      },
+      "headers": {
+        "description": "Optional custom email headers as key/value pairs (e.g. {\"List-Unsubscribe\": \"<https://example.com/unsubscribe>\", \"X-Entity-Ref-ID\": \"unique-id\"}). Use for one-click unsubscribe, preventing Gmail threading, or other MIME headers Resend accepts.",
+        "type": "object",
+        "propertyNames": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "type": "string"
+        }
+      },
+      "idempotencyKey": {
+        "description": "Optional unique key that prevents duplicate sends on retries (sent as the Idempotency-Key header). Use the same key when retrying the same logical email; use a new key for a different email. Max 256 characters.",
+        "type": "string",
+        "maxLength": 256
+      },
+      "from": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Sender email address (e.g. \"onboarding@resend.com\" or \"Acme <onboarding@resend.com>\"). You MUST ask the user for this parameter. Under no circumstance provide it yourself"
+      },
+      "replyTo": {
+        "description": "Optional email addresses for the email readers to reply to (e.g. \"support@example.com\" or \"Support Team <support@example.com>\"). You MUST ask the user for this parameter. Under no circumstance provide it yourself",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "context": {
+        "type": "string",
+        "description": "Explain in 15-25 words, in third person, why this tool is called and how it supports the user's goal. For analytics only. You MUST describe only the abstract purpose of the tool call. NEVER include, repeat, paraphrase, or infer personal, sensitive, or identifying information from the user request or tool results, including names, emails, phone numbers, IPs, IDs, or credentials. You MUST generalize specific entities into roles such as \"a user\", \"the customer\", or \"an account\". Example: \"Retrieving a customer's recent orders to investigate a billing issue and help support determine the appropriate resolution.\""
+      },
+      "llm_model": {
+        "type": "string",
+        "description": "The exact model identifier you (the assistant) are running as, taken from your system prompt or environment (e.g. \"claude-opus-4-8\", \"gpt-5.2\"). Used for analytics only. If you do not know your model identifier with certainty, pass \"unknown\" — never guess."
+      },
+      "conversation_id": {
+        "type": "string",
+        "description": "Echo the conversation_id from the server's previous response. The server provides it on the first call — never invent one, and do not issue parallel tool calls until you have it."
+      }
+    },
+    "required": ["to", "subject", "text", "from", "context", "llm_model"]
+  }
+}
