@@ -1,111 +1,199 @@
 {
   "schemaVersion": 1,
-  "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:notion@1.0.3",
-  "marketplaceId": "supernala-public",
-  "publisherNamespace": "supernala",
-  "pluginSlug": "notion",
-  "version": "1.0.3",
-  "name": "Notion",
-  "description": "Curated Notion hosted MCP integration",
-  "license": "LicenseRef-Provider-Service",
-  "runtime": {
-    "_tag": "ManagedRemoteMcp",
-    "kind": "managed-remote-mcp",
-    "endpointRegistrationId": "notion-mcp-v1",
-    "providerRegistrationId": "notion-oauth-v1",
-    "transport": "streamable-http"
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "notion",
+    "semanticVersion": "1.0.3"
   },
-  "endpoint": "https://mcp.notion.com/mcp",
-  "oauthRegistrationMode": "dynamic",
-  "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
-  "authStrategy": {
-    "schemaVersion": 1,
-    "profile": "mcp-oauth",
-    "providerRegistrationId": "notion-oauth-v1",
+  "reviewId": "notion-1.0.3-live-read-authority-v1",
+  "reviewer": "OpenCode independent supervising source and authority review",
+  "reviewedAt": 1790658580271,
+  "sourceInputDigest": "8e36d2dc1592b62ad0d7c75999315180556881dfddb2fa24a8decad157d134e1",
+  "artifactDigest": null,
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "notion-oauth-v1",
     "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
     "requestedScopes": ["default"],
-    "clientRegistration": {
-      "kind": "dynamic",
-      "authorizationServerMetadataUrl": "https://mcp.notion.com/.well-known/oauth-authorization-server"
-    },
-    "resourceMetadataUrl": "https://mcp.notion.com/.well-known/oauth-protected-resource",
-    "identity": {
-      "kind": "mcp-tool",
-      "operation": {
-        "endpoint": "https://mcp.notion.com/mcp",
-        "toolName": "notion-fetch",
-        "input": {
-          "id": "self"
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "4f36569bbd3f22d44a5be0620ac80431c9d252d64c429944589878cb2dd06100",
+  "configDigest": "e6ebf9c4674f06e5a34f3a0619d9caa13b618515eeff5f54267e104bd6400221",
+  "provenanceDigest": "134ff7520583ec4c552fbf5a98ef295c4ea0ba3f15ba20dd88bbd0765bc31f0e",
+  "authorityBeforeIdentity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "notion",
+    "semanticVersion": "1.0.2"
+  },
+  "authorityBeforeReleaseDigest": "565ed21b82bba26d4d76ea8a6a703a797e430fad8a93873892122e61dbbc7c64",
+  "authorityBefore": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["default"],
+    "endpoint": "https://mcp.notion.com/mcp",
+    "endpointRegistrationId": "notion-mcp-v1",
+    "providerRegistrationId": "notion-oauth-v1",
+    "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "notion-oauth-v1",
+      "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
+      "requestedScopes": ["default"],
+      "clientRegistration": {
+        "kind": "dynamic",
+        "authorizationServerMetadataUrl": "https://mcp.notion.com/.well-known/oauth-authorization-server"
+      },
+      "resourceMetadataUrl": "https://mcp.notion.com/.well-known/oauth-protected-resource",
+      "identity": {
+        "kind": "mcp-tool",
+        "operation": {
+          "endpoint": "https://mcp.notion.com/mcp",
+          "toolName": "notion-fetch",
+          "input": {
+            "id": "self"
+          },
+          "maximumOutputBytes": 65536
         },
-        "maximumOutputBytes": 65536
+        "subjectPaths": [
+          ["self", "workspace", "id"],
+          ["self", "user", "id"]
+        ],
+        "displayLabelPath": ["self", "workspace", "name"],
+        "subjectStability": "stable",
+        "maximumResponseBytes": 65536,
+        "maximumJsonDepth": 8,
+        "maximumObjectKeys": 512
       },
-      "subjectPaths": [
-        ["self", "workspace", "id"],
-        ["self", "user", "id"]
-      ],
-      "displayLabelPath": ["self", "workspace", "name"],
-      "subjectStability": "stable",
-      "maximumResponseBytes": 65536,
-      "maximumJsonDepth": 8,
-      "maximumObjectKeys": 512
+      "resources": {
+        "kind": "none"
+      }
     },
-    "resources": {
-      "kind": "none"
-    }
+    "tools": [
+      {
+        "id": "notion.notion_fetch",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "additionalProperties": false,
+          "required": ["id"]
+        }
+      },
+      {
+        "id": "notion.notion_search",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "additionalProperties": false,
+          "required": ["query"]
+        }
+      },
+      {
+        "id": "notion.notion_create_pages",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "parent": {
+              "type": "object"
+            },
+            "pages": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 20
+            }
+          },
+          "additionalProperties": false,
+          "required": ["parent", "pages"]
+        }
+      },
+      {
+        "id": "notion.notion_update_page",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "additionalProperties": false,
+          "required": ["page_id"]
+        }
+      }
+    ],
+    "allowedHosts": ["mcp.notion.com"],
+    "config": []
   },
-  "oauthProviderDefinition": {
-    "schemaVersion": 1,
-    "protocol": "oauth2-authorization-code",
-    "issuer": "https://mcp.notion.com",
-    "provider": "notion-mcp",
-    "resourceIdentity": "https://mcp.notion.com",
-    "authorizationEndpoint": "https://mcp.notion.com/authorize",
-    "tokenEndpoint": "https://mcp.notion.com/token",
-    "tokenEndpointAuthMethod": "none",
-    "authorizationResponseIssuer": "not-supported",
-    "pkce": {
-      "method": "S256"
-    },
-    "authorizationParameters": [],
-    "scopes": ["default"],
-    "account": {
-      "kind": "declaration-managed"
-    },
-    "tokens": {
-      "accessTokenType": "bearer",
-      "expiresIn": {
-        "required": true,
-        "minimumSeconds": 1,
-        "maximumSeconds": 86400
+  "authorityBeforeDigest": "b340f5cd713cbebd75be29f6ec5b5666ad7ec4d978b7b55d4db8a9323721f2b7",
+  "authorityAfter": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["default"],
+    "endpoint": "https://mcp.notion.com/mcp",
+    "endpointRegistrationId": "notion-mcp-v1",
+    "providerRegistrationId": "notion-oauth-v1",
+    "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "notion-oauth-v1",
+      "providerDefinitionDigest": "a00c12ea025ff847af59d5a41e7b971121d2787927b44dfde209d76e81033e7b",
+      "requestedScopes": ["default"],
+      "clientRegistration": {
+        "kind": "dynamic",
+        "authorizationServerMetadataUrl": "https://mcp.notion.com/.well-known/oauth-authorization-server"
       },
-      "grantedScopes": {
-        "whenPresent": "exact-match",
-        "whenOmitted": "requested-scopes"
+      "resourceMetadataUrl": "https://mcp.notion.com/.well-known/oauth-protected-resource",
+      "identity": {
+        "kind": "mcp-tool",
+        "operation": {
+          "endpoint": "https://mcp.notion.com/mcp",
+          "toolName": "notion-fetch",
+          "input": {
+            "id": "self"
+          },
+          "maximumOutputBytes": 65536
+        },
+        "subjectPaths": [
+          ["self", "workspace", "id"],
+          ["self", "user", "id"]
+        ],
+        "displayLabelPath": ["self", "workspace", "name"],
+        "subjectStability": "stable",
+        "maximumResponseBytes": 65536,
+        "maximumJsonDepth": 8,
+        "maximumObjectKeys": 512
       },
-      "initialRefreshToken": "required",
-      "refreshResponseToken": "retain-current-if-omitted"
+      "resources": {
+        "kind": "none"
+      }
     },
-    "refresh": {
-      "kind": "standard-form-post",
-      "invalidGrant": "reauthorization-required",
-      "ambiguousOutcome": "fail-closed-no-replay"
-    },
-    "revocation": {
-      "kind": "none"
-    }
-  },
-  "scopes": ["default"],
-  "catalog": {
-    "id": "notion-live-tools-list-v1",
-    "schemaVersion": 1,
-    "digest": "4f36569bbd3f22d44a5be0620ac80431c9d252d64c429944589878cb2dd06100",
     "tools": [
       {
         "id": "notion.notion_get_tool_access",
-        "mcpName": "notion-get-tool-access",
-        "title": "Check Notion tool access",
-        "description": "Read connection tool availability and parameter restrictions before searching or using plan-dependent tools.",
         "classification": "read",
         "defaultPolicy": "allow",
         "inputSchema": {
@@ -124,14 +212,10 @@
             }
           },
           "additionalProperties": false
-        },
-        "maximumOutputBytes": 262144
+        }
       },
       {
         "id": "notion.notion_fetch",
-        "mcpName": "notion-fetch",
-        "title": "Fetch Notion content",
-        "description": "Fetch one reviewed Notion object or the special self identity record.",
         "classification": "read",
         "defaultPolicy": "allow",
         "inputSchema": {
@@ -153,14 +237,10 @@
           },
           "required": ["id"],
           "additionalProperties": {}
-        },
-        "maximumOutputBytes": 262144
+        }
       },
       {
         "id": "notion.notion_search",
-        "mcpName": "notion-search",
-        "title": "Search Notion",
-        "description": "Before searching, call notion-get-tool-access with {} and use its current_tool_access map to check search routing and restricted parameters. Search accessible Notion workspace content or users; plan-dependent filters may be dropped with notices.",
         "classification": "read",
         "defaultPolicy": "allow",
         "inputSchema": {
@@ -291,25 +371,14 @@
           },
           "required": ["query"],
           "additionalProperties": {}
-        },
-        "maximumOutputBytes": 262144
+        }
       }
-    ]
+    ],
+    "allowedHosts": ["mcp.notion.com"],
+    "config": []
   },
-  "config": {
-    "revision": 1,
-    "fields": []
-  },
-  "allowedHosts": ["mcp.notion.com"],
-  "protocolPolicy": {
-    "catalogCompatibility": "reviewed-subset",
-    "maximumCatalogPages": 10
-  },
-  "evidenceUrls": [
-    "https://developers.notion.com/guides/mcp/build-mcp-client",
-    "https://developers.notion.com/guides/mcp/mcp-supported-tools",
-    "https://mcp.notion.com/.well-known/oauth-protected-resource",
-    "https://mcp.notion.com/.well-known/oauth-authorization-server"
-  ],
-  "verificationNotes": "Owner-consented OAuth tools/list capture advertised 45 definitions; only three read-only tools are cataloged with exact observed input schemas. get-tool-access is the documented read-only prerequisite for search routing and plan restrictions. Read-only search and get-tool-access probes returned isError:false; search result shape and count are unknown. Fetch, end-to-end application invocation, and production acceptance remain unverified. The formerly cataloged create-pages and update-page tools are omitted: their captured schemas contain anyOf and propertyNames, unsupported by the pinned application argument validator; update-page now also requires command. No production publication or Store acceptance is claimed."
+  "authorityDigest": "a2c79d20e1794c52dbe3ec95b35fa0dabeea4dbfdcfb5a358034a41dfa9a78ad",
+  "authorityDiffDigest": "ea0b4b834ef66c2fe1897c50c74438f03b120d67691750b7d57ca13977dc5a41",
+  "releaseDigest": "fca751f4b0eaf7fa6bcddfaaa95d87d814e1ba7bc5ddea09bacf9da2bd20ae99",
+  "decision": "approved"
 }
