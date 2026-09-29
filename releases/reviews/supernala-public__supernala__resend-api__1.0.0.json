@@ -1,0 +1,3310 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "resend-api",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "resend-api-1.0.0-openapi-authority-v1",
+  "reviewer": "OpenCode independent supervising source and authority review",
+  "reviewedAt": 1790659805400,
+  "sourceInputDigest": "f6262225745c8cb0021d27ff9846108ba5b1f294a52ef0731950ba9b007b2137",
+  "artifactDigest": "5f3e69305048d0ee9cb17469b8bfabc72ae982402a13051caae96a0022ba567e",
+  "authentication": {
+    "kind": "none"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "resend-api-credentials-v1",
+    "fields": [
+      {
+        "key": "api_key",
+        "label": "Resend API key",
+        "secret": true,
+        "minimumLength": 1,
+        "maximumLength": 256
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "header",
+        "field": "api_key",
+        "headerName": "Authorization",
+        "encoding": "bearer"
+      }
+    ],
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Resend API key connection"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "catalogDigest": "e227d5235e1a689f4ca7488543f46ac92c86acd0e383435e1fb7c4ff01215704",
+  "configDigest": "23542ea5e9d621ef4adc58cf4740ef4bd4a36fc20a0786bd129cb487d782d6c3",
+  "provenanceDigest": "7d49769930e1bae8aa8713d8b66679f21875c40e071ef0f61da350ddac9fced0",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [],
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "b98d01227e1a4dcc71b9940e1212f70f379351fcc2cf27fae9ca06e8045c6b19",
+  "authorityAfter": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [
+      {
+        "toolId": "http.delete.api.keys.by.api.key.id",
+        "method": "DELETE",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/api-keys/{api_key_id}",
+        "parameters": [
+          {
+            "name": "api_key_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.delete.broadcasts.by.id",
+        "method": "DELETE",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/broadcasts/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.delete.contact.properties.by.id",
+        "method": "DELETE",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contact-properties/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.delete.contacts.by.contact.id.segments.by.segment.id",
+        "method": "DELETE",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contacts/{contact_id}/segments/{segment_id}",
+        "parameters": [
+          {
+            "name": "contact_id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "segment_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.delete.contacts.by.id",
+        "method": "DELETE",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contacts/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.delete.domains.by.domain.id",
+        "method": "DELETE",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/domains/{domain_id}",
+        "parameters": [
+          {
+            "name": "domain_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.delete.events.by.identifier",
+        "method": "DELETE",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/events/{identifier}",
+        "parameters": [
+          {
+            "name": "identifier",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.delete.segments.by.id",
+        "method": "DELETE",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/segments/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.delete.templates.by.id",
+        "method": "DELETE",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/templates/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.delete.topics.by.id",
+        "method": "DELETE",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/topics/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.api.keys",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/api-keys",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.automations",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/automations",
+        "parameters": [
+          {
+            "name": "status",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.broadcasts",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/broadcasts",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.broadcasts.by.id",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/broadcasts/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.contact.properties",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contact-properties",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.contact.properties.by.id",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contact-properties/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.contacts",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contacts",
+        "parameters": [
+          {
+            "name": "segment_id",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.contacts.by.contact.id.segments",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contacts/{contact_id}/segments",
+        "parameters": [
+          {
+            "name": "contact_id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.contacts.by.contact.id.topics",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contacts/{contact_id}/topics",
+        "parameters": [
+          {
+            "name": "contact_id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.contacts.by.id",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contacts/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.domains",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/domains",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.domains.by.domain.id",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/domains/{domain_id}",
+        "parameters": [
+          {
+            "name": "domain_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.emails",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/emails",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.emails.by.email.id",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/emails/{email_id}",
+        "parameters": [
+          {
+            "name": "email_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.events",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/events",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.events.by.identifier",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/events/{identifier}",
+        "parameters": [
+          {
+            "name": "identifier",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.logs",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/logs",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.segments",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/segments",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.segments.by.id",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/segments/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.templates",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/templates",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.templates.by.id",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/templates/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.topics",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/topics",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.get.topics.by.id",
+        "method": "GET",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/topics/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.patch.broadcasts.by.id",
+        "method": "PATCH",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/broadcasts/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.patch.contact.properties.by.id",
+        "method": "PATCH",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contact-properties/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.patch.contacts.by.contact.id.topics",
+        "method": "PATCH",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contacts/{contact_id}/topics",
+        "parameters": [
+          {
+            "name": "contact_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.patch.contacts.by.id",
+        "method": "PATCH",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contacts/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.patch.domains.by.domain.id",
+        "method": "PATCH",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/domains/{domain_id}",
+        "parameters": [
+          {
+            "name": "domain_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.patch.emails.by.email.id",
+        "method": "PATCH",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/emails/{email_id}",
+        "parameters": [
+          {
+            "name": "email_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.patch.events.by.identifier",
+        "method": "PATCH",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/events/{identifier}",
+        "parameters": [
+          {
+            "name": "identifier",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.patch.topics.by.id",
+        "method": "PATCH",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/topics/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.api.keys",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/api-keys",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.automations",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/automations",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.broadcasts",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/broadcasts",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.broadcasts.by.id.send",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/broadcasts/{id}/send",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.contact.properties",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contact-properties",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.contacts",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contacts",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.contacts.by.contact.id.segments.by.segment.id",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/contacts/{contact_id}/segments/{segment_id}",
+        "parameters": [
+          {
+            "name": "contact_id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "segment_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.domains",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/domains",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.domains.by.domain.id.verify",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/domains/{domain_id}/verify",
+        "parameters": [
+          {
+            "name": "domain_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.emails",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/emails",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "location": "header",
+            "required": false
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.emails.batch",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/emails/batch",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "location": "header",
+            "required": false
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.emails.by.email.id.cancel",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/emails/{email_id}/cancel",
+        "parameters": [
+          {
+            "name": "email_id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.events",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/events",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.segments",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/segments",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.templates.by.id.duplicate",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/templates/{id}/duplicate",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.templates.by.id.publish",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/templates/{id}/publish",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.topics",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/topics",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "http.post.webhooks",
+        "method": "POST",
+        "origin": "https://api.resend.com",
+        "pathTemplate": "/webhooks",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": false,
+        "authentication": "connection"
+      }
+    ],
+    "authenticationKind": "api-key",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "resend-api-credentials-v1",
+    "providerDefinitionDigest": null,
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "api-key",
+      "providerRegistrationId": "resend-api-credentials-v1",
+      "fields": [
+        {
+          "key": "api_key",
+          "label": "Resend API key",
+          "secret": true,
+          "minimumLength": 1,
+          "maximumLength": 256
+        }
+      ],
+      "delivery": [
+        {
+          "kind": "header",
+          "field": "api_key",
+          "headerName": "Authorization",
+          "encoding": "bearer"
+        }
+      ],
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Resend API key connection"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "http.delete.api.keys.by.api.key.id",
+        "classification": "destructive",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "api_key_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["api_key_id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.delete.broadcasts.by.id",
+        "classification": "destructive",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.delete.contact.properties.by.id",
+        "classification": "destructive",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.delete.contacts.by.contact.id.segments.by.segment.id",
+        "classification": "destructive",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "contact_id": {
+                  "type": "string"
+                },
+                "segment_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["contact_id", "segment_id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.delete.contacts.by.id",
+        "classification": "destructive",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.delete.domains.by.domain.id",
+        "classification": "destructive",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "domain_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["domain_id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.delete.events.by.identifier",
+        "classification": "destructive",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "identifier": {
+                  "type": "string"
+                }
+              },
+              "required": ["identifier"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.delete.segments.by.id",
+        "classification": "destructive",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.delete.templates.by.id",
+        "classification": "destructive",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.delete.topics.by.id",
+        "classification": "destructive",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.api.keys",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.automations",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["enabled", "disabled"]
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.broadcasts",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.broadcasts.by.id",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.contact.properties",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.contact.properties.by.id",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.contacts",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "segment_id": {
+                  "type": "string"
+                },
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.contacts.by.contact.id.segments",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "contact_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["contact_id"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.contacts.by.contact.id.topics",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "contact_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["contact_id"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.contacts.by.id",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.domains",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.domains.by.domain.id",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "domain_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["domain_id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.emails",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.emails.by.email.id",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "email_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["email_id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.events",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.events.by.identifier",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "identifier": {
+                  "type": "string"
+                }
+              },
+              "required": ["identifier"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.logs",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.segments",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.segments.by.id",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.templates",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.templates.by.id",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.topics",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "after": {
+                  "type": "string"
+                },
+                "before": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.get.topics.by.id",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.patch.broadcasts.by.id",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the broadcast."
+                },
+                "audience_id": {
+                  "type": "string",
+                  "description": "Use `segment_id` instead. Unique identifier of the audience this broadcast will be sent to."
+                },
+                "segment_id": {
+                  "type": "string",
+                  "description": "Unique identifier of the segment this broadcast will be sent to."
+                },
+                "from": {
+                  "type": "string",
+                  "description": "The email address of the sender."
+                },
+                "subject": {
+                  "type": "string",
+                  "description": "The subject line of the email."
+                },
+                "reply_to": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "The email addresses to which replies should be sent."
+                },
+                "preview_text": {
+                  "type": "string",
+                  "description": "The preview text of the email."
+                },
+                "html": {
+                  "type": "string",
+                  "description": "The HTML version of the message."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "The plain text version of the message."
+                },
+                "topic_id": {
+                  "type": "string",
+                  "description": "The topic ID that the broadcast will be scoped to."
+                }
+              }
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.patch.contact.properties.by.id",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "fallback_value": {
+                  "type": ["string", "number"],
+                  "description": "The default value to use when the property is not set for a contact. Must match the type of the property."
+                }
+              }
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.patch.contacts.by.contact.id.topics",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "contact_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["contact_id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "required": ["topics"],
+              "properties": {
+                "topics": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "The ID of the topic."
+                      },
+                      "subscription": {
+                        "type": "string",
+                        "enum": ["opt_in", "opt_out"],
+                        "description": "The subscription status (opt_in or opt_out)."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.patch.contacts.by.id",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "Email address of the contact."
+                },
+                "first_name": {
+                  "type": "string",
+                  "description": "First name of the contact."
+                },
+                "last_name": {
+                  "type": "string",
+                  "description": "Last name of the contact."
+                },
+                "unsubscribed": {
+                  "type": "boolean",
+                  "description": "The Contact's global subscription status. If set to true, the contact will be unsubscribed from all Broadcasts."
+                },
+                "properties": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "A map of custom property keys and values to update."
+                }
+              }
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.patch.domains.by.domain.id",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "domain_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["domain_id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "open_tracking": {
+                  "type": "boolean",
+                  "description": "Track the open rate of each email."
+                },
+                "click_tracking": {
+                  "type": "boolean",
+                  "description": "Track clicks within the body of each HTML email."
+                },
+                "tls": {
+                  "type": "string",
+                  "description": "enforced | opportunistic."
+                },
+                "capabilities": {
+                  "type": "object",
+                  "description": "Configure the domain capabilities for sending and receiving emails. At least one capability must be enabled.",
+                  "properties": {
+                    "sending": {
+                      "type": "string",
+                      "enum": ["enabled", "disabled"],
+                      "description": "Enable or disable sending emails from this domain."
+                    },
+                    "receiving": {
+                      "type": "string",
+                      "enum": ["enabled", "disabled"],
+                      "description": "Enable or disable receiving emails to this domain."
+                    }
+                  }
+                },
+                "tracking_subdomain": {
+                  "type": "string",
+                  "description": "The subdomain to use for click and open tracking."
+                }
+              }
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.patch.emails.by.email.id",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "email_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["email_id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.patch.events.by.identifier",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "identifier": {
+                  "type": "string"
+                }
+              },
+              "required": ["identifier"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "required": ["schema"],
+              "properties": {
+                "schema": {
+                  "type": ["object", "null"],
+                  "description": "A flat key/type map defining the event payload schema. Set to `null` to clear the schema. Supported types are `string`, `number`, `boolean`, and `date`."
+                }
+              }
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.patch.topics.by.id",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name of the topic. Max 50 characters.",
+                  "maxLength": 50
+                },
+                "description": {
+                  "type": "string",
+                  "description": "A description of the topic. Max 200 characters.",
+                  "maxLength": 200
+                },
+                "visibility": {
+                  "type": "string",
+                  "enum": ["public", "private"],
+                  "description": "The visibility of the topic."
+                }
+              }
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.api.keys",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The API key name."
+                },
+                "permission": {
+                  "type": "string",
+                  "enum": ["full_access", "sending_access"],
+                  "description": "The API key can have full access to Resend’s API or be only restricted to send emails. * full_access - Can create, delete, get, and update any resource. * sending_access - Can only send emails."
+                },
+                "domain_id": {
+                  "type": "string",
+                  "description": "Restrict an API key to send emails only from a specific domain. Only used when the permission is sending_access."
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.automations",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "required": ["name", "steps", "connections"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "The name of the automation."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["enabled", "disabled"],
+                  "description": "The initial status of the automation. Defaults to `disabled`."
+                },
+                "steps": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 150,
+                  "description": "The steps that compose the automation workflow. Must include at least one `trigger` step.",
+                  "items": {
+                    "type": "object",
+                    "description": "A step in an automation workflow. The `config` object varies based on the step `type`.",
+                    "required": ["key", "type", "config"],
+                    "properties": {
+                      "key": {
+                        "type": "string",
+                        "description": "A unique key for this step within the automation graph."
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "trigger",
+                          "send_email",
+                          "delay",
+                          "wait_for_event",
+                          "condition",
+                          "contact_update",
+                          "contact_delete",
+                          "add_to_segment"
+                        ],
+                        "description": "The type of automation step."
+                      },
+                      "config": {
+                        "type": "object",
+                        "description": "Configuration for the step. Shape depends on `type`: - **trigger**: `{ event_name: string }` - **send_email**: `{ template: { id: string, variables?: object }, subject?: string, from?: string, reply_to?: string }` - **delay**: `{ duration: string }` — a human-readable duration (e.g. `\"30 minutes\"`) - **wait_for_event**: `{ event_name: string, timeout?: string, filter_rule?: object }` — `timeout` is a human-readable duration (e.g. `\"1 hour\"`) - **condition**: A rule tree with `type` (`rule`, `and`, `or`), `field`, `operator`, and `value` - **contact_update**: `{ first_name?: string|object, last_name?: string|object, unsubscribed?: boolean|object, properties?: object }` - **contact_delete**: `{}` - **add_to_segment**: `{ segment_id: string }`\n"
+                      }
+                    }
+                  }
+                },
+                "connections": {
+                  "type": "array",
+                  "description": "The connections between steps in the automation graph.",
+                  "items": {
+                    "type": "object",
+                    "description": "A connection between two steps in the automation graph.",
+                    "required": ["from", "to"],
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "description": "The `key` of the source step."
+                      },
+                      "to": {
+                        "type": "string",
+                        "description": "The `key` of the target step."
+                      },
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "default",
+                          "condition_met",
+                          "condition_not_met",
+                          "timeout",
+                          "event_received"
+                        ],
+                        "description": "The type of connection. Defaults to `default`."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.broadcasts",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "required": ["from", "subject", "segment_id"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the broadcast."
+                },
+                "segment_id": {
+                  "type": "string",
+                  "description": "Unique identifier of the segment this broadcast will be sent to."
+                },
+                "audience_id": {
+                  "type": "string",
+                  "description": "Use `segment_id` instead. Unique identifier of the segment this broadcast will be sent to."
+                },
+                "from": {
+                  "type": "string",
+                  "description": "The email address of the sender."
+                },
+                "subject": {
+                  "type": "string",
+                  "description": "The subject line of the email."
+                },
+                "reply_to": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "The email addresses to which replies should be sent."
+                },
+                "preview_text": {
+                  "type": "string",
+                  "description": "The preview text of the email."
+                },
+                "html": {
+                  "type": "string",
+                  "description": "The HTML version of the message."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "The plain text version of the message."
+                },
+                "topic_id": {
+                  "type": "string",
+                  "description": "The topic ID that the broadcast will be scoped to."
+                },
+                "send": {
+                  "type": "boolean",
+                  "description": "Whether to send the broadcast immediately or keep it as a draft.\n"
+                },
+                "scheduled_at": {
+                  "type": "string",
+                  "description": "Schedule time to send the broadcast. Can only be used if `send` is true.\n"
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.broadcasts.by.id.send",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "scheduled_at": {
+                  "type": "string",
+                  "description": "Schedule email to be sent later. The date should be in ISO 8601 format."
+                }
+              }
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.contact.properties",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "required": ["key", "type"],
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "description": "The property key. Max length is 50 characters. Only alphanumeric characters and underscores are allowed."
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["string", "number"],
+                  "description": "The property type."
+                },
+                "fallback_value": {
+                  "type": ["string", "number"],
+                  "description": "The default value to use when the property is not set for a contact. Must match the type specified in the type field."
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.contacts",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "required": ["email"],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "description": "Email address of the contact."
+                },
+                "first_name": {
+                  "type": "string",
+                  "description": "First name of the contact."
+                },
+                "last_name": {
+                  "type": "string",
+                  "description": "Last name of the contact."
+                },
+                "unsubscribed": {
+                  "type": "boolean",
+                  "description": "The Contact's global subscription status. If set to true, the contact will be unsubscribed from all Broadcasts."
+                },
+                "properties": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "A map of custom property keys and values to create."
+                },
+                "segments": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Array of segment IDs to add the contact to."
+                },
+                "topics": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "The topic ID."
+                      },
+                      "subscription": {
+                        "type": "string",
+                        "enum": ["opt_in", "opt_out"],
+                        "description": "The subscription status for this topic."
+                      }
+                    }
+                  },
+                  "description": "Array of topic subscriptions for the contact."
+                },
+                "audience_id": {
+                  "type": "string",
+                  "description": "Unique identifier of the audience to which the contact belongs."
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.contacts.by.contact.id.segments.by.segment.id",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "contact_id": {
+                  "type": "string"
+                },
+                "segment_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["contact_id", "segment_id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.domains",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name of the domain you want to create."
+                },
+                "region": {
+                  "type": "string",
+                  "enum": ["us-east-1", "eu-west-1", "sa-east-1", "ap-northeast-1"],
+                  "description": "The region where emails will be sent from. Possible values are us-east-1 | eu-west-1 | sa-east-1 | ap-northeast-1"
+                },
+                "custom_return_path": {
+                  "type": "string",
+                  "description": "For advanced use cases, choose a subdomain for the Return-Path address. Defaults to 'send' (i.e., send.yourdomain.tld)."
+                },
+                "open_tracking": {
+                  "type": "boolean",
+                  "description": "Track the open rate of each email."
+                },
+                "click_tracking": {
+                  "type": "boolean",
+                  "description": "Track clicks within the body of each HTML email."
+                },
+                "tls": {
+                  "type": "string",
+                  "enum": ["opportunistic", "enforced"],
+                  "description": "TLS mode. Opportunistic attempts secure connection but falls back to unencrypted. Enforced requires TLS or email won't be sent."
+                },
+                "capabilities": {
+                  "type": "object",
+                  "description": "Configure the domain capabilities for sending and receiving emails. At least one capability must be enabled.",
+                  "properties": {
+                    "sending": {
+                      "type": "string",
+                      "enum": ["enabled", "disabled"],
+                      "description": "Enable or disable sending emails from this domain."
+                    },
+                    "receiving": {
+                      "type": "string",
+                      "enum": ["enabled", "disabled"],
+                      "description": "Enable or disable receiving emails to this domain."
+                    }
+                  }
+                },
+                "tracking_subdomain": {
+                  "type": "string",
+                  "description": "The subdomain to use for click and open tracking."
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.domains.by.domain.id.verify",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "domain_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["domain_id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.emails",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "headers": {
+              "type": "object",
+              "properties": {
+                "Idempotency-Key": {
+                  "type": "string",
+                  "maxLength": 256
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "required": ["from", "to", "subject"],
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "description": "Sender email address. To include a friendly name, use the format \"Your Name <sender@domain.com>\"."
+                },
+                "to": {
+                  "type": ["string", "array"],
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 50,
+                  "description": "Recipient email address. For multiple addresses, send as an array of strings. Max 50."
+                },
+                "subject": {
+                  "type": "string",
+                  "description": "Email subject."
+                },
+                "bcc": {
+                  "type": ["string", "array"],
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Bcc recipient email address. For multiple addresses, send as an array of strings."
+                },
+                "cc": {
+                  "type": ["string", "array"],
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Cc recipient email address. For multiple addresses, send as an array of strings."
+                },
+                "reply_to": {
+                  "type": ["string", "array"],
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Reply-to email address. For multiple addresses, send as an array of strings."
+                },
+                "html": {
+                  "type": "string",
+                  "description": "The HTML version of the message."
+                },
+                "text": {
+                  "type": "string",
+                  "description": "The plain text version of the message."
+                },
+                "template": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "The id of the published email template."
+                    },
+                    "variables": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": ["string", "number"]
+                      },
+                      "description": "Template variables object with key/value pairs."
+                    }
+                  },
+                  "required": ["id"],
+                  "description": "Use a published template to send the email. If provided, do not include html or text."
+                },
+                "headers": {
+                  "type": "object",
+                  "description": "Custom headers to add to the email."
+                },
+                "scheduled_at": {
+                  "type": "string",
+                  "description": "Schedule email to be sent later. The date should be in ISO 8601 format."
+                },
+                "attachments": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "content": {
+                        "type": "string",
+                        "description": "Content of an attached file. Attachment content is passed as a JSON string without binary conversion."
+                      },
+                      "filename": {
+                        "type": "string",
+                        "description": "Name of attached file."
+                      },
+                      "path": {
+                        "type": "string",
+                        "description": "Path where the attachment file is hosted"
+                      },
+                      "content_type": {
+                        "type": "string",
+                        "description": "Optional content type for the attachment, if not set it will be derived from the filename property"
+                      },
+                      "content_id": {
+                        "type": "string",
+                        "description": "Content ID for embedding inline images using cid references (e.g., cid:image001)."
+                      }
+                    }
+                  }
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string",
+                        "description": "The name of the email tag. It can only contain ASCII letters (a–z, A–Z), numbers (0–9), underscores (_), or dashes (-). It can contain no more than 256 characters."
+                      },
+                      "value": {
+                        "type": "string",
+                        "description": "The value of the email tag.It can only contain ASCII letters (a–z, A–Z), numbers (0–9), underscores (_), or dashes (-). It can contain no more than 256 characters."
+                      }
+                    }
+                  }
+                },
+                "topic_id": {
+                  "type": "string",
+                  "description": "The topic ID to scope the email to. If the recipient is a contact and opted-in to the topic, the email is sent. If opted-out, the email is not sent. If the recipient is not a contact, the email is sent if the topic's default subscription is opt_in."
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.emails.batch",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "headers": {
+              "type": "object",
+              "properties": {
+                "Idempotency-Key": {
+                  "type": "string",
+                  "maxLength": 256
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["from", "to", "subject"],
+                "properties": {
+                  "from": {
+                    "type": "string",
+                    "description": "Sender email address. To include a friendly name, use the format \"Your Name <sender@domain.com>\"."
+                  },
+                  "to": {
+                    "type": ["string", "array"],
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "description": "Recipient email address. For multiple addresses, send as an array of strings. Max 50."
+                  },
+                  "subject": {
+                    "type": "string",
+                    "description": "Email subject."
+                  },
+                  "bcc": {
+                    "type": ["string", "array"],
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Bcc recipient email address. For multiple addresses, send as an array of strings."
+                  },
+                  "cc": {
+                    "type": ["string", "array"],
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Cc recipient email address. For multiple addresses, send as an array of strings."
+                  },
+                  "reply_to": {
+                    "type": ["string", "array"],
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Reply-to email address. For multiple addresses, send as an array of strings."
+                  },
+                  "html": {
+                    "type": "string",
+                    "description": "The HTML version of the message."
+                  },
+                  "text": {
+                    "type": "string",
+                    "description": "The plain text version of the message."
+                  },
+                  "template": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "The id of the published email template."
+                      },
+                      "variables": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "type": ["string", "number"]
+                        },
+                        "description": "Template variables object with key/value pairs."
+                      }
+                    },
+                    "required": ["id"],
+                    "description": "Use a published template to send the email. If provided, do not include html or text."
+                  },
+                  "headers": {
+                    "type": "object",
+                    "description": "Custom headers to add to the email."
+                  },
+                  "scheduled_at": {
+                    "type": "string",
+                    "description": "Schedule email to be sent later. The date should be in ISO 8601 format."
+                  },
+                  "attachments": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "description": "Content of an attached file. Attachment content is passed as a JSON string without binary conversion."
+                        },
+                        "filename": {
+                          "type": "string",
+                          "description": "Name of attached file."
+                        },
+                        "path": {
+                          "type": "string",
+                          "description": "Path where the attachment file is hosted"
+                        },
+                        "content_type": {
+                          "type": "string",
+                          "description": "Optional content type for the attachment, if not set it will be derived from the filename property"
+                        },
+                        "content_id": {
+                          "type": "string",
+                          "description": "Content ID for embedding inline images using cid references (e.g., cid:image001)."
+                        }
+                      }
+                    }
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "description": "The name of the email tag. It can only contain ASCII letters (a–z, A–Z), numbers (0–9), underscores (_), or dashes (-). It can contain no more than 256 characters."
+                        },
+                        "value": {
+                          "type": "string",
+                          "description": "The value of the email tag.It can only contain ASCII letters (a–z, A–Z), numbers (0–9), underscores (_), or dashes (-). It can contain no more than 256 characters."
+                        }
+                      }
+                    }
+                  },
+                  "topic_id": {
+                    "type": "string",
+                    "description": "The topic ID to scope the email to. If the recipient is a contact and opted-in to the topic, the email is sent. If opted-out, the email is not sent. If the recipient is not a contact, the email is sent if the topic's default subscription is opt_in."
+                  }
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.emails.by.email.id.cancel",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "email_id": {
+                  "type": "string"
+                }
+              },
+              "required": ["email_id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.events",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name of the event. Cannot start with the reserved `resend:` prefix."
+                },
+                "schema": {
+                  "type": ["object", "null"],
+                  "description": "An optional flat key/type map defining the event payload schema. Supported types are `string`, `number`, `boolean`, and `date`."
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.segments",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name of the segment."
+                },
+                "audience_id": {
+                  "type": "string",
+                  "description": "The ID of the audience this segment belongs to."
+                },
+                "filter": {
+                  "type": "object",
+                  "description": "Filter conditions for the segment."
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.templates.by.id.duplicate",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.templates.by.id.publish",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.topics",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "required": ["name", "default_subscription"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "The name of the topic. Max 50 characters.",
+                  "maxLength": 50
+                },
+                "default_subscription": {
+                  "type": "string",
+                  "enum": ["opt_in", "opt_out"],
+                  "description": "The default subscription status for the topic. Cannot be changed after creation."
+                },
+                "description": {
+                  "type": "string",
+                  "description": "A description of the topic. Max 200 characters.",
+                  "maxLength": 200
+                },
+                "visibility": {
+                  "type": "string",
+                  "enum": ["public", "private"],
+                  "description": "The visibility of the topic. Public topics are visible to all contacts on the unsubscribe page. Private topics are only visible to opted-in contacts."
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "http.post.webhooks",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "required": ["endpoint", "events"],
+              "properties": {
+                "endpoint": {
+                  "type": "string",
+                  "description": "The URL where webhook events will be sent."
+                },
+                "events": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "description": "Array of event types to subscribe to."
+                }
+              }
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["api.resend.com"],
+    "config": []
+  },
+  "authorityDigest": "63a32052cac47d433028ab880071ea86552e2f889f2253082d45c84f5202c1c4",
+  "authorityDiffDigest": "d2b136e079ec24b0ff876f76de0672d396ce8ad9b7cc9575ffc6e27007b147cc",
+  "releaseDigest": "deefc8b8bd216678d97a8279e19289b593d97e024c6c0e0924f52f7df3eca99b",
+  "decision": "approved"
+}

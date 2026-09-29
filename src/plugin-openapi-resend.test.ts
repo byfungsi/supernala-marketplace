@@ -12,11 +12,20 @@ describe("Resend hosted OpenAPI source", () => {
     expect(Result.isSuccess(loaded)).toBe(true);
     if (Result.isFailure(loaded)) return;
     const { source, sourceText, compiled } = loaded.success;
-    expect(source.status).toBe("staged-unverified");
+    expect(source.status).toBe("reviewed-publishable");
     expect(source.operations.length).toBe(59);
     expect(source.operations.every((operation) => operation.defaultPolicy === "allow")).toBe(true);
     expect(compiled.contract.sourceText).toBe(sourceText);
     expect(compiled.contract.authStrategy.profile).toBe("api-key");
+    expect(
+      compiled.contract.bindings
+        .map((binding) => `${binding.method} ${binding.pathTemplate}`)
+        .toSorted(),
+    ).toEqual(
+      source.operations
+        .map((operation) => operation.operationId.replace(/^http:/u, "").replace(":/", " /"))
+        .toSorted(),
+    );
     const send = compiled.contract.catalog.tools.find((tool) => tool.id === "http.post.emails");
     const properties = send?.inputSchema.properties;
     const body = Schema.is(Schema.JsonObject)(properties) ? properties.body : undefined;
@@ -38,7 +47,15 @@ describe("Resend hosted OpenAPI source", () => {
         },
         attachments: {
           type: "array",
-          items: { properties: { content: { type: "string" }, path: { type: "string" } } },
+          items: {
+            properties: {
+              content: {
+                type: "string",
+                description: expect.stringContaining("without binary conversion"),
+              },
+              path: { type: "string" },
+            },
+          },
         },
         tags: { type: "array" },
       },

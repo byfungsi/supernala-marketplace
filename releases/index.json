@@ -23,8 +23,8 @@
     {
       "sourceDirectory": "plugins/resend-api",
       "kind": "managed-openapi",
-      "publicationEligible": false,
-      "reason": "staged real Resend API source; provider registration, independent review and live acceptance pending"
+      "publicationEligible": true,
+      "reason": "independent exact source and authority review approved with verified active credential-free provider registration; live API and installation acceptance pending"
     },
     {
       "sourceDirectory": "plugins/offline-fixture",

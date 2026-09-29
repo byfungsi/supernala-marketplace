@@ -485,7 +485,7 @@
       "maximumOutputBytes": 262144
     }
   ],
-  "status": "staged-unverified",
+  "status": "reviewed-publishable",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "resend-api",
