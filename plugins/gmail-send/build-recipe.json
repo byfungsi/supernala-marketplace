@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "source": "plugins/gmail-send/source/server.mjs",
+  "output": "plugins/gmail-send/dist/server.mjs",
+  "manifest": "plugins/gmail-send/package-manifest.json",
+  "runtime": "node-22.x",
+  "runtimeDependencies": [],
+  "networkDuringBuild": false,
+  "lifecycleScripts": false,
+  "deterministicCopy": true,
+  "license": "MIT",
+  "licenseFile": "plugins/gmail-send/LICENSE",
+  "noticeFile": "plugins/gmail-send/NOTICE",
+  "preservedThirdPartyNotices": [],
+  "packageFiles": [
+    {
+      "source": "plugins/gmail-send/package-manifest.json",
+      "destination": "plugin.json",
+      "sha256": "5a3aca93591f7879cb4ec9591c5d24a24379defc81b0c6bcfe8b7f8c2beee864"
+    },
+    {
+      "source": "plugins/gmail-send/catalog.json",
+      "destination": "catalog.json",
+      "sha256": "e217befb993f97958d1b0ae6fbc2034d3d0ad3787793ac700a7c057f8860358d"
+    },
+    {
+      "source": "plugins/gmail-send/config.json",
+      "destination": "config.json",
+      "sha256": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334"
+    },
+    {
+      "source": "plugins/gmail-send/provenance.json",
+      "destination": "provenance.json",
+      "sha256": "7c5eca663fba86fe4288255ffabbe6a2df0788ffdf89f10348360f4e42626efd"
+    },
+    {
+      "source": "plugins/gmail-send/source/server.mjs",
+      "destination": "dist/server.mjs",
+      "sha256": "8b8aabb417888ad86eb399aea896204d50149e7b64175906f80e7a201706b63b"
+    },
+    {
+      "source": "plugins/gmail-send/LICENSE",
+      "destination": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    {
+      "source": "plugins/gmail-send/NOTICE",
+      "destination": "NOTICE",
+      "sha256": "bf21a2ce4c597b4a02693c3461e005328c956c5aa7a78e3ff00c831964d98f09"
+    }
+  ]
+}

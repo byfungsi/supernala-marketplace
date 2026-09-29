@@ -1,0 +1,42 @@
+{
+  "id": "gmail-send-catalog-v1",
+  "schemaVersion": 1,
+  "tools": [
+    {
+      "id": "gmail.send_message",
+      "mcpName": "send_message",
+      "title": "Send message",
+      "description": "Send one plain-text email from the connected Gmail account; failed dispatch may be ambiguous",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "from": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 254
+          },
+          "to": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 254
+          },
+          "subject": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 998
+          },
+          "bodyText": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 65536
+          }
+        },
+        "required": ["from", "to", "subject", "bodyText"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 16384
+    }
+  ]
+}

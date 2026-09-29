@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "status": "owner-authorized-publication-ready",
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-gmail-send-rest-v1",
+    "providerDefinitionDigest": "06d492580bf6f92ed1ce57f5866419ac846ef96ddfb30a2faae54f785146892e",
+    "requestedScopes": ["email", "https://www.googleapis.com/auth/gmail.send", "openid"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "network": {
+    "allowedHosts": ["gmail.googleapis.com"]
+  },
+  "license": "MIT",
+  "blockingReason": "Owner-authorized release candidate after production App d4e145e reported healthy; formal digest-bound review and trusted publication have not occurred, and live Gmail consent and send acceptance remain pending"
+}

@@ -1,0 +1,19 @@
+{
+  "providerRegistration": "google-gmail-send-rest-v1",
+  "providerDefinition": {
+    "path": "oauth-provider.json",
+    "canonicalSha256": "06d492580bf6f92ed1ce57f5866419ac846ef96ddfb30a2faae54f785146892e"
+  },
+  "providerMetadata": {
+    "provider": "google",
+    "resourceIdentity": "gmail.googleapis.com",
+    "registrationMode": "workspace-oauth-app",
+    "source": "platform",
+    "approvedScopes": ["email", "https://www.googleapis.com/auth/gmail.send", "openid"]
+  },
+  "workspaceOAuthApp": {
+    "ownership": "workspace-owner",
+    "credentialFields": ["clientId", "clientSecret"],
+    "storage": "encrypted-plugin-vault"
+  }
+}
