@@ -1,6 +1,6 @@
-# Notion live catalog staging
+# Notion read-only catalog publication candidate
 
-`plugins/remotes/notion.json` stages version `1.0.3` from an owner-consented OAuth
+`plugins/remotes/notion.json` prepares version `1.0.3` from an owner-consented OAuth
 `tools/list` capture. The capture advertised 45 tools; this release selects
 `notion-search`, `notion-fetch`, and the read-only `notion-get-tool-access` tool.
 Only their input schemas are copied exactly. The full capture remains outside this
@@ -15,7 +15,7 @@ have default policy `allow`, subject to the application's independent grants and
 runtime restrictions. Notion documents `notion-get-tool-access` as the read-only
 prerequisite for search routing and plan-dependent parameters.
 
-This source is **staged-unverified**. The formerly cataloged
+This source is **reviewed-publishable** for the three selected read-only tools. The formerly cataloged
 `notion-create-pages` and `notion-update-page` are omitted. Their captured schemas
 include `anyOf` and `propertyNames`, which the pinned application tool argument
 validator does not support, and update-page now requires `command`. Publishing
@@ -23,12 +23,13 @@ these write tools would make some valid arguments fail. An application-side sche
 contract change and joint review are required before adding them; do not replace
 the captured schemas with lossy approximations. The live read schemas use
 `additionalProperties: {}` at the root, permitting extra keys in the application's
-validator; this exact provider constraint needs explicit authority review. The
-read-only search and get-tool-access probes returned `isError: false`; the search
-response had one content block, but its shape and result count were not established.
-There is no reviewed `1.0.3` release record or approval, and no claim of live
-publication, Store visibility, installation, or application invocation.
-`releases/index.json` therefore marks this version ineligible. The credential-free
+validator; this exact provider constraint is included in the approved authority review.
+The read-only search and get-tool-access probes returned `isError: false`; search
+result shape and count remain unknown. Fetch and end-to-end application invocation
+have not been accepted. The independent `1.0.3` source and authority review is
+approved; production acceptance remains pending. There is no claim of live
+publication, Store visibility, or installation. `releases/index.json` marks this version eligible for the
+review-gated release workflow. The credential-free
 `fixtures/remotes/notion-1.0.2.json` is the exact `ac61760` baseline declaration,
 retained only for historical publication-adapter regression coverage; it does not
 represent the current source or approve `1.0.3`.

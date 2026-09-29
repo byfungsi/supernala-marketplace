@@ -4,7 +4,7 @@ import { Result } from "effect";
 import { canonicalPluginJson, digestPluginBytes } from "./plugin-contract.js";
 import { validateManagedRemotePluginRelease } from "./remote-release.js";
 
-it("stages the captured Notion catalog with search, access metadata, and exact digest", async () => {
+it("prepares the captured Notion read catalog with search, access metadata, and exact digest", async () => {
   const source = JSON.parse(await readFile("plugins/remotes/notion.json", "utf8"));
   const parsed = validateManagedRemotePluginRelease(source, "authoring");
   expect(Result.isSuccess(parsed)).toBe(true);
@@ -18,10 +18,10 @@ it("stages the captured Notion catalog with search, access metadata, and exact d
   );
   expect(indexEntry).toMatchObject({
     publicationEligible: release.status === "reviewed-publishable",
-    reason: expect.stringContaining("staged-unverified"),
+    reason: expect.stringContaining("independent source and authority review approved"),
   });
   expect(release.id).toBe("supernala-public:supernala:notion@1.0.3");
-  expect(release.status).toBe("staged-unverified");
+  expect(release.status).toBe("reviewed-publishable");
   expect(release.catalog.tools.map((tool) => tool.mcpName)).toEqual([
     "notion-get-tool-access",
     "notion-fetch",
@@ -53,7 +53,5 @@ it("stages the captured Notion catalog with search, access metadata, and exact d
       ),
     ),
   );
-  expect(validateManagedRemotePluginRelease(source, "publication")).toEqual(
-    Result.fail("remote-release-not-reviewed"),
-  );
+  expect(Result.isSuccess(validateManagedRemotePluginRelease(source, "publication"))).toBe(true);
 });

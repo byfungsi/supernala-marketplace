@@ -59,8 +59,8 @@
     {
       "sourceDirectory": "plugins/remotes/notion.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": false,
-      "reason": "Live-capture read-only 1.0.3 source is staged-unverified pending independent authority review and end-to-end application acceptance"
+      "publicationEligible": true,
+      "reason": "Owner-authorized read-only 1.0.3 source from consented tools/list capture with independent source and authority review approved; production acceptance remains pending"
     },
     {
       "sourceDirectory": "plugins/remotes/resend.json",

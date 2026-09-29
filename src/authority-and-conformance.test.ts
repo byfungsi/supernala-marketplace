@@ -157,7 +157,7 @@ describe("authority and protocol gates", () => {
   it("enforces each remote candidate's reviewed publication status and exact endpoint host", async () => {
     for (const [name, publicationEligible] of [
       ["linear", true],
-      ["notion", false],
+      ["notion", true],
       ["atlassian", false],
       ["gmail", false],
       ["resend", true],
