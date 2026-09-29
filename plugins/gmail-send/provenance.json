@@ -1,0 +1,23 @@
+{
+  "source": {
+    "type": "first-party",
+    "path": "plugins/gmail-send/source/server.mjs",
+    "upstream": null
+  },
+  "build": {
+    "recipe": "plugins/gmail-send/build-recipe.json",
+    "runtimeDependencies": [],
+    "networkDuringBuild": false
+  },
+  "license": {
+    "spdx": "MIT",
+    "status": "approved-first-party-source",
+    "file": "plugins/gmail-send/LICENSE",
+    "notice": "plugins/gmail-send/NOTICE",
+    "copyright": "Copyright (c) 2026 Supernala contributors"
+  },
+  "publication": {
+    "eligible": false,
+    "reason": "Google email/userinfo.email scope alias handling, app family method, independent review, Owner approval, and live acceptance remain pending"
+  }
+}

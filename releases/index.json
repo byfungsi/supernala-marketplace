@@ -45,6 +45,12 @@
       "reason": "Owner-authorized for publication after the reviewed App migration; the trusted release workflow admits exact credential-free Gmail OAuth authority, formal reviews were waived rather than passed, and live mailbox acceptance follows publication"
     },
     {
+      "sourceDirectory": "plugins/gmail-send",
+      "kind": "managed-package",
+      "publicationEligible": true,
+      "reason": "Owner-authorized publication-ready send-only Gmail candidate after production App d4e145e reported healthy; formal digest-bound review and trusted publication are separate gates, and live Gmail consent/send acceptance remains pending"
+    },
+    {
       "sourceDirectory": "plugins/remotes/atlassian.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": false,

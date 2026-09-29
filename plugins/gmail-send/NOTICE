@@ -1,0 +1,8 @@
+Supernala Gmail managed-package candidate
+Copyright (c) 2026 Supernala contributors
+
+This package contains first-party Supernala source licensed under the MIT License.
+It contains no Google source code, SDK, OAuth credential, mailbox content, or bundled
+third-party runtime dependency. Gmail, Google, Google APIs, hosted services, content,
+and trademarks remain subject to Google's applicable terms and rights. The MIT License
+does not grant rights in those services, content, or trademarks.
