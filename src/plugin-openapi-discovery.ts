@@ -2,6 +2,7 @@ import { Result, Schema } from "effect";
 import { compilePluginOpenApi, type PluginOpenApiAuthoring } from "./plugin-openapi-compiler.js";
 import { PluginToolId } from "./plugin-contract.js";
 import { isBoundedPluginOpenApiJson } from "./plugin-openapi-json-bounds.js";
+import { pluginOpenApiOperationIdentity } from "./plugin-openapi-operation-identity.js";
 
 const object = (value: unknown): Record<string, unknown> | null =>
   value !== null && typeof value === "object" && !Array.isArray(value)
@@ -65,10 +66,7 @@ export async function discoverPluginOpenApiCandidates(
       entries.push({
         path,
         method: method.toUpperCase(),
-        id:
-          typeof operation.operationId === "string" && operation.operationId.length > 0
-            ? operation.operationId
-            : null,
+        id: pluginOpenApiOperationIdentity(method, path, operation.operationId),
       });
     }
   }
@@ -87,6 +85,7 @@ export async function discoverPluginOpenApiCandidates(
   }
   const toolIdFor = (id: string) =>
     id
+      .replaceAll(/\{([^{}]+)\}/gu, "by.$1")
       .toLowerCase()
       .replaceAll(/[^a-z0-9]+/gu, ".")
       .replaceAll(/^\.+|\.+$/gu, "");
@@ -102,17 +101,19 @@ export async function discoverPluginOpenApiCandidates(
   for (const entry of entries) {
     const toolId = entry.id === null ? null : (reviewed.get(entry.id) ?? toolIdFor(entry.id));
     let reason: string | null = null;
-    if (entry.id === null) reason = "openapi-operation-id-missing";
+    if (entry.id === null) reason = "openapi-operation-id-invalid";
     else if ((idCounts.get(entry.id) ?? 0) > 1) reason = "openapi-operation-id-collision";
     else if (toolId === null || Result.isFailure(Schema.decodeUnknownResult(PluginToolId)(toolId)))
       reason = "openapi-tool-id-invalid";
     else if (
+      entry.id !== null &&
       reviewed.has(entry.id) &&
       ((selectedToolCounts.get(toolId) ?? 0) > 1 ||
         (selectedNameCounts.get(toolId.replaceAll(/[.-]/gu, "_")) ?? 0) > 1)
     )
       reason = "openapi-tool-id-collision";
     else if (
+      entry.id !== null &&
       !reviewed.has(entry.id) &&
       ((toolCounts.get(toolId) ?? 0) > 1 ||
         authoring.operations.some(

@@ -16,6 +16,7 @@ import {
 } from "./plugin-contract.js";
 import { PluginAuthStrategyDefinition } from "./plugin-auth-strategy.js";
 import { isBoundedPluginOpenApiJson } from "./plugin-openapi-json-bounds.js";
+import { pluginOpenApiOperationIdentity } from "./plugin-openapi-operation-identity.js";
 
 /** A reviewed operation selection keeps tool identities stable across source reordering. */
 export const PluginOpenApiOperationSelection = Schema.Struct({
@@ -99,7 +100,108 @@ const resolveInputSchema = (
     if (target === null) return failure("reference-unsupported");
     return resolveInputSchema(target, source, new Set([...visited, entry.$ref]), depth + 1);
   }
+  if (entry.allOf !== undefined) {
+    if (!Array.isArray(entry.allOf) || entry.allOf.length !== 2 || Object.keys(entry).length !== 1)
+      return failure("schema-unsupported");
+    const [first, second] = entry.allOf;
+    const annotation = object(second ?? null);
+    if (
+      annotation === null ||
+      !isString(annotation.description) ||
+      Object.keys(annotation).length !== 1
+    )
+      return failure("schema-unsupported");
+    const base = resolveInputSchema(first, source, visited, depth + 1);
+    return Result.isFailure(base)
+      ? base
+      : Result.succeed({
+          ...Object.fromEntries(Object.entries(base.success)),
+          description: annotation.description,
+        });
+  }
+  if (entry.oneOf !== undefined) {
+    if (
+      !Array.isArray(entry.oneOf) ||
+      entry.oneOf.length !== 2 ||
+      Object.keys(entry).some((key) => key !== "oneOf" && key !== "description")
+    )
+      return failure("schema-unsupported");
+    const branches = entry.oneOf.map((branch) =>
+      resolveInputSchema(branch, source, visited, depth + 1),
+    );
+    const invalid = branches.find(Result.isFailure);
+    if (invalid !== undefined) return invalid;
+    const resolved = branches.map((branch) => (Result.isSuccess(branch) ? branch.success : {}));
+    if (
+      resolved.every(
+        (branch) =>
+          Object.keys(branch).length === 1 &&
+          isString(branch.type) &&
+          ["string", "number", "integer", "boolean", "null"].includes(branch.type),
+      ) &&
+      resolved[0]?.type !== resolved[1]?.type &&
+      !(
+        resolved.some((branch) => branch.type === "integer") &&
+        resolved.some((branch) => branch.type === "number")
+      )
+    ) {
+      return Result.succeed({
+        type: resolved.map((branch) => branch.type ?? null),
+        ...(entry.description === undefined ? {} : { description: entry.description }),
+      });
+    }
+    const string = resolved.find((branch) => branch.type === "string");
+    const array = resolved.find((branch) => branch.type === "array");
+    if (
+      string === undefined ||
+      array === undefined ||
+      Object.keys(string).some(
+        (key) => !["type", "description", "minLength", "maxLength", "enum", "const"].includes(key),
+      ) ||
+      Object.keys(array).some(
+        (key) =>
+          !["type", "description", "items", "minItems", "maxItems", "enum", "const"].includes(key),
+      ) ||
+      string.enum !== undefined ||
+      string.const !== undefined ||
+      array.enum !== undefined ||
+      array.const !== undefined ||
+      (entry.description !== undefined && !isString(entry.description))
+    )
+      return failure("schema-unsupported");
+    const { type: _stringType, description: _stringDescription, ...stringRules } = string;
+    const { type: _arrayType, description: _arrayDescription, ...arrayRules } = array;
+    return Result.succeed({
+      type: ["string", "array"],
+      ...stringRules,
+      ...arrayRules,
+      ...(entry.description === undefined ? {} : { description: entry.description }),
+    });
+  }
   const output: Record<string, Schema.Json> = Object.fromEntries(Object.entries(entry));
+  // OpenAPI examples/defaults are documentation, not required input constraints.
+  delete output.example;
+  delete output.default;
+  if (entry.deprecated !== undefined) {
+    if (typeof entry.deprecated !== "boolean") return failure("schema-unsupported");
+    delete output.deprecated;
+  }
+  if (entry.format !== undefined) {
+    // OpenAPI binary is a transport hint on a string. JSON requests still carry a string.
+    if (entry.type !== "string" || entry.format !== "binary") return failure("schema-unsupported");
+    delete output.format;
+    output.description = `${isString(entry.description) ? `${entry.description} ` : ""}Attachment content is passed as a JSON string without binary conversion.`;
+  }
+  if (entry.nullable !== undefined) {
+    if (typeof entry.nullable !== "boolean" || !isString(entry.type))
+      return failure("schema-unsupported");
+    delete output.nullable;
+    if (entry.nullable) {
+      if (entry.enum !== undefined || entry.const !== undefined)
+        return failure("schema-unsupported");
+      output.type = [entry.type, "null"];
+    }
+  }
   if (entry.properties !== undefined) {
     const properties = object(entry.properties);
     if (properties === null) return failure("schema-unsupported");
@@ -215,15 +317,14 @@ export async function compilePluginOpenApi(input: {
     for (const method of ["get", "post", "put", "patch", "delete"]) {
       const operation = object(pathItem[method] ?? null);
       if (operation === null) continue;
-      if (!isString(operation.operationId)) continue;
+      const operationId = pluginOpenApiOperationIdentity(method, path, operation.operationId);
+      if (operationId === null) return failure("operation-id-invalid");
       if (
-        entries.has(operation.operationId) &&
-        input.authoring.operations.some(
-          (selected) => selected.operationId === operation.operationId,
-        )
+        entries.has(operationId) &&
+        input.authoring.operations.some((selected) => selected.operationId === operationId)
       )
         return failure("operation-id-collision");
-      entries.set(operation.operationId, {
+      entries.set(operationId, {
         method: method.toUpperCase(),
         path,
         operation,
