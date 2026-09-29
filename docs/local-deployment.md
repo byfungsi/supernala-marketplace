@@ -2,17 +2,18 @@
 
 ## One-time infrastructure setup
 
-Use Node 22.20+ and pnpm 10.34.5. The checkout needs a configured `origin`, full Git history, and installed dependencies. First deploy the Marketplace Alchemy stack, including the additive `0002_local_release_attempts.sql` migration. It references the existing application stores and owns only its release journal. Do not edit applied migrations or create replacement app resources.
+Use Node 22.20+ and pnpm 10.34.5. The checkout needs a configured `origin`, full Git history, and installed dependencies. The Marketplace Alchemy stack includes the additive `0002_local_release_attempts.sql` and `0003_managed_openapi_release_journal.sql` migrations. It references the existing application stores and owns only its release journal. Do not edit applied migrations or create replacement app resources. For an existing journal, determine and verify its actual release stage from operator-owned Alchemy state and known topology before planning; follow the journal-only review and private snapshot checks in `tools/infra/README.md`. In particular, `--stage production` is **not** a safe default for repairing an existing journal: a different release stage would select or create a different journal.
 
-From `tools/infra`, with approved Alchemy authentication:
+From `tools/infra`, with approved Alchemy authentication and `MARKETPLACE_RELEASE_STAGE` set to the verified existing release stage (or an explicitly approved new stage for first-time provisioning):
 
 ```sh
 export MARKETPLACE_ENVIRONMENT=production
 export APPLICATION_ALCHEMY_STACK=supernala-api
 export APPLICATION_ALCHEMY_STAGE=production
-pnpm exec alchemy plan --stage production
+: "${MARKETPLACE_RELEASE_STAGE:?Set to the verified or explicitly approved Alchemy release stage}"
+pnpm exec alchemy plan --stage "$MARKETPLACE_RELEASE_STAGE"
 # Review the plan before applying:
-pnpm exec alchemy deploy --stage production
+pnpm exec alchemy deploy --stage "$MARKETPLACE_RELEASE_STAGE"
 ```
 
 Infrastructure deployment is separate from Plugin publication. Run it initially and when infrastructure changes, not for every Plugin update.

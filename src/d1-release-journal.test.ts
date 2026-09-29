@@ -5,7 +5,12 @@ import { Result, Schema } from "effect";
 import { preparePluginPackage, validatePluginSource } from "./authoring-validation.js";
 import type { D1BatchTransport, D1Statement } from "./cloudflare-adapters.js";
 import { D1ReleaseJournal } from "./d1-release-journal.js";
-import { canonicalPluginJson, PluginSha256, PluginVersion } from "./plugin-contract.js";
+import {
+  canonicalPluginJson,
+  PluginSha256,
+  PluginVersion,
+  ProviderRegistrationId,
+} from "./plugin-contract.js";
 import { PackagedPluginAuthentication } from "./package-archive.js";
 import {
   InMemoryApplicationPublicationAdapter,
@@ -433,5 +438,173 @@ it("keeps the actual D1 baseline monotonic when overlapping versions complete ne
     release_identity: "supernala-public/supernala/offline-fixture@2.0.0",
     release_ordinal: 2,
   });
+  database.close();
+});
+
+it("claims and stages managed OpenAPI on the production journal schema with foreign keys enabled", async () => {
+  const database = new DatabaseSync(":memory:");
+  database.exec("PRAGMA foreign_keys = ON");
+  for (const migration of ["0001_release_journal", "0002_local_release_attempts"]) {
+    database.exec(await readFile(`tools/infra/migrations/${migration}.sql`, "utf8"));
+  }
+  const journal = new D1ReleaseJournal(new SQLiteJournalTransport(database));
+  const packageCandidate = await makeCandidate();
+  const previous = await journal.claim(packageCandidate);
+  expect(Result.isSuccess(previous)).toBe(true);
+  if (Result.isFailure(previous)) throw new Error("test-package-claim-failed");
+  await journal.markPublished(
+    "supernala-public/supernala/offline-fixture@1.0.0",
+    previous.success.record.generation,
+  );
+  database
+    .prepare(`INSERT INTO marketplace_release_attempts
+    (attempt_id, merge_commit, release_ordinal, status, created_at)
+    VALUES ('prior-attempt', ?, 7, 'completed', 1)`)
+    .run(packageCandidate.mergeCommit);
+  const before = {
+    journal: database.prepare("SELECT * FROM marketplace_release_journal").all(),
+    baselines: database.prepare("SELECT * FROM marketplace_release_baselines").all(),
+    attempts: database.prepare("SELECT * FROM marketplace_release_attempts").all(),
+  };
+  const migration = await readFile(
+    "tools/infra/migrations/0003_managed_openapi_release_journal.sql",
+    "utf8",
+  );
+  database.exec("BEGIN IMMEDIATE");
+  database.exec(migration);
+  database.exec("COMMIT");
+  expect(database.prepare("SELECT * FROM marketplace_release_journal").all()).toEqual(
+    before.journal,
+  );
+  expect(database.prepare("SELECT * FROM marketplace_release_baselines").all()).toEqual(
+    before.baselines,
+  );
+  expect(database.prepare("SELECT * FROM marketplace_release_attempts").all()).toEqual(
+    before.attempts,
+  );
+  expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+  expect(database.prepare("PRAGMA foreign_keys").get()).toMatchObject({ foreign_keys: 1 });
+  expect(database.prepare("SELECT name FROM sqlite_master WHERE type = 'trigger'").all()).toEqual(
+    [],
+  );
+  expect(database.prepare("PRAGMA index_list(marketplace_release_journal)").all()).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ name: "marketplace_release_journal_plugin_status" }),
+    ]),
+  );
+  expect(database.prepare("PRAGMA index_list(marketplace_release_attempts)").all()).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ name: "marketplace_single_active_release" }),
+    ]),
+  );
+  expect(database.prepare("PRAGMA foreign_key_list(marketplace_release_baselines)").all()).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ table: "marketplace_release_journal", from: "release_identity" }),
+    ]),
+  );
+  expect(() =>
+    database
+      .prepare(`INSERT INTO marketplace_release_baselines
+    (plugin_identity, release_identity, release_ordinal, release_digest, updated_at)
+    VALUES ('missing', 'missing', 1, ?, 1)`)
+      .run("a".repeat(64)),
+  ).toThrow();
+  const candidate: IncrementalReleaseCandidate = {
+    ...packageCandidate,
+    kind: "managed-openapi",
+    identity: {
+      marketplaceId: packageCandidate.identity.marketplaceId,
+      publisherNamespace: packageCandidate.identity.publisherNamespace,
+      pluginSlug: packageCandidate.identity.pluginSlug,
+      semanticVersion: "2.0.0",
+    },
+    definitionId: packageCandidate.definitionId,
+    releaseOrdinal: 8,
+    version: PluginVersion.make({
+      marketplaceId: packageCandidate.version.marketplaceId,
+      publisherNamespace: packageCandidate.version.publisherNamespace,
+      pluginSlug: packageCandidate.version.pluginSlug,
+      id: "supernala-public:supernala:offline-fixture@2.0.0" as typeof packageCandidate.version.id,
+      version: "2.0.0" as typeof packageCandidate.version.version,
+      name: packageCandidate.version.name,
+      description: packageCandidate.version.description,
+      license: packageCandidate.version.license,
+      catalog: packageCandidate.version.catalog,
+      config: packageCandidate.version.config,
+      allowedHosts: packageCandidate.version.allowedHosts,
+      status: packageCandidate.version.status,
+      publishedAt: packageCandidate.version.publishedAt,
+      runtime: {
+        _tag: "ManagedOpenApi",
+        kind: "managed-openapi",
+        artifactDigest: packageCandidate.artifactDigest,
+        manifestDigest: packageCandidate.artifactDigest,
+        providerRegistrationId: ProviderRegistrationId.make("fixture-provider"),
+      },
+    }),
+  };
+  const claimed = await journal.claim(candidate);
+  expect(claimed).toMatchObject({ _tag: "Success" });
+  if (Result.isSuccess(claimed)) {
+    expect(claimed.success.record.kind).toBe("managed-openapi");
+    await journal.markArtifactVerified(
+      "supernala-public/supernala/offline-fixture@2.0.0",
+      claimed.success.record.generation,
+    );
+    await journal.markFailed(
+      "supernala-public/supernala/offline-fixture@2.0.0",
+      1,
+      "fixture-failure",
+    );
+    const retried = await journal.claim({ ...candidate, releaseOrdinal: 9 });
+    expect(retried).toMatchObject({
+      _tag: "Success",
+      success: { record: { attempts: 2, generation: 2, status: "claimed" } },
+    });
+    await journal.markArtifactVerified("supernala-public/supernala/offline-fixture@2.0.0", 2);
+    expect(await journal.list()).toMatchObject([
+      { kind: "managed-package", status: "published" },
+      { kind: "managed-openapi", status: "artifact-verified" },
+    ]);
+  }
+  database.close();
+});
+
+it("rolls back the journal rebuild if copying a legacy row fails a constraint", async () => {
+  const database = new DatabaseSync(":memory:");
+  database.exec("PRAGMA foreign_keys = ON");
+  for (const migration of ["0001_release_journal", "0002_local_release_attempts"]) {
+    database.exec(await readFile(`tools/infra/migrations/${migration}.sql`, "utf8"));
+  }
+  const journal = new D1ReleaseJournal(new SQLiteJournalTransport(database));
+  const candidate = await makeCandidate();
+  const claimed = await journal.claim(candidate);
+  expect(Result.isSuccess(claimed)).toBe(true);
+  if (Result.isFailure(claimed)) throw new Error("test-package-claim-failed");
+  await journal.markPublished("supernala-public/supernala/offline-fixture@1.0.0", 1);
+  database.exec("PRAGMA ignore_check_constraints = ON");
+  database.prepare("UPDATE marketplace_release_journal SET attempts = 0").run();
+  database.exec("PRAGMA ignore_check_constraints = OFF");
+  const before = {
+    journal: database.prepare("SELECT * FROM marketplace_release_journal").all(),
+    baselines: database.prepare("SELECT * FROM marketplace_release_baselines").all(),
+  };
+  const migration = await readFile(
+    "tools/infra/migrations/0003_managed_openapi_release_journal.sql",
+    "utf8",
+  );
+  database.exec("BEGIN IMMEDIATE");
+  expect(() => database.exec(migration)).toThrow();
+  database.exec("ROLLBACK");
+  expect(database.prepare("SELECT * FROM marketplace_release_journal").all()).toEqual(
+    before.journal,
+  );
+  expect(database.prepare("SELECT * FROM marketplace_release_baselines").all()).toEqual(
+    before.baselines,
+  );
+  expect(database.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
+  expect(database.prepare("SELECT name FROM sqlite_master WHERE name LIKE '%_0003'").all()).toEqual(
+    [],
+  );
   database.close();
 });
