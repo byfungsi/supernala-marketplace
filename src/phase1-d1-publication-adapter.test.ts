@@ -106,10 +106,25 @@ const publishedProviderChains = Schema.decodeUnknownSync(PublishedProviderChains
   JSON.parse(await readFile("fixtures/auth-profile-provider-chains.v1.json", "utf8")),
 ).profiles;
 
+// Exact credential-free HEAD:plugins/remotes/notion.json at ac61760 (1.0.2).
+// Historical publication rehearsal only; never the current 1.0.3 authority.
+const historicalNotionSourcePath = "fixtures/remotes/notion-1.0.2.json";
+const historicalNotionSourceBytes = await readFile(historicalNotionSourcePath);
+if (
+  createHash("sha256").update(historicalNotionSourceBytes).digest("hex") !==
+  "e4b1cdb52633900d876b35cebd23462e0df24df18675fefc97b7d34d38c5a44c"
+) {
+  throw new Error("historical-notion-fixture-drift");
+}
+
 const providerExpansionDeclarations = await Promise.all(
   ["notion", "resend"].map(async (provider) => {
     const decoded = validateManagedRemotePluginRelease(
-      JSON.parse(await readFile(`plugins/remotes/${provider}.json`, "utf8")),
+      JSON.parse(
+        provider === "notion"
+          ? historicalNotionSourceBytes.toString("utf8")
+          : await readFile(`plugins/remotes/${provider}.json`, "utf8"),
+      ),
       "publication",
     );
     if (Result.isFailure(decoded)) throw new Error(`${provider}:${decoded.failure}`);
@@ -1953,7 +1968,7 @@ it("publishes, replays, reconciles, and reads revocation for a declaration-only 
 });
 
 for (const remote of providerExpansionDeclarations) {
-  it(`stages, finalizes, and reads back the ${remote.name} production declaration chain`, async () => {
+  it(`stages, finalizes, and reads back the ${remote.name} ${remote.pluginSlug === "notion" ? "historical 1.0.2" : "production"} declaration chain`, async () => {
     const authStrategy = remote.authStrategy;
     if (authStrategy === undefined || authStrategy.profile !== "mcp-oauth") {
       throw new Error("provider-expansion-mcp-auth-strategy-missing");
@@ -2182,8 +2197,8 @@ it("retains immutable Linear OAuth identity and auth strategy while reusing the 
   database.close();
 });
 
-it("reuses the published catalog identity for an unchanged remote patch", async () => {
-  const currentSource = JSON.parse(await readFile("plugins/remotes/notion.json", "utf8"));
+it("reuses the published catalog identity for an unchanged historical Notion patch", async () => {
+  const currentSource = JSON.parse(historicalNotionSourceBytes.toString("utf8"));
   const previousSource = {
     ...currentSource,
     id: "supernala-public:supernala:notion@1.0.0",
