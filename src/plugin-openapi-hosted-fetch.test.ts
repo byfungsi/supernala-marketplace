@@ -324,7 +324,8 @@ describe("hosted OpenAPI explicit import", () => {
       expect(
         conflicts.some(
           (candidate) =>
-            candidate.reason === "openapi-operation-id-missing" && candidate.method === "HEAD",
+            candidate.reason === "openapi-method-unsupported" &&
+            candidate.operationId === "http:HEAD:/missing",
         ),
       ).toBe(true);
       expect(

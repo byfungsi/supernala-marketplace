@@ -21,6 +21,12 @@
       "reason": "synthetic compiler and publication rehearsal only; no real provider or review authority"
     },
     {
+      "sourceDirectory": "plugins/resend-api",
+      "kind": "managed-openapi",
+      "publicationEligible": true,
+      "reason": "independent exact source and authority review approved with verified active credential-free provider registration; live API and installation acceptance pending"
+    },
+    {
       "sourceDirectory": "plugins/offline-fixture",
       "kind": "managed-package",
       "publicationEligible": false,

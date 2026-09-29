@@ -1,0 +1,503 @@
+{
+  "schemaVersion": 1,
+  "pluginVersionId": "supernala-public:supernala:resend-api@1.0.0",
+  "catalogSnapshotId": "resend-api-catalog-v1",
+  "providerRegistrationId": "resend-api-credentials-v1",
+  "credential": {
+    "field": "api_key",
+    "label": "Resend API key",
+    "minimumLength": 1,
+    "maximumLength": 256,
+    "displayLabel": "Resend API key connection",
+    "securityScheme": "bearerAuth"
+  },
+  "operations": [
+    {
+      "operationId": "http:GET:/emails",
+      "toolId": "http.get.emails",
+      "title": "Retrieve a list of emails",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/emails",
+      "toolId": "http.post.emails",
+      "title": "Send an email",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/emails/{email_id}",
+      "toolId": "http.get.emails.by.email.id",
+      "title": "Retrieve a single email",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:PATCH:/emails/{email_id}",
+      "toolId": "http.patch.emails.by.email.id",
+      "title": "Update a single email",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/emails/{email_id}/cancel",
+      "toolId": "http.post.emails.by.email.id.cancel",
+      "title": "Cancel the schedule of the e-mail.",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/emails/batch",
+      "toolId": "http.post.emails.batch",
+      "title": "Trigger up to 100 batch emails at once.",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/domains",
+      "toolId": "http.get.domains",
+      "title": "Retrieve a list of domains",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/domains",
+      "toolId": "http.post.domains",
+      "title": "Create a new domain",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/domains/{domain_id}",
+      "toolId": "http.get.domains.by.domain.id",
+      "title": "Retrieve a single domain",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:PATCH:/domains/{domain_id}",
+      "toolId": "http.patch.domains.by.domain.id",
+      "title": "Update an existing domain",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:DELETE:/domains/{domain_id}",
+      "toolId": "http.delete.domains.by.domain.id",
+      "title": "Remove an existing domain",
+      "classification": "destructive",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/domains/{domain_id}/verify",
+      "toolId": "http.post.domains.by.domain.id.verify",
+      "title": "Verify an existing domain",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/api-keys",
+      "toolId": "http.get.api.keys",
+      "title": "Retrieve a list of API keys",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/api-keys",
+      "toolId": "http.post.api.keys",
+      "title": "Create a new API key",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:DELETE:/api-keys/{api_key_id}",
+      "toolId": "http.delete.api.keys.by.api.key.id",
+      "title": "Remove an existing API key",
+      "classification": "destructive",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/templates",
+      "toolId": "http.get.templates",
+      "title": "Retrieve a list of templates",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/templates/{id}",
+      "toolId": "http.get.templates.by.id",
+      "title": "Retrieve a single template",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:DELETE:/templates/{id}",
+      "toolId": "http.delete.templates.by.id",
+      "title": "Remove an existing template",
+      "classification": "destructive",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/templates/{id}/publish",
+      "toolId": "http.post.templates.by.id.publish",
+      "title": "Publish a template",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/templates/{id}/duplicate",
+      "toolId": "http.post.templates.by.id.duplicate",
+      "title": "Duplicate a template",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/contacts",
+      "toolId": "http.get.contacts",
+      "title": "Retrieve a list of contacts",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/contacts/{id}",
+      "toolId": "http.get.contacts.by.id",
+      "title": "Retrieve a single contact by ID or email",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:PATCH:/contacts/{id}",
+      "toolId": "http.patch.contacts.by.id",
+      "title": "Update a single contact by ID or email",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:DELETE:/contacts/{id}",
+      "toolId": "http.delete.contacts.by.id",
+      "title": "Remove an existing contact by ID or email",
+      "classification": "destructive",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/broadcasts",
+      "toolId": "http.get.broadcasts",
+      "title": "Retrieve a list of broadcasts",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/broadcasts/{id}",
+      "toolId": "http.get.broadcasts.by.id",
+      "title": "Retrieve a single broadcast",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:DELETE:/broadcasts/{id}",
+      "toolId": "http.delete.broadcasts.by.id",
+      "title": "Remove an existing broadcast that is in the draft status",
+      "classification": "destructive",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/broadcasts/{id}/send",
+      "toolId": "http.post.broadcasts.by.id.send",
+      "title": "Send or schedule a broadcast",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/webhooks",
+      "toolId": "http.post.webhooks",
+      "title": "Create a new webhook",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/segments",
+      "toolId": "http.get.segments",
+      "title": "Retrieve a list of segments",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/segments/{id}",
+      "toolId": "http.get.segments.by.id",
+      "title": "Retrieve a single segment",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:DELETE:/segments/{id}",
+      "toolId": "http.delete.segments.by.id",
+      "title": "Remove an existing segment",
+      "classification": "destructive",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/topics",
+      "toolId": "http.get.topics",
+      "title": "Retrieve a list of topics",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/topics",
+      "toolId": "http.post.topics",
+      "title": "Create a new topic",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/topics/{id}",
+      "toolId": "http.get.topics.by.id",
+      "title": "Retrieve a single topic",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:PATCH:/topics/{id}",
+      "toolId": "http.patch.topics.by.id",
+      "title": "Update an existing topic",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:DELETE:/topics/{id}",
+      "toolId": "http.delete.topics.by.id",
+      "title": "Remove an existing topic",
+      "classification": "destructive",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/contact-properties",
+      "toolId": "http.get.contact.properties",
+      "title": "Retrieve a list of contact properties",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/contact-properties",
+      "toolId": "http.post.contact.properties",
+      "title": "Create a new contact property",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/contact-properties/{id}",
+      "toolId": "http.get.contact.properties.by.id",
+      "title": "Retrieve a single contact property",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:PATCH:/contact-properties/{id}",
+      "toolId": "http.patch.contact.properties.by.id",
+      "title": "Update an existing contact property",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:DELETE:/contact-properties/{id}",
+      "toolId": "http.delete.contact.properties.by.id",
+      "title": "Remove an existing contact property",
+      "classification": "destructive",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/contacts/{contact_id}/segments",
+      "toolId": "http.get.contacts.by.contact.id.segments",
+      "title": "Retrieve a list of segments for a contact",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/contacts/{contact_id}/segments/{segment_id}",
+      "toolId": "http.post.contacts.by.contact.id.segments.by.segment.id",
+      "title": "Add a contact to a segment",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:DELETE:/contacts/{contact_id}/segments/{segment_id}",
+      "toolId": "http.delete.contacts.by.contact.id.segments.by.segment.id",
+      "title": "Remove a contact from a segment",
+      "classification": "destructive",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/contacts/{contact_id}/topics",
+      "toolId": "http.get.contacts.by.contact.id.topics",
+      "title": "Retrieve topics for a contact",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:PATCH:/contacts/{contact_id}/topics",
+      "toolId": "http.patch.contacts.by.contact.id.topics",
+      "title": "Update topics for a contact",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/logs",
+      "toolId": "http.get.logs",
+      "title": "Retrieve a list of logs",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/automations",
+      "toolId": "http.get.automations",
+      "title": "Retrieve a list of automations",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/automations",
+      "toolId": "http.post.automations",
+      "title": "Create an automation",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/events",
+      "toolId": "http.get.events",
+      "title": "Retrieve a list of events",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/events",
+      "toolId": "http.post.events",
+      "title": "Create an event",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:GET:/events/{identifier}",
+      "toolId": "http.get.events.by.identifier",
+      "title": "Retrieve a single event",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:PATCH:/events/{identifier}",
+      "toolId": "http.patch.events.by.identifier",
+      "title": "Update an event",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:DELETE:/events/{identifier}",
+      "toolId": "http.delete.events.by.identifier",
+      "title": "Delete an event",
+      "classification": "destructive",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/contacts",
+      "toolId": "http.post.contacts",
+      "title": "Create a new contact",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/broadcasts",
+      "toolId": "http.post.broadcasts",
+      "title": "Create a broadcast",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:PATCH:/broadcasts/{id}",
+      "toolId": "http.patch.broadcasts.by.id",
+      "title": "Update an existing broadcast",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "http:POST:/segments",
+      "toolId": "http.post.segments",
+      "title": "Create a new segment",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    }
+  ],
+  "status": "reviewed-publishable",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "resend-api",
+  "version": "1.0.0",
+  "name": "Resend API",
+  "description": "Resend REST API for email, contacts, domains, broadcasts, templates, webhooks, and account resources",
+  "license": "LicenseRef-Provider-Service",
+  "hostedSourceUrl": "https://resend.com/openapi.json",
+  "hostedSource": {
+    "url": "https://resend.com/openapi.json",
+    "sha256": "95bcbad452fed0381d6d35e24b6f370076a733fbeea2515026bca21113e62712",
+    "pluginVersionId": "supernala-public:supernala:resend-api@1.0.0",
+    "catalogSnapshotId": "resend-api-catalog-v1"
+  }
+}
