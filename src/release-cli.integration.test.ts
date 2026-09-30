@@ -40,7 +40,12 @@ const runReleaseCli = (
   new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [tsxCli, releaseCli, ...arguments_], {
       cwd,
-      env: { PATH: process.env.PATH ?? "", ...environment },
+      // Keep the synthetic parent review and child build in the same civil-time environment.
+      env: {
+        PATH: process.env.PATH ?? "",
+        TZ: process.env.TZ ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+        ...environment,
+      },
       stdio: ["ignore", "pipe", "pipe"],
     });
     let stdout = "";
@@ -397,4 +402,4 @@ it("runs actual CLI build and zero-write dry-run, then rejects descriptor tamper
   } finally {
     await rm(fixture.root, { recursive: true });
   }
-});
+}, 20_000); // Full build/retry/tamper flow starts multiple real CLIs on shared CI runners.

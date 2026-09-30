@@ -2,6 +2,7 @@ import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promis
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "@effect/vitest";
+import { beforeAll, afterAll } from "vitest";
 import { Result, Schema } from "effect";
 import { validatePluginSource, preparePluginPackage } from "./authoring-validation.js";
 import { canonicalPluginJson, digestPluginBytes } from "./plugin-contract.js";
@@ -11,6 +12,17 @@ import {
   PackageManifest,
   parsePackagedPluginArchive,
 } from "./package-archive.js";
+
+// The historical Phase 1 golden ZIP was captured in UTC+7. ZIP DOS timestamps
+// use civil time, so reproduce that capture environment without changing pinned bytes.
+const originalTimezone = process.env.TZ;
+beforeAll(() => {
+  process.env.TZ = "Asia/Jakarta";
+});
+afterAll(() => {
+  if (originalTimezone === undefined) delete process.env.TZ;
+  else process.env.TZ = originalTimezone;
+});
 
 const githubPackageFiles = async (): Promise<Readonly<Record<string, Uint8Array>>> => {
   const packagePaths = [

@@ -23,8 +23,8 @@
     {
       "sourceDirectory": "plugins/resend-api",
       "kind": "managed-openapi",
-      "publicationEligible": false,
-      "reason": "Owner paused API-key REST publication pending Resend OAuth MCP acceptance; reviewed API artifact and provider files are retained"
+      "publicationEligible": true,
+      "reason": "Owner reauthorized the exact independently reviewed resend-api@1.0.0 release as the API-key component of the Resend app, alongside resend@1.0.3 MCP sign-in; trusted publication and live API-key acceptance are separate gates"
     },
     {
       "sourceDirectory": "plugins/offline-fixture",
