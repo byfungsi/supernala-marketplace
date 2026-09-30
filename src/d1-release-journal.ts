@@ -21,7 +21,7 @@ const JournalRow = Schema.Struct({
   plugin_slug: Schema.String,
   semantic_version: Schema.String,
   definition_id: Schema.String,
-  runtime_kind: Schema.Literals(["managed-package", "managed-remote-mcp"]),
+  runtime_kind: Schema.Literals(["managed-package", "managed-remote-mcp", "managed-openapi"]),
   version_json: Schema.String,
   source_input_digest: PluginSha256,
   release_digest: PluginSha256,
