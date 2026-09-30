@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "gmail-send",
+    "semanticVersion": "0.1.0"
+  },
+  "reviewId": "gmail-send-0.1.0-source-authority-v1",
+  "reviewer": "OpenCode independent supervising source and authority review",
+  "reviewedAt": 1790674282263,
+  "sourceInputDigest": "36ea13393356cd0884a0305df8fbf4ef6a170b5fe185c8504a4ff86dc486dd57",
+  "artifactDigest": "7b5534e77de29686944faa5b925de943089c76c551a62c6ff5e6e7b0f67941e9",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-gmail-send-rest-v1",
+    "providerDefinitionDigest": "06d492580bf6f92ed1ce57f5866419ac846ef96ddfb30a2faae54f785146892e",
+    "requestedScopes": ["email", "https://www.googleapis.com/auth/gmail.send", "openid"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "e217befb993f97958d1b0ae6fbc2034d3d0ad3787793ac700a7c057f8860358d",
+  "configDigest": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
+  "provenanceDigest": "2bc55af8c678e6eb924fed96ab52501a5467c49880c00c3c37e0f768c37a7e88",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "d1b5571f6c94cd5bbc0842b690ce808d45733d4349a8bc058b02ae1872eb4350",
+  "authorityAfter": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "oauth",
+    "requestedScopes": ["email", "https://www.googleapis.com/auth/gmail.send", "openid"],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "google-gmail-send-rest-v1",
+    "providerDefinitionDigest": "06d492580bf6f92ed1ce57f5866419ac846ef96ddfb30a2faae54f785146892e",
+    "tools": [
+      {
+        "id": "gmail.send_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 254
+            },
+            "to": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 254
+            },
+            "subject": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 998
+            },
+            "bodyText": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536
+            }
+          },
+          "required": ["from", "to", "subject", "bodyText"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["gmail.googleapis.com"],
+    "config": []
+  },
+  "authorityDigest": "db78e1f8d5028a224dc968b8638c202f7ecf46de773cd42d646123527caf02b9",
+  "authorityDiffDigest": "f82caa25cc886127d296a311ab1ad1dd9ed8ef08b0d5e301196a7060a1218ddf",
+  "releaseDigest": "bd3a898e028722aa8cbe9b5188a5f1acba62f270db11d5721c9b5b73e856b62e",
+  "decision": "approved"
+}

@@ -49,3 +49,10 @@ Authentication strategy contract version 1 is distributed from Supernala as
 byte-identical `schemas/plugin-auth-strategy-definition.schema.json`; the source manifest pins both
 the authoritative schema and the owning Effect schema. The local Effect decoder is the runtime
 projection of that versioned distribution, not an independently versioned contract.
+
+The historical Phase 1 golden ZIP digest was captured with UTC+7 civil timestamps.
+Its compatibility tests explicitly reproduce that capture timezone: the legacy
+packager's fixed instant is serialized by ZIP as host-local DOS time. This keeps
+the exact historical golden and reviewed production bytes intact. Making the
+production packager independent of host timezone would be a coordinated shared
+source/review migration, rather than silently replacing those pinned digests.

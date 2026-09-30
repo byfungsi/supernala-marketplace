@@ -1993,7 +1993,8 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
                AND ms.oauth_authority_revision = r.oauth_authority_revision
                AND ms.provider_definition_digest = r.oauth_provider_definition_digest
                AND ms.provider_definition_revision = r.oauth_provider_definition_revision
-               AND ms.material_origin = 'dynamic-registration' AND ms.status = 'active'
+               AND ms.material_origin IN ('dynamic-registration', 'client-id-metadata-document')
+               AND ms.status = 'active'
               WHERE r.provider_registration_id = ?
               ORDER BY ms.source_revision DESC LIMIT 1`,
       params: [authentication.providerRegistration],
