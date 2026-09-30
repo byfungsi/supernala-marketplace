@@ -71,7 +71,15 @@ it("binds Resend 1.0.3 to the consented send-only schema and canonical catalog d
       (plugin: { sourceDirectory: string }) => plugin.sourceDirectory === "plugins/resend-api",
     ),
   ).toMatchObject({
-    publicationEligible: false,
-    reason: expect.stringContaining("Owner paused API-key REST publication"),
+    publicationEligible: true,
+    reason: expect.stringContaining(
+      "Owner reauthorized the exact independently reviewed resend-api@1.0.0 release",
+    ),
   });
+  expect(
+    index.plugins.find(
+      (plugin: { sourceDirectory: string }) =>
+        plugin.sourceDirectory === "plugins/remotes/resend.json",
+    ),
+  ).toMatchObject({ publicationEligible: true });
 });
