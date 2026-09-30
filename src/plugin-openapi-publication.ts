@@ -77,6 +77,8 @@ const exactCandidateGuard = (
     inputSchemaJson: JSON.stringify(tool.inputSchema),
     maximumOutputBytes: tool.maximumOutputBytes,
   }));
+  // Group conjunctions to keep SQLite's expression tree below D1's depth-100
+  // limit. A flat predicate fails remotely even though local SQLite accepts it.
   return guard(
     `SELECT 1 FROM plugin_versions v
     JOIN plugin_definitions definition ON definition.plugin_definition_id = v.plugin_definition_id
@@ -87,25 +89,26 @@ const exactCandidateGuard = (
     JOIN plugin_publication_intents intent ON intent.plugin_version_id = v.plugin_version_id
     JOIN plugin_catalog_snapshots catalog ON catalog.catalog_snapshot_id = v.catalog_snapshot_id
     JOIN plugin_config_schemas config ON config.config_schema_id = v.config_schema_id
-    WHERE v.plugin_version_id = ? AND v.status = ? AND v.runtime_kind = 'managed-openapi'
+    WHERE (v.plugin_version_id = ? AND v.status = ? AND v.runtime_kind = 'managed-openapi'
       AND v.plugin_definition_id = ? AND v.semantic_version = ? AND v.manifest_digest = ?
-      AND v.artifact_digest = ? AND v.catalog_snapshot_id = ? AND catalog.catalog_digest = ?
+      AND v.artifact_digest = ?)
+      AND (v.catalog_snapshot_id = ? AND catalog.catalog_digest = ?
       AND catalog.schema_version = 1 AND v.config_schema_id = ? AND config.schema_digest = ?
-      AND config.revision = ? AND config.fields_json = '[]'
-      AND v.provider_registration_id = ? AND provider.status = 'active'
+      AND config.revision = ? AND config.fields_json = '[]')
+      AND (v.provider_registration_id = ? AND provider.status = 'active'
       AND v.auth_definition_digest = ? AND v.auth_definition_revision = 1
       AND auth.revision = 1 AND auth.status = 'active' AND auth.profile = 'api-key'
       AND auth.canonical_definition_json = ?
       AND v.authentication_kind = 'none' AND v.auth_profile = 'api-key'
-      AND v.requested_scopes_json = '[]' AND v.allowed_hosts_json = ?
-      AND v.provenance_json = ? AND v.license = ? AND v.release_date = ?
-      AND v.review_status = 'approved'
-      AND definition.marketplace_id = ? AND definition.publisher_namespace = ?
+      AND v.requested_scopes_json = '[]' AND v.allowed_hosts_json = ?)
+      AND (v.provenance_json = ? AND v.license = ? AND v.release_date = ?
+      AND v.review_status = 'approved')
+      AND (definition.marketplace_id = ? AND definition.publisher_namespace = ?
       AND definition.plugin_slug = ? AND definition.name = ?
       AND definition.short_description = ? AND definition.long_description = ?
-      AND definition.status = 'active' AND marketplace.status = 'active'
-      AND artifact.object_key = ? AND artifact.byte_size = ? AND artifact.status = ?
-      AND intent.publication_intent_id = ? AND intent.artifact_digest = ? AND intent.status = ?
+      AND definition.status = 'active' AND marketplace.status = 'active')
+      AND (artifact.object_key = ? AND artifact.byte_size = ? AND artifact.status = ?
+      AND intent.publication_intent_id = ? AND intent.artifact_digest = ? AND intent.status = ?)
       AND (SELECT count(*) FROM plugin_catalog_tools WHERE catalog_snapshot_id = ?) = ?
       AND NOT EXISTS (SELECT 1 FROM json_each(?) expected
         LEFT JOIN plugin_catalog_tools tool ON tool.catalog_snapshot_id = v.catalog_snapshot_id
