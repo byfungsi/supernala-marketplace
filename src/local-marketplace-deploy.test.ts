@@ -92,4 +92,4 @@ it("gates noninteractive publication and rejects --yes inspection or recovery co
     expect(result.stderr).not.toContain(process.cwd());
     expect(result.stderr).not.toContain("node:");
   }
-});
+}, 20_000); // Five real CLI startups require a bounded integration budget on shared CI runners.

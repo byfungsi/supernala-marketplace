@@ -280,5 +280,5 @@ describe("OpenAPI reviewed release bundle", () => {
     } finally {
       await rm(root, { recursive: true, force: true });
     }
-  });
+  }, 20_000); // Includes three real CLI subprocesses, not a five-second performance assertion.
 });
