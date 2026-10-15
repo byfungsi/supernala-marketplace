@@ -7,6 +7,7 @@ These records preserve fixed provider endpoints, OAuth definitions, registration
 | Gmail                 | Preserved Workspace-owned OAuth behavior                           | Existing package catalog          | Developer Preview eligibility and OAuth verification           |
 | Atlassian Rovo / Jira | Dynamic OAuth; staged-unverified                                   | Awaiting exact public schemas     | Exact schemas and MCP identity/resource output paths           |
 | Linear                | Dynamic OAuth, PKCE S256, read/write scopes; reviewed subset       | 65 authenticated tools            | Live catalog equality, workspace identity, privacy, acceptance |
+| Maple                 | Dynamic OAuth, PKCE S256, `mcp:tools`; read-only reviewed subset   | 24 authenticated read tools       | Live catalog equality, org identity, privacy, acceptance       |
 | Notion                | Dynamic OAuth, PKCE, rotated refresh, `notion-fetch` self identity | Four documentation-derived tools  | Live catalog equality, per-plan access, privacy, acceptance    |
 | Resend                | Deployed public CIMD OAuth; `emails:send` only                     | `send-email` from official source | Live catalog equality, team identity, privacy, acceptance      |
 
