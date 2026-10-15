@@ -9,6 +9,7 @@ import {
 import { validatePluginSource } from "./authoring-validation.js";
 import { inspectMcpJsonLines, inspectMcpStreamableHttpBody } from "./mcp-conformance.js";
 import { digestPluginOAuthProviderDefinition } from "./oauth-provider-definition.js";
+import { canonicalPluginJson, digestPluginBytes } from "./plugin-contract.js";
 import { validateManagedRemotePluginRelease } from "./remote-release.js";
 
 describe("authority and protocol gates", () => {
@@ -157,6 +158,7 @@ describe("authority and protocol gates", () => {
   it("enforces each remote candidate's reviewed publication status and exact endpoint host", async () => {
     for (const [name, publicationEligible] of [
       ["linear", true],
+      ["maple", true],
       ["notion", true],
       ["atlassian", false],
       ["gmail", false],
@@ -217,6 +219,62 @@ describe("authority and protocol gates", () => {
       classification: "destructive",
       defaultPolicy: "require-approval",
     });
+    expect(
+      Result.isSuccess(validateManagedRemotePluginRelease(decoded.success, "publication")),
+    ).toBe(true);
+  });
+
+  it("keeps Maple bound to its captured dynamic OAuth authority and read-only catalog", async () => {
+    const value: unknown = JSON.parse(await readFile("plugins/remotes/maple.json", "utf8"));
+    const decoded = validateManagedRemotePluginRelease(value, "authoring");
+    expect(Result.isSuccess(decoded)).toBe(true);
+    if (Result.isFailure(decoded)) return;
+
+    expect(decoded.success.status).toBe("reviewed-publishable");
+    expect(decoded.success.endpoint).toBe("https://api.maple.dev/mcp");
+    expect(decoded.success.oauthRegistrationMode).toBe("dynamic");
+    expect(decoded.success.scopes).toEqual(["mcp:tools"]);
+    expect(decoded.success.authStrategy).toMatchObject({
+      profile: "mcp-oauth",
+      providerRegistrationId: "maple-oauth-v1",
+      requestedScopes: ["mcp:tools"],
+      clientRegistration: {
+        kind: "dynamic",
+        authorizationServerMetadataUrl:
+          "https://api.maple.dev/.well-known/oauth-authorization-server",
+      },
+      resourceMetadataUrl: "https://api.maple.dev/.well-known/oauth-protected-resource/mcp",
+    });
+    expect(decoded.success.oauthProviderDefinition).toMatchObject({
+      issuer: "https://api.maple.dev",
+      authorizationEndpoint: "https://api.maple.dev/oauth/authorize",
+      tokenEndpoint: "https://api.maple.dev/oauth/token",
+      tokenEndpointAuthMethod: "none",
+      authorizationResponseIssuer: "not-supported",
+      pkce: { method: "S256" },
+      scopes: ["mcp:tools"],
+    });
+    if (decoded.success.oauthProviderDefinition === undefined) return;
+    expect(decoded.success.providerDefinitionDigest).toBe(
+      await digestPluginOAuthProviderDefinition(decoded.success.oauthProviderDefinition),
+    );
+    expect(decoded.success.catalog.tools).toHaveLength(24);
+    expect(
+      decoded.success.catalog.tools.every(
+        (tool) => tool.classification === "read" && tool.defaultPolicy === "allow",
+      ),
+    ).toBe(true);
+    expect(decoded.success.catalog.tools.map((tool) => tool.mcpName)).not.toContain("run_sql");
+    expect(decoded.success.catalog.digest).toBe(
+      await digestPluginBytes(
+        new TextEncoder().encode(
+          canonicalPluginJson({
+            schemaVersion: decoded.success.catalog.schemaVersion,
+            tools: decoded.success.catalog.tools,
+          }),
+        ),
+      ),
+    );
     expect(
       Result.isSuccess(validateManagedRemotePluginRelease(decoded.success, "publication")),
     ).toBe(true);

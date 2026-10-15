@@ -1,0 +1,1163 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-publishable",
+  "id": "supernala-public:supernala:maple@1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "maple",
+  "version": "1.0.0",
+  "name": "Maple",
+  "description": "Curated read-only Maple observability hosted MCP integration",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "maple-mcp-v1",
+    "providerRegistrationId": "maple-oauth-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://api.maple.dev/mcp",
+  "oauthRegistrationMode": "dynamic",
+  "providerDefinitionDigest": "0dab47ac5f678d487bee8e7f62eda14250dc697bbe988b2580320ebe247af8b2",
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "maple-oauth-v1",
+    "providerDefinitionDigest": "0dab47ac5f678d487bee8e7f62eda14250dc697bbe988b2580320ebe247af8b2",
+    "requestedScopes": ["mcp:tools"],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://api.maple.dev/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://api.maple.dev/.well-known/oauth-protected-resource/mcp",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Maple connection (org identity pending)"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "oauthProviderDefinition": {
+    "schemaVersion": 1,
+    "protocol": "oauth2-authorization-code",
+    "issuer": "https://api.maple.dev",
+    "provider": "maple-mcp",
+    "resourceIdentity": "https://api.maple.dev/mcp",
+    "authorizationEndpoint": "https://api.maple.dev/oauth/authorize",
+    "tokenEndpoint": "https://api.maple.dev/oauth/token",
+    "tokenEndpointAuthMethod": "none",
+    "authorizationResponseIssuer": "not-supported",
+    "pkce": {
+      "method": "S256"
+    },
+    "authorizationParameters": [],
+    "scopes": ["mcp:tools"],
+    "account": {
+      "kind": "declaration-managed"
+    },
+    "tokens": {
+      "accessTokenType": "bearer",
+      "expiresIn": {
+        "required": true,
+        "minimumSeconds": 1,
+        "maximumSeconds": 86400
+      },
+      "grantedScopes": {
+        "whenPresent": "exact-match",
+        "whenOmitted": "requested-scopes"
+      },
+      "initialRefreshToken": "required",
+      "refreshResponseToken": "retain-current-if-omitted"
+    },
+    "refresh": {
+      "kind": "standard-form-post",
+      "invalidGrant": "reauthorization-required",
+      "ambiguousOutcome": "fail-closed-no-replay"
+    },
+    "revocation": {
+      "kind": "standard-form-post",
+      "endpoint": "https://api.maple.dev/oauth/revoke",
+      "token": "refresh-token",
+      "clientAuthentication": "registration-method",
+      "outcome": "best-effort-observed"
+    }
+  },
+  "scopes": ["mcp:tools"],
+  "catalog": {
+    "id": "maple-tools-list-v1",
+    "schemaVersion": 1,
+    "digest": "15ad1440e0933fc671abfc0ecccc697b58815507ff8e19425c9a14a82184b5b3",
+    "tools": [
+      {
+        "id": "maple.list_services",
+        "mcpName": "list_services",
+        "title": "List Services",
+        "description": "List all active services, busiest first, with request count and rate, error rate and P95 latency. Use as an entry point to discover services before drilling down with diagnose_service or get_service_top_operations.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "environment": {
+              "type": "string",
+              "description": "Only this deployment environment (e.g. production, staging)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.diagnose_service",
+        "mcpName": "diagnose_service",
+        "title": "Diagnose Service",
+        "description": "Deep investigation of one service: health metrics, Apdex, top errors, recent traces and logs. Use after list_services identifies a problem service.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "service": {
+              "type": "string",
+              "description": "The service (exact `service.name`)"
+            },
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "environment": {
+              "type": "string",
+              "description": "Only this deployment environment (e.g. production, staging)"
+            }
+          },
+          "required": ["service"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.get_service_top_operations",
+        "mcpName": "get_service_top_operations",
+        "title": "Service Top Operations",
+        "description": "Top operations (endpoints/spans) of one service, ranked by the chosen metric. Use after diagnose_service to find which endpoints need attention.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "service": {
+              "type": "string",
+              "description": "The service (exact `service.name`)"
+            },
+            "metric": {
+              "type": "string",
+              "enum": [
+                "count",
+                "avg_duration",
+                "p50_duration",
+                "p95_duration",
+                "p99_duration",
+                "error_rate",
+                "apdex"
+              ],
+              "description": "What to rank by (default count)"
+            },
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time. Covers at most 7 days: a wider window keeps end_time and is narrowed to the 7 days before it."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max operations to return (default 20, max 500)"
+            }
+          },
+          "required": ["service"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.service_map",
+        "mcpName": "service_map",
+        "title": "Service Map",
+        "description": "Show service-to-service dependencies with call counts, error rates, and latency per edge. Use to understand system architecture and identify problematic inter-service calls.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "service": {
+              "type": "string",
+              "description": "Only edges involving this service, as source or target (exact `service.name`)"
+            },
+            "environment": {
+              "type": "string",
+              "description": "Only this deployment environment (e.g. production, staging)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.service_deployments",
+        "mcpName": "service_deployments",
+        "title": "Service Deployments",
+        "description": "Which versions (commit SHAs from the `vcs.ref.head.revision` resource attribute) each service ran in the window: first and last seen, traffic, error rate and p50/p95 per version, and which are still live. Verifies a rollout and compares a new version against the previous one in one call. Read from rollups, so 30-day windows are cheap. Keeps the 20 most recently serving versions per service and environment. Services that report no revision are not listed.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 7 days before end_time. Covers at most 30 days: a wider window keeps end_time and is narrowed to the 30 days before it."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "service": {
+              "type": "string",
+              "description": "Only this service (exact `service.name`)"
+            },
+            "environment": {
+              "type": "string",
+              "description": "Only this deployment environment (e.g. production, staging)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max service versions to return (default 100, max 500)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.find_errors",
+        "mcpName": "find_errors",
+        "title": "Find Errors",
+        "description": "Find and categorize errors by type with counts and affected services. Each error has a stable `fingerprint` (a decimal UInt64): pass it to error_detail for sample traces. The error-issue tools take an `issue_id` UUID from list_error_issues instead, which is a separate identity.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "service": {
+              "type": "string",
+              "description": "Only this service (exact `service.name`)"
+            },
+            "environment": {
+              "type": "string",
+              "description": "Only this deployment environment (e.g. production, staging)"
+            },
+            "identity": {
+              "type": "string",
+              "enum": ["unexpected"],
+              "description": "Pass \"unexpected\" to keep only identities that break a no-unknown-errors policy: labels outside `namespace_prefix` (library tags such as `AI.Error`, bare `Error`) plus the 5xx and unexpected-error-envelope markers. Omit for all errors."
+            },
+            "namespace_prefix": {
+              "type": "string",
+              "description": "The prefix every deliberate, namespaced error tag starts with (default \"@maple/\"). Only used with identity=\"unexpected\"."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max error types to return (default 20, max 200)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.error_detail",
+        "mcpName": "error_detail",
+        "title": "Error Detail",
+        "description": "One error: what it is (exception, message, services, count, first/last seen), sample traces with the failing span, and correlated logs. Takes a `fingerprint` (decimal UInt64 from find_errors) or an `issue_id` (UUID from list_error_issues). Without a window it reads around the error's last occurrence. Use inspect_trace on a trace_id for the full span tree.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fingerprint": {
+              "type": "string",
+              "description": "The error FingerprintHash from find_errors or list_error_issues: a decimal UInt64 string, e.g. \"11640295108927840024\"."
+            },
+            "issue_id": {
+              "type": "string",
+              "description": "An error issue id (UUID) from list_error_issues, instead of fingerprint."
+            },
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "service": {
+              "type": "string",
+              "description": "Only this service (exact `service.name`)"
+            },
+            "include_timeseries": {
+              "type": "boolean",
+              "description": "Include error count over time to see if the error is trending up or down"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max sample traces to return (default 5, max 20)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.list_error_issues",
+        "mcpName": "list_error_issues",
+        "title": "List Error Issues",
+        "description": "List persistent error issues (one per exception fingerprint, plus alert and integration issues) with workflow state, counts, assignment and lease holder. An issue survives new occurrences, so its state, notes and assignee persist. The `Issue ID` is what the issue tools take; the `Fingerprint` column is what error_detail takes. A `regressed` issue was fixed before and started firing again: read its events before investigating it as new.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workflow_state": {
+              "type": "string",
+              "enum": [
+                "triage",
+                "regressed",
+                "todo",
+                "in_progress",
+                "in_review",
+                "verifying",
+                "done",
+                "cancelled",
+                "wontfix"
+              ],
+              "description": "Filter by workflow state (default: all non-archived)"
+            },
+            "severity": {
+              "type": "string",
+              "enum": ["critical", "high", "medium", "low", "unset"],
+              "description": "Filter by triage severity, or 'unset' for untriaged issues"
+            },
+            "kind": {
+              "type": "string",
+              "enum": ["error", "alert", "integration"],
+              "description": "Filter by issue kind: error (fingerprint groups), alert (alert-rule incidents) or integration (third-party webhooks)"
+            },
+            "service": {
+              "type": "string",
+              "description": "Filter by service name"
+            },
+            "last_seen_after": {
+              "type": "string",
+              "description": "Only issues with an occurrence after this time, the way to ask \"what fired recently\" without paging the whole backlog, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601)"
+            },
+            "exception_type": {
+              "type": "string",
+              "description": "Only issues with this exact exception type or error label"
+            },
+            "search": {
+              "type": "string",
+              "description": "Case-insensitive substring of the exception type, message, label or service name"
+            },
+            "compact": {
+              "type": "boolean",
+              "description": "Default true: narrow rows (id, state, severity, service, exception, events, last seen, fingerprint). Pass false for priority, assignment, lease and notes"
+            },
+            "cursor": {
+              "type": "string",
+              "description": "The `nextCursor` from a previous page, to read the next one"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max issues to return (default 50, max 200)"
+            },
+            "include_archived": {
+              "type": "boolean",
+              "description": "Also return archived issues"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.list_error_issue_events",
+        "mcpName": "list_error_issue_events",
+        "title": "List Error Issue Events",
+        "description": "List the audit-log events for an issue (state transitions, claims, comments, agent notes, fix proposals) in reverse-chronological order.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "issue_id": {
+              "type": "string",
+              "description": "The error issue ID (from list_error_issues)",
+              "format": "uuid"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max events to return (default 100, max 500)"
+            }
+          },
+          "required": ["issue_id"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.list_error_incidents",
+        "mcpName": "list_error_incidents",
+        "title": "List Error Incidents",
+        "description": "List error incidents: time-bounded flare-ups under an error issue. Each issue can have many incidents: a 'first_seen' incident when the issue opens, then 'regression' incidents if new occurrences arrive after the issue was resolved. Incidents auto-resolve after the issue is silent for ~30 min.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "issue_id": {
+              "type": "string",
+              "description": "Optional: narrow to incidents for this issue ID. If omitted, returns org-wide open incidents.",
+              "format": "uuid"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.search_traces",
+        "mcpName": "search_traces",
+        "title": "Search Traces",
+        "description": "Find traces, newest first, by service, duration, error status, HTTP method, span name, or one span attribute. Without `span_name` the filters apply to each trace's entry span and one row per trace comes back; with `span_name` every span is searched and each row is a matching span. Each row has the full trace id, span id and start time; pass the start as inspect_trace `timestamp`. For the slowest traces ranked by duration with percentiles, use find_slow_traces. explore_attributes lists attribute keys and values.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time. Covers at most 7 days: a wider window keeps end_time and is narrowed to the 7 days before it."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "service": {
+              "type": "string",
+              "description": "Only this service (exact `service.name`), matched on the entry span, or on every span when `span_name` is set"
+            },
+            "environment": {
+              "type": "string",
+              "description": "Only this deployment environment (e.g. production, staging)"
+            },
+            "has_error": {
+              "type": "boolean",
+              "description": "Only spans with status Error"
+            },
+            "min_duration_ms": {
+              "type": "number",
+              "description": "Minimum duration in milliseconds"
+            },
+            "max_duration_ms": {
+              "type": "number",
+              "description": "Maximum duration in milliseconds"
+            },
+            "http_method": {
+              "type": "string",
+              "description": "Only spans with this HTTP method"
+            },
+            "span_name": {
+              "type": "string",
+              "description": "Case-insensitive substring of the span name. Switches the search to span level"
+            },
+            "trace_id": {
+              "type": "string",
+              "description": "Only this trace"
+            },
+            "attribute_key": {
+              "type": "string",
+              "description": "Span attribute to filter on (e.g. user.id). Alone, requires the attribute to exist. With a value, a resource attribute (k8s.pod.name) also works"
+            },
+            "attribute_value": {
+              "type": "string",
+              "description": "Exact value for `attribute_key`"
+            },
+            "root_only": {
+              "type": "boolean",
+              "description": "With `span_name`, still match entry spans only instead of every span"
+            },
+            "offset": {
+              "type": "number",
+              "description": "Rows to skip, for paging (default 0). Use the `next` call a truncated result gives."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max traces to return (default 20, max 200)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.inspect_trace",
+        "mcpName": "inspect_trace",
+        "title": "Inspect Trace",
+        "description": "Span tree and logs for one trace: request flow, bottlenecks, error context. Large traces are bounded to an overview (errors and longest spans first) plus a per span name rollup (count, total/max duration, errors) of every span; raise `max_spans` for more detail. `inspect_span` gives one span's full attributes. The first read covers ±1h around `timestamp` (or the last 24h without one); if the trace is not there, it is located up to 30 days back.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "trace_id": {
+              "type": "string",
+              "description": "The trace ID to inspect"
+            },
+            "timestamp": {
+              "type": "string",
+              "description": "Any timestamp from the trace (e.g. a search_traces Start). Narrows the scan to ±1h around it; required for traces older than 30 days, and faster for any trace older than 24h, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601)"
+            },
+            "errors_only": {
+              "type": "boolean",
+              "description": "Render only error spans, their ancestors and the roots: the fastest way to read a large trace's failure without its healthy spans."
+            },
+            "max_spans": {
+              "type": "number",
+              "description": "Max spans to render in the tree; errors and roots are always kept (default 60, max 300)"
+            }
+          },
+          "required": ["trace_id"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.inspect_span",
+        "mcpName": "inspect_span",
+        "title": "Inspect Span",
+        "description": "Full attribute set for one span; `inspect_trace` shows only a trimmed set per span. For an AI agent span (an LLM call, a tool execution, an agent invocation) it also decodes the captured messages and the tool calls it made or executed, with each call's result resolved from the rest of the trace.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "trace_id": {
+              "type": "string",
+              "description": "The trace ID the span belongs to"
+            },
+            "span_id": {
+              "type": "string",
+              "description": "The span ID to inspect (from `inspect_trace` output)"
+            },
+            "timestamp": {
+              "type": "string",
+              "description": "Timestamp of the span (e.g. from search_traces). Narrows the scan to ±1h and saves an AI span the lookup that resolves its trace's bounds, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601)"
+            },
+            "payload_chars": {
+              "type": "number",
+              "description": "Max characters per captured message or payload (AI spans only) (default 2000, max 20000)"
+            }
+          },
+          "required": ["trace_id", "span_id"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.find_slow_traces",
+        "mcpName": "find_slow_traces",
+        "title": "Find Slow Traces",
+        "description": "Find the slowest traces with percentile context (p50, p95, min, max). Use inspect_trace on slow trace_ids, with the row's Start as `timestamp`, to find bottleneck spans.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time. Covers at most 7 days: a wider window keeps end_time and is narrowed to the 7 days before it."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "service": {
+              "type": "string",
+              "description": "Only this service (exact `service.name`)"
+            },
+            "environment": {
+              "type": "string",
+              "description": "Only this deployment environment (e.g. production, staging)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max traces to return (default 10, max 100)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.search_logs",
+        "mcpName": "search_logs",
+        "title": "Search Logs",
+        "description": "Individual log entries, newest first, filtered by service, severity, body text, trace or span. Cause-bearing attributes (log.error, error.*, exception.*) are shown under each entry. When the match is too large to read, use mine_log_patterns instead. inspect_trace shows the full trace behind an entry.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time. Covers at most 7 days: a wider window keeps end_time and is narrowed to the 7 days before it."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "service": {
+              "type": "string",
+              "description": "Only this service (exact `service.name`)"
+            },
+            "severity": {
+              "type": "string",
+              "enum": ["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
+              "description": "Only logs at this severity level (matches every SDK spelling of it)"
+            },
+            "search": {
+              "type": "string",
+              "description": "Substring of the log body"
+            },
+            "trace_id": {
+              "type": "string",
+              "description": "Only logs under this trace. Without start_time, searches the last 7 days instead of 6 hours."
+            },
+            "span_id": {
+              "type": "string",
+              "description": "Only logs under this span"
+            },
+            "offset": {
+              "type": "number",
+              "description": "Rows to skip, for paging (default 0). Use the `next` call a truncated result gives."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max logs to return (default 30, max 200)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.mine_log_patterns",
+        "mcpName": "mine_log_patterns",
+        "title": "Mine Log Patterns",
+        "description": "Cluster log messages into templates (e.g. 'GET /api/users/<*> 200 in <*>ms') with counts and a per-template severity/service breakdown. Use when search_logs would return too many rows to read. It clusters a sample of the most recent matching logs, so pair it with a tight window and selective filters.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time. Covers at most 1 day: a wider window keeps end_time and is narrowed to the 1 day before it."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "service": {
+              "type": "string",
+              "description": "Only this service (exact `service.name`)"
+            },
+            "severity": {
+              "type": "string",
+              "enum": ["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
+              "description": "Only logs at this severity level (matches every SDK spelling of it)"
+            },
+            "search": {
+              "type": "string",
+              "description": "Substring of the log body, applied before clustering"
+            },
+            "trace_id": {
+              "type": "string",
+              "description": "Only logs under this trace"
+            },
+            "sample_size": {
+              "type": "number",
+              "description": "Recent logs sampled for clustering; more finds rarer templates, costs more (default 10000, max 50000)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max patterns to return (default 50, max 200)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.query_data",
+        "mcpName": "query_data",
+        "title": "Query Data",
+        "description": "Aggregate traces, logs, metrics or product events into a timeseries or a top-N breakdown. Start here for trends, comparisons and top-N; for errors prefer find_errors and error_detail; for a shape this tool cannot express, run_sql. Applied defaults are listed in the result.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": ["traces", "logs", "metrics", "product_events"],
+              "description": "'traces' for request/span analysis (latency, errors, throughput); 'logs' for log volume; 'metrics' for a custom metric (needs metric_name and metric_type from list_metrics); 'product_events' for track() events, page views and server events (names from list_product_events)."
+            },
+            "kind": {
+              "type": "string",
+              "enum": ["timeseries", "breakdown"],
+              "description": "'timeseries' for how a value changed over time; 'breakdown' for top-N or distribution. Pick the right one first rather than calling twice."
+            },
+            "metric": {
+              "type": "string",
+              "description": "Traces: count, avg_duration, p50_duration, p95_duration, p99_duration, error_rate (0-1 ratio), apdex (needs apdex_threshold_ms). Logs: count. Product events: count, sessions, persons, users, visitors. Metrics: avg, sum, min, max, count, rate, increase. For counters (sum metrics, Prometheus *_total gauges) use increase (total over the window) or rate (per second); both are per-series and reset-aware. sum adds raw samples. Default: count, or avg for metrics."
+            },
+            "group_by": {
+              "type": "string",
+              "description": "Traces: service, span_name, status_code, http_method, attribute, resource_attribute. Logs: service, severity. Metrics: service, attribute, resource_attribute. Product events: event_name, kind, source, host, page_path, service, group, attribute. 'attribute' and 'resource_attribute' need attribute_key (resource_attribute reads resource keys such as k8s.pod.name or deployment.environment). Timeseries also take 'none' (the default); breakdown defaults to service."
+            },
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "service": {
+              "type": "string",
+              "description": "Only this service (exact `service.name`)"
+            },
+            "span_name": {
+              "type": "string",
+              "description": "Filter by span name (traces only). Exact match first; when nothing matches exactly it is matched as a case-insensitive substring"
+            },
+            "root_spans_only": {
+              "type": "boolean",
+              "description": "Only include root spans (traces only)"
+            },
+            "environments": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Only these deployment environments (traces, logs, metrics; explore_attributes source=services lists them)"
+            },
+            "commit_shas": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Commit SHAs to filter (traces only)"
+            },
+            "apdex_threshold_ms": {
+              "type": "number",
+              "description": "Apdex threshold in ms (traces only; needed for metric=apdex)"
+            },
+            "severity": {
+              "type": "string",
+              "enum": ["TRACE", "DEBUG", "INFO", "WARN", "ERROR", "FATAL"],
+              "description": "Only this log severity (logs only)"
+            },
+            "event_name": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Only these event names (product_events only)"
+            },
+            "event_kind": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["navigation", "custom", "screen"]
+              },
+              "description": "Only these event kinds (product_events only)"
+            },
+            "host": {
+              "type": "string",
+              "description": "Only events fired on this site host (product_events only)"
+            },
+            "page_path": {
+              "type": "string",
+              "description": "Only events fired on this page path (product_events only)"
+            },
+            "metric_name": {
+              "type": "string",
+              "description": "The metric, from list_metrics (source=metrics only)"
+            },
+            "metric_type": {
+              "type": "string",
+              "enum": ["sum", "gauge", "histogram", "exponential_histogram"],
+              "description": "Type of `metric_name`, as list_metrics reports it"
+            },
+            "attribute_key": {
+              "type": "string",
+              "description": "Attribute to filter on, or to group by with group_by=attribute. Span (or log/metric label) and resource attributes both work; the scope is resolved automatically"
+            },
+            "attribute_value": {
+              "type": "string",
+              "description": "Exact value for attribute_key. Also applies when grouping by the same key"
+            },
+            "attribute_scope": {
+              "type": "string",
+              "enum": ["span", "resource"],
+              "description": "Where attribute_key lives: 'span' (span, log or metric-datapoint attributes) or 'resource' (deployment.environment, k8s.pod.name...). Resolved from the known keys when omitted"
+            },
+            "bucket_seconds": {
+              "type": "number",
+              "description": "Bucket width in seconds (timeseries only; auto-computed when omitted)"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max rows of a breakdown (default 10, max 100)"
+            }
+          },
+          "required": ["source", "kind"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.list_metrics",
+        "mcpName": "list_metrics",
+        "title": "List Metrics",
+        "description": "Discover custom metrics with their type, unit, monotonicity and data volume. Pass a discovered `metric_name` and `metric_type` to query_data source=metrics.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time. Covers at most 30 days: a wider window keeps end_time and is narrowed to the 30 days before it."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "service": {
+              "type": "string",
+              "description": "Only this service (exact `service.name`)"
+            },
+            "search": {
+              "type": "string",
+              "description": "Substring of the metric name"
+            },
+            "metric_type": {
+              "type": "string",
+              "enum": ["sum", "gauge", "histogram", "exponential_histogram"],
+              "description": "Only metrics of this type"
+            },
+            "offset": {
+              "type": "number",
+              "description": "Rows to skip, for paging (default 0). Use the `next` call a truncated result gives."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max metrics to return (default 50, max 500)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.explore_attributes",
+        "mcpName": "explore_attributes",
+        "title": "Explore Attributes",
+        "description": "Discover attribute keys and their values, for filtering in query_data and search_traces. source=services instead lists the environments and commit SHAs seen in the window.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "source": {
+              "type": "string",
+              "enum": ["traces", "metrics", "services"],
+              "description": "'traces' for span or resource attributes, 'metrics' for metric labels, 'services' for environments and commit SHAs"
+            },
+            "scope": {
+              "type": "string",
+              "enum": ["span", "resource"],
+              "description": "Span or resource attributes (traces only; default span)"
+            },
+            "metric_name": {
+              "type": "string",
+              "description": "source=metrics: list this metric's own data-point labels (any metric type). Without it, keys come from an org-wide rollup of sum metrics only"
+            },
+            "metric_type": {
+              "type": "string",
+              "enum": ["sum", "gauge", "histogram", "exponential_histogram"],
+              "description": "Type of metric_name, as list_metrics reports it (looked up when omitted)"
+            },
+            "key": {
+              "type": "string",
+              "description": "Return this key's values instead of the key list"
+            },
+            "service": {
+              "type": "string",
+              "description": "Only this service (exact `service.name`). Not applied for source=services"
+            },
+            "start_time": {
+              "type": "string",
+              "description": "Start of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: 6 hours before end_time. Covers at most 30 days: a wider window keeps end_time and is narrowed to the 30 days before it."
+            },
+            "end_time": {
+              "type": "string",
+              "description": "End of the window, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601). Default: now; a future time is clamped to now."
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max keys or values (not applied for source=services) to return (default 50, max 500)"
+            }
+          },
+          "required": ["source"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.compare_periods",
+        "mcpName": "compare_periods",
+        "title": "Compare Periods",
+        "description": "Compare error rate, throughput and P95 between two periods, overall and per service, and flag regressions (error_rate_up, latency_up, throughput_drop). Useful after a deploy or an incident report.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "current_start": {
+              "type": "string",
+              "description": "Start of the current period (default: 1 hour before current_end), UTC (YYYY-MM-DD HH:mm:ss or ISO 8601)"
+            },
+            "current_end": {
+              "type": "string",
+              "description": "End of the current period (default: now), UTC (YYYY-MM-DD HH:mm:ss or ISO 8601)"
+            },
+            "previous_start": {
+              "type": "string",
+              "description": "Start of the previous period (default: the current period's length before previous_end), UTC (YYYY-MM-DD HH:mm:ss or ISO 8601)"
+            },
+            "previous_end": {
+              "type": "string",
+              "description": "End of the previous period (default: current_start), UTC (YYYY-MM-DD HH:mm:ss or ISO 8601)"
+            },
+            "around_time": {
+              "type": "string",
+              "description": "Compare the 30 minutes before this time with the 30 minutes after it; overrides the four period bounds, UTC (YYYY-MM-DD HH:mm:ss or ISO 8601)"
+            },
+            "service": {
+              "type": "string",
+              "description": "Scope the comparison to this service (exact `service.name`)"
+            },
+            "environment": {
+              "type": "string",
+              "description": "Only this deployment environment (e.g. production, staging)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.list_alert_rules",
+        "mcpName": "list_alert_rules",
+        "title": "List Alert Rules",
+        "description": "List configured alert rules with severity, signal type and condition. Use list_alert_incidents for what has fired.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "services": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Only rules covering any of these services: scoped to them, scoped to every service, or raw_query rules whose SQL or name mentions them"
+            },
+            "signal_type": {
+              "type": "string",
+              "enum": [
+                "error_rate",
+                "p95_latency",
+                "p99_latency",
+                "apdex",
+                "throughput",
+                "builder_query",
+                "raw_query"
+              ],
+              "description": "Only rules on this signal type"
+            },
+            "severity": {
+              "type": "string",
+              "enum": ["warning", "critical"],
+              "description": "Only rules with this severity"
+            },
+            "enabled_only": {
+              "type": "boolean",
+              "description": "Only enabled rules"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.get_alert_rule",
+        "mcpName": "get_alert_rule",
+        "title": "Get Alert Rule",
+        "description": "Get full configuration details of a specific alert rule including thresholds, service filters, evaluation settings, and notification destinations. Use list_alert_rules to find rule IDs.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "rule_id": {
+              "type": "string",
+              "description": "Alert rule ID"
+            }
+          },
+          "required": ["rule_id"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.list_alert_incidents",
+        "mcpName": "list_alert_incidents",
+        "title": "List Alert Incidents",
+        "description": "List triggered alert incidents (open and resolved) with severity, group, condition and last observed value. For one rule's history with trigger, notify and resolve timestamps use get_incident_timeline.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "status": {
+              "type": "string",
+              "enum": ["open", "resolved"],
+              "description": "Only incidents in this status"
+            },
+            "severity": {
+              "type": "string",
+              "enum": ["warning", "critical"],
+              "description": "Only incidents with this severity"
+            },
+            "group_key": {
+              "type": "string",
+              "description": "Only incidents with this exact group key"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max incidents to return (default 50, max 200)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "maple.get_incident_timeline",
+        "mcpName": "get_incident_timeline",
+        "title": "Incident Timeline",
+        "description": "Incidents for one alert rule (or all rules) with first and last trigger, last notification and resolution timestamps: the per-incident detail behind list_alert_incidents. Pass rule_id to follow one rule over time.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "rule_id": {
+              "type": "string",
+              "description": "Only incidents of this rule (ids from list_alert_rules)"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["open", "resolved"],
+              "description": "Only incidents in this status"
+            },
+            "severity": {
+              "type": "string",
+              "enum": ["warning", "critical"],
+              "description": "Only incidents with this severity"
+            },
+            "group_key": {
+              "type": "string",
+              "description": "Only incidents with this exact group key"
+            },
+            "limit": {
+              "type": "number",
+              "description": "Max incidents to return (default 20, max 200)"
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 262144
+      }
+    ]
+  },
+  "config": {
+    "revision": 1,
+    "fields": []
+  },
+  "allowedHosts": ["api.maple.dev"],
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://maple.dev/docs/reference/mcp",
+    "https://api.maple.dev/.well-known/oauth-protected-resource/mcp",
+    "https://api.maple.dev/.well-known/oauth-authorization-server"
+  ],
+  "verificationNotes": "Owner-authorized publication-first testing used one authenticated Maple OAuth session to capture the provider tools/list catalog (75 tools, one page, server maple-observability 1.0.0, protocol 2025-06-18). The 24 admitted tools are a read-only reviewed subset for checking services, errors, traces, logs, metrics, and alerts; each carries the provider readOnlyHint and uses only validator-supported JSON Schema keywords. Write and destructive tools (alerts, dashboards, error-issue workflow, feedback), raw SQL, source-code reads, and session or agent transcript reads are excluded. Maple metadata documents Streamable HTTP, dynamic client registration, PKCE S256, the mcp:tools scope, refresh tokens, and RFC 7009 revocation; it does not advertise an authorization-response issuer parameter. Org identity remains an opaque connection. Live consent, privacy review, and production acceptance remain pending."
+}
