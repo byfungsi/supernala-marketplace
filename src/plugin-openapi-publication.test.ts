@@ -401,6 +401,19 @@ describe("OpenAPI existing release machine and D1 adapter", () => {
         _tag: "Success",
         success: true,
       });
+      // The durable journal canonicalizes JSON object keys before rehydrating a candidate.
+      const rehydratedCandidate: IncrementalReleaseCandidate = {
+        ...candidate,
+        version: Schema.decodeUnknownSync(PluginVersion)(
+          JSON.parse(canonicalPluginJson(candidate.version)),
+        ),
+        provenance: Schema.decodeUnknownSync(Schema.Json)(
+          JSON.parse(canonicalPluginJson(candidate.provenance)),
+        ),
+      };
+      expect(await application.readPublicationState(rehydratedCandidate)).toEqual(
+        Result.succeed("published"),
+      );
       const retry = await publishIncrementalRelease({ candidate, journal, artifacts, application });
       expect(retry).toMatchObject({ _tag: "Success", success: { status: "unchanged" } });
       expect(
@@ -431,6 +444,22 @@ describe("OpenAPI existing release machine and D1 adapter", () => {
           }),
         );
       }
+      const schemaUpdate = database.prepare(
+        "UPDATE plugin_catalog_tools SET input_schema_json = ? WHERE catalog_snapshot_id = ? AND tool_id = ?",
+      );
+      for (const schemaJson of ["{", '{"type":"string"}']) {
+        schemaUpdate.run(schemaJson, candidate.version.catalog.id, "items.list");
+        expect(await application.readPublicationState(rehydratedCandidate)).toEqual(
+          Result.succeed("mismatch"),
+        );
+      }
+      const originalTool = candidate.version.catalog.tools.find((tool) => tool.id === "items.list");
+      if (originalTool === undefined) throw new Error("inventory-list-tool-missing");
+      schemaUpdate.run(
+        JSON.stringify(originalTool.inputSchema),
+        candidate.version.catalog.id,
+        originalTool.id,
+      );
       database
         .prepare(`UPDATE plugin_catalog_tools SET default_policy = 'block'
         WHERE catalog_snapshot_id = ? AND tool_id = ?`)
