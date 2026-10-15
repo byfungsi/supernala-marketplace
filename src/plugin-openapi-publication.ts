@@ -10,6 +10,16 @@ type OpenApiReleaseCandidate = Extract<
   { readonly kind: "managed-openapi" }
 >;
 const encoder = new TextEncoder();
+const decodeStoredPluginJson = Schema.decodeUnknownResult(Schema.fromJsonString(Schema.Json));
+
+// Journal JSON canonicalizes object keys; persisted authority must match values, not insertion order.
+const storedPluginJsonMatches = (stored: string, expected: Schema.Json): boolean => {
+  const decoded = decodeStoredPluginJson(stored);
+  return (
+    Result.isSuccess(decoded) &&
+    canonicalPluginJson(decoded.success) === canonicalPluginJson(expected)
+  );
+};
 const guard = (sql: string, params: D1Statement["params"]): D1Statement => ({
   sql: `INSERT INTO plugin_marketplaces (marketplace_id, name, visibility, trust_class, status, created_at, updated_at)
     SELECT NULL, NULL, NULL, NULL, NULL, NULL, NULL WHERE NOT EXISTS (${sql})`,
@@ -289,8 +299,7 @@ export class PluginOpenApiPublication {
     const row = await this.#readRow(candidate.version.id);
     if (Result.isFailure(row)) return Result.fail(row.failure);
     if (row.success === null) return Result.succeed(false);
-    const { runtime, version, authDigest, configId, objectKey, hostsJson, provenanceJson } =
-      projection.success;
+    const { runtime, version, authDigest, configId, objectKey, hostsJson } = projection.success;
     const entry = row.success;
     const toolRows = await this.database.query({
       sql: `SELECT tool_id, ordinal, mcp_name, title,
@@ -312,7 +321,8 @@ export class PluginOpenApiPublication {
           toolRow.description === tool.description &&
           toolRow.classification === tool.classification &&
           toolRow.default_policy === tool.defaultPolicy &&
-          toolRow.input_schema_json === JSON.stringify(tool.inputSchema) &&
+          typeof toolRow.input_schema_json === "string" &&
+          storedPluginJsonMatches(toolRow.input_schema_json, tool.inputSchema) &&
           toolRow.maximum_output_bytes === tool.maximumOutputBytes
         );
       });
@@ -335,7 +345,7 @@ export class PluginOpenApiPublication {
         entry.definition_status === "active" &&
         entry.provider_status === "active" &&
         entry.allowed_hosts_json === hostsJson &&
-        entry.provenance_json === provenanceJson &&
+        storedPluginJsonMatches(entry.provenance_json, candidate.provenance) &&
         entry.object_key === objectKey &&
         entry.byte_size === candidate.artifactByteLength &&
         entry.authentication_kind === "none" &&
