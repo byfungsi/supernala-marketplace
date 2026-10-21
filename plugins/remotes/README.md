@@ -4,6 +4,7 @@ These records preserve fixed provider endpoints, OAuth definitions, registration
 
 | Provider              | Offline declaration                                                | Candidate tools                   | Live promotion blockers                                        |
 | --------------------- | ------------------------------------------------------------------ | --------------------------------- | -------------------------------------------------------------- |
+| Cloudflare            | Dynamic OAuth, PKCE S256, 62 bounded scopes; `whoami` identity     | 4 code-mode tools (approval exec) | Live catalog equality, privacy, acceptance                     |
 | Gmail                 | Preserved Workspace-owned OAuth behavior                           | Existing package catalog          | Developer Preview eligibility and OAuth verification           |
 | Atlassian Rovo / Jira | Dynamic OAuth; staged-unverified                                   | Awaiting exact public schemas     | Exact schemas and MCP identity/resource output paths           |
 | Linear                | Dynamic OAuth, PKCE S256, read/write scopes; reviewed subset       | 65 authenticated tools            | Live catalog equality, workspace identity, privacy, acceptance |
