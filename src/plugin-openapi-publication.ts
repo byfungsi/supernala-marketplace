@@ -1,7 +1,12 @@
 import { Result, Schema } from "effect";
-import type { D1BatchTransport, D1Statement } from "./cloudflare-adapters.js";
-import { pluginOpenApiObjectKey } from "./cloudflare-adapters.js";
+import {
+  failBatchGuard,
+  pluginOpenApiObjectKey,
+  type D1BatchTransport,
+  type D1Statement,
+} from "./cloudflare-adapters.js";
 import { admitMarketplaceOpenApiCandidate } from "./plugin-openapi-admission.js";
+import { definitionLogoDomainStatements } from "./plugin-logo-domain.js";
 import { canonicalPluginJson, digestPluginBytes } from "./plugin-contract.js";
 import type { IncrementalReleaseCandidate } from "./release-machine.js";
 
@@ -20,11 +25,6 @@ const storedPluginJsonMatches = (stored: string, expected: Schema.Json): boolean
     canonicalPluginJson(decoded.success) === canonicalPluginJson(expected)
   );
 };
-const guard = (sql: string, params: D1Statement["params"]): D1Statement => ({
-  sql: `INSERT INTO plugin_marketplaces (marketplace_id, name, visibility, trust_class, status, created_at, updated_at)
-    SELECT NULL, NULL, NULL, NULL, NULL, NULL, NULL WHERE NOT EXISTS (${sql})`,
-  params,
-});
 const rowSchema = Schema.Struct({
   status: Schema.String,
   runtime_kind: Schema.String,
@@ -89,7 +89,7 @@ const exactCandidateGuard = (
   }));
   // Group conjunctions to keep SQLite's expression tree below D1's depth-100
   // limit. A flat predicate fails remotely even though local SQLite accepts it.
-  return guard(
+  return failBatchGuard(
     `SELECT 1 FROM plugin_versions v
     JOIN plugin_definitions definition ON definition.plugin_definition_id = v.plugin_definition_id
     JOIN plugin_marketplaces marketplace ON marketplace.marketplace_id = definition.marketplace_id
@@ -423,6 +423,7 @@ export class PluginOpenApiPublication {
           now,
         ],
       },
+      ...definitionLogoDomainStatements(candidate.definitionId, candidate.logoDomain),
       {
         sql: `INSERT INTO plugin_artifacts (artifact_digest, object_key, byte_size, status, verified_at, created_at)
           VALUES (?, ?, ?, 'pending', NULL, ?) ON CONFLICT (artifact_digest) DO NOTHING`,
@@ -532,7 +533,7 @@ export class PluginOpenApiPublication {
         WHERE plugin_version_id = ? AND artifact_digest = ? AND status = 'pending'`,
         params: [candidate.reviewedAt, candidate.version.id, candidate.artifactDigest],
       },
-      guard(
+      failBatchGuard(
         `SELECT 1 FROM plugin_artifacts a JOIN plugin_publication_intents i
         ON i.artifact_digest = a.artifact_digest WHERE i.plugin_version_id = ?
         AND a.status = 'available' AND a.verified_at IS NOT NULL AND i.status = 'artifact-verified'`,
@@ -549,7 +550,7 @@ export class PluginOpenApiPublication {
           candidate.artifactDigest,
         ],
       },
-      guard(
+      failBatchGuard(
         `SELECT 1 FROM plugin_versions WHERE plugin_version_id = ? AND status = 'published'
         AND published_at = ? AND artifact_digest = ?`,
         [candidate.version.id, candidate.version.publishedAt, candidate.artifactDigest],

@@ -17,23 +17,13 @@ import {
   digestPluginOAuthProviderDefinition,
   encodePluginOAuthProviderDefinitionCanonicalJson,
 } from "./oauth-provider-definition.js";
-import type { D1BatchTransport, D1Statement } from "./cloudflare-adapters.js";
+import { failBatchGuard, type D1BatchTransport, type D1Statement } from "./cloudflare-adapters.js";
 import type {
   ApplicationPublicationAdapter,
   IncrementalReleaseCandidate,
 } from "./release-machine.js";
+import { definitionLogoDomainStatements } from "./plugin-logo-domain.js";
 import { PluginOpenApiPublication } from "./plugin-openapi-publication.js";
-
-const failBatchGuard = (
-  condition: string,
-  params: ReadonlyArray<string | number | null>,
-): D1Statement => ({
-  sql: `INSERT INTO plugin_marketplaces
-          (marketplace_id, name, visibility, trust_class, status, created_at, updated_at)
-        SELECT NULL, NULL, NULL, NULL, NULL, NULL, NULL
-        WHERE NOT EXISTS (${condition})`,
-  params,
-});
 
 const ExistingConfigRow = Schema.Struct({
   config_schema_id: Schema.NonEmptyString,
@@ -866,6 +856,7 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
           candidate.reviewedAt,
         ],
       },
+      ...definitionLogoDomainStatements(candidate.definitionId, candidate.logoDomain),
       {
         sql:
           candidate.authStrategy?.profile === "api-key"

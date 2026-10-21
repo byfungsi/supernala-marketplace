@@ -32,6 +32,8 @@ export type ReleaseKind = "managed-package" | "managed-remote-mcp" | "managed-op
 interface IncrementalReleaseCandidateBase {
   readonly identity: PluginReleaseIdentity;
   readonly definitionId: string;
+  /** Reviewed source declaration; undeclared leaves the definition logo untouched. */
+  readonly logoDomain?: string;
   readonly version: PluginVersion;
   readonly authentication: PackagedPluginAuthenticationType;
   readonly authStrategy?: PluginAuthStrategyDefinitionType;

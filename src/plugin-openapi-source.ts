@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { Result, Schema } from "effect";
 import { digestPluginBytes, PluginSha256, PluginToolId } from "./plugin-contract.js";
+import { PluginLogoDomain } from "./plugin-logo-domain.js";
 import {
   compilePluginOpenApi,
   PluginOpenApiAuthoring,
@@ -38,6 +39,7 @@ export const PluginOpenApiSource = Schema.Struct({
   name: Schema.NonEmptyString,
   description: Schema.NonEmptyString,
   license: Schema.NonEmptyString,
+  logoDomain: Schema.optionalKey(PluginLogoDomain),
   hostedSource: Schema.optionalKey(
     Schema.Struct({
       url: Schema.NonEmptyString,

@@ -281,6 +281,26 @@ describe("authority and protocol gates", () => {
     ).toBe(true);
   });
 
+  it("admits only a bare lowercase provider hostname as a remote logo declaration", async () => {
+    const value = JSON.parse(await readFile("plugins/remotes/cloudflare.json", "utf8")) as Record<
+      string,
+      unknown
+    >;
+    for (const [logoDomain, admitted] of [
+      ["cloudflare.com", true],
+      ["ok-site.co.id", true],
+      ["https://cloudflare.com", false],
+      ["Cloudflare.com", false],
+      ["cloudflare", false],
+      ["cloudflare.com/logo.png", false],
+      ["-bad.com", false],
+    ] as const) {
+      expect(
+        Result.isSuccess(validateManagedRemotePluginRelease({ ...value, logoDomain }, "authoring")),
+      ).toBe(admitted);
+    }
+  });
+
   it("keeps Cloudflare bound to its captured dynamic OAuth authority and code-mode catalog", async () => {
     const value: unknown = JSON.parse(await readFile("plugins/remotes/cloudflare.json", "utf8"));
     const decoded = validateManagedRemotePluginRelease(value, "authoring");
@@ -289,6 +309,7 @@ describe("authority and protocol gates", () => {
 
     expect(decoded.success.status).toBe("reviewed-publishable");
     expect(decoded.success.endpoint).toBe("https://mcp.cloudflare.com/mcp");
+    expect(decoded.success.logoDomain).toBe("cloudflare.com");
     expect(decoded.success.oauthRegistrationMode).toBe("dynamic");
     expect(decoded.success.scopes).toHaveLength(62);
     expect(decoded.success.scopes).toEqual(
