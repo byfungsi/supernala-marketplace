@@ -1,0 +1,388 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-publishable",
+  "id": "supernala-public:supernala:cloudflare@1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "cloudflare",
+  "version": "1.0.0",
+  "name": "Cloudflare",
+  "description": "Curated Cloudflare API hosted MCP integration",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "cloudflare-mcp-v1",
+    "providerRegistrationId": "cloudflare-oauth-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://mcp.cloudflare.com/mcp",
+  "oauthRegistrationMode": "dynamic",
+  "providerDefinitionDigest": "7874e7677a8a0b3862e515d3ccf3ad7087f8414b95d7c3958606ea44b0baf7d8",
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "cloudflare-oauth-v1",
+    "providerDefinitionDigest": "7874e7677a8a0b3862e515d3ccf3ad7087f8414b95d7c3958606ea44b0baf7d8",
+    "requestedScopes": [
+      "account-analytics.read",
+      "account-settings.read",
+      "account:read",
+      "ai.read",
+      "ai.write",
+      "analytics.read",
+      "browser-rendering.read",
+      "browser-rendering.write",
+      "cache-settings.read",
+      "cache.purge",
+      "containers.read",
+      "containers.write",
+      "d1.metadata_read",
+      "d1.read",
+      "d1.write",
+      "dns.read",
+      "dns.write",
+      "email-routing-rule.read",
+      "email-sending.read",
+      "logs.read",
+      "memberships.read",
+      "offline_access",
+      "page.read",
+      "page.write",
+      "pages.metadata_read",
+      "pipelines.read",
+      "pipelines.write",
+      "queues.metadata_read",
+      "queues.read",
+      "queues.write",
+      "r2-catalog-sql.read",
+      "r2-catalog.read",
+      "r2-catalog.write",
+      "secrets-store.read",
+      "secrets-store.write",
+      "ssl-and-certificates.read",
+      "user-details.read",
+      "user:read",
+      "vectorize.read",
+      "vectorize.write",
+      "workers-ci.read",
+      "workers-ci.write",
+      "workers-kv-storage.metadata_read",
+      "workers-kv-storage.read",
+      "workers-kv-storage.write",
+      "workers-observability.read",
+      "workers-observability.write",
+      "workers-r2-bucket-item.read",
+      "workers-r2-bucket-item.write",
+      "workers-r2.metadata_read",
+      "workers-r2.read",
+      "workers-r2.write",
+      "workers-routes.read",
+      "workers-routes.write",
+      "workers-scripts.edit",
+      "workers-scripts.metadata_read",
+      "workers-scripts.read",
+      "workers-scripts.write",
+      "workers-tail.read",
+      "workers_ai.metadata_read",
+      "zone-settings.read",
+      "zone.read"
+    ],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://mcp.cloudflare.com/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://mcp.cloudflare.com/.well-known/oauth-protected-resource/mcp",
+    "identity": {
+      "kind": "mcp-tool",
+      "operation": {
+        "endpoint": "https://mcp.cloudflare.com/mcp",
+        "toolName": "whoami",
+        "input": {},
+        "maximumOutputBytes": 65536
+      },
+      "subjectPath": ["id"],
+      "displayLabelPath": ["email"],
+      "subjectStability": "stable",
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 512
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "oauthProviderDefinition": {
+    "schemaVersion": 1,
+    "protocol": "oauth2-authorization-code",
+    "issuer": "https://mcp.cloudflare.com",
+    "provider": "cloudflare-mcp",
+    "resourceIdentity": "https://mcp.cloudflare.com/mcp",
+    "authorizationEndpoint": "https://mcp.cloudflare.com/authorize",
+    "tokenEndpoint": "https://mcp.cloudflare.com/token",
+    "tokenEndpointAuthMethod": "none",
+    "authorizationResponseIssuer": "required",
+    "pkce": {
+      "method": "S256"
+    },
+    "authorizationParameters": [],
+    "scopes": [
+      "account-analytics.read",
+      "account-settings.read",
+      "account:read",
+      "ai.read",
+      "ai.write",
+      "analytics.read",
+      "browser-rendering.read",
+      "browser-rendering.write",
+      "cache-settings.read",
+      "cache.purge",
+      "containers.read",
+      "containers.write",
+      "d1.metadata_read",
+      "d1.read",
+      "d1.write",
+      "dns.read",
+      "dns.write",
+      "email-routing-rule.read",
+      "email-sending.read",
+      "logs.read",
+      "memberships.read",
+      "offline_access",
+      "page.read",
+      "page.write",
+      "pages.metadata_read",
+      "pipelines.read",
+      "pipelines.write",
+      "queues.metadata_read",
+      "queues.read",
+      "queues.write",
+      "r2-catalog-sql.read",
+      "r2-catalog.read",
+      "r2-catalog.write",
+      "secrets-store.read",
+      "secrets-store.write",
+      "ssl-and-certificates.read",
+      "user-details.read",
+      "user:read",
+      "vectorize.read",
+      "vectorize.write",
+      "workers-ci.read",
+      "workers-ci.write",
+      "workers-kv-storage.metadata_read",
+      "workers-kv-storage.read",
+      "workers-kv-storage.write",
+      "workers-observability.read",
+      "workers-observability.write",
+      "workers-r2-bucket-item.read",
+      "workers-r2-bucket-item.write",
+      "workers-r2.metadata_read",
+      "workers-r2.read",
+      "workers-r2.write",
+      "workers-routes.read",
+      "workers-routes.write",
+      "workers-scripts.edit",
+      "workers-scripts.metadata_read",
+      "workers-scripts.read",
+      "workers-scripts.write",
+      "workers-tail.read",
+      "workers_ai.metadata_read",
+      "zone-settings.read",
+      "zone.read"
+    ],
+    "account": {
+      "kind": "declaration-managed"
+    },
+    "tokens": {
+      "accessTokenType": "bearer",
+      "expiresIn": {
+        "required": true,
+        "minimumSeconds": 1,
+        "maximumSeconds": 86400
+      },
+      "grantedScopes": {
+        "whenPresent": "exact-match",
+        "whenOmitted": "requested-scopes"
+      },
+      "initialRefreshToken": "required",
+      "refreshResponseToken": "retain-current-if-omitted"
+    },
+    "refresh": {
+      "kind": "standard-form-post",
+      "invalidGrant": "reauthorization-required",
+      "ambiguousOutcome": "fail-closed-no-replay"
+    },
+    "revocation": {
+      "kind": "standard-form-post",
+      "endpoint": "https://mcp.cloudflare.com/token",
+      "token": "refresh-token",
+      "clientAuthentication": "registration-method",
+      "outcome": "best-effort-observed"
+    }
+  },
+  "scopes": [
+    "account-analytics.read",
+    "account-settings.read",
+    "account:read",
+    "ai.read",
+    "ai.write",
+    "analytics.read",
+    "browser-rendering.read",
+    "browser-rendering.write",
+    "cache-settings.read",
+    "cache.purge",
+    "containers.read",
+    "containers.write",
+    "d1.metadata_read",
+    "d1.read",
+    "d1.write",
+    "dns.read",
+    "dns.write",
+    "email-routing-rule.read",
+    "email-sending.read",
+    "logs.read",
+    "memberships.read",
+    "offline_access",
+    "page.read",
+    "page.write",
+    "pages.metadata_read",
+    "pipelines.read",
+    "pipelines.write",
+    "queues.metadata_read",
+    "queues.read",
+    "queues.write",
+    "r2-catalog-sql.read",
+    "r2-catalog.read",
+    "r2-catalog.write",
+    "secrets-store.read",
+    "secrets-store.write",
+    "ssl-and-certificates.read",
+    "user-details.read",
+    "user:read",
+    "vectorize.read",
+    "vectorize.write",
+    "workers-ci.read",
+    "workers-ci.write",
+    "workers-kv-storage.metadata_read",
+    "workers-kv-storage.read",
+    "workers-kv-storage.write",
+    "workers-observability.read",
+    "workers-observability.write",
+    "workers-r2-bucket-item.read",
+    "workers-r2-bucket-item.write",
+    "workers-r2.metadata_read",
+    "workers-r2.read",
+    "workers-r2.write",
+    "workers-routes.read",
+    "workers-routes.write",
+    "workers-scripts.edit",
+    "workers-scripts.metadata_read",
+    "workers-scripts.read",
+    "workers-scripts.write",
+    "workers-tail.read",
+    "workers_ai.metadata_read",
+    "zone-settings.read",
+    "zone.read"
+  ],
+  "catalog": {
+    "id": "cloudflare-tools-list-v1",
+    "schemaVersion": 1,
+    "digest": "c74e6b5212e6223e214edab7de442218d50c4eb6ca5a2a9bc70ebadd5fd24d5d",
+    "tools": [
+      {
+        "id": "cloudflare.docs",
+        "mcpName": "docs",
+        "title": "Search Cloudflare Docs",
+        "description": "Search the Cloudflare documentation for any question about Cloudflare products or features, including Workers, Pages, R2, D1, KV, Durable Objects, Queues, Workers AI, Vectorize, Zero Trust, CDN, Cache, DNS, and account or billing. Returns semantically similar documentation chunks.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Cloudflare documentation search query"
+            }
+          },
+          "required": ["query"]
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "cloudflare.search",
+        "mcpName": "search",
+        "title": "Search Cloudflare API Spec",
+        "description": "Search the Cloudflare OpenAPI spec (all $refs resolved inline) to find endpoints before calling execute. code is a JavaScript async arrow function over `spec: { paths: Record<string, PathItem> }`, where each PathItem maps get/post/put/patch/delete to OperationInfo { summary, description, tags, parameters, requestBody, responses, \"x-api-token-group\" }. x-api-token-group lists the permissions an endpoint accepts; OAuth scopes have the same names. Example: async () => spec.paths['/accounts/{account_id}/workers/scripts']?.get?.parameters",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "JavaScript async arrow function to search the OpenAPI spec"
+            }
+          },
+          "required": ["code"]
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "cloudflare.execute",
+        "mcpName": "execute",
+        "title": "Run Cloudflare API Code",
+        "description": "Run JavaScript that can read, create, update, or delete resources through the Cloudflare API. Use search first to find endpoints. code is an async arrow function that returns its result and calls `cloudflare.request({ method, path, query?, body?, contentType?, rawBody? })`, resolving to { success, status, result, errors, messages, result_info? }. `accountId` is the account_id argument, or the session's only account; when the connection can reach several accounts, call GET /accounts and pass account_id. A failed request throws an Error naming the method, path, HTTP status, Cloudflare errors, and for 401/403 the missing permission.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "JavaScript async arrow function to execute"
+            },
+            "account_id": {
+              "description": "Cloudflare account ID to run against. Optional when the session is authorized for exactly one account, and for account-independent calls such as GET /accounts.",
+              "type": "string"
+            }
+          },
+          "required": ["code"]
+        },
+        "maximumOutputBytes": 262144
+      },
+      {
+        "id": "cloudflare.whoami",
+        "mcpName": "whoami",
+        "title": "Current Cloudflare Identity",
+        "description": "Return the Cloudflare user or account that this connection is authenticated as. Takes no arguments. The id is stable across token refresh, reconnection and permission changes.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 65536
+      }
+    ]
+  },
+  "config": {
+    "revision": 1,
+    "fields": []
+  },
+  "allowedHosts": ["mcp.cloudflare.com"],
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://github.com/cloudflare/mcp",
+    "https://mcp.cloudflare.com/.well-known/oauth-protected-resource/mcp",
+    "https://mcp.cloudflare.com/.well-known/oauth-authorization-server"
+  ],
+  "verificationNotes": "Owner-authorized publication-first testing used one authenticated Cloudflare API MCP OAuth session to capture the provider tools/list catalog (4 code-mode tools, one page, server cloudflare-api 0.1.0, protocol 2025-06-18). All four tools are pinned with exact observed input schemas; search and execute carry reviewed condensed descriptions because the provider descriptions exceed the 1000-character catalog bound. execute runs arbitrary Cloudflare API requests, carries the provider destructiveHint, and requires approval; docs, search, and whoami are read tools. The 62 requested scopes are the required bootstrap scopes, developer-platform and account or zone reads, and bounded developer-platform writes (Workers scripts and routes, KV, R2, D1, Queues, Pages, DNS, cache purge, Secrets Store, observability, Workers CI, Workers AI, Vectorize, Containers, Browser Rendering, Pipelines, R2 Data Catalog); zone.write and account administration writes are excluded. The capture requested a 219-scope superset of this set and was granted exactly the requested scopes, a 3600-second bearer token, a refresh token, and the iss authorization-response parameter. The consent page lets the Owner narrow scopes; any narrowed grant fails the exact-match scope policy closed. Identity is the whoami structured id, documented as stable. Token-only revocation at the token endpoint returned 401; revocation is declared with the registration client identity. Live consent through the application, privacy review, and production acceptance remain pending."
+}

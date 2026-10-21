@@ -159,6 +159,7 @@ describe("authority and protocol gates", () => {
     for (const [name, publicationEligible] of [
       ["linear", true],
       ["maple", true],
+      ["cloudflare", true],
       ["notion", true],
       ["atlassian", false],
       ["gmail", false],
@@ -265,6 +266,77 @@ describe("authority and protocol gates", () => {
       ),
     ).toBe(true);
     expect(decoded.success.catalog.tools.map((tool) => tool.mcpName)).not.toContain("run_sql");
+    expect(decoded.success.catalog.digest).toBe(
+      await digestPluginBytes(
+        new TextEncoder().encode(
+          canonicalPluginJson({
+            schemaVersion: decoded.success.catalog.schemaVersion,
+            tools: decoded.success.catalog.tools,
+          }),
+        ),
+      ),
+    );
+    expect(
+      Result.isSuccess(validateManagedRemotePluginRelease(decoded.success, "publication")),
+    ).toBe(true);
+  });
+
+  it("keeps Cloudflare bound to its captured dynamic OAuth authority and code-mode catalog", async () => {
+    const value: unknown = JSON.parse(await readFile("plugins/remotes/cloudflare.json", "utf8"));
+    const decoded = validateManagedRemotePluginRelease(value, "authoring");
+    expect(Result.isSuccess(decoded)).toBe(true);
+    if (Result.isFailure(decoded)) return;
+
+    expect(decoded.success.status).toBe("reviewed-publishable");
+    expect(decoded.success.endpoint).toBe("https://mcp.cloudflare.com/mcp");
+    expect(decoded.success.oauthRegistrationMode).toBe("dynamic");
+    expect(decoded.success.scopes).toHaveLength(62);
+    expect(decoded.success.scopes).toEqual(
+      expect.arrayContaining(["account:read", "offline_access", "user:read"]),
+    );
+    expect(decoded.success.scopes).not.toContain("zone.write");
+    expect(decoded.success.authStrategy).toMatchObject({
+      profile: "mcp-oauth",
+      providerRegistrationId: "cloudflare-oauth-v1",
+      requestedScopes: decoded.success.scopes,
+      clientRegistration: {
+        kind: "dynamic",
+        authorizationServerMetadataUrl:
+          "https://mcp.cloudflare.com/.well-known/oauth-authorization-server",
+      },
+      resourceMetadataUrl: "https://mcp.cloudflare.com/.well-known/oauth-protected-resource/mcp",
+      identity: {
+        kind: "mcp-tool",
+        operation: { endpoint: "https://mcp.cloudflare.com/mcp", toolName: "whoami" },
+        subjectPath: ["id"],
+        subjectStability: "stable",
+      },
+    });
+    expect(decoded.success.oauthProviderDefinition).toMatchObject({
+      issuer: "https://mcp.cloudflare.com",
+      authorizationEndpoint: "https://mcp.cloudflare.com/authorize",
+      tokenEndpoint: "https://mcp.cloudflare.com/token",
+      tokenEndpointAuthMethod: "none",
+      authorizationResponseIssuer: "required",
+      pkce: { method: "S256" },
+      scopes: decoded.success.scopes,
+    });
+    if (decoded.success.oauthProviderDefinition === undefined) return;
+    expect(decoded.success.providerDefinitionDigest).toBe(
+      await digestPluginOAuthProviderDefinition(decoded.success.oauthProviderDefinition),
+    );
+    expect(
+      decoded.success.catalog.tools.map((tool) => [
+        tool.mcpName,
+        tool.classification,
+        tool.defaultPolicy,
+      ]),
+    ).toEqual([
+      ["docs", "read", "allow"],
+      ["search", "read", "allow"],
+      ["execute", "destructive", "require-approval"],
+      ["whoami", "read", "allow"],
+    ]);
     expect(decoded.success.catalog.digest).toBe(
       await digestPluginBytes(
         new TextEncoder().encode(

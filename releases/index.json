@@ -63,6 +63,12 @@
       "reason": "provider facts and catalog remain staged-unverified"
     },
     {
+      "sourceDirectory": "plugins/remotes/cloudflare.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Owner-authorized authenticated tools/list capture of the 4-tool Cloudflare API code-mode catalog with 62 bounded scopes; execute requires approval; live consent, privacy review, and production acceptance remain pending"
+    },
+    {
       "sourceDirectory": "plugins/remotes/maple.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
