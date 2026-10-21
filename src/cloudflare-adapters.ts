@@ -138,6 +138,15 @@ export interface D1Statement {
   readonly params: ReadonlyArray<string | number | null>;
 }
 
+/** Aborts the whole D1 batch unless `condition` selects a row: a NULL marketplace violates NOT NULL. */
+export const failBatchGuard = (condition: string, params: D1Statement["params"]): D1Statement => ({
+  sql: `INSERT INTO plugin_marketplaces
+          (marketplace_id, name, visibility, trust_class, status, created_at, updated_at)
+        SELECT NULL, NULL, NULL, NULL, NULL, NULL, NULL
+        WHERE NOT EXISTS (${condition})`,
+  params,
+});
+
 export interface D1BatchTransport {
   readonly batch: (
     statements: ReadonlyArray<D1Statement>,

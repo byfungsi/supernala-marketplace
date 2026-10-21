@@ -9,6 +9,7 @@
   "name": "Cloudflare",
   "description": "Curated Cloudflare API hosted MCP integration",
   "license": "LicenseRef-Provider-Service",
+  "logoDomain": "cloudflare.com",
   "runtime": {
     "_tag": "ManagedRemoteMcp",
     "kind": "managed-remote-mcp",

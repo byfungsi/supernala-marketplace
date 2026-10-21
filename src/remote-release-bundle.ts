@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { Result, Schema } from "effect";
+import { PluginLogoDomain } from "./plugin-logo-domain.js";
 import {
   deriveBootstrapAuthoritySnapshot,
   deriveManagedRemoteAuthoritySnapshot,
@@ -35,6 +36,7 @@ const SerializedRemoteCandidate = Schema.Struct({
   schemaVersion: Schema.Literal(1),
   identity: PluginReleaseIdentity,
   definitionId: Schema.NonEmptyString,
+  logoDomain: Schema.optionalKey(PluginLogoDomain),
   version: PluginVersion,
   authentication: PackagedPluginAuthentication,
   authStrategy: Schema.optionalKey(PluginAuthStrategyDefinition),
@@ -229,6 +231,7 @@ export async function buildManagedRemoteReleaseBundle(input: {
   const candidate: IncrementalReleaseCandidate = {
     identity,
     definitionId: pluginDefinitionId(identity),
+    ...(remote.logoDomain === undefined ? {} : { logoDomain: remote.logoDomain }),
     version,
     authentication,
     ...(remote.authStrategy === undefined ? {} : { authStrategy: remote.authStrategy }),

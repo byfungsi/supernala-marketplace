@@ -17,6 +17,12 @@ provisioning remains an alternative outside this candidate. Slack was deferred b
 no v0 declaration or release entry in this expansion. Rovo remains staged until its exact authority
 can be represented without inventing schemas or token-audience assumptions.
 
+Declare `logoDomain` (a bare lowercase provider hostname such as `cloudflare.com`, never a URL) to
+give the Store listing a logo; the application renders it only through its fixed integrations.sh
+logo proxy. OpenAPI sources accept the same field; packaged Plugins do not yet. Publication fills an
+empty definition logo once and fails closed on a different declared logo, so replacing a published
+provider logo remains an application migration. Omitting the field leaves the stored logo unchanged.
+
 Render `resend-cimd.json.template` by replacing every `{{PUBLIC_ORIGIN}}` with the approved public
 HTTPS origin. The resulting document is served at
 `$PUBLIC_ORIGIN/.well-known/oauth-client/resend.json`; its redirect URI must remain exactly

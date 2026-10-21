@@ -1,6 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { Result, Schema } from "effect";
+import { PluginLogoDomain } from "./plugin-logo-domain.js";
 import {
   deriveBootstrapAuthoritySnapshot,
   derivePluginOpenApiAuthoritySnapshot,
@@ -30,6 +31,7 @@ const SerializedOpenApiCandidate = Schema.Struct({
   schemaVersion: Schema.Literal(1),
   identity: PluginReleaseIdentity,
   definitionId: Schema.NonEmptyString,
+  logoDomain: Schema.optionalKey(PluginLogoDomain),
   version: PluginVersion,
   authentication: PackagedPluginAuthentication,
   authStrategy: Schema.JsonObject,
@@ -180,6 +182,7 @@ export async function buildPluginOpenApiReleaseBundle(input: {
   const candidate: IncrementalReleaseCandidate = {
     identity,
     definitionId: pluginDefinitionId(identity),
+    ...(source.logoDomain === undefined ? {} : { logoDomain: source.logoDomain }),
     version,
     authentication,
     authStrategy: compiled.contract.authStrategy,

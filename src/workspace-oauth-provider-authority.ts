@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { Result, Schema } from "effect";
-import type { D1BatchTransport, D1Statement } from "./cloudflare-adapters.js";
+import { failBatchGuard, type D1BatchTransport } from "./cloudflare-adapters.js";
 import {
   canonicalPluginJson,
   digestPluginBytes,
@@ -44,17 +44,6 @@ export interface ReviewedWorkspaceOAuthProviderAuthority {
   readonly sourcePath: string;
   readonly sourceContentDigest: typeof PluginSha256.Type;
 }
-
-const failBatchGuard = (
-  condition: string,
-  params: ReadonlyArray<string | number | null>,
-): D1Statement => ({
-  sql: `INSERT INTO plugin_marketplaces
-          (marketplace_id, name, visibility, trust_class, status, created_at, updated_at)
-        SELECT NULL, NULL, NULL, NULL, NULL, NULL, NULL
-        WHERE NOT EXISTS (${condition})`,
-  params,
-});
 
 const ExistingWorkspaceOAuthAdmission = Schema.Struct({
   admission_operation_id: Schema.String,

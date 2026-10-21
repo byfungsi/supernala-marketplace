@@ -13,6 +13,7 @@ import {
 } from "./plugin-contract.js";
 import { PluginAuthStrategyDefinition } from "./plugin-auth-strategy.js";
 import { OAuthScopeSet, PluginOAuthProviderDefinition } from "./oauth-provider-definition.js";
+import { PluginLogoDomain } from "./plugin-logo-domain.js";
 
 /** Curated managed-remote authoring record; staged records cannot enter a publication plan. */
 export const ManagedRemotePluginRelease = Schema.Struct({
@@ -26,6 +27,7 @@ export const ManagedRemotePluginRelease = Schema.Struct({
   name: Schema.Trimmed.pipe(Schema.check(Schema.isLengthBetween(1, 120))),
   description: Schema.Trimmed.pipe(Schema.check(Schema.isLengthBetween(1, 2_000))),
   license: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 80))),
+  logoDomain: Schema.optionalKey(PluginLogoDomain),
   runtime: Schema.Struct({
     _tag: Schema.Literal("ManagedRemoteMcp"),
     kind: Schema.Literal("managed-remote-mcp"),

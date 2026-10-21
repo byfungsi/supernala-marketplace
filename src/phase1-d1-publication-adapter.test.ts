@@ -1967,6 +1967,66 @@ it("publishes, replays, reconciles, and reads revocation for a declaration-only 
   applicationDatabaseHandle.close();
 });
 
+it("fills a declared definition logo once and rejects a different declared logo", async () => {
+  const migration = await readFile("fixtures/sql/phase1-0126-plugin-definition-logo-domain.sql");
+  expect(createHash("sha256").update(migration).digest("hex")).toBe(
+    "410c625a23556df2a0d95ef4192ff399bc500fbc6d7bb41f69c00375feec51cb",
+  );
+  const definition = syntheticOAuthDefinition();
+  const definitionDigest = await digestPluginOAuthProviderDefinition(definition);
+  const release = {
+    ...(await managedRemoteCandidate(definitionDigest)),
+    logoDomain: "example.com",
+  };
+  const database = await applicationDatabase();
+  database.exec(migration.toString("utf8"));
+  admitSyntheticDynamicRegistration(database, definitionDigest);
+  const application = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+  const logo = () =>
+    database
+      .prepare("SELECT logo_domain FROM plugin_definitions WHERE plugin_definition_id = ?")
+      .get(release.definitionId);
+
+  expect(await application.stage(release)).toEqual(Result.succeed(undefined));
+  expect(logo()).toEqual({ logo_domain: "example.com" });
+  expect(await application.stage(release)).toEqual(Result.succeed(undefined));
+
+  const { logoDomain: _declared, ...undeclared } = release;
+  expect(await application.stage(undeclared)).toEqual(Result.succeed(undefined));
+  expect(logo()).toEqual({ logo_domain: "example.com" });
+
+  database.close();
+
+  const conflicting = await applicationDatabase();
+  conflicting.exec(migration.toString("utf8"));
+  admitSyntheticDynamicRegistration(conflicting, definitionDigest);
+  conflicting
+    .prepare(
+      `INSERT INTO plugin_definitions
+        (plugin_definition_id, marketplace_id, publisher_namespace, plugin_slug, name,
+         short_description, long_description, categories_json, publisher_trust, status,
+         created_at, updated_at, logo_domain)
+       VALUES (?, ?, ?, ?, ?, ?, ?, '[]', 'supernala-curated', 'active', 1, 1, 'other.example')`,
+    )
+    .run(
+      release.definitionId,
+      release.version.marketplaceId,
+      release.version.publisherNamespace,
+      release.version.pluginSlug,
+      release.version.name,
+      release.version.description.slice(0, 500),
+      release.version.description,
+    );
+  const conflictingApplication = new Phase1D1PublicationAdapter(new SQLiteD1Transport(conflicting));
+  expect(Result.isFailure(await conflictingApplication.stage(release))).toBe(true);
+  expect(
+    conflicting
+      .prepare("SELECT count(*) AS count FROM plugin_versions WHERE plugin_version_id = ?")
+      .get(release.version.id),
+  ).toEqual({ count: 0 });
+  conflicting.close();
+});
+
 for (const remote of providerExpansionDeclarations) {
   it(`stages, finalizes, and reads back the ${remote.name} ${remote.pluginSlug === "notion" ? "historical 1.0.2" : "production"} declaration chain`, async () => {
     const authStrategy = remote.authStrategy;
