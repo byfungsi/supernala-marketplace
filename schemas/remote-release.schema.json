@@ -4438,7 +4438,7 @@
                 "maximumSeconds": {
                   "type": "integer",
                   "minimum": 60,
-                  "maximum": 86400
+                  "maximum": 604800
                 }
               },
               "required": ["required", "minimumSeconds", "maximumSeconds"],

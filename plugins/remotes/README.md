@@ -2,15 +2,16 @@
 
 These records preserve fixed provider endpoints, OAuth definitions, registration modes, bounded scopes, and documentation-derived candidate catalogs from primary provider evidence. `reviewed-publishable` admits reviewed source and authority for publication; it does not claim live OAuth, a consented catalog capture, privacy acceptance, or application acceptance. A nonzero catalog digest means only that the documented candidate bytes are pinned; it is not a consented `tools/list` capture. A zero digest and empty list remain an explicit fail-closed sentinel. Each candidate is registered separately in `releases/index.json`; eligibility can never accidentally enable this whole directory.
 
-| Provider              | Offline declaration                                                | Candidate tools                   | Live promotion blockers                                        |
-| --------------------- | ------------------------------------------------------------------ | --------------------------------- | -------------------------------------------------------------- |
-| Cloudflare            | Dynamic OAuth, PKCE S256, 62 bounded scopes; `whoami` identity     | 4 code-mode tools (approval exec) | Live catalog equality, privacy, acceptance                     |
-| Gmail                 | Preserved Workspace-owned OAuth behavior                           | Existing package catalog          | Developer Preview eligibility and OAuth verification           |
-| Atlassian Rovo / Jira | Dynamic OAuth; staged-unverified                                   | Awaiting exact public schemas     | Exact schemas and MCP identity/resource output paths           |
-| Linear                | Dynamic OAuth, PKCE S256, read/write scopes; reviewed subset       | 65 authenticated tools            | Live catalog equality, workspace identity, privacy, acceptance |
-| Maple                 | Dynamic OAuth, PKCE S256, `mcp:tools`; read-only reviewed subset   | 24 authenticated read tools       | Live catalog equality, org identity, privacy, acceptance       |
-| Notion                | Dynamic OAuth, PKCE, rotated refresh, `notion-fetch` self identity | Four documentation-derived tools  | Live catalog equality, per-plan access, privacy, acceptance    |
-| Resend                | Deployed public CIMD OAuth; `emails:send` only                     | `send-email` from official source | Live catalog equality, team identity, privacy, acceptance      |
+| Provider              | Offline declaration                                                 | Candidate tools                   | Live promotion blockers                                        |
+| --------------------- | ------------------------------------------------------------------- | --------------------------------- | -------------------------------------------------------------- |
+| Cloudflare            | Dynamic OAuth, PKCE S256, 62 bounded scopes; `whoami` identity      | 4 code-mode tools (approval exec) | Live catalog equality, privacy, acceptance                     |
+| Gmail                 | Preserved Workspace-owned OAuth behavior                            | Existing package catalog          | Developer Preview eligibility and OAuth verification           |
+| Atlassian Rovo / Jira | Dynamic OAuth; staged-unverified                                    | Awaiting exact public schemas     | Exact schemas and MCP identity/resource output paths           |
+| Linear                | Dynamic OAuth, PKCE S256, read/write scopes; reviewed subset        | 65 authenticated tools            | Live catalog equality, workspace identity, privacy, acceptance |
+| Maple                 | Dynamic OAuth, PKCE S256, `mcp:tools`; read-only reviewed subset    | 24 authenticated read tools       | Live catalog equality, org identity, privacy, acceptance       |
+| Notion                | Dynamic OAuth, PKCE, rotated refresh, `notion-fetch` self identity  | Four documentation-derived tools  | Live catalog equality, per-plan access, privacy, acceptance    |
+| PostHog               | Dynamic OAuth, PKCE S256, 42 bounded scopes; OIDC userinfo identity | 1 CLI-mode tool (approval exec)   | Live catalog equality, privacy, acceptance                     |
+| Resend                | Deployed public CIMD OAuth; `emails:send` only                      | `send-email` from official source | Live catalog equality, team identity, privacy, acceptance      |
 
 Notion's MCP token is never sent to REST `/v1/users/me`. Resend OAuth is the default; API-key bearer
 provisioning remains an alternative outside this candidate. Slack was deferred by the Owner and has

@@ -160,6 +160,7 @@ describe("authority and protocol gates", () => {
       ["linear", true],
       ["maple", true],
       ["cloudflare", true],
+      ["posthog", true],
       ["notion", true],
       ["atlassian", false],
       ["gmail", false],
@@ -337,6 +338,91 @@ describe("authority and protocol gates", () => {
       ["execute", "destructive", "require-approval"],
       ["whoami", "read", "allow"],
     ]);
+    expect(decoded.success.catalog.digest).toBe(
+      await digestPluginBytes(
+        new TextEncoder().encode(
+          canonicalPluginJson({
+            schemaVersion: decoded.success.catalog.schemaVersion,
+            tools: decoded.success.catalog.tools,
+          }),
+        ),
+      ),
+    );
+    expect(
+      Result.isSuccess(validateManagedRemotePluginRelease(decoded.success, "publication")),
+    ).toBe(true);
+  });
+
+  it("keeps PostHog bound to its captured dynamic OAuth authority and CLI-mode catalog", async () => {
+    const value: unknown = JSON.parse(await readFile("plugins/remotes/posthog.json", "utf8"));
+    const decoded = validateManagedRemotePluginRelease(value, "authoring");
+    expect(Result.isSuccess(decoded)).toBe(true);
+    if (Result.isFailure(decoded)) return;
+
+    expect(decoded.success.status).toBe("reviewed-publishable");
+    expect(decoded.success.endpoint).toBe("https://mcp.posthog.com/mcp?mode=cli");
+    expect(decoded.success.allowedHosts).toEqual(["mcp.posthog.com"]);
+    expect(decoded.success.oauthRegistrationMode).toBe("dynamic");
+    expect(decoded.success.scopes).toHaveLength(42);
+    expect(decoded.success.scopes).toEqual(
+      expect.arrayContaining(["email", "feature_flag:write", "openid", "query:read"]),
+    );
+    for (const excluded of [
+      "access_control:write",
+      "billing:write",
+      "hog_flow:write",
+      "hog_function:write",
+      "organization:write",
+      "person:write",
+      "project:write",
+    ]) {
+      expect(decoded.success.scopes).not.toContain(excluded);
+    }
+    expect(decoded.success.authStrategy).toMatchObject({
+      profile: "mcp-oauth",
+      providerRegistrationId: "posthog-oauth-v1",
+      requestedScopes: decoded.success.scopes,
+      clientRegistration: {
+        kind: "dynamic",
+        authorizationServerMetadataUrl:
+          "https://oauth.posthog.com/.well-known/oauth-authorization-server",
+      },
+      resourceMetadataUrl: "https://mcp.posthog.com/.well-known/oauth-protected-resource/mcp",
+      identity: {
+        kind: "oidc-userinfo",
+        endpoint: "https://oauth.posthog.com/oauth/userinfo/",
+        subjectPath: ["sub"],
+        displayLabelPath: ["email"],
+        subjectStability: "stable",
+      },
+    });
+    expect(decoded.success.oauthProviderDefinition).toMatchObject({
+      issuer: "https://oauth.posthog.com",
+      resourceIdentity: "https://mcp.posthog.com/mcp",
+      authorizationEndpoint: "https://oauth.posthog.com/oauth/authorize/",
+      tokenEndpoint: "https://oauth.posthog.com/oauth/token/",
+      tokenEndpointAuthMethod: "none",
+      authorizationResponseIssuer: "not-supported",
+      pkce: { method: "S256" },
+      scopes: decoded.success.scopes,
+      tokens: { expiresIn: { required: true, minimumSeconds: 1, maximumSeconds: 604_800 } },
+    });
+    if (decoded.success.oauthProviderDefinition === undefined) return;
+    expect(decoded.success.providerDefinitionDigest).toBe(
+      await digestPluginOAuthProviderDefinition(decoded.success.oauthProviderDefinition),
+    );
+    expect(
+      decoded.success.catalog.tools.map((tool) => [
+        tool.mcpName,
+        tool.classification,
+        tool.defaultPolicy,
+      ]),
+    ).toEqual([["exec", "destructive", "require-approval"]]);
+    expect(decoded.success.catalog.tools[0]?.inputSchema).toMatchObject({
+      type: "object",
+      required: ["command", "context", "llm_model"],
+      properties: { command: { type: "string" } },
+    });
     expect(decoded.success.catalog.digest).toBe(
       await digestPluginBytes(
         new TextEncoder().encode(
