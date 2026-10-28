@@ -89,6 +89,16 @@ The command:
 
 An empty/unchanged release set publishes nothing and releases its reservation. Ineligible candidates stay excluded. Publishing does not install, upgrade, connect accounts, activate Workspaces, or change Agent grants.
 
+To release only named Plugins, repeat `--plugin SLUG`, for example
+`pnpm marketplace deploy --environment production --plugin atlassian --plugin canva`.
+Each slug must resolve to exactly one eligible source. Unknown, ineligible, duplicate,
+or ambiguous selections fail. The selector checks immutable versions and durable state
+for the requested sources, so changes to unrelated shared inputs do not force an
+unrelated Plugin into the release. The full baseline is still verified, and exact
+source review and digest confirmation remain required. Without `--plugin`, selection
+continues to consider every eligible source. This option cannot be combined with
+inspection or recovery.
+
 Receipts, baseline, release output, and isolated source are retained under `$HOME/.local/state/supernala-marketplace/releases/<attempt-id>`. Keep this directory private and remove obsolete attempts manually after investigation. Child failures are summarized to avoid exposing provider responses or private paths; the last printed phase identifies the failing stage.
 
 ## Interrupted releases and recovery

@@ -171,12 +171,17 @@ describe("authority and protocol gates", () => {
       expect(Result.isSuccess(authoring)).toBe(true);
       if (Result.isFailure(authoring)) continue;
       if (name === "atlassian") {
-        expect(authoring.success.verificationNotes).toContain(
-          "MCP audience token is accepted by /me and /oauth/token/accessible-resources",
-        );
-        expect(authoring.success.verificationNotes).toContain(
-          "exact reviewed public MCP identity tools may be required instead",
-        );
+        expect(authoring.success.authStrategy).toMatchObject({
+          profile: "mcp-oauth",
+          identity: { kind: "mcp-tool", subjectPath: ["data", "accountId"] },
+          resources: {
+            kind: "mcp-tool",
+            selection: "owner-select",
+            resourcesPath: ["data", "resources"],
+            idPath: ["cloudId"],
+            displayLabelPath: ["url"],
+          },
+        });
       }
       const publication = validateManagedRemotePluginRelease(authoring.success, "publication");
       if (publicationEligible) expect(Result.isSuccess(publication)).toBe(true);

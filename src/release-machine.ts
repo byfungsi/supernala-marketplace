@@ -3,6 +3,7 @@ import {
   canonicalPluginJson,
   digestPluginBytes,
   PluginSha256,
+  PluginSlug,
   PluginVersion,
 } from "./plugin-contract.js";
 import {
@@ -328,16 +329,45 @@ export interface ReleaseSourceState {
   readonly publicationEligible: boolean;
 }
 
+/** Explicit operator selection; slugs must identify one eligible source without namespace ambiguity. */
+export const ReleasePluginSelection = Schema.Array(PluginSlug).pipe(
+  Schema.check(Schema.isLengthBetween(1, 100)),
+  Schema.check(Schema.isUnique()),
+);
+
 /** Select from the last successful durable state, never merely from the previous Git commit. */
 export function selectIncrementalReleaseSources(input: {
   readonly sources: ReadonlyArray<ReleaseSourceState>;
   readonly journal: ReadonlyArray<ReleaseJournalRecord>;
+  readonly requestedPlugins?: typeof ReleasePluginSelection.Type | undefined;
 }): Result.Result<ReadonlyArray<ReleaseSourceState>, string> {
   if (input.journal.some((record) => !releaseRecordIdentityIsCoherent(record))) {
     return Result.fail("release-baseline-identity-incoherent");
   }
   const selected: Array<ReleaseSourceState> = [];
-  for (const source of input.sources) {
+  const requested = input.requestedPlugins;
+  if (requested !== undefined) {
+    if (
+      requested.length === 0 ||
+      requested.length > 100 ||
+      new Set(requested).size !== requested.length
+    ) {
+      return Result.fail("release-plugin-selection-invalid");
+    }
+    for (const slug of requested) {
+      const matches = input.sources.filter((source) => source.identity.pluginSlug === slug);
+      if (matches.length !== 1 || matches[0]?.publicationEligible !== true) {
+        return Result.fail("release-plugin-selection-unavailable-or-ambiguous");
+      }
+    }
+  }
+  const sources =
+    requested === undefined
+      ? input.sources
+      : input.sources.filter((source) =>
+          requested.some((slug) => slug === source.identity.pluginSlug),
+        );
+  for (const source of sources) {
     if (!source.publicationEligible) continue;
     const exact = input.journal.find(
       (record) =>

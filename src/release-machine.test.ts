@@ -14,6 +14,7 @@ import {
   InMemoryImmutableArtifactStore,
   InMemoryReleaseJournal,
   publishIncrementalRelease,
+  ReleasePluginSelection,
   selectIncrementalReleaseSources,
   type IncrementalReleaseCandidate,
 } from "./release-machine.js";
@@ -211,6 +212,56 @@ it("fails same semantic version when source/shared inputs change", async () => {
   expect(
     selectIncrementalReleaseSources({ sources: [changed], journal: await journal.list() }),
   ).toEqual(Result.fail("immutable-version-input-conflict:supernala-public/supernala/alpha@1.0.0"));
+});
+
+it("limits publication to the requested plugins while preserving selected version immutability", async () => {
+  const published = await makeCandidate({ slug: "alpha", version: "1.0.0" });
+  const pending = await makeCandidate({ slug: "beta", version: "1.0.0" });
+  const journal = new InMemoryReleaseJournal();
+  await publish(
+    published,
+    journal,
+    new InMemoryImmutableArtifactStore(),
+    new InMemoryApplicationPublicationAdapter(),
+  );
+  const changed = {
+    identity: published.identity,
+    kind: published.kind,
+    sourceInputDigest: sha("4"),
+    publicationEligible: true,
+  };
+  const beta = {
+    identity: pending.identity,
+    kind: pending.kind,
+    sourceInputDigest: pending.sourceInputDigest,
+    publicationEligible: true,
+  };
+  const input = { sources: [changed, beta], journal: await journal.list() };
+  const decode = Schema.decodeUnknownSync(ReleasePluginSelection);
+  expect(selectIncrementalReleaseSources({ ...input, requestedPlugins: decode(["beta"]) })).toEqual(
+    Result.succeed([beta]),
+  );
+  expect(
+    selectIncrementalReleaseSources({ ...input, requestedPlugins: decode(["alpha"]) }),
+  ).toEqual(Result.fail("immutable-version-input-conflict:supernala-public/supernala/alpha@1.0.0"));
+  expect(selectIncrementalReleaseSources(input)).toEqual(
+    Result.fail("immutable-version-input-conflict:supernala-public/supernala/alpha@1.0.0"),
+  );
+  for (const sources of [[], [{ ...beta, publicationEligible: false }], [beta, beta]]) {
+    expect(
+      selectIncrementalReleaseSources({ sources, journal: [], requestedPlugins: decode(["beta"]) }),
+    ).toEqual(Result.fail("release-plugin-selection-unavailable-or-ambiguous"));
+  }
+  for (const selection of [
+    [],
+    ["beta", "beta"],
+    ["../beta"],
+    Array.from({ length: 101 }, (_, i) => `plugin-${i}`),
+  ]) {
+    expect(Result.isFailure(Schema.decodeUnknownResult(ReleasePluginSelection)(selection))).toBe(
+      true,
+    );
+  }
 });
 
 it("keeps exact five-field OAuth authority immutable across journal retries", async () => {

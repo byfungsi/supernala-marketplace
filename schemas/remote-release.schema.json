@@ -456,6 +456,11 @@
                           "type": "integer",
                           "minimum": 1,
                           "maximum": 1048576
+                        },
+                        "resultTextContentIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 19
                         }
                       },
                       "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
@@ -831,6 +836,11 @@
                           "type": "integer",
                           "minimum": 1,
                           "maximum": 1048576
+                        },
+                        "resultTextContentIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 19
                         }
                       },
                       "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
@@ -1434,6 +1444,11 @@
                           "type": "integer",
                           "minimum": 1,
                           "maximum": 1048576
+                        },
+                        "resultTextContentIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 19
                         }
                       },
                       "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
@@ -1809,6 +1824,11 @@
                           "type": "integer",
                           "minimum": 1,
                           "maximum": 1048576
+                        },
+                        "resultTextContentIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 19
                         }
                       },
                       "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
@@ -2474,6 +2494,11 @@
                           "type": "integer",
                           "minimum": 1,
                           "maximum": 1048576
+                        },
+                        "resultTextContentIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 19
                         }
                       },
                       "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
@@ -2849,6 +2874,11 @@
                           "type": "integer",
                           "minimum": 1,
                           "maximum": 1048576
+                        },
+                        "resultTextContentIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 19
                         }
                       },
                       "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
@@ -3483,6 +3513,11 @@
                           "type": "integer",
                           "minimum": 1,
                           "maximum": 1048576
+                        },
+                        "resultTextContentIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 19
                         }
                       },
                       "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
@@ -3858,6 +3893,11 @@
                           "type": "integer",
                           "minimum": 1,
                           "maximum": 1048576
+                        },
+                        "resultTextContentIndex": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 19
                         }
                       },
                       "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],

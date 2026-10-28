@@ -59,5 +59,19 @@
       "apps/api/src/plugin-openapi-bundle.ts": "f92630715072679587896ca9268dc9cec1dbcdf223c2d4cca1d404b95ad5f8df"
     },
     "contractManifest": "compatibility/openapi-v1/manifest.json"
+  },
+  "hostedMcpOauthDraft": {
+    "status": "unreviewed-not-deployed",
+    "applicationBaseCommit": "2580daef4e1dc6d9c1c18801debef4ee397df3da",
+    "files": {
+      "packages/domain/src/plugin-auth-strategy.ts": "ca7eaf806c13992370b96a8371a5275773f8d574ac0a34e510faf2ba56b7014c",
+      "packages/domain/schema/plugin-auth-strategy-definition.v1.schema.json": "cea025f86022373d18b2a47dd3e533e16c854c3548e1a39aafffd186e04b447f",
+      "packages/domain/src/plugin-oauth.ts": "e127457cbbed432ba28127b865af28454b0ad37f781aaba82576443896a14c47",
+      "apps/api/src/plugin-identity-resource-resolver.ts": "cdb7c1b79ee8e0f76cdacd008dbccb6cd9be95c56bbdfc019fc632be8663b46f",
+      "apps/api/src/plugin-identity-resource-http-transport.ts": "bbe29b52069d3ceff93ceaa1889be285c2d4b57b8ad2ce4d3531a05247668f28",
+      "apps/api/application-migrations/0141_hosted_mcp_preregistered_oauth.sql": "d27f78bfd25374f58e69588febf0e450d8cb4231166c4eeaf5704c78eb525214",
+      "apps/api/src/plugin-oauth-runtime.ts": "3c083a45ccd4d4426d68f45a2560a8afe993f62e7ff19ecfed3c3f228674165c"
+    },
+    "applicationCandidateCommit": "ec8d55a802983ace88dad191a1fd0cfabe36a15d"
   }
 }

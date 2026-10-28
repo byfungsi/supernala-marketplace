@@ -40,6 +40,8 @@ After the one-time infrastructure and private credential setup in [release opera
 git switch main
 git pull --ff-only
 pnpm marketplace deploy --environment production
+# Limit the release to explicitly selected eligible sources:
+pnpm marketplace deploy --environment production --plugin atlassian --plugin canva
 ```
 
 The command verifies fetched `origin/main`, checks an isolated exact-commit checkout, reserves durable release authority, builds with no inherited credentials, displays the release and authority diffs, and asks for the exact digest before publishing. It never enables ineligible Plugins or upgrades existing installations. GitHub Actions runs checks only; merges do not publish automatically.

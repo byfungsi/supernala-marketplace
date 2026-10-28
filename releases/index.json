@@ -54,7 +54,7 @@
       "sourceDirectory": "plugins/remotes/atlassian.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": false,
-      "reason": "official public docs omit exact tool schemas and MCP identity/resource output paths required for reviewed catalog and selected-site authority"
+      "reason": "Owner-consented 117-tool Jira/Confluence catalog, exact scopes, MCP identity/site selection and rotating refresh verified; independent authority review and coordinated tenant-issuer app deployment remain pending"
     },
     {
       "sourceDirectory": "plugins/remotes/gmail.json",
@@ -97,6 +97,18 @@
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
       "reason": "Owner-consented live send-email schema and independent source and authority review approved for narrow emails:send 1.0.3; prior invocation blocked before dispatch and new publication and acceptance remain pending"
+    },
+    {
+      "sourceDirectory": "plugins/remotes/buffer.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": false,
+      "reason": "Owner-consented 17-tool catalog, exact eight scopes, multipart account identity and rotating refresh verified; independent review and coordinated bootstrap-content app deployment remain pending"
+    },
+    {
+      "sourceDirectory": "plugins/remotes/canva.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": false,
+      "reason": "Owner-consented 49-tool catalog, all 16 scopes, team/user identity and rotating refresh verified; independent review, private platform registration admission and coordinated app deployment remain pending"
     }
   ]
 }
