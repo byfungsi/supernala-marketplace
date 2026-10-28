@@ -316,7 +316,8 @@ export const OAuthTokenPolicy = Schema.Struct({
     required: Schema.Literal(true),
     minimumSeconds: Schema.Int.pipe(Schema.check(Schema.isBetween({ minimum: 1, maximum: 3_600 }))),
     maximumSeconds: Schema.Int.pipe(
-      Schema.check(Schema.isBetween({ minimum: 60, maximum: 86_400 })),
+      // Seven days admits providers such as PostHog whose access tokens live a week.
+      Schema.check(Schema.isBetween({ minimum: 60, maximum: 604_800 })),
     ),
   }).pipe(
     Schema.check(
