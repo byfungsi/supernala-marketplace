@@ -119,8 +119,8 @@
     {
       "sourceDirectory": "plugins/remotes/slack.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": false,
-      "reason": "Consented internal-workspace catalog retained for review; public publication is blocked until Slack Marketplace approval. No public/unlisted MCP distribution is admitted."
+      "publicationEligible": true,
+      "reason": "Owner explicitly authorized a Slack preview listing for testing with the existing authorized workspace before Slack Marketplace approval. Independent review waived, not passed; no Slack directory approval or general-workspace availability is claimed. Exact deployed client custody and trusted publication/readback are required."
     }
   ]
 }
