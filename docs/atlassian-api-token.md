@@ -24,9 +24,13 @@ tools are not falsely required to accept a `cloudId` argument.
 
 ## Current acceptance status
 
-The Owner approved publication of `atlassian-api-token@1.0.0` for user testing.
+The Owner approved publication of `atlassian-api-token@1.0.1` for user testing.
 Independent review was waived, not passed. The 117 reviewed tool schemas come from
 the existing OAuth capture at the same official endpoint, not an API-token capture.
+The catalog retains the OAuth capture's existing snapshot ID because identical catalog
+digests have one durable identity. The initial 1.0.0 publication failed atomically before
+Store visibility due to a duplicate digest under a different ID; its failed journal entry
+is retained. Version 1.0.1 corrects that identity without changing the reviewed tool bytes.
 Runtime reviewed-subset reconciliation limits access to matching tools actually available
 to the connected account. Token scopes may expose fewer tools; some tools require OAuth.
 

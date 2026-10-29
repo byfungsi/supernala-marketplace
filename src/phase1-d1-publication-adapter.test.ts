@@ -17,6 +17,7 @@ import { preparePluginPackage, validatePluginSource } from "./authoring-validati
 import {
   canonicalPluginJson,
   digestPluginBytes,
+  PluginCatalogSnapshotId,
   PluginSha256,
   PluginSemanticVersion,
   PluginVersion,
@@ -550,8 +551,8 @@ const providerExpansionCandidate = async (
 ): Promise<IncrementalReleaseCandidate> => {
   if (
     remote.authStrategy === undefined ||
-    remote.authStrategy.profile !== "mcp-oauth" ||
-    remote.oauthProviderDefinition === undefined
+    (remote.authStrategy.profile !== "mcp-oauth" && remote.authStrategy.profile !== "api-key") ||
+    (remote.authStrategy.profile === "mcp-oauth" && remote.oauthProviderDefinition === undefined)
   ) {
     throw new Error("provider-expansion-auth-declaration-missing");
   }
@@ -587,7 +588,8 @@ const providerExpansionCandidate = async (
     const declaration = reviewed.success;
     if (
       declaration.authStrategy === undefined ||
-      declaration.authStrategy.profile !== "mcp-oauth"
+      (declaration.authStrategy.profile !== "mcp-oauth" &&
+        declaration.authStrategy.profile !== "api-key")
     ) {
       throw new Error(`${remote.pluginSlug}-provider-auth-strategy-missing`);
     }
@@ -605,13 +607,16 @@ const providerExpansionCandidate = async (
     const configDigest = await digestPluginBytes(
       new TextEncoder().encode(canonicalPluginJson(declaration.config)),
     );
-    const authentication = PackagedPluginAuthentication.make({
-      kind: "oauth",
-      providerRegistration: declaration.runtime.providerRegistrationId,
-      providerDefinitionDigest: declaration.authStrategy.providerDefinitionDigest,
-      requestedScopes: declaration.authStrategy.requestedScopes,
-      credentialDelivery: "short-lived-access-token-only",
-    });
+    const authentication =
+      declaration.authStrategy.profile === "api-key"
+        ? PackagedPluginAuthentication.make({ kind: "none" })
+        : PackagedPluginAuthentication.make({
+            kind: "oauth",
+            providerRegistration: declaration.runtime.providerRegistrationId,
+            providerDefinitionDigest: declaration.authStrategy.providerDefinitionDigest,
+            requestedScopes: declaration.authStrategy.requestedScopes,
+            credentialDelivery: "short-lived-access-token-only",
+          });
     const authStrategyDigest = await digestPluginBytes(
       new TextEncoder().encode(canonicalPluginJson(declaration.authStrategy)),
     );
@@ -686,6 +691,7 @@ const providerExpansionCandidate = async (
       sourceInputDigest,
       artifactDigest: null,
       authentication,
+      authStrategy: declaration.authStrategy,
       catalogDigest: declaration.catalog.digest,
       configDigest,
       provenanceDigest,
@@ -3810,4 +3816,71 @@ it("reuses canonical legacy Config JSON but rejects stored excess fields", async
   } finally {
     await rm(root, { recursive: true });
   }
+});
+
+it("publishes the personal-token method against the existing identical OAuth catalog identity", async () => {
+  const parsed = validateManagedRemotePluginRelease(
+    JSON.parse(await readFile("plugins/remotes/atlassian-api-token.json", "utf8")),
+    "publication",
+  );
+  if (Result.isFailure(parsed)) throw new Error(parsed.failure);
+  const release = await providerExpansionCandidate(parsed.success);
+  const database = await applicationDatabase();
+  const catalog = release.version.catalog;
+  database
+    .prepare(`INSERT INTO plugin_catalog_snapshots
+    (catalog_snapshot_id, catalog_digest, schema_version, created_at) VALUES (?, ?, 1, 0)`)
+    .run(catalog.id, catalog.digest);
+  for (const [ordinal, tool] of catalog.tools.entries()) {
+    database
+      .prepare(`INSERT INTO plugin_catalog_tools
+      (catalog_snapshot_id, tool_id, ordinal, mcp_name, title, description, classification,
+       default_policy, input_schema_json, maximum_output_bytes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
+      .run(
+        catalog.id,
+        tool.id,
+        ordinal,
+        tool.mcpName,
+        tool.title,
+        tool.description,
+        tool.classification,
+        tool.defaultPolicy,
+        JSON.stringify(tool.inputSchema),
+        tool.maximumOutputBytes,
+      );
+  }
+  const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+  const duplicateIdentity = {
+    ...release,
+    version: PluginVersion.make({
+      id: release.version.id,
+      marketplaceId: release.version.marketplaceId,
+      publisherNamespace: release.version.publisherNamespace,
+      pluginSlug: release.version.pluginSlug,
+      version: release.version.version,
+      name: release.version.name,
+      description: release.version.description,
+      license: release.version.license,
+      runtime: release.version.runtime,
+      config: release.version.config,
+      allowedHosts: release.version.allowedHosts,
+      status: release.version.status,
+      publishedAt: release.version.publishedAt,
+      catalog: { ...catalog, id: PluginCatalogSnapshotId.make("duplicate-atlassian-catalog") },
+    }),
+  };
+  expect(await adapter.stage(duplicateIdentity)).toEqual(Result.fail("application-stage-failed"));
+  expect(database.prepare("SELECT count(*) AS count FROM plugin_versions").get()).toMatchObject({
+    count: 0,
+  });
+  expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+  expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+  expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+  expect(
+    database.prepare("SELECT count(*) AS count FROM plugin_catalog_snapshots").get(),
+  ).toMatchObject({ count: 1 });
+  expect(
+    database.prepare("SELECT count(*) AS count FROM plugin_catalog_tools").get(),
+  ).toMatchObject({ count: 117 });
+  database.close();
 });
