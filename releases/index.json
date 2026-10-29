@@ -57,6 +57,12 @@
       "reason": "Owner-authorized 117-tool consented Rovo catalog and exact OAuth authority; independent review waived, not passed. Coordinated tenant-issuer app deployment and trusted publication/readback remain required."
     },
     {
+      "sourceDirectory": "plugins/remotes/atlassian-api-token.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Owner authorized publication for user testing with per-user email, personal API token and domain. Independent review waived, not passed; the reviewed OAuth schemas provide an upper bound reconciled against token-visible tools at runtime. Coordinated application deployment and trusted publication/readback are required; real token identity/site/invocation acceptance remains pending."
+    },
+    {
       "sourceDirectory": "plugins/remotes/gmail.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": false,

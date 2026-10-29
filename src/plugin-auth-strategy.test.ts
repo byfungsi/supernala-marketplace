@@ -101,3 +101,32 @@ describe("PluginAuthStrategyDefinition", () => {
     ).toThrow();
   });
 });
+
+it("accepts separately entered Basic credentials only for the fixed authorization header", () => {
+  const definition = {
+    schemaVersion: 1,
+    profile: "api-key",
+    providerRegistrationId: "basic-fixture",
+    fields: [
+      { key: "email", label: "Email", secret: false, minimumLength: 3, maximumLength: 320 },
+      { key: "token", label: "Token", secret: true, minimumLength: 8, maximumLength: 8192 },
+    ],
+    delivery: [
+      {
+        kind: "basic",
+        headerName: "authorization",
+        usernameField: "email",
+        passwordField: "token",
+      },
+    ],
+    identity,
+    resources,
+  };
+  expect(Schema.is(PluginAuthStrategyDefinition)(definition)).toBe(true);
+  expect(
+    Schema.is(PluginAuthStrategyDefinition)({
+      ...definition,
+      delivery: [{ ...definition.delivery[0], headerName: "host" }],
+    }),
+  ).toBe(false);
+});

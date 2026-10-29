@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, it } from "@effect/vitest";
-import { Result } from "effect";
+import { Result, Schema } from "effect";
 import { canonicalPluginJson, digestPluginBytes } from "./plugin-contract.js";
 import { digestPluginOAuthProviderDefinition } from "./oauth-provider-definition.js";
 import { captureRemoteMcpCatalog } from "./remote-catalog-capture.js";
@@ -59,6 +59,77 @@ it("labels the owner-authorized Slack preview without claiming directory approva
     index.plugins.find(
       (entry: { readonly sourceDirectory: string }) =>
         entry.sourceDirectory === "plugins/remotes/slack.json",
+    )?.publicationEligible,
+  ).toBe(true);
+});
+
+it("publishes the Owner-authorized Atlassian personal-token preview without claiming an API-token capture", async () => {
+  const value = JSON.parse(await readFile("plugins/remotes/atlassian-api-token.json", "utf8"));
+  const parsed = validateManagedRemotePluginRelease(value, "authoring");
+  if (Result.isFailure(parsed)) throw new Error(parsed.failure);
+  const release = parsed.success;
+  expect(release.authStrategy).toMatchObject({
+    profile: "api-key",
+    fields: [
+      expect.objectContaining({ key: "email", secret: false }),
+      expect.objectContaining({ key: "token", secret: true }),
+      expect.objectContaining({ key: "domain", secret: false }),
+    ],
+    providerRegistrationId: "atlassian-api-token-v1",
+    delivery: [
+      {
+        kind: "basic",
+        headerName: "authorization",
+        usernameField: "email",
+        passwordField: "token",
+      },
+    ],
+  });
+  expect(release.scopes).toEqual([]);
+  expect(release.oauthProviderDefinition).toBeUndefined();
+  expect(release.providerDefinitionDigest).toBeUndefined();
+  expect(release.authStrategy?.identity.kind).toBe("mcp-tool");
+  expect(release.authStrategy?.resources).toMatchObject({
+    kind: "credential-origin",
+    field: "domain",
+    allowedHostSuffixes: ["atlassian.net"],
+  });
+  if (release.authStrategy?.resources.kind !== "credential-origin")
+    throw new Error("site binding missing");
+  const siteTools = release.catalog.tools.filter(
+    (tool) =>
+      Schema.is(Schema.JsonObject)(tool.inputSchema.properties) &&
+      Object.hasOwn(tool.inputSchema.properties, "cloudId"),
+  );
+  expect(release.authStrategy.resources.binding.appliesTo).toEqual({
+    kind: "tool-list",
+    toolIds: siteTools.map((tool) => tool.id),
+  });
+  expect(siteTools.length).toBeGreaterThan(0);
+  expect(release.catalog.digest).toBe(
+    await digestPluginBytes(
+      new TextEncoder().encode(
+        canonicalPluginJson({ schemaVersion: 1, tools: release.catalog.tools }),
+      ),
+    ),
+  );
+  expect(
+    release.catalog.tools
+      .filter((tool) => tool.classification !== "read")
+      .every((tool) => tool.defaultPolicy === "require-approval"),
+  ).toBe(true);
+  expect(Result.isSuccess(validateManagedRemotePluginRelease(value, "publication"))).toBe(true);
+  expect(release.verificationNotes).toContain("no API-token tools/list capture");
+  expect(release.verificationNotes).toContain("Independent review waived, not passed");
+  expect(release.protocolPolicy?.catalogCompatibility).toBe("reviewed-subset");
+  expect(
+    validateManagedRemotePluginRelease({ ...value, status: "staged-unverified" }, "publication"),
+  ).toEqual(Result.fail("remote-release-not-reviewed"));
+  const index = JSON.parse(await readFile("releases/index.json", "utf8"));
+  expect(
+    index.plugins.find(
+      (entry: { readonly sourceDirectory: string }) =>
+        entry.sourceDirectory === "plugins/remotes/atlassian-api-token.json",
     )?.publicationEligible,
   ).toBe(true);
 });

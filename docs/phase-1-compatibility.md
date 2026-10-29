@@ -85,3 +85,19 @@ packager's fixed instant is serialized by ZIP as host-local DOS time. This keeps
 the exact historical golden and reviewed production bytes intact. Making the
 production packager independent of host timezone would be a coordinated shared
 source/review migration, rather than silently replacing those pinned digests.
+
+The Owner-authorized Atlassian personal-token test release adds the `basic` API credential-delivery
+variant to the app-owned v1 authentication distribution. It names separate username and
+password fields and fixes the header to `authorization`. Existing header-delivery shapes
+and published definition bytes are unchanged. The application constructs UTF-8 Basic auth
+inside the Vault-backed adapter, rejects ambiguous usernames and control characters, and
+preserves selected-site invocation guards. The `atlassianApiTokenDraft` source pin is
+committed application source evidence, not deployed runtime acceptance. Its provisional
+catalog is the existing OAuth schema capture; real API-token catalog, identity and site
+acceptance remain unverified. The release index permits publication for user testing,
+with runtime reviewed-subset reconciliation and per-tool approval guards.
+
+The API-token resource declaration also admits a credential-owned HTTPS origin. The
+Owner enters an Atlassian domain alongside email and token. The adapter validates the
+allowed host suffix, pins the canonical origin for cloudId-scoped tools, and never uses
+this value as a provider HTTP endpoint. OAuth resource-discovery declarations are unchanged.

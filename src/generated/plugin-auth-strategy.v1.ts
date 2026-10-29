@@ -1,5 +1,5 @@
 // GENERATED from @supernala/domain auth contract v1.
-// Source SHA-256: ca7eaf806c13992370b96a8371a5275773f8d574ac0a34e510faf2ba56b7014c
+// Source SHA-256: 8b464e9ad96eae7fb0bd346c0ca33c0108d4c91fcddb5463b50eca78225e4a85
 // Run `pnpm auth-contract:vendor <distribution-directory>`; do not edit.
 import { Schema } from "effect";
 import {
@@ -98,6 +98,12 @@ export interface PluginCredentialField extends Schema.Schema.Type<typeof PluginC
 
 /** Declarative API credential attachment applied only by the trusted invocation adapter. */
 export const PluginApiCredentialDelivery = Schema.Union([
+  Schema.Struct({
+    kind: Schema.Literal("basic"),
+    headerName: Schema.Literal("authorization"),
+    usernameField: PluginCredentialField.fields.key,
+    passwordField: PluginCredentialField.fields.key,
+  }),
   Schema.Struct({
     kind: Schema.Literal("header"),
     field: PluginCredentialField.fields.key,
@@ -247,6 +253,21 @@ export const PluginResourceDeclaration = Schema.Union([
 /** Optional provider-neutral resource discovery and Owner selection declaration. */
 export type PluginResourceDeclaration = typeof PluginResourceDeclaration.Type;
 
+const PluginApiCredentialResource = Schema.Union([
+  PluginResourceDeclaration,
+  Schema.Struct({
+    kind: Schema.Literal("credential-origin"),
+    field: PluginCredentialField.fields.key,
+    allowedHostSuffixes: Schema.Array(
+      Schema.String.pipe(
+        Schema.check(Schema.isLengthBetween(3, 253)),
+        Schema.check(Schema.isPattern(/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/u)),
+      ),
+    ).pipe(Schema.check(Schema.isLengthBetween(1, 8)), Schema.check(Schema.isUnique())),
+    binding: PluginResourceBinding,
+  }),
+]);
+
 const OAuthAuthority = {
   providerRegistrationId: ProviderRegistrationId,
   providerDefinitionDigest: PluginSha256,
@@ -303,7 +324,7 @@ export const PluginAuthStrategyDefinition = Schema.Union([
       }),
     ),
     identity: PluginIdentityDeclaration,
-    resources: PluginResourceDeclaration,
+    resources: PluginApiCredentialResource,
   }),
   Schema.Struct({
     schemaVersion: Schema.Literal(1),
