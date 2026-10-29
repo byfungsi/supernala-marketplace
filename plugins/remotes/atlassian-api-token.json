@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:atlassian-api-token@1.0.0",
+  "id": "supernala-public:supernala:atlassian-api-token@1.0.1",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "atlassian-api-token",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Atlassian (API token)",
   "description": "Preview: connect Jira and Confluence with your Atlassian email, personal API token and site domain. Requires organization-enabled MCP API-token authentication and suitable scopes; writes require approval.",
   "license": "LicenseRef-Provider-Service",
@@ -198,7 +198,7 @@
   },
   "scopes": [],
   "catalog": {
-    "id": "atlassian-api-token-provisional-catalog",
+    "id": "atlassian-live-tools-list-20261028",
     "schemaVersion": 1,
     "digest": "debd0c58d3fa33f21fd1f274e14318eebe3e96b8189b864502bd57f78ba34642",
     "tools": [

@@ -85,6 +85,9 @@ it("publishes the Owner-authorized Atlassian personal-token preview without clai
       },
     ],
   });
+  const oauth = JSON.parse(await readFile("plugins/remotes/atlassian.json", "utf8"));
+  expect(release.catalog.id).toBe(oauth.catalog.id);
+  expect(release.catalog.digest).toBe(oauth.catalog.digest);
   expect(release.scopes).toEqual([]);
   expect(release.oauthProviderDefinition).toBeUndefined();
   expect(release.providerDefinitionDigest).toBeUndefined();
