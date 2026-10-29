@@ -1,0 +1,216 @@
+{
+  "date": "2026-10-28",
+  "contains": "credential-free tool declarations, token policy facts, and redacted output shapes only",
+  "providers": {
+    "atlassian": {
+      "initialToken": {
+        "fields": ["access_token", "expires_in", "refresh_token", "scope", "token_type"],
+        "expires_in": 28800,
+        "token_type": "Bearer",
+        "scope": "offline_access read:account read:confluence:agent-interface read:jira:agent-interface read:me search:confluence:agent-interface search:jira:agent-interface write:confluence:agent-interface write:jira:agent-interface",
+        "refresh_token_present": true
+      },
+      "refreshToken": {
+        "fields": ["access_token", "expires_in", "refresh_token", "scope", "token_type"],
+        "expires_in": 28800,
+        "token_type": "Bearer",
+        "scope": "offline_access read:account read:confluence:agent-interface read:jira:agent-interface read:me search:confluence:agent-interface search:jira:agent-interface write:confluence:agent-interface write:jira:agent-interface",
+        "refresh_token_present": true,
+        "refresh_token_rotated": true
+      },
+      "identityOutputShapes": {
+        "atlassianUserInfo": {
+          "content": {
+            "type": "array",
+            "itemShapes": [
+              {
+                "type": "string",
+                "text": {
+                  "type": "json-string",
+                  "shape": {
+                    "data": {
+                      "accountId": "string"
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "isError": "boolean"
+        },
+        "getAccessibleAtlassianResources": {
+          "content": {
+            "type": "array",
+            "itemShapes": [
+              {
+                "type": "string",
+                "text": {
+                  "type": "json-string",
+                  "shape": {
+                    "data": {
+                      "resources": {
+                        "type": "array",
+                        "itemShapes": [
+                          {
+                            "cloudId": "string",
+                            "url": "string",
+                            "products": {
+                              "type": "array",
+                              "itemShapes": [
+                                {
+                                  "id": "string",
+                                  "access": "string"
+                                },
+                                {
+                                  "id": "string",
+                                  "access": "string"
+                                }
+                              ]
+                            }
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "isError": "boolean"
+        }
+      }
+    },
+    "canva": {
+      "initialToken": {
+        "fields": ["access_token", "expires_in", "refresh_token", "scope", "token_type"],
+        "expires_in": 14400,
+        "token_type": "Bearer",
+        "scope": "asset:read asset:write brandkit:read brandtemplate:content:read brandtemplate:content:write brandtemplate:meta:read comment:read comment:write design:content:read design:content:write design:meta:read folder:read folder:write help:answers:read help:answers:write profile:read",
+        "refresh_token_present": true
+      },
+      "refreshToken": {
+        "fields": ["access_token", "expires_in", "refresh_token", "token_type"],
+        "expires_in": 14400,
+        "token_type": "Bearer",
+        "scope": null,
+        "refresh_token_present": true,
+        "refresh_token_rotated": true
+      },
+      "identityOutputShapes": {
+        "get-logged-in-account-details": {
+          "content": {
+            "type": "array",
+            "itemShapes": [
+              {
+                "type": "string",
+                "text": {
+                  "type": "json-string",
+                  "shape": {
+                    "id": "string",
+                    "name": "string",
+                    "team_id": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "isError": "boolean",
+          "structuredContent": {
+            "id": "string",
+            "name": "string",
+            "team_id": "string"
+          },
+          "_meta": {
+            "com.canva/connectMcpRequestId": "string"
+          }
+        }
+      }
+    },
+    "buffer": {
+      "initialToken": {
+        "fields": ["access_token", "expires_in", "refresh_token", "scope", "token_type"],
+        "expires_in": 3600,
+        "token_type": "Bearer",
+        "scope": "account:read ideas:read ideas:write insights:read posts:read posts:write snippets:read snippets:write",
+        "refresh_token_present": true
+      },
+      "refreshToken": {
+        "fields": ["access_token", "expires_in", "refresh_token", "scope", "token_type"],
+        "expires_in": 3600,
+        "token_type": "Bearer",
+        "scope": "account:read ideas:read ideas:write insights:read posts:read posts:write snippets:read snippets:write",
+        "refresh_token_present": true,
+        "refresh_token_rotated": true
+      },
+      "identityOutputShapes": {
+        "get_account": {
+          "content": {
+            "type": "array",
+            "itemShapes": [
+              {
+                "type": "string",
+                "text": {
+                  "type": "json-string",
+                  "shape": {
+                    "id": "string",
+                    "email": "string",
+                    "name": "string",
+                    "avatar": "string",
+                    "timezone": "string",
+                    "createdAt": "string",
+                    "preferences": {
+                      "timeFormat": "string",
+                      "startOfWeek": "string"
+                    },
+                    "organizations": {
+                      "type": "array",
+                      "itemShapes": [
+                        {
+                          "id": "string",
+                          "name": "string",
+                          "ownerEmail": "string",
+                          "limits": {
+                            "channels": "number",
+                            "members": "number",
+                            "scheduledPosts": "number",
+                            "tags": "number",
+                            "ideas": "number"
+                          },
+                          "members": {
+                            "totalCount": "number"
+                          }
+                        }
+                      ]
+                    },
+                    "currentTime": "string"
+                  }
+                }
+              },
+              {
+                "type": "string",
+                "text": {
+                  "type": "json-string",
+                  "shape": {
+                    "rateLimit": {
+                      "type": "array",
+                      "itemShapes": [
+                        {
+                          "remaining": "number",
+                          "resetSeconds": "number"
+                        },
+                        {
+                          "remaining": "number",
+                          "resetSeconds": "number"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}

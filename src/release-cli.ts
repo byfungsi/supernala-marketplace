@@ -1,5 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { parseArgs } from "node:util";
 import { Result, Schema } from "effect";
 import { validatePluginSource } from "./authoring-validation.js";
 import { CloudflareD1RestTransport, CloudflareR2S3ArtifactStore } from "./cloudflare-adapters.js";
@@ -22,6 +23,7 @@ import {
   publishIncrementalRelease,
   ReleaseJournalRecordSchema,
   selectIncrementalReleaseSources,
+  ReleasePluginSelection,
   type IncrementalReleaseCandidate,
   type PluginReleaseIdentity,
   type ReleaseSourceState,
@@ -184,6 +186,7 @@ const selectAndBuild = async (input: {
   readonly outputDirectory: string;
   readonly mergeCommit: string;
   readonly releaseOrdinal: number;
+  readonly requestedPlugins?: typeof ReleasePluginSelection.Type | undefined;
 }): Promise<void> => {
   if (!/^[a-f0-9]{40}$/u.test(input.mergeCommit)) fail("merge-commit-invalid");
   const index = await readJson("releases/index.json", ReleaseIndex);
@@ -289,7 +292,11 @@ const selectAndBuild = async (input: {
     );
   }
   const selected = unwrap(
-    selectIncrementalReleaseSources({ sources: states, journal: baseline }),
+    selectIncrementalReleaseSources({
+      sources: states,
+      journal: baseline,
+      requestedPlugins: input.requestedPlugins,
+    }),
     (error) => error,
   );
   await fs.mkdir(input.outputDirectory, { recursive: true });
@@ -650,6 +657,19 @@ const main = async (): Promise<void> => {
     );
   }
   if (command === "build") {
+    const { values } = parseArgs({
+      args: arguments_.slice(4),
+      strict: true,
+      allowPositionals: false,
+      options: { plugin: { type: "string", multiple: true } },
+    });
+    const requestedPlugins =
+      values.plugin === undefined
+        ? undefined
+        : unwrap(
+            Schema.decodeUnknownResult(ReleasePluginSelection)(values.plugin),
+            () => "release-plugin-selection-invalid",
+          );
     const releaseOrdinal = Number(arguments_[3]);
     if (!Number.isSafeInteger(releaseOrdinal) || releaseOrdinal < 0)
       fail("release-ordinal-invalid");
@@ -658,6 +678,7 @@ const main = async (): Promise<void> => {
       outputDirectory: arguments_[1] ?? fail("release-output-required"),
       mergeCommit: arguments_[2] ?? fail("merge-commit-required"),
       releaseOrdinal,
+      requestedPlugins,
     });
   }
   if (command === "publish") {

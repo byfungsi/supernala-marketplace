@@ -1,5 +1,5 @@
 // GENERATED from @supernala/domain auth contract v1.
-// Source SHA-256: ab48df365da7608ba41b2a9cdc65540668bca9a5fbeca895a479b5403de4ac80
+// Source SHA-256: ca7eaf806c13992370b96a8371a5275773f8d574ac0a34e510faf2ba56b7014c
 // Run `pnpm auth-contract:vendor <distribution-directory>`; do not edit.
 import { Schema } from "effect";
 import {
@@ -134,6 +134,9 @@ export const PluginBootstrapMcpOperation = Schema.Struct({
   input: Schema.JsonObject,
   maximumOutputBytes: Schema.Int.pipe(
     Schema.check(Schema.isBetween({ minimum: 1, maximum: 1_048_576 })),
+  ),
+  resultTextContentIndex: Schema.optionalKey(
+    Schema.Int.pipe(Schema.check(Schema.isBetween({ minimum: 0, maximum: 19 }))),
   ),
 });
 
@@ -418,6 +421,7 @@ export const PluginSetupSubmission = Schema.Union([
     resourceId: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 300))),
   }),
   Schema.Struct({ _tag: Schema.Literal("DevicePollingCancelled") }),
+  Schema.Struct({ _tag: Schema.Literal("SetupCancelled") }),
 ]);
 
 /** Submitted Owner setup input; secret field values are redacted immediately at the API boundary. */

@@ -37,10 +37,33 @@ it("exposes local deploy help without loading credentials or calling providers",
   expect(result.code).toBe(0);
   expect(result.stdout).toContain("pnpm marketplace deploy --environment production");
   expect(result.stdout).toContain("--yes");
+  expect(result.stdout).toContain("--plugin SLUG");
   expect(result.stdout).toContain("--recover-attempt UUID");
   expect(result.stdout).toContain("Recovery confirmation uses [y/N]");
   expect(result.stderr).toBe("");
 });
+
+it("rejects invalid plugin selections before loading credentials", async () => {
+  const cases = [
+    { args: ["--plugin", "../invalid"], reason: "release-plugin-selection-invalid" },
+    {
+      args: ["--plugin", "alpha", "--plugin", "alpha"],
+      reason: "release-plugin-selection-invalid",
+    },
+    { args: ["--plugin", "alpha", "--status"], reason: "local-release-conflicting-options" },
+  ];
+  const results = await Promise.all(
+    cases.map(async ({ args, reason }) => ({
+      result: await run(["--environment", "production", ...args]),
+      reason,
+    })),
+  );
+  for (const { result, reason } of results) {
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain(reason);
+    expect(result.stderr).not.toContain(process.cwd());
+  }
+}, 20_000);
 
 it("accepts only y/yes for every interactive confirmation", () => {
   for (const answer of ["y", "Y", "yes", "YES", " Yes "]) {

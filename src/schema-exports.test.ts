@@ -13,10 +13,15 @@ it("keeps portable JSON Schemas byte-aligned with owning Effect schemas", async 
 
 it("consumes the pinned Supernala authentication strategy schema bytes", async () => {
   const compatibility = Schema.decodeUnknownSync(
-    Schema.Struct({ additionalReviewedSources: Schema.Record(Schema.String, Schema.String) }),
+    Schema.Struct({
+      hostedMcpOauthDraft: Schema.Struct({
+        status: Schema.Literal("owner-review-waiver-not-deployed"),
+        files: Schema.Record(Schema.String, Schema.String),
+      }),
+    }),
   )(JSON.parse(await readFile("compatibility/phase-1-sources.json", "utf8")));
   const expected =
-    compatibility.additionalReviewedSources[
+    compatibility.hostedMcpOauthDraft.files[
       "packages/domain/schema/plugin-auth-strategy-definition.v1.schema.json"
     ];
   const bytes = await readFile("schemas/plugin-auth-strategy-definition.schema.json");

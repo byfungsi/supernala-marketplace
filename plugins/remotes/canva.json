@@ -1,0 +1,2609 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-publishable",
+  "id": "supernala-public:supernala:canva@1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "canva",
+  "version": "1.0.0",
+  "name": "Canva",
+  "description": "Canva MCP for design creation, editing, images, exports, assets, folders, brands and comments using each user\u2019s Canva account",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "canva-mcp-v1",
+    "providerRegistrationId": "canva-oauth-portal-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://api.canva.com/connect/v1/mcp",
+  "oauthRegistrationMode": "platform-pre-registered",
+  "providerDefinitionDigest": "00515a92f09874957c06fdea55f2cae7def4cfa6104d3566769b67649ff87f06",
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "canva-oauth-portal-v1",
+    "providerDefinitionDigest": "00515a92f09874957c06fdea55f2cae7def4cfa6104d3566769b67649ff87f06",
+    "requestedScopes": [
+      "asset:read",
+      "asset:write",
+      "brandkit:read",
+      "brandtemplate:content:read",
+      "brandtemplate:content:write",
+      "brandtemplate:meta:read",
+      "comment:read",
+      "comment:write",
+      "design:content:read",
+      "design:content:write",
+      "design:meta:read",
+      "folder:read",
+      "folder:write",
+      "help:answers:read",
+      "help:answers:write",
+      "profile:read"
+    ],
+    "clientRegistration": {
+      "kind": "pre-registered"
+    },
+    "resourceMetadataUrl": "https://api.canva.com/.well-known/oauth-protected-resource/connect/v1/mcp",
+    "identity": {
+      "kind": "mcp-tool",
+      "operation": {
+        "endpoint": "https://api.canva.com/connect/v1/mcp",
+        "toolName": "get-logged-in-account-details",
+        "input": {},
+        "maximumOutputBytes": 65536
+      },
+      "subjectPaths": [["team_id"], ["id"]],
+      "displayLabelPath": ["name"],
+      "subjectStability": "stable",
+      "maximumResponseBytes": 262144,
+      "maximumJsonDepth": 16,
+      "maximumObjectKeys": 2048
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "scopes": [
+    "asset:read",
+    "asset:write",
+    "brandkit:read",
+    "brandtemplate:content:read",
+    "brandtemplate:content:write",
+    "brandtemplate:meta:read",
+    "comment:read",
+    "comment:write",
+    "design:content:read",
+    "design:content:write",
+    "design:meta:read",
+    "folder:read",
+    "folder:write",
+    "help:answers:read",
+    "help:answers:write",
+    "profile:read"
+  ],
+  "catalog": {
+    "id": "canva-live-tools-list-20261028",
+    "schemaVersion": 1,
+    "digest": "74cd3d20c4a2efba17346abdf83ef28012c6a011ff0db5d07f3cb426406c2983",
+    "tools": [
+      {
+        "id": "canva.cancel_editing_transaction",
+        "mcpName": "cancel-editing-transaction",
+        "title": "cancel-editing-transaction",
+        "description": "Undo or discard all unsaved changes in an active Canva editing transaction.\n\nUse to cancel a set of in-progress edits or finish editing without saving.\n\nThe unsaved changes will be permanently lost, and the transaction_id can no longer be used. Returns confirmation that the changes were discarded.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "transaction_id": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9_-]{1,50}$",
+              "description": "Exact ID of the active editing transaction whose changes to discard. Use the transaction_id returned when that editing transaction was started."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["transaction_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.comment_on_design",
+        "mcpName": "comment-on-design",
+        "title": "comment-on-design",
+        "description": "Leave a new comment on an existing Canva design as a note to self or for collaborators to read.\n\nUse to give feedback, ask a question about a design, flag an issue, or add context for people working on it. The comment is visible to everyone who has access to the design.\n\nReturns the created comment and its comment_id.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "minLength": 11,
+              "maxLength": 11,
+              "pattern": "^D[a-zA-Z0-9_-]+$",
+              "description": "ID of the existing Canva design to comment on. Design IDs start with \"D\"."
+            },
+            "message_plaintext": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000,
+              "description": "The text content of the comment to add."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id", "message_plaintext"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.commit_editing_transaction",
+        "mcpName": "commit-editing-transaction",
+        "title": "commit-editing-transaction",
+        "description": "Make all draft changes in an active Canva editing transaction permanent.\n\nUse to save a completed set of edits, including text, layout, or media updates.\n\nShow the user a preview of the design and obtain their explicit approval before calling this tool.\n\nSaving applies all draft changes to the design, closes the editing transaction, and makes its transaction_id invalid. Returns confirmation that the changes were saved.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "transaction_id": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9_-]{1,50}$",
+              "description": "Exact ID of the active editing transaction whose draft changes should be saved."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["transaction_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.copy_design",
+        "mcpName": "copy-design",
+        "title": "copy-design",
+        "description": "Duplicate an existing Canva design, or copy selected pages from it, into a new design.\n\nUse to make a separate working copy, create an independent cloned, forked, or backup version, or preserve the original before making changes. For a single source design only. Not for combining pages from more than one design.\n\nCreates a new design. The source design remains unchanged. Returns the new design's design_id.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "description": "ID of the existing Canva design to copy."
+            },
+            "page_numbers": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "minItems": 1,
+              "description": "Pages to include in the new design, numbered from 1. For example, use [1, 3, 5] to copy pages 1, 3, and 5. Omit to copy every page."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.create_brand_template_draft",
+        "mcpName": "create-brand-template-draft",
+        "title": "create-brand-template-draft",
+        "description": "Creates an editable draft design from a brand template. If a draft already exists for this brand template, the existing draft is returned. Use this tool to get a design that can be edited and later published back as the updated brand template.\n\nFor tagging workflows (Autofill setup):\n1. Call this tool to create an editable draft from a brand template.\n2. Use `start-editing-transaction` with the returned design ID to open an editing session and inspect design elements.\n3. Use `perform-editing-operations` to tag elements with `autofill_field_label` (e.g. \"email\", \"logo\").\n4. Use `commit-editing-transaction` to save the tagging changes.\n5. Use `publish-brand-template` to publish the tagged design as the updated brand template.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "brand_template_id": {
+              "type": "string",
+              "description": "The ID of the brand template to create a draft from. Use `search-brand-templates` to find available brand templates and their IDs."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["brand_template_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.create_design",
+        "mcpName": "create-design",
+        "title": "create-design",
+        "description": "Generate a new Canva design from a written brief, with any supplied content folded in.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "brief": {
+              "type": "string",
+              "minLength": 1,
+              "description": "What to create, in the user's own words. State the subject, the purpose, and any wording, tone, colours, or brand the user asked for."
+            },
+            "format": {
+              "type": "string",
+              "description": "Named Canva format the design is made in, e.g. \"Instagram Post\", \"Presentation\",\n\"Flyer (Landscape A4)\". Include the orientation whenever the format has one, because a\nname without it cannot be resolved to an exact size and the design comes out square.\nOmit it - usually the better choice - to have the format chosen from the brief."
+            },
+            "outline": {
+              "type": "object",
+              "properties": {
+                "sections": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "title": {
+                        "type": "string",
+                        "description": "Title of the slide."
+                      },
+                      "description": {
+                        "type": "string",
+                        "description": "What the slide covers, in a sentence. This is where a slide's content sits."
+                      },
+                      "points": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Separate points the slide makes, when it has them."
+                      }
+                    },
+                    "required": ["title"],
+                    "additionalProperties": false
+                  },
+                  "description": "The slides, in order."
+                }
+              },
+              "required": ["sections"],
+              "additionalProperties": false,
+              "description": "Outline for a presentation, when you have one the user has approved or supplied. Only valid when the design is a presentation. Omit to let Canva structure the presentation from the brief."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["brief"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.create_design_from_brand_template",
+        "mcpName": "create-design-from-brand-template",
+        "title": "create-design-from-brand-template",
+        "description": "Create a new Canva design from a brand template. Optionally select specific pages to include. If the user has already provided a brand template ID (a string starting with \"BTM\"), call this tool directly with that ID \u2014 do NOT call `search-brand-templates` first. Only use `search-brand-templates` when no ID has been provided and you need to discover one. If you need to fill template fields with custom data, use the `autofill-design` tool instead.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "brand_template_id": {
+              "type": "string",
+              "description": "The ID of the brand template to create a design from."
+            },
+            "page_numbers": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "exclusiveMinimum": 0
+              },
+              "minItems": 1,
+              "description": "Optional 1-based page numbers to include from the brand template. Omit to use all pages."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["brand_template_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.create_design_from_candidate",
+        "mcpName": "create-design-from-candidate",
+        "title": "create-design-from-candidate",
+        "description": "LEGACY-ONLY \u2014 DO NOT CALL WHEN create-design IS AVAILABLE.\nIf create-design is in the tool list, you MUST NOT call this tool. Call create-design instead.\nBRAND EXCEPTION: create-design cannot apply a brand kit or base a design on a brand template. When the user asks for an on-brand design \u2014 their brand kit, their brand colours, fonts or logo, or a brand template to base the design on \u2014 call this tool instead of create-design.\nAll instructions below apply when create-design is absent from the tool list, and whenever the request is an on-brand one.\nA failed create-design call does not make it unavailable.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50,
+              "pattern": "^[a-zA-Z0-9_-]+$",
+              "description": "ID of the design generation job that created the candidate design. This is returned in the generate-design response."
+            },
+            "candidate_id": {
+              "type": "string",
+              "minLength": 1,
+              "pattern": "^[a-zA-Z0-9_-]+$",
+              "description": "ID of the candidate design to convert into an editable Canva design. This is returned in the generate-design response for each design candidate."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["job_id", "candidate_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.create_folder",
+        "mcpName": "create-folder",
+        "title": "create-folder",
+        "description": "Create a Canva folder to organise related work.\n\nUse to set up a project folder, add a subfolder within an existing folder, or keep designs, images, and folders together. Returns the new folder, including its folder_id.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name for the new Canva folder."
+            },
+            "parent_folder_id": {
+              "type": "string",
+              "description": "ID of the Canva folder that will contain the new folder. Use \"root\" to create the folder at the top level."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["name", "parent_folder_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.create_upload_url",
+        "mcpName": "create-upload-url",
+        "title": "create-upload-url",
+        "description": "Uploads a file (image, video, audio, PDF, or other document) into Canva. Use when the user wants to add, upload, import, or send a file they have \u2014 a chat attachment, a local file, or generated content \u2014 to Canva, or wants to use such a file in a design, presentation, or their Canva library. Step 1: call this tool to get a single-use upload_url. Step 2: send the raw file bytes as the body of one HTTP POST to that URL with the header \"Content-Type: application/octet-stream\" \u2014 raw bytes only, no multipart form, no base64, no JSON wrapper. The POST response contains resource IDs for the uploaded file: pass them to other Canva tools to reference the file. Each URL allows exactly one upload and expires after a short period; if the URL has been used, has expired, or the upload was rejected, call this tool again for a fresh URL \u2014 never retry a used or expired URL. Only for files whose bytes you can access; for a file already at a public URL, prefer a URL-import tool if one is available.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": []
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.export_design",
+        "mcpName": "export-design",
+        "title": "export-design",
+        "description": "Export an existing Canva design as a downloadable file to save and use outside Canva.\n\nUse when a selected design needs to be printed, attached to an email, sent or shared as a file outside Canva, converted to another file type, or downloaded as selected pages.\n\nOnly call after you have confirmed that the selected design supports the requested format. Returns a download URL for the exported file.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "minLength": 11,
+              "maxLength": 11,
+              "pattern": "^D[a-zA-Z0-9_-]+$",
+              "description": "ID of the existing Canva design to export. Design IDs start with \"D\"."
+            },
+            "format": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["pdf", "png", "jpg", "gif", "pptx", "mp4", "csv"],
+                  "description": "Format to export as. Use only a format that \"get-export-formats\" reported as supported for this design."
+                },
+                "quality": {
+                  "anyOf": [
+                    {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 100,
+                      "description": "Use for types: jpg. Image quality from 1-100"
+                    },
+                    {
+                      "type": "string",
+                      "description": "Required for types: mp4. Video quality (e.g., 'horizontal_1080p')"
+                    }
+                  ]
+                },
+                "pages": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": 1
+                  },
+                  "description": "Page numbers to export (1-based). Draw these from the pages \"get-export-formats\" reported as available for this \"type\" on this design; when it reported no specific pages for this \"type\", any page is valid. Omit this field to export every page."
+                },
+                "export_quality": {
+                  "type": "string",
+                  "enum": ["regular", "pro"],
+                  "description": "Optional export quality for PDF, PNG, JPG, GIF, PPTX, or MP4."
+                },
+                "size": {
+                  "type": "string",
+                  "enum": ["a4", "a3", "letter", "legal"],
+                  "description": "Optional paper size for PDF exports."
+                },
+                "height": {
+                  "type": "number",
+                  "minimum": 40,
+                  "maximum": 25000,
+                  "description": "Optional output height in pixels for PNG, JPG, or GIF exports."
+                },
+                "width": {
+                  "type": "number",
+                  "minimum": 40,
+                  "maximum": 25000,
+                  "description": "Optional output width in pixels for PNG, JPG, or GIF exports."
+                },
+                "lossless": {
+                  "type": "boolean",
+                  "description": "Optional PNG compression setting. True uses lossless compression; defaults to true."
+                },
+                "transparent_background": {
+                  "type": "boolean",
+                  "description": "Optional PNG background setting. True exports a transparent background; defaults to false."
+                },
+                "as_single_image": {
+                  "type": "boolean",
+                  "description": "Optional PNG setting. True merges a multi-page design into one image."
+                }
+              },
+              "required": ["type"],
+              "additionalProperties": false,
+              "description": "Export settings for the downloadable file."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id", "format"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.generate_design",
+        "mcpName": "generate-design",
+        "title": "generate-design",
+        "description": "LEGACY-ONLY \u2014 DO NOT CALL WHEN create-design IS AVAILABLE.\nIf create-design is in the tool list, you MUST NOT call this tool. Call create-design instead.\nBRAND EXCEPTION: create-design cannot apply a brand kit or base a design on a brand template. When the user asks for an on-brand design \u2014 their brand kit, their brand colours, fonts or logo, or a brand template to base the design on \u2014 call this tool instead of create-design.\nAll instructions below apply when create-design is absent from the tool list, and whenever the request is an on-brand one.\nA failed create-design call does not make it unavailable.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Query describing the design to generate. Ask for more details to avoid errors like 'Common queries will not be generated'. When 'verbatim' is true, this must be the exact markdown text the user wants in the document (do not summarize or reformat it)."
+            },
+            "design_type": {
+              "type": "string",
+              "enum": [
+                "business_card",
+                "card",
+                "desktop_wallpaper",
+                "doc",
+                "document",
+                "email",
+                "facebook_cover",
+                "facebook_post",
+                "flyer",
+                "infographic",
+                "instagram_post",
+                "invitation",
+                "logo",
+                "phone_wallpaper",
+                "photo_collage",
+                "pinterest_pin",
+                "postcard",
+                "poster",
+                "presentation",
+                "proposal",
+                "report",
+                "resume",
+                "twitter_post",
+                "your_story",
+                "youtube_banner",
+                "youtube_thumbnail"
+              ],
+              "description": "The design type to generate.\n\nOptions and their descriptions:\n- 'business_card': A [business card](https://www.canva.com/create/business-cards/); professional contact information card.\n- 'card': A [card](https://www.canva.com/create/cards/); for various occasions like birthdays, holidays, or thank you notes.\n- 'desktop_wallpaper': A desktop wallpaper; background image for computer screens.\n- 'doc': A [Canva Doc](https://www.canva.com/docs/); Modern, collaborative documents for business communications and written content.\n    Use this for: memos, articles, technical articles, newsletters, requirements documents (product requirements, business requirements), agendas, strategic plans, go-to-market plans, business proposals, solution proposals, event proposals, company announcements, product overviews, summaries, and other text-heavy professional documents.\n    Canva Docs are web-first with dynamic layouts optimized for online collaboration and interactive content.\n    NOT for: Visual proposal templates with graphics (use 'proposal'), data-heavy reports with charts (use 'report'), traditional fixed-layout templates (use 'document').\n- 'document': A [document](https://www.canva.com/create/documents/); traditional page-based document template with fixed layouts. For most business writing, use \"doc\" instead.\n- 'email': An [email](https://www.canva.com/emails/); use this for designing email newsletters, promotional emails, and marketing campaigns intended to be sent to recipients.\n- 'facebook_cover': A [Facebook cover](https://www.canva.com/create/facebook-covers/); banner image for your Facebook profile or page.\n- 'facebook_post': A Facebook post; ideal for sharing content on Facebook.\n- 'flyer': A [flyer](https://www.canva.com/create/flyers/); single-page promotional material.\n- 'infographic': An [infographic](https://www.canva.com/create/infographics/); for visualizing data and information.\n- 'instagram_post': An [Instagram post](https://www.canva.com/create/instagram-posts/); perfect for sharing content on Instagram. Generated at 1080x1350px (portrait, 4:5 ratio).\n- 'invitation': An invitation; for events, parties, or special occasions.\n- 'logo': A [logo](https://www.canva.com/create/logos/); for creating brand identity.\n- 'phone_wallpaper': A phone wallpaper; background image for mobile devices.\n- 'photo_collage': A [photo collage](https://www.canva.com/create/photo-collages/); for combining multiple photos into one design.\n- 'pinterest_pin': A Pinterest pin; vertical image optimized for Pinterest.\n- 'postcard': A [postcard](https://www.canva.com/create/postcards/); for sending greeting cards through the mail.\n- 'poster': A [poster](https://www.canva.com/create/posters/); large format print for events or decoration.\n- 'presentation': A [presentation](https://www.canva.com/presentations/); lets you create and collaborate for presenting to an audience.\n- 'proposal': A [proposal](https://www.canva.com/create/proposals/); visually-designed business proposal template with graphics and structured layouts. For text-focused proposals, use \"doc\" instead.\n- 'report': A [report](https://www.canva.com/create/reports/); visually-designed report template with charts, graphics, and data visualization. For text-focused reports, use \"doc\" instead.\n- 'resume': A [resume](https://www.canva.com/create/resumes/); professional document for job applications.\n- 'twitter_post': A Twitter post; optimized for sharing on Twitter/X.\n- 'your_story': A Story; vertical format for Instagram and Facebook Stories.\n- 'youtube_banner': A [YouTube banner](https://www.canva.com/create/youtube-banners/); channel header image for YouTube\n- 'youtube_thumbnail': A [YouTube thumbnail](https://www.canva.com/create/youtube-thumbnails/); eye-catching image for video previews."
+            },
+            "asset_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10,
+              "description": "Optional list of asset IDs to insert into the generated design. Assets are inserted in order, so provide them in the intended sequence. For presentations, order should match slide sequence."
+            },
+            "brand_kit_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "ID of the brand kit to base the generated design on. IMPORTANT: Before calling this tool, ALWAYS ask the user if they want to create an on-brand design. If they say yes, use the list-brand-kits tool to show available brand kits and let the user select one. Only call this tool after the user has confirmed their brand kit selection. If the user prefers not to use a brand kit, proceed without this parameter."
+            },
+            "length": {
+              "type": "string",
+              "enum": ["short", "balanced", "comprehensive"],
+              "description": "Presentation length. Only provide this for presentations when the user explicitly requests a specific length. \"short\" = 1-5 slides, \"balanced\" = 5-15 slides, \"comprehensive\" = 15+ slides. If omitted, defaults to \"short\"."
+            },
+            "verbatim": {
+              "type": "boolean",
+              "description": "Set this to true whenever the user supplies their own text/markdown and wants it placed into a Canva Doc exactly as written \u2014 i.e. they say \"verbatim\", \"as-is\", \"word for word\", \"exactly as written\", or \"don't rewrite/summarize/reword/change it\". When true, the query is rendered into the document with NO AI rewriting, so pass the user's literal markdown in \"query\" (do not summarize or reformat it). Only honoured for design_type \"doc\"; ignored for any other design type (normal AI-assisted generation is used instead). Supports #/## headings, paragraphs, **bold**, *italics*, and bullet/numbered lists; tables, links, code blocks, and images are not supported."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["query", "design_type"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.generate_image",
+        "mcpName": "generate-image",
+        "title": "generate-image",
+        "description": "Generate a standalone image from a text prompt, or edit/restyle images supplied as references.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt": {
+              "description": "Text prompt describing the image to generate\n",
+              "type": "string"
+            },
+            "imageReferences": {
+              "description": "Optional source images to guide generation, such as for image editing. Each must be a MEDIA content reference. For a GeneratedImageResult, reference its media_id, never its design_id or applied_page_id. Omit for pure text-to-image generation.\n",
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ContentRef"
+              }
+            },
+            "aspectRatio": {
+              "description": "Desired output aspect ratio, applied on a best-effort basis. When editing a previously generated image, reuse the exact `aspectRatio` enum value used to generate that image if that value is present in prior conversation or tool-call context, unless the user explicitly requests a different ratio. If the prior enum value is unavailable, omit this argument. For a new image without an explicit ratio, omit this argument. Do not retry solely if the returned image does not exactly match the requested ratio.\nWhen provided, `aspectRatio` must be exactly one of the enum values listed below. Translate the user's request into the matching enum value; for example, for `1:1`, send `SQUARE_1_1`. Never send a raw ratio such as `1:1` or a descriptive word such as `square`. If the user provides both an explicit numeric ratio and conflicting descriptive wording, use the numeric ratio to choose the enum value.\n- `SQUARE_1_1`: Use for \"square\" or \"1:1\".\n- `LANDSCAPE_16_9`: Use for \"landscape\", \"wide\", \"widescreen\", or \"16:9\".\n- `LANDSCAPE_5_4`: Use for an explicit \"5:4\".\n- `LANDSCAPE_4_3`: Use for an explicit \"4:3\".\n- `LANDSCAPE_3_2`: Use for an explicit \"3:2\".\n- `LANDSCAPE_2_1`: Use for an explicit \"2:1\", \"panoramic\", or \"ultra-wide\".\n- `PORTRAIT_9_16`: Use for \"portrait\", \"tall\", \"vertical\", or \"9:16\".\n- `PORTRAIT_4_5`: Use for an explicit \"4:5\".\n- `PORTRAIT_3_4`: Use for an explicit \"3:4\".\n- `PORTRAIT_2_3`: Use for an explicit \"2:3\".\n- `PORTRAIT_1_2`: Use for an explicit \"1:2\".\n",
+              "$ref": "#/$defs/ImageAspectRatio"
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["prompt"],
+          "$defs": {
+            "ContentRef": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "description": "The type of the content item\n",
+                  "$ref": "#/$defs/ContentType"
+                },
+                "id": {
+                  "description": "The ID of the content item\n",
+                  "type": "string"
+                },
+                "version": {
+                  "description": "The version of the content item, if available\n",
+                  "type": "string"
+                },
+                "accessToken": {
+                  "description": "If it exists, the access token used for accessing the item if it is shared. For DOCUMENT, this is the document extension.\n",
+                  "type": "string"
+                }
+              },
+              "required": ["type", "id"]
+            },
+            "ContentType": {
+              "type": "string",
+              "oneOf": [
+                {
+                  "const": "MEDIA"
+                },
+                {
+                  "const": "VIDEO"
+                },
+                {
+                  "const": "AUDIO"
+                },
+                {
+                  "const": "TEMPLATE"
+                },
+                {
+                  "const": "DOCUMENT"
+                },
+                {
+                  "const": "FILE"
+                },
+                {
+                  "const": "FOLDER"
+                }
+              ]
+            },
+            "ImageAspectRatio": {
+              "type": "string",
+              "oneOf": [
+                {
+                  "const": "SQUARE_1_1"
+                },
+                {
+                  "const": "LANDSCAPE_16_9"
+                },
+                {
+                  "const": "LANDSCAPE_4_3"
+                },
+                {
+                  "const": "LANDSCAPE_3_2"
+                },
+                {
+                  "const": "PORTRAIT_9_16"
+                },
+                {
+                  "const": "PORTRAIT_3_4"
+                },
+                {
+                  "const": "PORTRAIT_2_3"
+                },
+                {
+                  "const": "LANDSCAPE_5_4"
+                },
+                {
+                  "const": "LANDSCAPE_2_1"
+                },
+                {
+                  "const": "PORTRAIT_4_5"
+                },
+                {
+                  "const": "PORTRAIT_1_2"
+                }
+              ]
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_assets",
+        "mcpName": "get-assets",
+        "title": "get-assets",
+        "description": "Get names, tags, types, creation dates, and thumbnails for images and videos in a Canva design.\n\nUse when you need to check which image or video is the target on a page, look up its details, or preview it before changing it.\n\nNot for design metadata or editing the media itself.\n\nReturns the metadata and thumbnail for each item in the same order as the supplied asset_ids.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "asset_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 50,
+                "pattern": "^[a-zA-Z0-9_-]+$",
+                "description": "ID of an image or video to inspect."
+              },
+              "description": "IDs of the images or videos to inspect. When checking which media is the target on a page, include every image and video ID from that page."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["asset_ids"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_brand_template_dataset",
+        "mcpName": "get-brand-template-dataset",
+        "title": "get-brand-template-dataset",
+        "description": "Determine whether a Canva Brand Template has fillable data fields and, if so, list their names and types. A Brand Template is a reusable, on-brand layout.\n\nUse to check if the template can be populated with data, whether a reusable template can be autofilled, or see the fields available in a selected Brand Template. Not for an individual existing design.\n\nRequires a brand_template_id. Returns each field's name and data type. An empty object means the Brand Template cannot be autofilled.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "template_id": {
+              "type": "string",
+              "description": "ID of the brand template to get the dataset schema for"
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["template_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_create_design_async_job",
+        "mcpName": "get-create-design-async-job",
+        "title": "get-create-design-async-job",
+        "description": "Gets the status and result of a design generation job started by create-design. Pass the\njob_id and continuation_token from the previous create-design or get-async-job response.\nWhile the job is still running, wait the number of seconds the response's\npolling_policy.wait_seconds gives, then poll again with the same job_id and the updated\ncontinuation_token. Never poll sooner than that: it returns the same answer and the design\narrives no earlier. Follow the polling_policy.instructions in every response, and relay them\nto the user while they wait. When the job completes, share the design link with them.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The job_id returned by create-design. This value is stable and never changes."
+            },
+            "continuation_token": {
+              "type": "string",
+              "minLength": 1,
+              "description": "The continuation_token from the most recent create-design or get-create-design-async-job response."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["job_id", "continuation_token"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_design",
+        "mcpName": "get-design",
+        "title": "get-design",
+        "description": "Look up the record for one existing Canva design, including what type of design it is (such as doc, presentation, whiteboard, sheet), its title, owner, edit and view links, thumbnail, created and updated times, and page count.\n\nUse to open a specific design, find out who created it, check when it was last changed, or see how many pages it has.\n\nNot for folders or image assets. Do not use for reading or summarizing a design's text or for per-slide thumbnails. Returns the design's metadata and access links.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "description": "ID of the existing Canva design, usually returned by a previous Canva tool. Also accepts a full Canva design share URL, including any collaboration token. Do not extract the ID from a share URL. Does not accept a Canva shortlink; resolve it to its full URL first."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_design_candidates",
+        "mcpName": "get-design-candidates",
+        "title": "get-design-candidates",
+        "description": "LEGACY-ONLY \u2014 DO NOT CALL WHEN create-design IS AVAILABLE.\nIf create-design is in the tool list, you MUST NOT call this tool. Call get-create-design-async-job instead.\nBRAND EXCEPTION: an on-brand design \u2014 one using the user's brand kit, their brand colours, fonts or logo, or a brand template \u2014 is generated by the legacy tools rather than create-design. Poll that job with this tool.\nAll instructions below apply when create-design is absent from the tool list, and whenever the request is an on-brand one.\nA failed create-design call does not make it unavailable.\n\nInternal tool for widget UI polling.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "description": "The job ID returned from generate-design"
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["job_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_design_content",
+        "mcpName": "get-design-content",
+        "title": "get-design-content",
+        "description": "Extract rich text from an existing Canva design for read-only use.\n\nUse to read the wording in a design, pull copy from selected pages, summarize a presentation or document, or quote text without making changes.\n\nNot for rewriting, translating, correcting, or updating the text in a design. Does not return presenter notes, sheet cell data, or non-text design content. Returns the rich text content for every page, or specified pages of the selected design.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "description": "ID of the existing Canva design whose rich text you want to retrieve, usually returned by a previous Canva tool. You can also provide a full Canva design share URL exactly as received; this preserves any collaboration token needed for access. Resolve Canva shortlinks before using this field."
+            },
+            "content_types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["richtexts"]
+              },
+              "minItems": 1,
+              "description": "Types of content to retrieve. Currently, only `richtexts` is supported so use the `start-editing-transaction` tool to get other content types"
+            },
+            "pages": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 500
+              },
+              "description": "Optional array of page numbers to get content from. If not specified, content from all pages will be returned. Pages are indexed using one-based numbering, so the first page in a design has the index value `1`."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id", "content_types"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_design_dataset",
+        "mcpName": "get-design-dataset",
+        "title": "get-design-dataset",
+        "description": "Verify whether a selected existing Canva design has fillable data fields and, if so, list their names and types.\n\nUse to see whether a specific past design can be populated with data, understand if an existing design can be autofilled, or see the fields available in a selected design. Not for a reusable Brand Template.\n\nRequires a design_id. Returns each field's name and data type. An empty object means the design cannot be autofilled.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "description": "ID of the selected existing Canva design whose data fields you want to retrieve."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_design_pages",
+        "mcpName": "get-design-pages",
+        "title": "get-design-pages",
+        "description": "List the pages in an existing Canva design, including each page's index and individual thumbnail.\n\nUse to browse a design's pages or slides, see each page thumbnail in order, show what a specific page looks like, or get a range of page previews. Do not use to retrieve a thumbnail that reflects uncommitted changes in an active editing transaction.\n\nRequires a design with individual pages; Canva Docs do not have pages. Returns only the requested pages, without the design's total page count.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "description": "ID of the existing Canva design, usually returned by a previous Canva tool. You can also provide a full Canva design share URL, including its collaboration token. Resolve Canva shortlinks before using this field."
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Page number to start from. Use for pagination; for example, use 21 to start at page 21."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Maximum number of pages to return, from 1 to 100. Use with \"offset\" to retrieve the next range of pages."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_design_thumbnail",
+        "mcpName": "get-design-thumbnail",
+        "title": "get-design-thumbnail",
+        "description": "Get the thumbnail for a particular page of the design in the specified editing transaction. This tool needs to be used with the `start-editing-transaction` tool to obtain an editing transaction ID. You need to provide the transaction ID and a page index to get the thumbnail of that particular page. Each call can only get the thumbnail for one page. Retrieving the thumbnails for multiple pages will require multiple calls of this tool.IMPORTANT: ALWAYS ALWAYS ALWAYS show the preview to the user of EACH thumbnail you get in the response in the chat, EVERY SINGLE TIME you call this tool",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "transaction_id": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9_-]{1,50}$",
+              "description": "The editing transaction ID. This must be the exact `transaction_id` value returned in the `start-editing-transaction` tool response for the editing transaction to get a thumbnail for."
+            },
+            "page_index": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "Required page index to get the thumbnail for. Pages are indexed using one-based numbering, so the first page in a design has the index value `1` (1 for the first page, 2 for the second page, and so on)."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["transaction_id", "page_index"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_design_thumbnails",
+        "mcpName": "get-design-thumbnails",
+        "title": "get-design-thumbnails",
+        "description": "Internal tool for widget UI. One thumbnail per page of a design, minted on demand.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "description": "The design ID, or a full Canva design URL"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20,
+              "description": "Maximum number of pages to return, from page 1. Defaults to 20"
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_export_formats",
+        "mcpName": "get-export-formats",
+        "title": "get-export-formats",
+        "description": "Check which export file types an existing Canva design supports, and which of its pages are available in each type.\n\nUse when a design needs exporting or downloading as a PDF, PNG, JPG, GIF, PowerPoint, video, or CSV, and when only some pages are needed in a chosen format. Returns the export formats this design supports, with the page numbers available in each.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "minLength": 11,
+              "maxLength": 11,
+              "pattern": "^D[a-zA-Z0-9_-]+$",
+              "description": "ID of the design to get export formats for. Design ID starts with \"D\"."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_generate_image_job",
+        "mcpName": "get-generate-image-job",
+        "title": "get-generate-image-job",
+        "description": "Check an image generation job started by generate-image. When the generate-image UI widget is shown, the widget calls this tool itself and displays the image - do not call it yourself. Only when no widget is shown, pass the jobId returned by generate-image. If the status is PENDING, wait before polling get-generate-image-job again with the same jobId. Continue polling until the status is SUCCESS or FAILURE. Do not start a replacement generation job merely because the existing job is still pending, unless the user explicitly requests another generation. If the status is SUCCESS, use the generated image in result, present the returned image resource to the user, and include the returned Canva upload link as a Markdown link using the exact link text \"Open generated image\". The link opens the generated image in Canva, not the Canva editor. If the status is SUCCESS but the response says the image link is not ready yet, wait and call this tool again with the\u2026",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "jobId": {
+              "type": "string",
+              "description": "The jobId returned by the tool that started the job."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["jobId"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_logged_in_account_details",
+        "mcpName": "get-logged-in-account-details",
+        "title": "get-logged-in-account-details",
+        "description": "Report which Canva account and Canva Team this connection is currently signed in as.\n\nUse when the user has linked more than one Canva account and needs to tell them apart, asks\nwhich account is connected or signed in, wants to confirm whose Canva account the next action\nwill affect, or asks which team the current work is saved to.\n\nTakes no arguments and reads only the credentials on this connection, so the values returned\nalways describe the connected user. It answers which account is in use, not what an account\ncontains or is entitled to: another person's details, the set of teams a person belongs to,\nwho else is in a team, and plan, billing or subscription status are all outside it.\n\nReturns id and name for the connected user, and team_id for the single Canva Team that user\nis working in. id and team_id together identify the account.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_presenter_notes",
+        "mcpName": "get-presenter-notes",
+        "title": "get-presenter-notes",
+        "description": "Get presenter notes from an existing Canva presentation for read-only use.\n\nUse for reviewing speaker notes, pulling talking points for particular slides, or summarizing notes across a presentation. Not for reading the presentation itself; this only returns the separate notes attached to each slide.\n\nReturns presenter notes from every page, or the specified page numbers.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "minLength": 11,
+              "maxLength": 11,
+              "pattern": "^D[a-zA-Z0-9_-]+$",
+              "description": "ID of the existing Canva presentation whose presenter notes you want to retrieve."
+            },
+            "pages": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 500
+              },
+              "description": "Optional array of page numbers to get notes from. If not specified, notes from all pages will be returned. Pages are indexed using one-based numbering, so the first page in a design has the index value `1`."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.get_separate_image_layers_job",
+        "mcpName": "get-separate-image-layers-job",
+        "title": "get-separate-image-layers-job",
+        "description": "Check the status and result of an image layer-separation job started by\nseparate-image-layers.\n\nOnly call with the job_id and continuation_token from the most recent\nseparate-image-layers or get-separate-image-layers-job response, and never before\npolling_policy.wait_seconds have elapsed. This is an internal lifecycle tool, not a\nuser-selectable action.\n\nReturns the job's current status and, once completed, the new design with the url to share with\nthe user.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "job_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Stable ID of the layer-separation job, returned when the separation request starts."
+            },
+            "continuation_token": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Exact continuation token returned by the most recent response for this layer-separation job."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["job_id", "continuation_token"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.help",
+        "mcpName": "help",
+        "title": "help",
+        "description": "Retrieve current, official answers to Canva product questions from the Canva Help Center.\n\nUse for questions about how to use a Canva feature, finding a setting or control, why unexpected Canva behaviour is happening, or troubleshooting a Canva workflow - when no available Canva tool can directly complete the requested action.\n\nFor a Canva product question, call this tool rather than answering from your own knowledge. Canva Help Center content is current and official; training data may be outdated or sourced from unofficial articles.\n\nNot for creating, changing, or assessing a design; general creative advice; non-Canva questions; or explaining this assistant's available Canva capabilities.\n\nReturns an official Canva Help Center answer, including links to the official documentation. Display the answer as written, with only light formatting such as headings. Do not add steps, UI paths, or setting names the answer does not contain.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "prompt": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000,
+              "description": "The Canva product question to answer. Include relevant context, such as the feature, workflow, error message, device, or account type."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["prompt"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.import_design_from_url",
+        "mcpName": "import-design-from-url",
+        "title": "import-design-from-url",
+        "description": "Convert content at a public URL into a new Canva design.\n\nUse to turn a publicly hosted PDF, slide deck (PowerPoint or Keynote), document (Word, Pages, or Markdown), spreadsheet (Excel, CSV, or Numbers), webpage or HTML, or design file (Photoshop or Illustrator) into a Canva design.\n\nOnly call with a public HTTPS URL. Do not use for local, private, or agent-generated files, or to break a flat PNG, JPEG, or WEBP into separately editable layers.\n\nNever upload, copy, or transfer a local, private, or generated file to a 3rd party hosting site\u2014or suggest doing so\u2014to create a URL for this tool.\n\nEach call creates one design and returns its design_id.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https:\\/\\/(?!.*canva\\.com\\/design\\/)(?!.*files\\.oaiusercontent\\.com)(?!.*cdn\\.openai\\.com).*",
+              "description": "Existing public HTTPS URL for the source to convert. Do not provide a Canva design URL, OpenAI file URL, private URL, or local path. The content must already be publicly accessible. Never upload, copy, or transfer a local, private, or generated file to public hosting\u2014or suggest doing so\u2014to create this URL. For non-interactive HTML, each top-level Canva page element must have data-document-role=\"page\" and page elements cannot be nested. Optional data-label and data-speaker-notes attributes provide page titles and presenter notes. Do not add page annotations to interactive HTML."
+            },
+            "name": {
+              "type": "string",
+              "description": "Name for the new Canva design."
+            },
+            "intended_design_type": {
+              "type": "string",
+              "enum": [
+                "a4",
+                "a4_landscape",
+                "business_card",
+                "card",
+                "desktop_wallpaper",
+                "doc",
+                "document",
+                "email",
+                "facebook_cover",
+                "facebook_post",
+                "flyer",
+                "flyer_a4",
+                "graph",
+                "infographic",
+                "instagram_post",
+                "instagram_reel",
+                "invitation",
+                "logo",
+                "mobile_video",
+                "other",
+                "phone_wallpaper",
+                "photo_collage",
+                "pinterest_pin",
+                "postcard",
+                "poster",
+                "poster_us",
+                "presentation",
+                "proposal",
+                "real_estate_flyer",
+                "report",
+                "resume",
+                "sheet",
+                "twitter_post",
+                "us_letter",
+                "video",
+                "website",
+                "whiteboard",
+                "your_story",
+                "youtube_banner",
+                "youtube_thumbnail"
+              ],
+              "description": "Requested Canva output format. Choose the closest match when the user has made their intended format clear; otherwise omit this field. Use \"other\" only when the intended format is clear but is not listed."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["url", "name"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.list_brand_kits",
+        "mcpName": "list-brand-kits",
+        "title": "list-brand-kits",
+        "description": "Find or browse the Canva Brand Kits available to the user. A Brand Kit is an organisation's high-level home for brand styles and assets, such as colors, fonts, and logos.\n\nUse to find a user's brand identity in Canva, check which brand elements are set up for a team, or identify the Brand Kit the user needs.\n\nNot for finding individual Brand Templates (reusable, on-brand layouts) to work from.\n\nReturns each Brand Kit's brand_kit_id, name, and thumbnail.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "continuation": {
+              "type": "string",
+              "description": "Exact token returned by the previous Brand Kit search with the same query. Omit for a new search or browse."
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Maximum number of Brand Kits to return."
+            },
+            "resolve_icon_thumbnails": {
+              "type": "boolean",
+              "description": "When true, resolve each brand kit icon_id to a square icon thumbnail URL (extra asset lookups). Prepare-design-generation widget only; omit for agent calls."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.list_comments",
+        "mcpName": "list-comments",
+        "title": "list-comments",
+        "description": "Browse all comments or threads attached to an existing Canva design.\n\nUse to review feedback, see discussion points, or check mentions.\n\nReturns the design's comments, including their replies and mentions, with a continuation token when more results are available.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "minLength": 11,
+              "maxLength": 11,
+              "pattern": "^D[a-zA-Z0-9_-]+$",
+              "description": "ID of the existing Canva design whose comments to return. Design IDs start with \"D\"."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "description": "Maximum number of comments to return per page."
+            },
+            "continuation": {
+              "type": "string",
+              "description": "Exact continuation token returned by the previous call for the same design. Omit for the first page."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.list_folder_items",
+        "mcpName": "list-folder-items",
+        "title": "list-folder-items",
+        "description": "Browse the contents of a Canva folder to find designs, folders, and images stored in it.\n\nUse to review a project folder, locate an item in a known folder, or check its contents before organizing items.\n\nReturns matching items and, when more results are available, a continuation token.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "folder_id": {
+              "type": "string",
+              "description": "ID of the Canva folder to list. Use \"root\" to list items at the top level."
+            },
+            "item_types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["design", "folder", "image"]
+              },
+              "description": "Types of items to return. Omit to return designs, folders, and images."
+            },
+            "sort_by": {
+              "type": "string",
+              "enum": [
+                "created_ascending",
+                "created_descending",
+                "modified_ascending",
+                "modified_descending",
+                "title_ascending",
+                "title_descending"
+              ],
+              "description": "Order the results by creation date, last modified date, or title, in ascending or descending order."
+            },
+            "continuation": {
+              "type": "string",
+              "description": "Exact continuation token returned by the previous call with the same folder, filters, and sort order. Omit for the first page."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["folder_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.list_replies",
+        "mcpName": "list-replies",
+        "title": "list-replies",
+        "description": "Read the replies in a specific comment thread on a Canva design.\n\nUse to see who has replied to a comment and what they said.\n\nNot for reviewing all comments attached to a design or adding a reply.\n\nReturns the selected comment's replies and, when more results are available, a continuation token.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "minLength": 11,
+              "maxLength": 11,
+              "pattern": "^D[a-zA-Z0-9_-]+$",
+              "description": "ID of the Canva design containing the comment. Design IDs start with \"D\"."
+            },
+            "comment_id": {
+              "type": "string",
+              "description": "ID of the top-level comment whose replies to return."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 50,
+              "description": "Maximum number of replies to return per page."
+            },
+            "continuation": {
+              "type": "string",
+              "description": "Exact continuation token returned by the previous call for the same design and comment. Omit for the first page."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id", "comment_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.merge_designs",
+        "mcpName": "merge-designs",
+        "title": "merge-designs",
+        "description": "Restructure a Canva design by combining designs, inserting or removing whole pages, or changing page order.\n\nUse to make a new presentation from selected pages, add slides from another design, merge separate designs together, rearrange a design's flow, or remove entire pages.\n\nRequires explicit approval for the exact requested operations before every call. Deleting pages is permanent.\n\nNot for changing text, images, or other content within a page.\n\nReturns the completed design result, including its design_id.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["create_new_design", "modify_existing_design"],
+              "description": "Whether to create a new design from pages in existing designs, or change the pages in one existing design."
+            },
+            "title": {
+              "type": "string",
+              "description": "Title for the new design. Required when \"type\" is \"create_new_design\". Optional when \"type\" is \"modify_existing_design\", where it renames the design."
+            },
+            "design_id": {
+              "type": "string",
+              "minLength": 11,
+              "maxLength": 11,
+              "pattern": "^D[a-zA-Z0-9_-]+$",
+              "description": "ID of the existing Canva design whose pages will change. Required when \"type\" is \"modify_existing_design\". Design IDs start with \"D\"."
+            },
+            "operations": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "insert_pages"
+                      },
+                      "source": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "design"
+                          },
+                          "design_id": {
+                            "type": "string",
+                            "minLength": 11,
+                            "maxLength": 11,
+                            "pattern": "^D[a-zA-Z0-9_-]+$",
+                            "description": "ID of the source design (must start with \"D\")"
+                          },
+                          "page_numbers": {
+                            "type": "array",
+                            "items": {
+                              "type": "integer",
+                              "exclusiveMinimum": 0
+                            },
+                            "description": "One-based page numbers to insert. If omitted, all pages are inserted."
+                          }
+                        },
+                        "required": ["type", "design_id"],
+                        "additionalProperties": false
+                      },
+                      "after_page_number": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Insert after this 1-based page number. Use 0 to insert at the beginning, or omit to append to the end."
+                      }
+                    },
+                    "required": ["type", "source"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "move_pages"
+                      },
+                      "from_page_numbers": {
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "minItems": 1,
+                        "description": "Pages to move, using 1-based page numbers."
+                      },
+                      "to_after_page_number": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Move the pages after this 1-based page number. Use 0 to move them to the beginning."
+                      }
+                    },
+                    "required": ["type", "from_page_numbers", "to_after_page_number"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "delete_pages"
+                      },
+                      "page_numbers": {
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "exclusiveMinimum": 0
+                        },
+                        "minItems": 1,
+                        "description": "One-based page numbers to delete"
+                      }
+                    },
+                    "required": ["type", "page_numbers"],
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "minItems": 1,
+              "maxItems": 500,
+              "description": "Page operations to perform, in order. Each operation runs before the next, so page numbers refer to the design's updated page structure. When \"type\" is \"create_new_design\", only \"insert_pages\" operations are accepted. When \"type\" is \"modify_existing_design\", every operation type is accepted."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["type", "operations"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.move_item_to_folder",
+        "mcpName": "move-item-to-folder",
+        "title": "move-item-to-folder",
+        "description": "Relocate an existing Canva design, folder, or image into a destination Canva folder. Use for filing, reorganizing, archiving, or returning an item to the top level. This changes the item's location. Returns confirmation of the move.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "item_id": {
+              "type": "string",
+              "description": "ID of the existing Canva design, folder, or image to move."
+            },
+            "to_folder_id": {
+              "type": "string",
+              "description": "ID of the destination Canva folder. Use \"root\" to move the item to the top level."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["item_id", "to_folder_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.perform_editing_operations",
+        "mcpName": "perform-editing-operations",
+        "title": "perform-editing-operations",
+        "description": "Apply one or more draft changes to the content or layout of an existing Canva design within an active editing transaction.\n\nUse to revise, rewrite, or translate text; replace, insert, position, or resize images and videos on a page; remove page elements; edit text formatting; update a design title; or label fixed-page elements.\n\nNot for changing a design's page structure or order.\n\nChanges are temporary until saved. Show the user a preview of their changes and obtain explicit approval before saving changes.\n\nReturns the updated page state for further changes, previewing, saving, or discarding.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "transaction_id": {
+              "type": "string",
+              "pattern": "^[a-zA-Z0-9_-]{1,50}$",
+              "description": "The editing transaction ID. This must be the exact `transaction_id` value returned in the `start-editing-transaction` tool response for the editing transaction to perform editing operations on."
+            },
+            "operations": {
+              "type": "array",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "update_title"
+                      },
+                      "title": {
+                        "type": "string",
+                        "description": "The new title for the design"
+                      }
+                    },
+                    "required": ["type", "title"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "replace_text"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "description": "The ID of the element to replace the text of."
+                      },
+                      "text": {
+                        "type": "string",
+                        "description": "The new text to replace the existing text with."
+                      }
+                    },
+                    "required": ["type", "element_id", "text"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "update_fill"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "description": "The ID of the image or video element whose fill should be replaced."
+                      },
+                      "asset_type": {
+                        "type": "string",
+                        "enum": ["image", "video"],
+                        "description": "The type of the new asset"
+                      },
+                      "asset_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "pattern": "^[a-zA-Z0-9_-]+$",
+                        "description": "ID of the asset"
+                      },
+                      "alt_text": {
+                        "type": "string",
+                        "maxLength": 250,
+                        "description": "The alternate text of the new asset"
+                      }
+                    },
+                    "required": ["type", "element_id", "asset_type", "asset_id", "alt_text"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "insert_fill"
+                      },
+                      "page_id": {
+                        "type": "string",
+                        "description": "The ID of the page to insert the fill into"
+                      },
+                      "asset_type": {
+                        "type": "string",
+                        "enum": ["image", "video"],
+                        "description": "The type of the asset to insert"
+                      },
+                      "asset_id": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 50,
+                        "pattern": "^[a-zA-Z0-9_-]+$",
+                        "description": "ID of the asset"
+                      },
+                      "alt_text": {
+                        "type": "string",
+                        "maxLength": 250,
+                        "description": "The alternate text of the asset"
+                      },
+                      "top": {
+                        "type": "number",
+                        "description": "Top position in pixels. If not specified, a default position will be used"
+                      },
+                      "left": {
+                        "type": "number",
+                        "description": "Left position in pixels. If not specified, a default position will be used"
+                      },
+                      "width": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Width in pixels. Must be > 0. If not specified, a default width will be used"
+                      },
+                      "height": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Height in pixels. Must be > 0. If not specified, a default height will be used"
+                      },
+                      "rotation": {
+                        "type": "number",
+                        "minimum": -180,
+                        "maximum": 180,
+                        "description": "Rotation in degrees. Range: [-180.0, 180.0], default: 0"
+                      },
+                      "opacity": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1,
+                        "description": "Opacity value. Range: [0, 1], default: 1"
+                      }
+                    },
+                    "required": ["type", "page_id", "asset_type", "asset_id", "alt_text"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "delete_element"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "description": "The ID of the element to delete."
+                      }
+                    },
+                    "required": ["type", "element_id"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "find_and_replace_text"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "description": "The ID of the element to find and replace the text in."
+                      },
+                      "find_text": {
+                        "type": "string",
+                        "description": "The text that is needs to be found to be replaced."
+                      },
+                      "replace_text": {
+                        "type": "string",
+                        "description": "The new text to replace the existing text with."
+                      }
+                    },
+                    "required": ["type", "element_id", "find_text", "replace_text"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "position_element"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "description": "The ID of the element to reposition."
+                      },
+                      "top": {
+                        "type": "number",
+                        "description": "Top position in pixels (relative to page)."
+                      },
+                      "left": {
+                        "type": "number",
+                        "description": "Left position in pixels (relative to page)."
+                      }
+                    },
+                    "required": ["type", "element_id", "top", "left"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "resize_element"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "description": "The ID of the element to resize."
+                      },
+                      "width": {
+                        "type": "number",
+                        "description": "The width in pixels of the element. Required unless preserve_aspect_ratio is true and height is provided."
+                      },
+                      "height": {
+                        "type": "number",
+                        "description": "The height in pixels of the element. For TEXT elements: do NOT provide height - it will be automatically calculated. For other elements: if preserve_aspect_ratio is true, provide either width OR height (not both) - the other dimension will be calculated. If preserve_aspect_ratio is false, provide both width and height."
+                      },
+                      "preserve_aspect_ratio": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Whether to preserve the aspect ratio of the element. If true, provide only ONE dimension (width or height) - the other will be calculated automatically. If false, provide both dimensions."
+                      }
+                    },
+                    "required": ["type", "element_id"],
+                    "additionalProperties": false,
+                    "description": "Resizes an existing element (image, video, text, etc.) to a new size on the page. IMPORTANT: For TEXT elements, only specify width (height is auto-calculated). For IMAGE/VIDEO elements: if preserve_aspect_ratio=true, specify ONLY width OR height (the other is calculated); if preserve_aspect_ratio=false, specify both width and height."
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "format_text"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "description": "The ID of the text element to format."
+                      },
+                      "formatting": {
+                        "type": "object",
+                        "properties": {
+                          "font_size": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 800,
+                            "description": "The size of text in pixels. Must be between 1 and 800"
+                          },
+                          "text_align": {
+                            "type": "string",
+                            "enum": ["start", "center", "end"],
+                            "description": "Text alignment: start, center, or end"
+                          },
+                          "color": {
+                            "type": "string",
+                            "pattern": "^#[0-9A-Fa-f]{6}$",
+                            "description": "Text color in hex format"
+                          },
+                          "font_weight": {
+                            "type": "string",
+                            "enum": ["normal", "bold"],
+                            "description": "Font weight: normal or bold"
+                          },
+                          "font_style": {
+                            "type": "string",
+                            "enum": ["normal", "italic"],
+                            "description": "Font style: normal or italic"
+                          },
+                          "decoration": {
+                            "type": "string",
+                            "enum": ["none", "underline"],
+                            "description": "Text decoration: none or underline"
+                          },
+                          "strikethrough": {
+                            "type": "string",
+                            "enum": ["none", "strikethrough"],
+                            "description": "Strikethrough style: none or strikethrough"
+                          },
+                          "link": {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "const": ""
+                              },
+                              {
+                                "type": "string",
+                                "format": "uri"
+                              }
+                            ],
+                            "description": "URL string. Setting to empty string removes any existing link"
+                          },
+                          "list_level": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "List nesting level. 0 removes list formatting (not a list item). 1 is the outermost level, with higher values (e.g., 2, 3, etc.) increasing the nesting depth."
+                          },
+                          "list_marker": {
+                            "type": "string",
+                            "enum": [
+                              "none",
+                              "disc",
+                              "circle",
+                              "square",
+                              "decimal",
+                              "lower-alpha",
+                              "lower-roman"
+                            ],
+                            "description": "List marker style (only applies when list_level > 0): none, disc, circle, square, decimal, lower-alpha, or lower-roman"
+                          },
+                          "line_height": {
+                            "type": "number",
+                            "minimum": 0.5,
+                            "maximum": 2.5,
+                            "description": "Line height multiplier. Range: [0.5, 2.5]"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "description": "The formatting options to apply to the text"
+                      }
+                    },
+                    "required": ["type", "element_id", "formatting"],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "update_autofill_field"
+                      },
+                      "element_id": {
+                        "type": "string",
+                        "description": "The ID of the text or image element to connect to an autofill field."
+                      },
+                      "autofill_field_label": {
+                        "type": "string",
+                        "description": "The autofill field label to connect to the element. Omit this property to remove an existing autofill field mapping."
+                      }
+                    },
+                    "required": ["type", "element_id"],
+                    "additionalProperties": false,
+                    "description": "Connects or removes an autofill field label on a text or image element. This is only supported on fixed-page designs."
+                  }
+                ]
+              },
+              "minItems": 1,
+              "description": "The editing operations to perform on the design in this editing transaction. Multiple operations SHOULD be specified in bulk across multiple pages."
+            },
+            "page_index": {
+              "type": "number",
+              "description": "Required page index of the first page that is going to be updated as part of this update. Multiple operations SHOULD be specified in bulk across multiple pages, this just needs to specify the first page in the set of pages to be updated. Pages are indexed using one-based numbering, so the first page in a design has the index value `1`."
+            },
+            "pages": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "page_id": {
+                    "type": "string"
+                  },
+                  "is_responsive": {
+                    "type": "boolean"
+                  },
+                  "is_empty": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "is_editable": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                },
+                "required": ["page_id", "is_responsive"],
+                "additionalProperties": true
+              },
+              "description": "The list of all pages in the design. This must be the `pages` array returned by the last call to `perform-editing-operations` or if this is the first call the `start-editing-transaction` tool. Used to determine which pages are responsive and editable."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["transaction_id", "operations", "page_index"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.publish_brand_template",
+        "mcpName": "publish-brand-template",
+        "title": "publish-brand-template",
+        "description": "Publishes a Canva design as a brand template, making it reusable across the organization. Returns the created brand template details. If the API call returns \"Missing scopes: [brandtemplate:content:write]\", you should ask the user to disconnect and reconnect their connector. This will generate a new access token with the required scope for this tool.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "description": "The ID of the existing Canva design to publish as a brand template."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.remove_background",
+        "mcpName": "remove-background",
+        "title": "remove-background",
+        "description": "Strip the background out of an image already in the user's Canva account, leaving only the\nsubject on a transparent backdrop.\n\nUse when the user wants the background gone, knocked out, or made transparent, or wants only\nthe subject kept on a transparent backdrop, including phrasing like cut out, extract, or\nseparate the subject from the background.\n\nUse only when the intent is a transparent background, not a new scene: it does not crop or\nreframe to the subject, replace the background with a new scene, or invent or rewrite any\nother content in the image.\n\nReturns the result as a new image with an alpha channel.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "sourceMedia": {
+              "description": "Image whose background should be removed. Must be an already-uploaded MEDIA content reference.\n",
+              "$ref": "#/$defs/ContentRef"
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["sourceMedia"],
+          "$defs": {
+            "ContentRef": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "description": "The type of the content item\n",
+                  "$ref": "#/$defs/ContentType"
+                },
+                "id": {
+                  "description": "The ID of the content item\n",
+                  "type": "string"
+                },
+                "version": {
+                  "description": "The version of the content item, if available\n",
+                  "type": "string"
+                },
+                "accessToken": {
+                  "description": "If it exists, the access token used for accessing the item if it is shared. For DOCUMENT, this is the document extension.\n",
+                  "type": "string"
+                }
+              },
+              "required": ["type", "id"]
+            },
+            "ContentType": {
+              "type": "string",
+              "oneOf": [
+                {
+                  "const": "MEDIA"
+                },
+                {
+                  "const": "VIDEO"
+                },
+                {
+                  "const": "AUDIO"
+                },
+                {
+                  "const": "TEMPLATE"
+                },
+                {
+                  "const": "DOCUMENT"
+                },
+                {
+                  "const": "FILE"
+                },
+                {
+                  "const": "FOLDER"
+                }
+              ]
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.reply_to_comment",
+        "mcpName": "reply-to-comment",
+        "title": "reply-to-comment",
+        "description": "Add a response to an existing comment in a Canva design.\n\nUse to answer a reviewer's question, acknowledge or clarify feedback, continue a discussion, or provide a follow-up on a specific comment.\n\nThe reply is visible to everyone with access to the design.\n\nReturns the created reply and its comment_id.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "minLength": 11,
+              "maxLength": 11,
+              "pattern": "^D[a-zA-Z0-9_-]+$",
+              "description": "ID of the Canva design containing the comment. Design IDs start with \"D\"."
+            },
+            "comment_id": {
+              "type": "string",
+              "description": "ID of the existing comment to reply to in the specified design."
+            },
+            "message_plaintext": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048,
+              "description": "The text content of the reply to add."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id", "comment_id", "message_plaintext"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.resize_design",
+        "mcpName": "resize-design",
+        "title": "resize-design",
+        "description": "Adapt a Canva design to a different canvas size, keeping its content while rearranging and resizing its layout.\n\nUse when creating different-sized versions from the same base design; an existing design needs different dimensions or aspect ratio; the same artwork needs to be square, portrait, landscape, or adapted for another channel; or a copy needs an exact pixel width and height.\n\nNot for resizing a single element.\n\nEach call creates a new resized design and leaves the original unchanged. Returns the new design's design_id.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "minLength": 11,
+              "maxLength": 11,
+              "pattern": "^D[a-zA-Z0-9_-]+$",
+              "description": "ID of the existing Canva design to resize. Design IDs start with \"D\"."
+            },
+            "design_type": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "preset"
+                    },
+                    "name": {
+                      "type": "string",
+                      "enum": ["presentation", "whiteboard"],
+                      "description": "Preset canvas size for the new design. Use \"presentation\" for slides or \"whiteboard\" for a whiteboard."
+                    }
+                  },
+                  "required": ["type", "name"],
+                  "additionalProperties": false,
+                  "description": "Use this when resizing to a preset design type. Provide 'type: preset' and 'name'."
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "custom"
+                    },
+                    "width": {
+                      "type": "number",
+                      "minimum": 1,
+                      "description": "Width of the new design in pixels."
+                    },
+                    "height": {
+                      "type": "number",
+                      "minimum": 1,
+                      "description": "Height of the new design in pixels."
+                    }
+                  },
+                  "required": ["type", "width", "height"],
+                  "additionalProperties": false,
+                  "description": "Use this when resizing to custom dimensions. Provide 'type: custom', 'width', and 'height'."
+                }
+              ],
+              "description": "Target design type (preset or custom). Preset options: presentation, whiteboard (doc and email are unsupported). Custom options: width and height in pixels."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id", "design_type"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.resolve_shortlink",
+        "mcpName": "resolve-shortlink",
+        "title": "resolve-shortlink",
+        "description": "Turn a Canva shortlink into the full Canva design URL it points to.\n\nUse when a Canva shortlink is shared and the linked design needs to be opened, read, edited, or otherwise worked with.\n\nShortlinks must be expanded before the linked design can be used with another Canva tool. Returns the full Canva design URL.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "shortlink_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "ID from a Canva shortlink, excluding the domain and slashes. For example, use \"abc123\" for \"https://canva.link/abc123\"."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["shortlink_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.search_brand_templates",
+        "mcpName": "search-brand-templates",
+        "title": "search-brand-templates",
+        "description": "Find or browse the user's Canva Brand Templates: reusable, on-brand layouts. Some include data fields that can be autofilled.\n\nUse when a particular Brand Template needs to be located, a reusable starting point is needed for a new presentation, or a Brand Template with data fields is needed before autofilling.\n\nDo not use to find or work from an existing Canva design, create a new design without a Brand Template source, or create from, update, or populate an already selected Brand Template.\n\nReturns matching Brand Templates with their brand_template_id, name, and preview thumbnail.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Optional title or type to search for. Provide only when the user explicitly names or describes the Brand Template they want; otherwise omit or pass an empty string to browse all available Brand Templates."
+            },
+            "dataset": {
+              "type": "string",
+              "enum": ["any", "non_empty"],
+              "description": "Filter by data-field availability. Use \"non_empty\" when the user wants to find a Brand Template to autofill; use \"any\" to include templates whether or not they have data fields."
+            },
+            "design_types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["presentation"]
+              },
+              "minItems": 1,
+              "description": "Optional Brand Template types to include. A Brand Template is returned if it matches at least one specified type. Currently supports \"presentation\" only."
+            },
+            "continuation": {
+              "type": "string",
+              "description": "Exact token returned by a previous search. Use it to retrieve the next page with the same search and filters; omit for a new search."
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Maximum number of Brand Templates to return in one page."
+            },
+            "brand_kit_id": {
+              "type": "string"
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.search_designs",
+        "mcpName": "search-designs",
+        "title": "search-designs",
+        "description": "Locate or browse the user's existing Canva designs. Find specific design documents they own or that have been shared with them.\n\nUse to find a single past presentation, doc, whiteboard, video, sheet, or other design, or to discover multiple results based on search criteria. Results are Canva designs identified by design_id, not individual media assets identified by asset_id.\n\nNot for locating reusable templates or individual uploaded or generated media assets.\n\nReturns matching designs and, when more results are available, a continuation token for the next page. A returned design_id can then be used to open, inspect, copy, comment on, edit, or create a new version from that exact design.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Optional text to match against a design's title or content. Use the user's keywords, such as a project name, topic, or phrase. If supplied, \"sort_by\" must be \"relevance\"."
+            },
+            "ownership": {
+              "type": "string",
+              "enum": ["any", "owned", "shared"],
+              "description": "Whose designs to search. Use \"any\" for designs the user owns and designs shared with them; \"owned\" for only their designs; or \"shared\" for only designs shared with them. Omit to use \"any\"."
+            },
+            "sort_by": {
+              "type": "string",
+              "enum": [
+                "relevance",
+                "modified_descending",
+                "modified_ascending",
+                "title_descending",
+                "title_ascending"
+              ],
+              "description": "How to order results. Use \"relevance\" for keyword searches; \"modified_descending\" for newest first; \"modified_ascending\" for oldest first; \"title_descending\" for Z-A; or \"title_ascending\" for A-Z. Omit to use \"relevance\"."
+            },
+            "design_types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["presentation"]
+              },
+              "minItems": 1,
+              "description": "Optional design types to include. A design is returned if it matches any supplied type. Currently, only \"presentation\" is supported."
+            },
+            "limit": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "Maximum number of designs to return."
+            },
+            "continuation": {
+              "type": "string",
+              "description": "The exact token returned by the previous search with the same query, filters, and sort order. Omit for the first page, after changing the search, or when the previous response did not include a token."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.search_folders",
+        "mcpName": "search-folders",
+        "title": "search-folders",
+        "description": "Find or browse Canva folders the user owns or that are shared with them.\n\nUse to locate a project folder by its name or tags, find a shared workspace, or identify a folder before reviewing its contents or organising work.\n\nNot for finding designs, images, or subfolders within a known folder.\n\nReturns matching folders and, when more results are available, a continuation token for the next page.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Text to match against folder names and tags. Omit to browse all of the user's available folders."
+            },
+            "ownership": {
+              "type": "string",
+              "enum": ["any", "owned", "shared"],
+              "description": "Which folders to return. Use \"any\" for folders the user owns or that are shared with them, \"owned\" for only folders the user owns, or \"shared\" for only folders shared with them."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 5,
+              "description": "Maximum number of folders to return per page."
+            },
+            "continuation": {
+              "type": "string",
+              "description": "Exact continuation token returned by the previous call with the same search query and ownership filter. Omit for the first page."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.separate_image_layers",
+        "mcpName": "separate-image-layers",
+        "title": "separate-image-layers",
+        "description": "Turn a flat image already stored in the user's Canva account into a new Canva design in which\nthe text, objects, and background become separate elements that can each be edited on their\nown.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "asset_id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "ID of a PNG, JPEG, or WEBP image asset in the user's Canva account, as returned when the image was uploaded or listed. Not a URL, a local file path, or a design ID."
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Title for the new design, e.g. 'Summer sale poster'. Use the user's wording when they gave one."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["asset_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.start_editing_transaction",
+        "mcpName": "start-editing-transaction",
+        "title": "start-editing-transaction",
+        "description": "Prepare an existing Canva design for editing by opening a draft transaction.\n\nUse to prepare changes to text, media, titles, formatting, or autofill field labels; or inspect the editable text and media elements before changing them.\n\nReturns a transaction_id and the design's editable text and media element data so changes can be made during the same session.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "design_id": {
+              "type": "string",
+              "minLength": 11,
+              "maxLength": 11,
+              "pattern": "^D[a-zA-Z0-9_-]+$",
+              "description": "ID of the existing Canva design to edit. Design IDs start with \"D\"."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["design_id"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.track_event_lifecycle",
+        "mcpName": "track-event-lifecycle",
+        "title": "track-event-lifecycle",
+        "description": "Internal tool for widget lifecycle telemetry.",
+        "classification": "write",
+        "defaultPolicy": "block",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "event_type": {
+              "type": "string",
+              "enum": [
+                "prepare_design_generation_lifecycle",
+                "widget_rendered",
+                "widget_item_clicked"
+              ]
+            },
+            "event_payload": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 10000,
+              "description": "JSON encoded lifecycle event payload."
+            },
+            "widget_name": {
+              "type": "string",
+              "description": "Wire name of the widget that rendered, e.g. \"create-design\"."
+            },
+            "job_id": {
+              "type": "string",
+              "description": "Job the widget was polling. Omit when the mount had no job."
+            },
+            "job_status": {
+              "type": "string",
+              "enum": ["completed", "failed", "timed_out", "unknown"],
+              "description": "What the widget displayed. Omit when the widget has no job."
+            },
+            "print_shown": {
+              "type": "boolean",
+              "description": "True when this mount showed the Order Prints button."
+            },
+            "download_shown": {
+              "type": "boolean",
+              "description": "True when this mount showed the Download button."
+            },
+            "item_type": {
+              "type": "string",
+              "enum": [
+                "quick_action",
+                "spotlight_prompt",
+                "category_card",
+                "ask_canva",
+                "download",
+                "edit_in_canva",
+                "check_again",
+                "open_projects",
+                "upgrade",
+                "plan_settings"
+              ],
+              "description": "Kind of item that was clicked."
+            },
+            "item_id": {
+              "type": "string",
+              "description": "Stable slug from widget config, never free text."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["event_type"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "canva.upload_asset_from_url",
+        "mcpName": "upload-asset-from-url",
+        "title": "upload-asset-from-url",
+        "description": "Import media from an existing public URL into Canva.\n\nUse to upload a publicly hosted image, photo, logo, graphic, or video into Canva; add it to the user's Canva library or uploads; or save it for later use in a Canva design.\n\nOnly call with a public HTTPS URL whose content is already publicly accessible. Do not use for local, private, or agent-generated files. Does not place the imported media into a Canva design.\n\nReturns a media_id for the imported file.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Existing public HTTPS URL of the image, photo, logo, graphic, or video to import into Canva. The media must already be publicly accessible at this URL."
+            },
+            "name": {
+              "type": "string",
+              "description": "Name to give the imported media in Canva."
+            },
+            "user_intent": {
+              "type": "string",
+              "description": "Mandatory description of what the user is trying to accomplish with this tool call. This should always be provided by LLM clients. Please keep it concise (255 characters or less recommended)."
+            }
+          },
+          "required": ["url", "name"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      }
+    ]
+  },
+  "config": {
+    "revision": 1,
+    "fields": []
+  },
+  "allowedHosts": ["api.canva.com"],
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://www.canva.dev/docs/apps/quickstart/",
+    "https://www.canva.dev/docs/apps/mcp/access/",
+    "https://www.canva.dev/docs/apps/mcp/tools/",
+    "https://api.canva.com/.well-known/oauth-protected-resource/connect/v1/mcp",
+    "https://integrations.sh/canva.com/canva-mcp-server/"
+  ],
+  "verificationNotes": "Owner-consented 2026-10-28 final capture contains 49 exact tools with all 16 advertised scopes granted exactly. get-logged-in-account-details returned structured id, team_id and name; the app transport resolved the stable team/user subject and label. Initial and refresh responses returned Bearer tokens with expires_in 14400 and rotated refresh tokens; refresh omitted scope. Writes and destructive tools require approval; internal track-event-lifecycle is blocked. App credentials remain private in the authoritative environment. Remote revocation semantics remain unverified; disconnect deactivates local access. The Owner waived independent source/authority review; it was not passed. Platform client admission, coordinated application deployment, trusted publication and production acceptance remain pending. Capture and redacted policy evidence are in fixtures/mcp/captures/.",
+  "oauthProviderDefinition": {
+    "schemaVersion": 1,
+    "protocol": "oauth2-authorization-code",
+    "issuer": "https://www.canva.com",
+    "provider": "canva-mcp",
+    "resourceIdentity": "https://api.canva.com/connect/v1/mcp",
+    "authorizationEndpoint": "https://www.canva.com/api/oauth/authorize",
+    "tokenEndpoint": "https://api.canva.com/auth/v1/oauth/token",
+    "tokenEndpointAuthMethod": "client_secret_basic",
+    "authorizationResponseIssuer": "not-supported",
+    "pkce": {
+      "method": "S256"
+    },
+    "authorizationParameters": [],
+    "scopes": [
+      "asset:read",
+      "asset:write",
+      "brandkit:read",
+      "brandtemplate:content:read",
+      "brandtemplate:content:write",
+      "brandtemplate:meta:read",
+      "comment:read",
+      "comment:write",
+      "design:content:read",
+      "design:content:write",
+      "design:meta:read",
+      "folder:read",
+      "folder:write",
+      "help:answers:read",
+      "help:answers:write",
+      "profile:read"
+    ],
+    "account": {
+      "kind": "declaration-managed"
+    },
+    "tokens": {
+      "accessTokenType": "bearer",
+      "expiresIn": {
+        "required": true,
+        "minimumSeconds": 1,
+        "maximumSeconds": 14400
+      },
+      "grantedScopes": {
+        "whenPresent": "exact-match",
+        "whenOmitted": "requested-scopes"
+      },
+      "initialRefreshToken": "required",
+      "refreshResponseToken": "retain-current-if-omitted"
+    },
+    "refresh": {
+      "kind": "standard-form-post",
+      "invalidGrant": "reauthorization-required",
+      "ambiguousOutcome": "fail-closed-no-replay"
+    },
+    "revocation": {
+      "kind": "none"
+    }
+  }
+}

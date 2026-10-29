@@ -717,10 +717,7 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
     } else {
       if (
         candidate.authentication.kind !== "oauth" ||
-        provenance.success.oauthRegistrationMode === "platform-pre-registered" ||
         candidate.authStrategy?.profile !== "mcp-oauth" ||
-        (candidate.authStrategy.clientRegistration.kind !== "dynamic" &&
-          candidate.authStrategy.clientRegistration.kind !== "cimd") ||
         (candidate.authStrategy.clientRegistration.kind === "cimd" &&
           candidate.authStrategy.resourceMetadataUrl === undefined) ||
         (candidate.oauthProviderDefinition.account.kind !== "declaration-managed" &&
@@ -731,13 +728,6 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
       }
       const digest = await digestPluginOAuthProviderDefinition(candidate.oauthProviderDefinition);
       const scopesJson = canonicalPluginJson(candidate.oauthProviderDefinition.scopes);
-      const metadataUrl =
-        candidate.authStrategy.clientRegistration.kind === "dynamic"
-          ? candidate.authStrategy.clientRegistration.authorizationServerMetadataUrl
-          : candidate.authStrategy.resourceMetadataUrl;
-      if (metadataUrl === undefined) {
-        return Result.fail("remote-provider-definition-admission-invalid");
-      }
       if (
         digest !== candidate.authentication.providerDefinitionDigest ||
         digest !== candidate.authStrategy.providerDefinitionDigest ||
@@ -745,22 +735,45 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
       ) {
         return Result.fail("remote-provider-definition-admission-invalid");
       }
-      providerDefinitionAdmission = {
-        digest,
-        canonicalJson: new TextDecoder().decode(
-          encodePluginOAuthProviderDefinitionCanonicalJson(candidate.oauthProviderDefinition),
-        ),
-        provider: candidate.oauthProviderDefinition.provider,
-        resourceIdentity: candidate.oauthProviderDefinition.resourceIdentity,
-        scopesJson,
-        metadataUrl,
-      };
-      authentication = Result.succeed({
-        providerRegistrationAuthorityRevision: null,
-        providerDefinitionDigest: digest,
-        providerDefinitionRevision: 1,
-        materialSource: null,
-      });
+      if (provenance.success.oauthRegistrationMode === "platform-pre-registered") {
+        if (candidate.authStrategy.clientRegistration.kind !== "pre-registered") {
+          return Result.fail("remote-provider-definition-admission-invalid");
+        }
+        // The inline declaration proves reviewed bytes; deployed client custody must
+        // already have independent durable authority and is never admitted here.
+        authentication = await this.#resolvePublicationAuthentication(
+          candidate.authentication,
+          "platform-pre-registered",
+        );
+      } else {
+        const registration = candidate.authStrategy.clientRegistration;
+        if (registration.kind !== "dynamic" && registration.kind !== "cimd") {
+          return Result.fail("remote-provider-definition-admission-invalid");
+        }
+        const metadataUrl =
+          registration.kind === "dynamic"
+            ? registration.authorizationServerMetadataUrl
+            : candidate.authStrategy.resourceMetadataUrl;
+        if (metadataUrl === undefined) {
+          return Result.fail("remote-provider-definition-admission-invalid");
+        }
+        providerDefinitionAdmission = {
+          digest,
+          canonicalJson: new TextDecoder().decode(
+            encodePluginOAuthProviderDefinitionCanonicalJson(candidate.oauthProviderDefinition),
+          ),
+          provider: candidate.oauthProviderDefinition.provider,
+          resourceIdentity: candidate.oauthProviderDefinition.resourceIdentity,
+          scopesJson,
+          metadataUrl,
+        };
+        authentication = Result.succeed({
+          providerRegistrationAuthorityRevision: null,
+          providerDefinitionDigest: digest,
+          providerDefinitionRevision: 1,
+          materialSource: null,
+        });
+      }
     }
     if (Result.isFailure(authentication)) return Result.fail(authentication.failure);
     const configIdentity = await this.#resolveConfigIdentity(candidate);

@@ -24,6 +24,7 @@ import { releaseReviewFile, ReleaseReview } from "./release-bundle.js";
 import { ReleaseSet } from "./release-set.js";
 import { canonicalPluginJson } from "./plugin-contract.js";
 import { diffPluginAuthority } from "./authority-diff.js";
+import { ReleasePluginSelection } from "./release-machine.js";
 
 // This CLI boundary translates all Promise/Node failures into a safe typed Effect error.
 const unwrap = <A>(result: Result.Result<A, LocalReleaseFailure>): A => {
@@ -65,11 +66,12 @@ export function runLocalMarketplaceDeploy(
           "recover-attempt": { type: "string" },
           yes: { type: "boolean" },
           help: { type: "boolean" },
+          plugin: { type: "string", multiple: true },
         },
       });
       if (values.help) {
         process.stdout.write(
-          "Usage: pnpm marketplace deploy --environment production [--control-env FILE] [--publication-env FILE] [--yes]\nInspection: add --status\nRecovery: add --recover-attempt UUID (only after every old publisher and in-flight request has stopped)\nRecovery confirmation uses [y/N]; --yes approves only a normal publication after all checks and conflicts with inspection and recovery.\n",
+          "Usage: pnpm marketplace deploy --environment production [--control-env FILE] [--publication-env FILE] [--plugin SLUG ...] [--yes]\nInspection: add --status\nRecovery: add --recover-attempt UUID (only after every old publisher and in-flight request has stopped)\nRecovery confirmation uses [y/N]; --yes approves only a normal publication after all checks and conflicts with inspection and recovery.\n",
         );
         return;
       }
@@ -79,6 +81,15 @@ export function runLocalMarketplaceDeploy(
         reject("local-release-conflicting-options");
       if (values.yes && (values.status || values["recover-attempt"] !== undefined))
         reject("local-release-conflicting-options");
+      if (values.plugin !== undefined && (values.status || values["recover-attempt"] !== undefined))
+        reject("local-release-conflicting-options");
+      const requestedPlugins =
+        values.plugin === undefined
+          ? undefined
+          : Schema.decodeUnknownResult(ReleasePluginSelection)(values.plugin);
+      if (requestedPlugins !== undefined && Result.isFailure(requestedPlugins))
+        reject("release-plugin-selection-invalid");
+      const selectionArguments = values.plugin?.flatMap((slug) => ["--plugin", slug]) ?? [];
       if (!values.status && !values.yes && !process.stdin.isTTY)
         reject("local-release-requires-interactive-terminal");
       const repositoryRoot = await realpath(process.cwd());
@@ -197,7 +208,15 @@ export function runLocalMarketplaceDeploy(
       emit({ phase: "build-release" });
       await run(
         "pnpm",
-        ["release", "build", baseline, output, commit, String(attempt.release_ordinal)],
+        [
+          "release",
+          "build",
+          baseline,
+          output,
+          commit,
+          String(attempt.release_ordinal),
+          ...selectionArguments,
+        ],
         source,
       );
       await run("pnpm", ["release", "publish", output, "--dry-run"], source);
@@ -209,6 +228,11 @@ export function runLocalMarketplaceDeploy(
         releaseSet.releaseOrdinal !== attempt.release_ordinal
       )
         reject("release-set-attempt-mismatch");
+      if (
+        values.plugin !== undefined &&
+        releaseSet.bundles.some((bundle) => !values.plugin?.includes(bundle.identity.pluginSlug))
+      )
+        reject("release-set-selection-mismatch");
       if (releaseSet.bundles.length === 0) {
         unwrap(await coordinator.finish(attemptId, "cancelled"));
         emit({ phase: "unchanged", commit, pluginsPublished: 0 });

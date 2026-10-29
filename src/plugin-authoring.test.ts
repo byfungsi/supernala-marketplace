@@ -455,7 +455,9 @@ it("validates and prepares provider-owned remote declarations at their reviewed 
   const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-provider-expansion-authoring-"));
   try {
     for (const [slug, publicationEligible, publicationBlocker] of [
-      ["atlassian", false, "remote-release-not-reviewed"],
+      ["atlassian", true, null],
+      ["canva", true, null],
+      ["buffer", true, null],
       ["notion", true, null],
       ["resend", true, null],
     ] as const) {

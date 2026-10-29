@@ -793,7 +793,7 @@ const admitProviderChainOAuthDefinition = (
 
 const admitProviderChainEnvironmentRegistration = (
   database: DatabaseSync,
-  fixture: typeof OAuthChainFixture.Type,
+  fixture: Pick<typeof OAuthChainFixture.Type, "providerRegistrationId">,
   definition: ReturnType<typeof providerChainOAuthDefinition>,
   definitionDigest: string,
 ): void => {
@@ -2030,6 +2030,64 @@ for (const remote of providerExpansionDeclarations) {
       }),
     ).toEqual(Result.fail("remote-provider-definition-admission-invalid"));
     driftDatabase.close();
+  });
+}
+
+for (const slug of ["atlassian", "canva", "buffer"]) {
+  it(`publishes and reads back the captured ${slug} declaration with exact OAuth custody`, async () => {
+    const decoded = validateManagedRemotePluginRelease(
+      JSON.parse(await readFile(`plugins/remotes/${slug}.json`, "utf8")),
+      "authoring",
+    );
+    if (Result.isFailure(decoded)) throw new Error(decoded.failure);
+    const remote = decoded.success;
+    const release = await providerExpansionCandidate(remote);
+    const definition = release.oauthProviderDefinition;
+    if (definition === undefined) throw new Error("captured-provider-definition-missing");
+    const digest = await digestPluginOAuthProviderDefinition(definition);
+    const database = await applicationDatabase();
+    try {
+      database.exec(
+        await readFile("fixtures/sql/phase1-0141-hosted-mcp-preregistered-oauth.sql", "utf8"),
+      );
+      const transport = new DiagnosticSQLiteD1Transport(database);
+      const adapter = new Phase1D1PublicationAdapter(transport);
+      if (remote.oauthRegistrationMode === "platform-pre-registered") {
+        expect(await adapter.stage(release)).toEqual(
+          Result.fail("application-provider-verification-failed"),
+        );
+        admitProviderChainOAuthDefinition(database, definition, digest);
+        expect(await adapter.stage(release)).toEqual(
+          Result.fail("application-provider-verification-failed"),
+        );
+        admitProviderChainEnvironmentRegistration(
+          database,
+          { providerRegistrationId: remote.runtime.providerRegistrationId },
+          definition,
+          digest,
+        );
+      }
+      const staged = await adapter.stage(release);
+      expect(transport.failedStatementError).toBeNull();
+      expect(staged).toEqual(Result.succeed(undefined));
+      expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+      expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+      expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+      expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+      if (remote.oauthRegistrationMode === "platform-pre-registered") {
+        database
+          .prepare(`UPDATE plugin_oauth_registration_material_sources
+          SET status = 'retired', retired_at = 2, retirement_reason = 'fixture-retirement'
+          WHERE provider_registration_id = ?`)
+          .run(remote.runtime.providerRegistrationId);
+        expect(await adapter.readPublished(release)).toEqual(Result.succeed(false));
+        expect(await adapter.stage(release)).toEqual(
+          Result.fail("application-provider-verification-failed"),
+        );
+      }
+    } finally {
+      database.close();
+    }
   });
 }
 

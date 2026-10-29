@@ -50,6 +50,24 @@ byte-identical `schemas/plugin-auth-strategy-definition.schema.json`; the source
 the authoritative schema and the owning Effect schema. The local Effect decoder is the runtime
 projection of that versioned distribution, not an independently versioned contract.
 
+The current hosted MCP OAuth changes are recorded separately in `hostedMcpOauthDraft`,
+with status `owner-review-waiver-not-deployed`. The Owner waived independent review; it was not passed. The historical reviewed pins remain intact.
+This draft distributes the optional `resultTextContentIndex` bootstrap field (0–19)
+from the owning application contract. Without that field, multipart JSON text results
+remain rejected; an explicit index selects only the reviewed text block. OAuth issuer
+validation also admits canonical HTTPS tenant paths while retaining existing origin
+bytes and digests. The draft preserves the upstream seven-day access-token lifetime
+limit. Application deployment and exact trusted publication remain separate gates.
+
+Additive application migration `0141_hosted_mcp_preregistered_oauth.sql` admits a
+hosted MCP version with an exact pre-registered strategy, active provider definition,
+platform registration and deployment-environment material receipt. The publication
+adapter verifies existing custody for this mode; an inline definition never creates
+client custody. The application runtime now retains that authority through initial
+authorization, callback and refresh. Focused tests exercise the real connection setup,
+identity, refresh, Actor invocation and disconnect interfaces with a local provider,
+and reject refresh after the receipt is retired. Production deployment remains pending.
+
 The historical Phase 1 golden ZIP digest was captured with UTC+7 civil timestamps.
 Its compatibility tests explicitly reproduce that capture timezone: the legacy
 packager's fixed instant is serialized by ZIP as host-local DOS time. This keeps

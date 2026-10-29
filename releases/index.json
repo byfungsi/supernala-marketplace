@@ -53,8 +53,8 @@
     {
       "sourceDirectory": "plugins/remotes/atlassian.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": false,
-      "reason": "official public docs omit exact tool schemas and MCP identity/resource output paths required for reviewed catalog and selected-site authority"
+      "publicationEligible": true,
+      "reason": "Owner-authorized 117-tool consented Rovo catalog and exact OAuth authority; independent review waived, not passed. Coordinated tenant-issuer app deployment and trusted publication/readback remain required."
     },
     {
       "sourceDirectory": "plugins/remotes/gmail.json",
@@ -97,6 +97,18 @@
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
       "reason": "Owner-consented live send-email schema and independent source and authority review approved for narrow emails:send 1.0.3; prior invocation blocked before dispatch and new publication and acceptance remain pending"
+    },
+    {
+      "sourceDirectory": "plugins/remotes/buffer.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Owner-authorized 17-tool consented Buffer catalog and exact OAuth authority; independent review waived, not passed. Coordinated bootstrap content-selection app deployment and trusted publication/readback remain required."
+    },
+    {
+      "sourceDirectory": "plugins/remotes/canva.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Owner-authorized 49-tool consented Canva Developer Portal catalog and exact OAuth authority; independent review waived, not passed. Coordinated app deployment and verified private platform client admission must precede trusted publication."
     }
   ]
 }
