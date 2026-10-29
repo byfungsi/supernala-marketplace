@@ -24,18 +24,19 @@ tools are not falsely required to accept a `cloudId` argument.
 
 ## Current acceptance status
 
-`plugins/remotes/atlassian-api-token.json` is staged and excluded from publication.
-Its provisional 117-tool schemas come from the existing OAuth capture; that is not
-proof of the API-token tool set. Before publication:
+The Owner approved publication of `atlassian-api-token@1.0.0` for user testing.
+Independent review was waived, not passed. The 117 reviewed tool schemas come from
+the existing OAuth capture at the same official endpoint, not an API-token capture.
+Runtime reviewed-subset reconciliation limits access to matching tools actually available
+to the connected account. Token scopes may expose fewer tools; some tools require OAuth.
 
-1. Capture `tools/list` using an Owner-authorized scoped personal token. Replace the
-   provisional catalog with the exact available API-token tools and digest.
-2. Validate the real identity result shape and a read on the entered site without retaining
-   account payloads in the public repository.
-3. Keep write and destructive tools behind approval, and pin the selected-site bindings.
-4. Deploy the application with the additive Basic credential-delivery contract.
-5. Review the exact source, catalog and authority digests; publish through the existing
-   trusted release workflow; verify Marketplace visibility, connection and invocation.
+The application tests cover credential submission, Vault-owned Basic authentication,
+identity resolution and selected-site guards using controlled provider interfaces.
+Production deployment and trusted digest-bound publication/readback are rollout gates.
+A successful real personal-token identity check, selected-site read and invocation remain
+unverified until an authorized user connects their own credentials. No operator-wide
+Atlassian email or token is needed. Users should start with read/search scopes and keep
+write/destructive tools behind the separate approval policy.
 
 Service-account Bearer keys use a different credential form. This component deliberately
 requests a personal token plus email and does not mislabel those credentials as a

@@ -63,7 +63,7 @@ it("labels the owner-authorized Slack preview without claiming directory approva
   ).toBe(true);
 });
 
-it("stages the separate Atlassian personal-token method without claiming an API-token capture", async () => {
+it("publishes the Owner-authorized Atlassian personal-token preview without claiming an API-token capture", async () => {
   const value = JSON.parse(await readFile("plugins/remotes/atlassian-api-token.json", "utf8"));
   const parsed = validateManagedRemotePluginRelease(value, "authoring");
   if (Result.isFailure(parsed)) throw new Error(parsed.failure);
@@ -118,14 +118,18 @@ it("stages the separate Atlassian personal-token method without claiming an API-
       .filter((tool) => tool.classification !== "read")
       .every((tool) => tool.defaultPolicy === "require-approval"),
   ).toBe(true);
-  expect(validateManagedRemotePluginRelease(value, "publication")).toEqual(
-    Result.fail("remote-release-not-reviewed"),
-  );
+  expect(Result.isSuccess(validateManagedRemotePluginRelease(value, "publication"))).toBe(true);
+  expect(release.verificationNotes).toContain("no API-token tools/list capture");
+  expect(release.verificationNotes).toContain("Independent review waived, not passed");
+  expect(release.protocolPolicy?.catalogCompatibility).toBe("reviewed-subset");
+  expect(
+    validateManagedRemotePluginRelease({ ...value, status: "staged-unverified" }, "publication"),
+  ).toEqual(Result.fail("remote-release-not-reviewed"));
   const index = JSON.parse(await readFile("releases/index.json", "utf8"));
   expect(
     index.plugins.find(
       (entry: { readonly sourceDirectory: string }) =>
         entry.sourceDirectory === "plugins/remotes/atlassian-api-token.json",
     )?.publicationEligible,
-  ).toBe(false);
+  ).toBe(true);
 });

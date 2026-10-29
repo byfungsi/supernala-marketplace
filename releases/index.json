@@ -59,8 +59,8 @@
     {
       "sourceDirectory": "plugins/remotes/atlassian-api-token.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": false,
-      "reason": "API-token component implemented with Vault-owned Basic auth; waiting for exact API-token catalog/identity/site validation and coordinated application deployment. OAuth catalog schemas are provisional, not API-token acceptance."
+      "publicationEligible": true,
+      "reason": "Owner authorized publication for user testing with per-user email, personal API token and domain. Independent review waived, not passed; the reviewed OAuth schemas provide an upper bound reconciled against token-visible tools at runtime. Coordinated application deployment and trusted publication/readback are required; real token identity/site/invocation acceptance remains pending."
     },
     {
       "sourceDirectory": "plugins/remotes/gmail.json",

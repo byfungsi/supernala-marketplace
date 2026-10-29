@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "status": "staged-unverified",
+  "status": "reviewed-publishable",
   "id": "supernala-public:supernala:atlassian-api-token@1.0.0",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "atlassian-api-token",
   "version": "1.0.0",
   "name": "Atlassian (API token)",
-  "description": "Connect Jira and Confluence with your Atlassian email, scoped personal API token and site domain. Requires organization-enabled API-token authentication; calls stay bound to that site and writes require approval.",
+  "description": "Preview: connect Jira and Confluence with your Atlassian email, personal API token and site domain. Requires organization-enabled MCP API-token authentication and suitable scopes; writes require approval.",
   "license": "LicenseRef-Provider-Service",
   "runtime": {
     "_tag": "ManagedRemoteMcp",
@@ -5238,5 +5238,5 @@
     "https://developer.atlassian.com/cloud/rovo-mcp/guides/configuring-authentication-via-api-token/",
     "https://developer.atlassian.com/cloud/rovo-mcp/guides/supported-tools/"
   ],
-  "verificationNotes": "Staged only. Schemas are from the reviewed OAuth catalog at the same official endpoint; availability under API-token authentication has not been captured. Users enter email, personal token and an atlassian.net domain in the connection form. The domain is pinned as cloudId; setup validates identity using MCP. Requires app deployment, exact release approval and post-connection live acceptance. Organization API-token enablement, IP allowlists and token scopes still apply."
+  "verificationNotes": "Owner-authorized publication for user testing. Independent review waived, not passed. The 117 reviewed schemas are reused from the OAuth capture at the same official endpoint; no API-token tools/list capture or successful personal-token connection is claimed. Runtime reviewed-subset reconciliation limits access to tools actually available with the user token. Users enter email, personal token and an atlassian.net domain in the credential form; the Vault-owned adapter constructs Basic auth, validates identity through MCP, and pins the domain origin as cloudId. Requires coordinated application deployment. Organization API-token enablement, IP allowlists, account permissions and token scopes still apply; live identity/site/invocation acceptance remains pending."
 }
