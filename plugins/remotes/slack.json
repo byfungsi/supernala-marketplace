@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "status": "staged-unverified",
+  "status": "reviewed-publishable",
   "id": "supernala-public:supernala:slack@1.0.0",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "slack",
   "version": "1.0.0",
-  "name": "Slack",
-  "description": "Slack messages, channels, files, canvases and lists through user-authorized Slack MCP. Public availability awaits Slack Marketplace approval.",
+  "name": "Slack (Preview)",
+  "description": "Preview for testing Slack MCP with an existing authorized workspace. Search messages, channels, files, canvases and lists. Slack Marketplace approval is pending; availability may be restricted by Slack.",
   "license": "LicenseRef-Provider-Service",
   "runtime": {
     "_tag": "ManagedRemoteMcp",
@@ -1329,5 +1329,5 @@
     "https://docs.slack.dev/ai/slack-mcp-server/",
     "https://docs.slack.dev/ai/slack-mcp-server/developing/"
   ],
-  "verificationNotes": "Owner-consented internal-workspace capture on 2026-10-28 contains 27 exact tools. All 30 requested user scopes were granted. Tokens use comma-separated scopes; refresh adds the reviewed implicit identify scope, rotates refresh tokens and returns a 43200-second access lifetime. HTTPS auth.test returned stable team_id and user_id strings. Supernala Slack app A0CCTQ2QL8N remains pending Slack Marketplace approval; public/unlisted MCP distribution is not admitted. This staged source cannot be published. Writes require approval. Independent review was waived, not passed. No in-Slack bot is provided."
+  "verificationNotes": "Owner-consented internal-workspace capture on 2026-10-28 contains 27 exact tools. All 30 requested user scopes were granted. Tokens use comma-separated scopes; refresh adds the reviewed implicit identify scope, rotates refresh tokens and returns a 43200-second access lifetime. HTTPS auth.test returned stable team_id and user_id strings. Supernala Slack app A0CCTQ2QL8N remains pending Slack Marketplace approval. The Owner explicitly requested a Supernala preview listing for testing with the existing authorized workspace before that approval. This is not evidence of Slack directory approval or general-workspace availability; Slack may reject other workspaces. No new workspace installation or Slack submission is performed by this release. Writes require approval. Independent review was waived, not passed. No in-Slack bot is provided."
 }

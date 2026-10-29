@@ -74,8 +74,10 @@ Migration `0143_registered_app_permission_oauth.sql` limits scope-free hosted MC
 publication to exact pre-registered authority and active deployed client custody.
 Existing scoped provider canonical bytes are unchanged. The coordinated application
 change is merged in PR #437; deployment and GitHub publication remain separate gates.
-Slack stays staged and ineligible for public publication until Slack Marketplace
-approval, as required by its MCP server distribution rules.
+The Owner subsequently authorized a Slack preview listing for testing with the existing
+authorized workspace before Slack Marketplace approval. The listing explicitly states
+that approval is pending and availability may be restricted; this is not a Slack
+directory approval or authorization to install the app in additional workspaces.
 
 The historical Phase 1 golden ZIP digest was captured with UTC+7 civil timestamps.
 Its compatibility tests explicitly reproduce that capture timezone: the legacy

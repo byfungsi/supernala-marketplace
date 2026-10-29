@@ -48,15 +48,17 @@ it.each([
   expect(release.authStrategy?.profile).toBe("mcp-oauth");
 });
 
-it("keeps Slack unavailable for public publication until directory approval", async () => {
+it("labels the owner-authorized Slack preview without claiming directory approval", async () => {
   const source = JSON.parse(await readFile("plugins/remotes/slack.json", "utf8"));
   const parsed = validateManagedRemotePluginRelease(source, "publication");
-  expect(Result.isFailure(parsed)).toBe(true);
+  expect(Result.isSuccess(parsed)).toBe(true);
+  expect(source.name).toBe("Slack (Preview)");
+  expect(source.description).toContain("approval is pending");
   const index = JSON.parse(await readFile("releases/index.json", "utf8"));
   expect(
     index.plugins.find(
       (entry: { readonly sourceDirectory: string }) =>
         entry.sourceDirectory === "plugins/remotes/slack.json",
     )?.publicationEligible,
-  ).toBe(false);
+  ).toBe(true);
 });
