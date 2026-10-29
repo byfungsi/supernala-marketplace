@@ -195,3 +195,33 @@ it("rejects malformed, failed, and count-mismatched D1 envelopes", async () => {
     expect(Result.isFailure(await transport.batch([{ sql: "SELECT 1", params: [] }]))).toBe(true);
   }
 });
+
+it.each([
+  ["UNIQUE constraint failed: private-value", "d1-unique-constraint"],
+  ["NOT NULL constraint failed: private-value", "d1-not-null-constraint"],
+  ["CHECK constraint failed: private-value", "d1-check-constraint"],
+  ["FOREIGN KEY constraint failed: private-value", "d1-foreign-key-constraint"],
+  ["no such table: private-value", "d1-schema-missing"],
+  ["too many SQL variables: private-value", "d1-bound-parameter-limit"],
+  ["private-value", "d1-http-400"],
+])("reports a safe D1 failure category for %s", async (message, reason) => {
+  const transport = new CloudflareD1RestTransport(
+    {
+      accountId: "synthetic-account",
+      databaseId: "synthetic-database",
+      apiToken: "synthetic-token",
+    },
+    {
+      request: async () =>
+        Result.succeed({
+          status: 400,
+          body: new TextEncoder().encode(
+            JSON.stringify({ success: false, errors: [{ code: 7500, message }] }),
+          ),
+        }),
+    },
+  );
+  const result = await transport.batch([{ sql: "SELECT 1", params: [] }]);
+  expect(result).toEqual(Result.fail(reason));
+  expect(JSON.stringify(result)).not.toContain("private-value");
+});
