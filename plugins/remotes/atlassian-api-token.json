@@ -1,19 +1,19 @@
 {
   "schemaVersion": 1,
   "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:atlassian-api-token@1.0.1",
+  "id": "supernala-public:supernala:atlassian-api-token@1.0.2",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "atlassian-api-token",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "Atlassian (API token)",
   "description": "Preview: connect Jira and Confluence with your Atlassian email, personal API token and site domain. Requires organization-enabled MCP API-token authentication and suitable scopes; writes require approval.",
   "license": "LicenseRef-Provider-Service",
   "runtime": {
     "_tag": "ManagedRemoteMcp",
     "kind": "managed-remote-mcp",
-    "endpointRegistrationId": "atlassian-rovo-mcp-api-token-v2",
-    "providerRegistrationId": "atlassian-api-token-v1",
+    "endpointRegistrationId": "atlassian-rovo-mcp-v2",
+    "providerRegistrationId": "atlassian-oauth-v2",
     "transport": "streamable-http"
   },
   "endpoint": "https://mcp.atlassian.com/v2/mcp?tools=all",
@@ -21,7 +21,7 @@
   "authStrategy": {
     "schemaVersion": 1,
     "profile": "api-key",
-    "providerRegistrationId": "atlassian-api-token-v1",
+    "providerRegistrationId": "atlassian-oauth-v2",
     "fields": [
       {
         "key": "email",
@@ -5238,5 +5238,5 @@
     "https://developer.atlassian.com/cloud/rovo-mcp/guides/configuring-authentication-via-api-token/",
     "https://developer.atlassian.com/cloud/rovo-mcp/guides/supported-tools/"
   ],
-  "verificationNotes": "Owner-authorized publication for user testing. Independent review waived, not passed. The 117 reviewed schemas are reused from the OAuth capture at the same official endpoint; no API-token tools/list capture or successful personal-token connection is claimed. Runtime reviewed-subset reconciliation limits access to tools actually available with the user token. Users enter email, personal token and an atlassian.net domain in the credential form; the Vault-owned adapter constructs Basic auth, validates identity through MCP, and pins the domain origin as cloudId. Requires coordinated application deployment. Organization API-token enablement, IP allowlists, account permissions and token scopes still apply; live identity/site/invocation acceptance remains pending."
+  "verificationNotes": "Owner-authorized publication for user testing. Independent review waived, not passed. The 117 reviewed schemas are reused from the OAuth capture at the same official endpoint; no API-token tools/list capture or successful personal-token connection is claimed. Runtime reviewed-subset reconciliation limits access to tools actually available with the user token. Users enter email, personal token and an atlassian.net domain in the credential form; the Vault-owned adapter constructs Basic auth, validates identity through MCP, and pins the domain origin as cloudId. Requires coordinated application deployment. Organization API-token enablement, IP allowlists, account permissions and token scopes still apply; live identity/site/invocation acceptance remains pending. The existing reviewed endpoint and provider registration identify the same Atlassian service for both methods; the api-key authentication definition and each user credential remain separate from OAuth client/token custody."
 }

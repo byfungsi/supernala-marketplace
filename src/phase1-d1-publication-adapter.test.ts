@@ -3827,29 +3827,16 @@ it("publishes the personal-token method against the existing identical OAuth cat
   const release = await providerExpansionCandidate(parsed.success);
   const database = await applicationDatabase();
   const catalog = release.version.catalog;
-  database
-    .prepare(`INSERT INTO plugin_catalog_snapshots
-    (catalog_snapshot_id, catalog_digest, schema_version, created_at) VALUES (?, ?, 1, 0)`)
-    .run(catalog.id, catalog.digest);
-  for (const [ordinal, tool] of catalog.tools.entries()) {
-    database
-      .prepare(`INSERT INTO plugin_catalog_tools
-      (catalog_snapshot_id, tool_id, ordinal, mcp_name, title, description, classification,
-       default_policy, input_schema_json, maximum_output_bytes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`)
-      .run(
-        catalog.id,
-        tool.id,
-        ordinal,
-        tool.mcpName,
-        tool.title,
-        tool.description,
-        tool.classification,
-        tool.defaultPolicy,
-        JSON.stringify(tool.inputSchema),
-        tool.maximumOutputBytes,
-      );
-  }
   const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+  const oauth = validateManagedRemotePluginRelease(
+    JSON.parse(await readFile("plugins/remotes/atlassian.json", "utf8")),
+    "publication",
+  );
+  if (Result.isFailure(oauth)) throw new Error(oauth.failure);
+  const oauthRelease = await providerExpansionCandidate(oauth.success);
+  expect(await adapter.stage(oauthRelease)).toEqual(Result.succeed(undefined));
+  expect(await adapter.finalize(oauthRelease)).toEqual(Result.succeed(undefined));
+  expect(await adapter.readPublished(oauthRelease)).toEqual(Result.succeed(true));
   const duplicateIdentity = {
     ...release,
     version: PluginVersion.make({
@@ -3871,7 +3858,7 @@ it("publishes the personal-token method against the existing identical OAuth cat
   };
   expect(await adapter.stage(duplicateIdentity)).toEqual(Result.fail("application-stage-failed"));
   expect(database.prepare("SELECT count(*) AS count FROM plugin_versions").get()).toMatchObject({
-    count: 0,
+    count: 1,
   });
   const readOnly = new SQLiteD1Transport(database);
   const unavailable = new Phase1D1PublicationAdapter({
@@ -3890,5 +3877,15 @@ it("publishes the personal-token method against the existing identical OAuth cat
   expect(
     database.prepare("SELECT count(*) AS count FROM plugin_catalog_tools").get(),
   ).toMatchObject({ count: 117 });
+  expect(await adapter.readPublished(oauthRelease)).toEqual(Result.succeed(true));
+  expect(
+    database.prepare("SELECT count(*) AS count FROM remote_mcp_endpoint_registrations").get(),
+  ).toMatchObject({ count: 1 });
+  expect(
+    database.prepare("SELECT count(*) AS count FROM provider_registrations").get(),
+  ).toMatchObject({ count: 1 });
+  expect(
+    database.prepare("SELECT count(*) AS count FROM plugin_auth_strategy_definitions").get(),
+  ).toMatchObject({ count: 2 });
   database.close();
 });

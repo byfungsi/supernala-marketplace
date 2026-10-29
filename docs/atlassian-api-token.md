@@ -1,8 +1,9 @@
 # Atlassian personal API-token connection
 
 The Atlassian API-token component is a second connection method in the Atlassian
-Marketplace family. Existing OAuth connections retain their own provider registration,
-credentials, grants and consent flow.
+Marketplace family. Both methods reference the existing reviewed Atlassian endpoint and provider registration.
+Their authentication definitions and per-user credentials are separate; OAuth keeps its
+client custody, grants and consent flow.
 
 Users enter their Atlassian email, scoped personal API token and site domain in the credential form.
 The application stores these values in the encrypted credential Vault and constructs the Basic
@@ -24,13 +25,16 @@ tools are not falsely required to accept a `cloudId` argument.
 
 ## Current acceptance status
 
-The Owner approved publication of `atlassian-api-token@1.0.1` for user testing.
+The Owner approved publication of `atlassian-api-token@1.0.2` for user testing.
 Independent review was waived, not passed. The 117 reviewed tool schemas come from
 the existing OAuth capture at the same official endpoint, not an API-token capture.
 The catalog retains the OAuth capture's existing snapshot ID because identical catalog
 digests have one durable identity. The initial 1.0.0 publication failed atomically before
 Store visibility due to a duplicate digest under a different ID; its failed journal entry
-is retained. Version 1.0.1 corrects that identity without changing the reviewed tool bytes.
+is retained. Version 1.0.1 corrected the catalog identity; endpoint URLs also have one
+durable identity, so 1.0.2 reuses the reviewed endpoint/provider registration with a separate
+API-key profile. Failed publication records remain retained. Neither correction changes
+the reviewed tool bytes or uses OAuth credentials for personal-token connections.
 Runtime reviewed-subset reconciliation limits access to matching tools actually available
 to the connected account. Token scopes may expose fewer tools; some tools require OAuth.
 
