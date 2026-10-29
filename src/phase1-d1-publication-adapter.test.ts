@@ -3873,6 +3873,14 @@ it("publishes the personal-token method against the existing identical OAuth cat
   expect(database.prepare("SELECT count(*) AS count FROM plugin_versions").get()).toMatchObject({
     count: 0,
   });
+  const readOnly = new SQLiteD1Transport(database);
+  const unavailable = new Phase1D1PublicationAdapter({
+    query: (statement) => readOnly.query(statement),
+    batch: async () => Result.fail("d1-http-403"),
+  });
+  expect(await unavailable.stage(release)).toEqual(
+    Result.fail("application-stage-failed:d1-http-403"),
+  );
   expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
   expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
   expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));

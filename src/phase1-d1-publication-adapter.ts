@@ -1161,9 +1161,12 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
       );
     }
     const result = await this.database.batch(statements);
-    return Result.isFailure(result)
-      ? Result.fail("application-stage-failed")
-      : Result.succeed(undefined);
+    if (Result.isSuccess(result)) return Result.succeed(undefined);
+    const transportReason =
+      /^(?:d1-[a-z0-9-]+|http-transport-failed|http-response-too-large)$/u.test(result.failure)
+        ? `:${result.failure}`
+        : "";
+    return Result.fail(`application-stage-failed${transportReason}`);
   }
 
   async finalize(candidate: IncrementalReleaseCandidate) {

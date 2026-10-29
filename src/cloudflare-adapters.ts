@@ -197,6 +197,37 @@ const D1Envelope = Schema.Struct({
   messages: Schema.optionalKey(Schema.Array(Schema.Json)),
 });
 
+const D1FailureEnvelope = Schema.Struct({
+  errors: Schema.Array(Schema.Struct({ message: Schema.String })),
+});
+
+/** Classifies known SQL failures without returning provider text, SQL or parameter values. */
+const classifyD1Failure = (body: Uint8Array): string | null => {
+  try {
+    const parsed = Schema.decodeUnknownResult(D1FailureEnvelope)(
+      JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(body)),
+    );
+    if (Result.isFailure(parsed)) return null;
+    const patterns = [
+      [/UNIQUE constraint failed/iu, "d1-unique-constraint"],
+      [/NOT NULL constraint failed/iu, "d1-not-null-constraint"],
+      [/CHECK constraint failed/iu, "d1-check-constraint"],
+      [/FOREIGN KEY constraint failed/iu, "d1-foreign-key-constraint"],
+      [/no such (?:table|column)|has no column named/iu, "d1-schema-missing"],
+      [/too many SQL variables/iu, "d1-bound-parameter-limit"],
+      [/statement (?:is )?too long/iu, "d1-statement-size-limit"],
+      [/database is locked|SQLITE_BUSY|overloaded/iu, "d1-database-busy"],
+      [/not authorized|permission denied|Authentication error/iu, "d1-authorization-failed"],
+    ] as const;
+    for (const [pattern, reason] of patterns) {
+      if (parsed.success.errors.some((error) => pattern.test(error.message))) return reason;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+};
+
 /** Cloudflare D1 REST transport. It receives credentials only in the trusted publisher job. */
 export class CloudflareD1RestTransport implements D1BatchTransport {
   constructor(
@@ -222,13 +253,15 @@ export class CloudflareD1RestTransport implements D1BatchTransport {
       });
       if (Result.isFailure(response)) return Result.fail(response.failure);
       if (response.success.status < 200 || response.success.status >= 300) {
-        return Result.fail(`d1-http-${response.success.status}`);
+        return Result.fail(
+          classifyD1Failure(response.success.body) ?? `d1-http-${response.success.status}`,
+        );
       }
       const json = JSON.parse(
         new TextDecoder("utf-8", { fatal: true }).decode(response.success.body),
       );
       return Schema.decodeUnknownResult(D1Envelope)(json).pipe(
-        Result.mapError(() => "d1-response-invalid"),
+        Result.mapError(() => classifyD1Failure(response.success.body) ?? "d1-response-invalid"),
       );
     } catch {
       return Result.fail("d1-response-invalid");
