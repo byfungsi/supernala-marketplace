@@ -104,3 +104,29 @@ it("does not pass ambient secrets or Node injection into a real build child", as
     await rm(home, { recursive: true, force: true });
   }
 });
+
+it("runs tsx with a short private temporary path and the original isolated home", async () => {
+  const temporaryDirectory = await mkdtemp(path.join(os.tmpdir(), "smr-"));
+  const home = path.join(temporaryDirectory, "durable-release-path-".repeat(8), "home");
+  try {
+    await mkdir(home, { recursive: true });
+    const environment = releaseProcessEnvironment(home, temporaryDirectory);
+    const output = unwrap(
+      await runReleaseProcess({
+        executable: process.execPath,
+        arguments: [
+          path.resolve("node_modules/tsx/dist/cli.mjs"),
+          "--eval",
+          "if (process.env.HOME === process.env.TMPDIR) process.exit(1); console.log('tsx-ready')",
+        ],
+        cwd: process.cwd(),
+        environment,
+      }),
+    );
+    expect(output).toBe("tsx-ready");
+    expect(environment.HOME).toBe(home);
+    expect(environment.TMPDIR).toBe(temporaryDirectory);
+  } finally {
+    await rm(temporaryDirectory, { recursive: true, force: true });
+  }
+});
