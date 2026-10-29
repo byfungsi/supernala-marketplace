@@ -3,10 +3,13 @@ import { Result, Schema } from "effect";
 import { LocalReleaseFailure, ReleaseCommit } from "./local-release-coordinator.js";
 
 /** Credential-free subprocess environment; ambient tokens, NODE_OPTIONS and npm hooks are not inherited. */
-export const releaseProcessEnvironment = (home: string): Readonly<Record<string, string>> => ({
+export const releaseProcessEnvironment = (
+  home: string,
+  temporaryDirectory = home,
+): Readonly<Record<string, string>> => ({
   PATH: process.env.PATH ?? "/usr/bin:/bin",
   HOME: home,
-  TMPDIR: home,
+  TMPDIR: temporaryDirectory,
   CI: "true",
   GIT_TERMINAL_PROMPT: "0",
   GIT_CONFIG_NOSYSTEM: "1",
