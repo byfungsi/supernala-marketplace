@@ -58,7 +58,7 @@ const CanonicalScopeValues = Schema.Array(
     Schema.check(Schema.isPattern(/^[\x21\x23-\x5B\x5D-\x7E]+$/)),
   ),
 ).pipe(
-  Schema.check(Schema.isLengthBetween(1, 64)),
+  Schema.check(Schema.isLengthBetween(0, 64)),
   Schema.check(Schema.isUnique()),
   Schema.check(
     Schema.makeFilter<ReadonlyArray<string>>(isCanonicalStringOrder, {
@@ -73,10 +73,10 @@ const CanonicalScopeValues = Schema.Array(
   ),
 );
 
-/** Nonempty unique OAuth scopes in canonical UTF-8 byte order. */
+/** Unique OAuth scopes in canonical UTF-8 byte order. */
 export const OAuthScopeSet = CanonicalScopeValues.pipe(Schema.brand("OAuthScopeSet"));
 
-/** Nonempty unique OAuth scopes in canonical UTF-8 byte order. */
+/** Unique OAuth scopes in canonical UTF-8 byte order. */
 export type OAuthScopeSet = typeof OAuthScopeSet.Type;
 
 const parseExactHttpsUrl = (value: string): URL | null => {
@@ -333,6 +333,8 @@ export const OAuthTokenPolicy = Schema.Struct({
   grantedScopes: Schema.Struct({
     whenPresent: Schema.Literal("exact-match"),
     whenOmitted: Schema.Literal("requested-scopes"),
+    separator: Schema.optionalKey(Schema.Literal(",")),
+    implicitScopes: Schema.optionalKey(OAuthScopeSet),
   }),
   [initialRefreshTokenField]: Schema.Literal("required"),
   refreshResponseToken: Schema.Literal("retain-current-if-omitted"),
@@ -379,8 +381,7 @@ export const OAuthRevocationPolicy = Schema.Union([
  */
 export type OAuthRevocationPolicy = typeof OAuthRevocationPolicy.Type;
 
-/** Immutable reviewed provider-independent OAuth capability definition. */
-export const PluginOAuthProviderDefinition = Schema.Struct({
+const oauthProviderDefinitionFields = {
   schemaVersion: Schema.Literal(1),
   protocol: Schema.Literal("oauth2-authorization-code"),
   issuer: HttpsIssuer,
@@ -392,17 +393,29 @@ export const PluginOAuthProviderDefinition = Schema.Struct({
   authorizationResponseIssuer: Schema.Literals(["required", "not-supported"]),
   pkce: Schema.Struct({ method: Schema.Literal("S256") }),
   authorizationParameters: OAuthAuthorizationParameters,
-  scopes: OAuthScopeSet,
   account: OAuthAccountProjection,
   tokens: OAuthTokenPolicy,
   refresh: OAuthRefreshPolicy,
   revocation: OAuthRevocationPolicy,
-});
+} as const;
+
+/** Immutable reviewed OAuth capability; scope-free apps must explicitly use registered app permissions. */
+export const PluginOAuthProviderDefinition = Schema.Union([
+  Schema.Struct({
+    ...oauthProviderDefinitionFields,
+    scopes: OAuthScopeSet.pipe(Schema.check(Schema.isMinLength(1))),
+  }),
+  Schema.Struct({
+    ...oauthProviderDefinitionFields,
+    scopeAuthority: Schema.Literal("registered-app-permissions"),
+    scopes: OAuthScopeSet.pipe(Schema.check(Schema.isMaxLength(0))),
+  }),
+]);
 
 /** Immutable reviewed provider-independent OAuth capability definition. */
-export interface PluginOAuthProviderDefinition extends Schema.Schema.Type<
+export type PluginOAuthProviderDefinition = Schema.Schema.Type<
   typeof PluginOAuthProviderDefinition
-> {}
+>;
 
 /**
  * Generic packaged OAuth authority bound to one exact reviewed provider definition digest.

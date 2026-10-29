@@ -240,6 +240,27 @@ const decodeDefinition = (input: Schema.Json) => {
 };
 
 describe("Plugin OAuth provider definition", () => {
+  it("requires explicit registered app authority for a scope-free definition", () => {
+    const scopeFree = { ...auroraDefinition, scopes: [] };
+    expect(Result.isFailure(decodePluginOAuthProviderDefinition(scopeFree))).toBe(true);
+    expect(
+      Result.isSuccess(
+        decodePluginOAuthProviderDefinition({
+          ...scopeFree,
+          scopeAuthority: "registered-app-permissions",
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      Result.isFailure(
+        decodePluginOAuthProviderDefinition({
+          ...auroraDefinition,
+          scopeAuthority: "registered-app-permissions",
+        }),
+      ),
+    ).toBe(true);
+  });
+
   it("produces stable canonical bytes and digests for two unrelated synthetic providers", async () => {
     const aurora = decodeDefinition(auroraDefinition);
     const harbor = decodeDefinition(harborDefinition);

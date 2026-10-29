@@ -109,6 +109,18 @@
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
       "reason": "Owner-authorized 49-tool consented Canva Developer Portal catalog and exact OAuth authority; independent review waived, not passed. Coordinated app deployment and verified private platform client admission must precede trusted publication."
+    },
+    {
+      "sourceDirectory": "plugins/remotes/github.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Owner-authorized consented GitHub App MCP catalog; independent review waived, not passed. Exact deployed client admission and trusted publication/readback are required."
+    },
+    {
+      "sourceDirectory": "plugins/remotes/slack.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": false,
+      "reason": "Consented internal-workspace catalog retained for review; public publication is blocked until Slack Marketplace approval. No public/unlisted MCP distribution is admitted."
     }
   ]
 }

@@ -62,16 +62,17 @@
   },
   "hostedMcpOauthDraft": {
     "status": "owner-review-waiver-not-deployed",
-    "applicationBaseCommit": "2580daef4e1dc6d9c1c18801debef4ee397df3da",
+    "applicationBaseCommit": "a078ec285b4ec736fd8173281f48a1be72c5546a",
     "files": {
       "packages/domain/src/plugin-auth-strategy.ts": "ca7eaf806c13992370b96a8371a5275773f8d574ac0a34e510faf2ba56b7014c",
-      "packages/domain/schema/plugin-auth-strategy-definition.v1.schema.json": "cea025f86022373d18b2a47dd3e533e16c854c3548e1a39aafffd186e04b447f",
-      "packages/domain/src/plugin-oauth.ts": "e127457cbbed432ba28127b865af28454b0ad37f781aaba82576443896a14c47",
+      "packages/domain/schema/plugin-auth-strategy-definition.v1.schema.json": "3e4d190c9286ef36db270cc86b7b764d267712e5e95f3ea8e25a6cb9a99a1fbf",
+      "packages/domain/src/plugin-oauth.ts": "4c7146a5c0bf40efea21e31c4706f75960b202ca5c12ffdeb0d1af6956935610",
       "apps/api/src/plugin-identity-resource-resolver.ts": "cdb7c1b79ee8e0f76cdacd008dbccb6cd9be95c56bbdfc019fc632be8663b46f",
       "apps/api/src/plugin-identity-resource-http-transport.ts": "bbe29b52069d3ceff93ceaa1889be285c2d4b57b8ad2ce4d3531a05247668f28",
-      "apps/api/application-migrations/0141_hosted_mcp_preregistered_oauth.sql": "d27f78bfd25374f58e69588febf0e450d8cb4231166c4eeaf5704c78eb525214",
-      "apps/api/src/plugin-oauth-runtime.ts": "3c083a45ccd4d4426d68f45a2560a8afe993f62e7ff19ecfed3c3f228674165c"
+      "apps/api/src/plugin-oauth-runtime.ts": "3c083a45ccd4d4426d68f45a2560a8afe993f62e7ff19ecfed3c3f228674165c",
+      "apps/api/application-migrations/0143_registered_app_permission_oauth.sql": "1700d4fb272d103b09937d79362ff060153d484def532d0488bd62440b2805ea",
+      "apps/api/application-migrations/0142_hosted_mcp_preregistered_oauth.sql": "d27f78bfd25374f58e69588febf0e450d8cb4231166c4eeaf5704c78eb525214"
     },
-    "applicationCandidateCommit": "ec8d55a802983ace88dad191a1fd0cfabe36a15d"
+    "applicationCandidateCommit": "ad079805831a8b4223f22f7846ffd79d9ca55b89"
   }
 }

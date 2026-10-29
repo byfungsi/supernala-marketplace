@@ -59,14 +59,23 @@ validation also admits canonical HTTPS tenant paths while retaining existing ori
 bytes and digests. The draft preserves the upstream seven-day access-token lifetime
 limit. Application deployment and exact trusted publication remain separate gates.
 
-Additive application migration `0141_hosted_mcp_preregistered_oauth.sql` admits a
+Additive application migration `0142_hosted_mcp_preregistered_oauth.sql` admits a
 hosted MCP version with an exact pre-registered strategy, active provider definition,
 platform registration and deployment-environment material receipt. The publication
 adapter verifies existing custody for this mode; an inline definition never creates
 client custody. The application runtime now retains that authority through initial
 authorization, callback and refresh. Focused tests exercise the real connection setup,
 identity, refresh, Actor invocation and disconnect interfaces with a local provider,
-and reject refresh after the receipt is retired. Production deployment remains pending.
+and reject refresh after the receipt is retired. This baseline is deployed at `a078ec28`; Atlassian, Canva and Buffer publication/readback completed on 2026-10-29.
+
+The current draft adds digest-bound comma-separated grants and explicit implicit scopes
+for Slack, plus scope-free registered app permission authority for GitHub Apps.
+Migration `0143_registered_app_permission_oauth.sql` limits scope-free hosted MCP
+publication to exact pre-registered authority and active deployed client custody.
+Existing scoped provider canonical bytes are unchanged. The coordinated application
+change is merged in PR #437; deployment and GitHub publication remain separate gates.
+Slack stays staged and ineligible for public publication until Slack Marketplace
+approval, as required by its MCP server distribution rules.
 
 The historical Phase 1 golden ZIP digest was captured with UTC+7 civil timestamps.
 Its compatibility tests explicitly reproduce that capture timezone: the legacy

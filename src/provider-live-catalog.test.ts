@@ -10,6 +10,8 @@ it.each([
   ["atlassian", 117],
   ["canva", 49],
   ["buffer", 17],
+  ["github", 46],
+  ["slack", 27],
 ] as const)("binds %s authority to all %i consented tool schemas", async (slug, count) => {
   const captured = JSON.parse(
     await readFile(`fixtures/mcp/captures/${slug}-20261028.json`, "utf8"),
@@ -44,4 +46,17 @@ it.each([
     await digestPluginOAuthProviderDefinition(release.oauthProviderDefinition),
   );
   expect(release.authStrategy?.profile).toBe("mcp-oauth");
+});
+
+it("keeps Slack unavailable for public publication until directory approval", async () => {
+  const source = JSON.parse(await readFile("plugins/remotes/slack.json", "utf8"));
+  const parsed = validateManagedRemotePluginRelease(source, "publication");
+  expect(Result.isFailure(parsed)).toBe(true);
+  const index = JSON.parse(await readFile("releases/index.json", "utf8"));
+  expect(
+    index.plugins.find(
+      (entry: { readonly sourceDirectory: string }) =>
+        entry.sourceDirectory === "plugins/remotes/slack.json",
+    )?.publicationEligible,
+  ).toBe(false);
 });
