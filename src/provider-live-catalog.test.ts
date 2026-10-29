@@ -75,7 +75,7 @@ it("publishes the Owner-authorized Atlassian personal-token preview without clai
       expect.objectContaining({ key: "token", secret: true }),
       expect.objectContaining({ key: "domain", secret: false }),
     ],
-    providerRegistrationId: "atlassian-api-token-v1",
+    providerRegistrationId: "atlassian-oauth-v2",
     delivery: [
       {
         kind: "basic",
@@ -87,6 +87,8 @@ it("publishes the Owner-authorized Atlassian personal-token preview without clai
   });
   const oauth = JSON.parse(await readFile("plugins/remotes/atlassian.json", "utf8"));
   expect(release.catalog.id).toBe(oauth.catalog.id);
+  expect(release.runtime.endpointRegistrationId).toBe(oauth.runtime.endpointRegistrationId);
+  expect(release.runtime.providerRegistrationId).toBe(oauth.runtime.providerRegistrationId);
   expect(release.catalog.digest).toBe(oauth.catalog.digest);
   expect(release.scopes).toEqual([]);
   expect(release.oauthProviderDefinition).toBeUndefined();
