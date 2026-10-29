@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "staged-unverified",
+  "status": "reviewed-publishable",
   "id": "supernala-public:supernala:canva@1.0.0",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
@@ -2547,7 +2547,7 @@
     "https://api.canva.com/.well-known/oauth-protected-resource/connect/v1/mcp",
     "https://integrations.sh/canva.com/canva-mcp-server/"
   ],
-  "verificationNotes": "Owner-consented 2026-10-28 final capture contains 49 exact tools with all 16 advertised scopes granted exactly. get-logged-in-account-details returned structured id, team_id and name; the app transport resolved the stable team/user subject and label. Initial and refresh responses returned Bearer tokens with expires_in 14400 and rotated refresh tokens; refresh omitted scope. Writes and destructive tools require approval; internal track-event-lifecycle is blocked. App credentials remain private in the authoritative environment. Remote revocation semantics remain unverified; disconnect deactivates local access. Independent source/authority review, platform client admission, coordinated application deployment, trusted publication and production acceptance remain pending. Capture and redacted policy evidence are in fixtures/mcp/captures/.",
+  "verificationNotes": "Owner-consented 2026-10-28 final capture contains 49 exact tools with all 16 advertised scopes granted exactly. get-logged-in-account-details returned structured id, team_id and name; the app transport resolved the stable team/user subject and label. Initial and refresh responses returned Bearer tokens with expires_in 14400 and rotated refresh tokens; refresh omitted scope. Writes and destructive tools require approval; internal track-event-lifecycle is blocked. App credentials remain private in the authoritative environment. Remote revocation semantics remain unverified; disconnect deactivates local access. The Owner waived independent source/authority review; it was not passed. Platform client admission, coordinated application deployment, trusted publication and production acceptance remain pending. Capture and redacted policy evidence are in fixtures/mcp/captures/.",
   "oauthProviderDefinition": {
     "schemaVersion": 1,
     "protocol": "oauth2-authorization-code",

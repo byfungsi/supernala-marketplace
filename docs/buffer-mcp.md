@@ -1,8 +1,7 @@
 # Buffer MCP publication
 
-The declaration targets `https://mcp.buffer.com/mcp` using dynamic OAuth registration. It remains
-staged while independent review, coordinated bootstrap transport deployment and publication are
-prepared.
+The declaration targets `https://mcp.buffer.com/mcp` using dynamic OAuth registration. The Owner authorized the captured source and waived independent review (not passed). Coordinated
+bootstrap transport deployment and trusted publication remain required.
 
 ## Captured evidence
 
@@ -41,7 +40,8 @@ Checked against the [official MCP guide](https://developers.buffer.com/guides/in
 
 ## Remaining acceptance
 
-Complete independent source/authority review and exact digest approval. Deploy the app's explicit
+The Owner waived independent source/authority review; it was not passed. Retain exact digest
+approval, deploy the app's explicit
 bootstrap content-selection contract, publish through the trusted operator flow, and verify durable
 readback and Store visibility. Then verify normal installation, per-user consent, invocation,
 refresh/reconnect and disconnect in production. No post or template mutation was needed for capture.

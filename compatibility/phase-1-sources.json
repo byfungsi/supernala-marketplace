@@ -61,7 +61,7 @@
     "contractManifest": "compatibility/openapi-v1/manifest.json"
   },
   "hostedMcpOauthDraft": {
-    "status": "unreviewed-not-deployed",
+    "status": "owner-review-waiver-not-deployed",
     "applicationBaseCommit": "2580daef4e1dc6d9c1c18801debef4ee397df3da",
     "files": {
       "packages/domain/src/plugin-auth-strategy.ts": "ca7eaf806c13992370b96a8371a5275773f8d574ac0a34e510faf2ba56b7014c",

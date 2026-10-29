@@ -15,7 +15,7 @@ it("consumes the pinned Supernala authentication strategy schema bytes", async (
   const compatibility = Schema.decodeUnknownSync(
     Schema.Struct({
       hostedMcpOauthDraft: Schema.Struct({
-        status: Schema.Literal("unreviewed-not-deployed"),
+        status: Schema.Literal("owner-review-waiver-not-deployed"),
         files: Schema.Record(Schema.String, Schema.String),
       }),
     }),

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "staged-unverified",
+  "status": "reviewed-publishable",
   "id": "supernala-public:supernala:buffer@1.0.0",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
@@ -4452,7 +4452,7 @@
     "https://auth.buffer.com/.well-known/oauth-authorization-server",
     "https://integrations.sh/buffer.com/buffer-mcp-server/"
   ],
-  "verificationNotes": "Owner-consented 2026-10-28 final capture contains 17 exact named tools covering channels, posts, ideas, analytics and templates. get_account returns stable id and name in JSON text block 0, beside a separate rateLimit block; the reviewed resultTextContentIndex selects that block explicitly. Initial and refresh responses returned Bearer tokens with expires_in 3600, exactly eight granted resource scopes and rotated refresh tokens. Final authorization omits offline_access while still receiving a refresh token. Connections are account-wide across accessible organizations and channels. The app transport resolved this identity successfully. Writes require approval and deletes are destructive. Remote token revocation is not advertised; disconnect deactivates local access. Independent review, coordinated application deployment, trusted publication and production acceptance remain pending.",
+  "verificationNotes": "Owner-consented 2026-10-28 final capture contains 17 exact named tools covering channels, posts, ideas, analytics and templates. get_account returns stable id and name in JSON text block 0, beside a separate rateLimit block; the reviewed resultTextContentIndex selects that block explicitly. Initial and refresh responses returned Bearer tokens with expires_in 3600, exactly eight granted resource scopes and rotated refresh tokens. Final authorization omits offline_access while still receiving a refresh token. Connections are account-wide across accessible organizations and channels. The app transport resolved this identity successfully. Writes require approval and deletes are destructive. Remote token revocation is not advertised; disconnect deactivates local access. Coordinated application deployment, trusted publication and production acceptance remain pending. The Owner waived independent source/authority review; it was not passed.",
   "oauthProviderDefinition": {
     "schemaVersion": 1,
     "protocol": "oauth2-authorization-code",

@@ -1,6 +1,6 @@
 # Atlassian Rovo MCP publication
 
-The staged declaration is `plugins/remotes/atlassian.json`. The official flat-catalog endpoint is
+The Owner-authorized declaration is `plugins/remotes/atlassian.json`. The official flat-catalog endpoint is
 `https://mcp.atlassian.com/v2/mcp?tools=all`; its protected resource is
 `https://mcp.atlassian.com/v2/mcp`. The query selects discovery behavior without changing that
 resource audience. Capture every page and review named tools individually; the generic discovery
@@ -55,7 +55,8 @@ unverified; the declaration explicitly uses local disconnect without claiming re
 
 ## Remaining acceptance
 
-Complete independent source/authority review and exact digest-bound approval, deploy the coordinated
+The Owner waived independent source/authority review; it was not passed. Retain exact digest-bound
+release approval, deploy the coordinated
 app issuer change, and use trusted publication with durable readback and Store visibility checks.
 Normal installation, per-user consent, invocation, refresh and disconnect need production evidence.
 No Jira or Confluence content mutation was needed for catalog or identity capture.

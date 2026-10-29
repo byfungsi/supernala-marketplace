@@ -51,13 +51,13 @@ the authoritative schema and the owning Effect schema. The local Effect decoder 
 projection of that versioned distribution, not an independently versioned contract.
 
 The current hosted MCP OAuth changes are recorded separately in `hostedMcpOauthDraft`,
-with status `unreviewed-not-deployed`. The historical reviewed pins remain intact.
+with status `owner-review-waiver-not-deployed`. The Owner waived independent review; it was not passed. The historical reviewed pins remain intact.
 This draft distributes the optional `resultTextContentIndex` bootstrap field (0–19)
 from the owning application contract. Without that field, multipart JSON text results
 remain rejected; an explicit index selects only the reviewed text block. OAuth issuer
 validation also admits canonical HTTPS tenant paths while retaining existing origin
 bytes and digests. The draft preserves the upstream seven-day access-token lifetime
-limit. Application deployment and independent release review remain separate gates.
+limit. Application deployment and exact trusted publication remain separate gates.
 
 Additive application migration `0141_hosted_mcp_preregistered_oauth.sql` admits a
 hosted MCP version with an exact pre-registered strategy, active provider definition,

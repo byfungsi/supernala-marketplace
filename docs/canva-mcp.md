@@ -1,8 +1,8 @@
 # Canva MCP publication
 
 The declaration targets `https://api.canva.com/connect/v1/mcp`, the current official Developer
-Portal MCP surface. It remains staged while independent authority review, platform registration,
-application deployment and trusted publication are prepared.
+Portal MCP surface. The Owner authorized the captured source and waived independent review (not passed). Platform
+registration, application deployment and trusted publication remain required.
 
 ## Captured evidence
 
@@ -57,7 +57,8 @@ CIMD template is historical material and is not the active registration.
 
 ## Remaining acceptance
 
-Complete independent source/authority review, exact digest-bound approval, platform admission,
+The Owner waived independent source/authority review; it was not passed. Retain exact digest-bound
+release approval and complete platform admission,
 coordinated app deployment, trusted Marketplace publication and durable readback. Verify Store
 visibility and normal per-user installation/connect/invocation/disconnect in production. Capture,
 offline tests and local transport verification do not establish production publication.

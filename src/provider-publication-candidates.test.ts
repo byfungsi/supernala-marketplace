@@ -6,7 +6,7 @@ import { Result } from "effect";
 import { preparePluginAuthoringSource, validatePluginAuthoringSource } from "./plugin-authoring.js";
 import { validateManagedRemotePluginRelease } from "./remote-release.js";
 
-it("prepares all three captured providers while retaining the independent review gate", async () => {
+it("prepares Owner-authorized providers while preserving evidence and staged-source gates", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-provider-candidates-"));
   try {
     for (const slug of ["atlassian", "canva", "buffer"]) {
@@ -16,8 +16,7 @@ it("prepares all three captured providers while retaining the independent review
         _tag: "Success",
         success: {
           plugin: `supernala/${slug}`,
-          publicationEligible: false,
-          publicationBlocker: "remote-release-not-reviewed",
+          publicationEligible: true,
         },
       });
       const prepared = await preparePluginAuthoringSource({
@@ -30,6 +29,13 @@ it("prepares all three captured providers while retaining the independent review
         "authoring",
       );
       if (Result.isFailure(declaration)) throw new Error(declaration.failure);
+      expect(declaration.success.verificationNotes).toContain("waived");
+      expect(
+        validateManagedRemotePluginRelease(
+          Object.assign({}, declaration.success, { status: "staged-unverified" }),
+          "publication",
+        ),
+      ).toEqual(Result.fail("remote-release-not-reviewed"));
       expect(
         validateManagedRemotePluginRelease(
           Object.assign({}, declaration.success, {

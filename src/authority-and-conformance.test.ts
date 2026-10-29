@@ -162,7 +162,9 @@ describe("authority and protocol gates", () => {
       ["cloudflare", true],
       ["posthog", true],
       ["notion", true],
-      ["atlassian", false],
+      ["atlassian", true],
+      ["canva", true],
+      ["buffer", true],
       ["gmail", false],
       ["resend", true],
     ] as const) {

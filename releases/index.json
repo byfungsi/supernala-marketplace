@@ -53,8 +53,8 @@
     {
       "sourceDirectory": "plugins/remotes/atlassian.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": false,
-      "reason": "Owner-consented 117-tool Jira/Confluence catalog, exact scopes, MCP identity/site selection and rotating refresh verified; independent authority review and coordinated tenant-issuer app deployment remain pending"
+      "publicationEligible": true,
+      "reason": "Owner-authorized 117-tool consented Rovo catalog and exact OAuth authority; independent review waived, not passed. Coordinated tenant-issuer app deployment and trusted publication/readback remain required."
     },
     {
       "sourceDirectory": "plugins/remotes/gmail.json",
@@ -101,14 +101,14 @@
     {
       "sourceDirectory": "plugins/remotes/buffer.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": false,
-      "reason": "Owner-consented 17-tool catalog, exact eight scopes, multipart account identity and rotating refresh verified; independent review and coordinated bootstrap-content app deployment remain pending"
+      "publicationEligible": true,
+      "reason": "Owner-authorized 17-tool consented Buffer catalog and exact OAuth authority; independent review waived, not passed. Coordinated bootstrap content-selection app deployment and trusted publication/readback remain required."
     },
     {
       "sourceDirectory": "plugins/remotes/canva.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": false,
-      "reason": "Owner-consented 49-tool catalog, all 16 scopes, team/user identity and rotating refresh verified; independent review, private platform registration admission and coordinated app deployment remain pending"
+      "publicationEligible": true,
+      "reason": "Owner-authorized 49-tool consented Canva Developer Portal catalog and exact OAuth authority; independent review waived, not passed. Coordinated app deployment and verified private platform client admission must precede trusted publication."
     }
   ]
 }
