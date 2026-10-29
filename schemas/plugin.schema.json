@@ -224,13 +224,14 @@
               },
               "allOf": [
                 {
-                  "minItems": 1
+                  "minItems": 0
                 },
                 {
                   "maxItems": 64
                 }
               ],
-              "uniqueItems": true
+              "uniqueItems": true,
+              "minItems": 1
             },
             "credentialDelivery": {
               "type": "string",
@@ -285,7 +286,7 @@
               },
               "allOf": [
                 {
-                  "minItems": 1
+                  "minItems": 0
                 },
                 {
                   "maxItems": 64
@@ -1203,7 +1204,7 @@
               },
               "allOf": [
                 {
-                  "minItems": 1
+                  "minItems": 0
                 },
                 {
                   "maxItems": 64
@@ -3241,7 +3242,7 @@
               },
               "allOf": [
                 {
-                  "minItems": 1
+                  "minItems": 0
                 },
                 {
                   "maxItems": 64

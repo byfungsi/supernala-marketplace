@@ -530,7 +530,7 @@
               },
               "allOf": [
                 {
-                  "minItems": 1
+                  "minItems": 0
                 },
                 {
                   "maxItems": 64
@@ -844,7 +844,7 @@
                   },
                   "allOf": [
                     {
-                      "minItems": 1
+                      "minItems": 0
                     },
                     {
                       "maxItems": 64

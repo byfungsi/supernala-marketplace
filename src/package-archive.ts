@@ -93,7 +93,17 @@ export const PackageManifest = Schema.Struct({
   }),
   catalog: Schema.Struct({ path: Schema.Literal("catalog.json"), sha256: PluginSha256 }),
   config: Schema.Struct({ path: Schema.Literal("config.json"), sha256: PluginSha256 }),
-  authentication: PackagedPluginAuthentication,
+  authentication: Schema.Union([
+    PackagedPluginAuthentication.members[0],
+    PackagedPluginAuthentication.members[1],
+    Schema.Struct({
+      ...PackagedOAuthAuthentication.fields,
+      // Scope-free authority is admitted only for pre-registered remote MCP, not packages.
+      requestedScopes: PackagedOAuthAuthentication.fields.requestedScopes.pipe(
+        Schema.check(Schema.isMinLength(1)),
+      ),
+    }),
+  ]),
   authStrategy: Schema.optionalKey(PluginAuthStrategyDefinition),
   network: Schema.Struct({ allowedHosts: PluginVersion.fields.allowedHosts }),
   limits: Schema.Struct({
