@@ -57,6 +57,12 @@
       "reason": "Owner-authorized 117-tool consented Rovo catalog and exact OAuth authority; independent review waived, not passed. Coordinated tenant-issuer app deployment and trusted publication/readback remain required."
     },
     {
+      "sourceDirectory": "plugins/remotes/atlassian-api-token.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": false,
+      "reason": "API-token component implemented with Vault-owned Basic auth; waiting for exact API-token catalog/identity/site validation and coordinated application deployment. OAuth catalog schemas are provisional, not API-token acceptance."
+    },
+    {
       "sourceDirectory": "plugins/remotes/gmail.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": false,

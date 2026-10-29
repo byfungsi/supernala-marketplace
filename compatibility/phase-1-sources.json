@@ -74,5 +74,16 @@
       "apps/api/application-migrations/0142_hosted_mcp_preregistered_oauth.sql": "d27f78bfd25374f58e69588febf0e450d8cb4231166c4eeaf5704c78eb525214"
     },
     "applicationCandidateCommit": "ad079805831a8b4223f22f7846ffd79d9ca55b89"
+  },
+  "atlassianApiTokenDraft": {
+    "status": "staged-not-deployed",
+    "applicationBaseCommit": "d763ad32db5b69a7b706de76f2de9e6b147fd672",
+    "files": {
+      "packages/domain/src/plugin-auth-strategy.ts": "8b464e9ad96eae7fb0bd346c0ca33c0108d4c91fcddb5463b50eca78225e4a85",
+      "packages/domain/schema/plugin-auth-strategy-definition.v1.schema.json": "3911819b71177a820afcc2f58e5e81a77a01def663e2afb1951dc66066222d99",
+      "apps/api/src/plugin-api-key-auth-strategy.ts": "bfbd5f52c9401ddbb048808bb4abe606997e68fd1025a25e0f8420df5c0e7760",
+      "apps/api/src/plugin-integration-families.ts": "82ac424d4c98523158ae26820c0bc160356c849948fe060e35819556516dfa47"
+    },
+    "applicationCandidateCommit": "dc8f4584e4081be061cceb30fe5dbaaf4085d16d"
   }
 }

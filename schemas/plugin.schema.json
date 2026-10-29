@@ -2238,6 +2238,45 @@
                     "properties": {
                       "kind": {
                         "type": "string",
+                        "enum": ["basic"]
+                      },
+                      "headerName": {
+                        "type": "string",
+                        "enum": ["authorization"]
+                      },
+                      "usernameField": {
+                        "type": "string",
+                        "allOf": [
+                          {
+                            "minLength": 1
+                          },
+                          {
+                            "maxLength": 64
+                          }
+                        ],
+                        "pattern": "^[a-z][a-z0-9_.-]*$"
+                      },
+                      "passwordField": {
+                        "type": "string",
+                        "allOf": [
+                          {
+                            "minLength": 1
+                          },
+                          {
+                            "maxLength": 64
+                          }
+                        ],
+                        "pattern": "^[a-z][a-z0-9_.-]*$"
+                      }
+                    },
+                    "required": ["kind", "headerName", "usernameField", "passwordField"],
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
                         "enum": ["header"]
                       },
                       "field": {
@@ -2747,231 +2786,25 @@
             "resources": {
               "anyOf": [
                 {
-                  "type": "object",
-                  "properties": {
-                    "kind": {
-                      "type": "string",
-                      "enum": ["none"]
-                    }
-                  },
-                  "required": ["kind"],
-                  "additionalProperties": true
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "kind": {
-                      "type": "string",
-                      "enum": ["https-json"]
-                    },
-                    "endpoint": {
-                      "type": "string",
-                      "allOf": [
-                        {
-                          "minLength": 1
-                        },
-                        {
-                          "maxLength": 2048
-                        }
-                      ]
-                    },
-                    "authorization": {
-                      "type": "string",
-                      "enum": ["bearer"]
-                    },
-                    "resourcesPath": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "allOf": [
-                          {
-                            "minLength": 1
-                          },
-                          {
-                            "maxLength": 128
-                          }
-                        ],
-                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
-                      },
-                      "allOf": [
-                        {
-                          "minItems": 1
-                        },
-                        {
-                          "maxItems": 8
-                        }
-                      ]
-                    },
-                    "idPath": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "allOf": [
-                          {
-                            "minLength": 1
-                          },
-                          {
-                            "maxLength": 128
-                          }
-                        ],
-                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
-                      },
-                      "allOf": [
-                        {
-                          "minItems": 1
-                        },
-                        {
-                          "maxItems": 8
-                        }
-                      ]
-                    },
-                    "displayLabelPath": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "allOf": [
-                          {
-                            "minLength": 1
-                          },
-                          {
-                            "maxLength": 128
-                          }
-                        ],
-                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
-                      },
-                      "allOf": [
-                        {
-                          "minItems": 1
-                        },
-                        {
-                          "maxItems": 8
-                        }
-                      ]
-                    },
-                    "selection": {
-                      "type": "string",
-                      "enum": ["exactly-one", "owner-select"]
-                    },
-                    "binding": {
+                  "anyOf": [
+                    {
                       "type": "object",
                       "properties": {
-                        "appliesTo": {
-                          "anyOf": [
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "type": "string",
-                                  "enum": ["all-tools-with-argument"]
-                                }
-                              },
-                              "required": ["kind"],
-                              "additionalProperties": true
-                            },
-                            {
-                              "type": "object",
-                              "properties": {
-                                "kind": {
-                                  "type": "string",
-                                  "enum": ["tool-list"]
-                                },
-                                "toolIds": {
-                                  "type": "array",
-                                  "items": {
-                                    "type": "string",
-                                    "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
-                                    "allOf": [
-                                      {
-                                        "minLength": 1
-                                      },
-                                      {
-                                        "maxLength": 160
-                                      }
-                                    ]
-                                  },
-                                  "allOf": [
-                                    {
-                                      "minItems": 1
-                                    },
-                                    {
-                                      "maxItems": 2000
-                                    }
-                                  ],
-                                  "uniqueItems": true
-                                }
-                              },
-                              "required": ["kind", "toolIds"],
-                              "additionalProperties": true
-                            }
-                          ]
-                        },
-                        "argumentPath": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "allOf": [
-                              {
-                                "minLength": 1
-                              },
-                              {
-                                "maxLength": 128
-                              }
-                            ],
-                            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
-                          },
-                          "allOf": [
-                            {
-                              "minItems": 1
-                            },
-                            {
-                              "maxItems": 8
-                            }
-                          ]
+                        "kind": {
+                          "type": "string",
+                          "enum": ["none"]
                         }
                       },
-                      "required": ["appliesTo", "argumentPath"],
+                      "required": ["kind"],
                       "additionalProperties": true
                     },
-                    "maximumResponseBytes": {
-                      "type": "integer",
-                      "minimum": 1024,
-                      "maximum": 262144
-                    },
-                    "maximumJsonDepth": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 16
-                    },
-                    "maximumObjectKeys": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 2048
-                    }
-                  },
-                  "required": [
-                    "kind",
-                    "endpoint",
-                    "authorization",
-                    "idPath",
-                    "displayLabelPath",
-                    "selection",
-                    "binding",
-                    "maximumResponseBytes",
-                    "maximumJsonDepth",
-                    "maximumObjectKeys"
-                  ],
-                  "additionalProperties": true
-                },
-                {
-                  "type": "object",
-                  "properties": {
-                    "kind": {
-                      "type": "string",
-                      "enum": ["mcp-tool"]
-                    },
-                    "operation": {
+                    {
                       "type": "object",
                       "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": ["https-json"]
+                        },
                         "endpoint": {
                           "type": "string",
                           "allOf": [
@@ -2983,106 +2816,468 @@
                             }
                           ]
                         },
-                        "toolName": {
+                        "authorization": {
                           "type": "string",
+                          "enum": ["bearer"]
+                        },
+                        "resourcesPath": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "allOf": [
+                              {
+                                "minLength": 1
+                              },
+                              {
+                                "maxLength": 128
+                              }
+                            ],
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+                          },
                           "allOf": [
                             {
-                              "minLength": 1
+                              "minItems": 1
                             },
                             {
-                              "maxLength": 160
+                              "maxItems": 8
                             }
                           ]
                         },
-                        "input": {
-                          "type": "object"
+                        "idPath": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "allOf": [
+                              {
+                                "minLength": 1
+                              },
+                              {
+                                "maxLength": 128
+                              }
+                            ],
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+                          },
+                          "allOf": [
+                            {
+                              "minItems": 1
+                            },
+                            {
+                              "maxItems": 8
+                            }
+                          ]
                         },
-                        "maximumOutputBytes": {
+                        "displayLabelPath": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "allOf": [
+                              {
+                                "minLength": 1
+                              },
+                              {
+                                "maxLength": 128
+                              }
+                            ],
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+                          },
+                          "allOf": [
+                            {
+                              "minItems": 1
+                            },
+                            {
+                              "maxItems": 8
+                            }
+                          ]
+                        },
+                        "selection": {
+                          "type": "string",
+                          "enum": ["exactly-one", "owner-select"]
+                        },
+                        "binding": {
+                          "type": "object",
+                          "properties": {
+                            "appliesTo": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": ["all-tools-with-argument"]
+                                    }
+                                  },
+                                  "required": ["kind"],
+                                  "additionalProperties": true
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": ["tool-list"]
+                                    },
+                                    "toolIds": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+                                        "allOf": [
+                                          {
+                                            "minLength": 1
+                                          },
+                                          {
+                                            "maxLength": 160
+                                          }
+                                        ]
+                                      },
+                                      "allOf": [
+                                        {
+                                          "minItems": 1
+                                        },
+                                        {
+                                          "maxItems": 2000
+                                        }
+                                      ],
+                                      "uniqueItems": true
+                                    }
+                                  },
+                                  "required": ["kind", "toolIds"],
+                                  "additionalProperties": true
+                                }
+                              ]
+                            },
+                            "argumentPath": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "allOf": [
+                                  {
+                                    "minLength": 1
+                                  },
+                                  {
+                                    "maxLength": 128
+                                  }
+                                ],
+                                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+                              },
+                              "allOf": [
+                                {
+                                  "minItems": 1
+                                },
+                                {
+                                  "maxItems": 8
+                                }
+                              ]
+                            }
+                          },
+                          "required": ["appliesTo", "argumentPath"],
+                          "additionalProperties": true
+                        },
+                        "maximumResponseBytes": {
+                          "type": "integer",
+                          "minimum": 1024,
+                          "maximum": 262144
+                        },
+                        "maximumJsonDepth": {
                           "type": "integer",
                           "minimum": 1,
-                          "maximum": 1048576
+                          "maximum": 16
                         },
-                        "resultTextContentIndex": {
+                        "maximumObjectKeys": {
                           "type": "integer",
-                          "minimum": 0,
-                          "maximum": 19
+                          "minimum": 1,
+                          "maximum": 2048
                         }
                       },
-                      "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
+                      "required": [
+                        "kind",
+                        "endpoint",
+                        "authorization",
+                        "idPath",
+                        "displayLabelPath",
+                        "selection",
+                        "binding",
+                        "maximumResponseBytes",
+                        "maximumJsonDepth",
+                        "maximumObjectKeys"
+                      ],
                       "additionalProperties": true
                     },
-                    "resourcesPath": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "allOf": [
-                          {
-                            "minLength": 1
-                          },
-                          {
-                            "maxLength": 128
-                          }
-                        ],
-                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
-                      },
-                      "allOf": [
-                        {
-                          "minItems": 1
+                    {
+                      "type": "object",
+                      "properties": {
+                        "kind": {
+                          "type": "string",
+                          "enum": ["mcp-tool"]
                         },
-                        {
-                          "maxItems": 8
-                        }
-                      ]
-                    },
-                    "idPath": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "allOf": [
-                          {
-                            "minLength": 1
+                        "operation": {
+                          "type": "object",
+                          "properties": {
+                            "endpoint": {
+                              "type": "string",
+                              "allOf": [
+                                {
+                                  "minLength": 1
+                                },
+                                {
+                                  "maxLength": 2048
+                                }
+                              ]
+                            },
+                            "toolName": {
+                              "type": "string",
+                              "allOf": [
+                                {
+                                  "minLength": 1
+                                },
+                                {
+                                  "maxLength": 160
+                                }
+                              ]
+                            },
+                            "input": {
+                              "type": "object"
+                            },
+                            "maximumOutputBytes": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 1048576
+                            },
+                            "resultTextContentIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 19
+                            }
                           },
-                          {
-                            "maxLength": 128
-                          }
-                        ],
-                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
-                      },
-                      "allOf": [
-                        {
-                          "minItems": 1
+                          "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
+                          "additionalProperties": true
                         },
-                        {
-                          "maxItems": 8
-                        }
-                      ]
-                    },
-                    "displayLabelPath": {
-                      "type": "array",
-                      "items": {
-                        "type": "string",
-                        "allOf": [
-                          {
-                            "minLength": 1
+                        "resourcesPath": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "allOf": [
+                              {
+                                "minLength": 1
+                              },
+                              {
+                                "maxLength": 128
+                              }
+                            ],
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
                           },
-                          {
-                            "maxLength": 128
-                          }
-                        ],
-                        "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
-                      },
-                      "allOf": [
-                        {
-                          "minItems": 1
+                          "allOf": [
+                            {
+                              "minItems": 1
+                            },
+                            {
+                              "maxItems": 8
+                            }
+                          ]
                         },
-                        {
-                          "maxItems": 8
+                        "idPath": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "allOf": [
+                              {
+                                "minLength": 1
+                              },
+                              {
+                                "maxLength": 128
+                              }
+                            ],
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+                          },
+                          "allOf": [
+                            {
+                              "minItems": 1
+                            },
+                            {
+                              "maxItems": 8
+                            }
+                          ]
+                        },
+                        "displayLabelPath": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "allOf": [
+                              {
+                                "minLength": 1
+                              },
+                              {
+                                "maxLength": 128
+                              }
+                            ],
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+                          },
+                          "allOf": [
+                            {
+                              "minItems": 1
+                            },
+                            {
+                              "maxItems": 8
+                            }
+                          ]
+                        },
+                        "selection": {
+                          "type": "string",
+                          "enum": ["exactly-one", "owner-select"]
+                        },
+                        "binding": {
+                          "type": "object",
+                          "properties": {
+                            "appliesTo": {
+                              "anyOf": [
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": ["all-tools-with-argument"]
+                                    }
+                                  },
+                                  "required": ["kind"],
+                                  "additionalProperties": true
+                                },
+                                {
+                                  "type": "object",
+                                  "properties": {
+                                    "kind": {
+                                      "type": "string",
+                                      "enum": ["tool-list"]
+                                    },
+                                    "toolIds": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string",
+                                        "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+                                        "allOf": [
+                                          {
+                                            "minLength": 1
+                                          },
+                                          {
+                                            "maxLength": 160
+                                          }
+                                        ]
+                                      },
+                                      "allOf": [
+                                        {
+                                          "minItems": 1
+                                        },
+                                        {
+                                          "maxItems": 2000
+                                        }
+                                      ],
+                                      "uniqueItems": true
+                                    }
+                                  },
+                                  "required": ["kind", "toolIds"],
+                                  "additionalProperties": true
+                                }
+                              ]
+                            },
+                            "argumentPath": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "allOf": [
+                                  {
+                                    "minLength": 1
+                                  },
+                                  {
+                                    "maxLength": 128
+                                  }
+                                ],
+                                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+                              },
+                              "allOf": [
+                                {
+                                  "minItems": 1
+                                },
+                                {
+                                  "maxItems": 8
+                                }
+                              ]
+                            }
+                          },
+                          "required": ["appliesTo", "argumentPath"],
+                          "additionalProperties": true
+                        },
+                        "maximumResponseBytes": {
+                          "type": "integer",
+                          "minimum": 1024,
+                          "maximum": 262144
+                        },
+                        "maximumJsonDepth": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 16
+                        },
+                        "maximumObjectKeys": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2048
                         }
-                      ]
-                    },
-                    "selection": {
+                      },
+                      "required": [
+                        "kind",
+                        "operation",
+                        "idPath",
+                        "displayLabelPath",
+                        "selection",
+                        "binding",
+                        "maximumResponseBytes",
+                        "maximumJsonDepth",
+                        "maximumObjectKeys"
+                      ],
+                      "additionalProperties": true
+                    }
+                  ]
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
                       "type": "string",
-                      "enum": ["exactly-one", "owner-select"]
+                      "enum": ["credential-origin"]
+                    },
+                    "field": {
+                      "type": "string",
+                      "allOf": [
+                        {
+                          "minLength": 1
+                        },
+                        {
+                          "maxLength": 64
+                        }
+                      ],
+                      "pattern": "^[a-z][a-z0-9_.-]*$"
+                    },
+                    "allowedHostSuffixes": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "allOf": [
+                          {
+                            "minLength": 3
+                          },
+                          {
+                            "maxLength": 253
+                          }
+                        ],
+                        "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+                      },
+                      "allOf": [
+                        {
+                          "minItems": 1
+                        },
+                        {
+                          "maxItems": 8
+                        }
+                      ],
+                      "uniqueItems": true
                     },
                     "binding": {
                       "type": "object",
@@ -3163,34 +3358,9 @@
                       },
                       "required": ["appliesTo", "argumentPath"],
                       "additionalProperties": true
-                    },
-                    "maximumResponseBytes": {
-                      "type": "integer",
-                      "minimum": 1024,
-                      "maximum": 262144
-                    },
-                    "maximumJsonDepth": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 16
-                    },
-                    "maximumObjectKeys": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 2048
                     }
                   },
-                  "required": [
-                    "kind",
-                    "operation",
-                    "idPath",
-                    "displayLabelPath",
-                    "selection",
-                    "binding",
-                    "maximumResponseBytes",
-                    "maximumJsonDepth",
-                    "maximumObjectKeys"
-                  ],
+                  "required": ["kind", "field", "allowedHostSuffixes", "binding"],
                   "additionalProperties": true
                 }
               ]
