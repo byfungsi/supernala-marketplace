@@ -8,6 +8,23 @@ const maximumResponseBytes = 524288;
 const maximumOutputBytes = 220000;
 const maximumRequestBytes = 100000;
 const apiOrigin = "https://slack.com/api/";
+// Use the official Slack SDK's form wire format for classic scalar read methods.
+// Keep structured canvas/list requests and writes on their reviewed JSON paths.
+const formEncodedReadMethods = new Set([
+  "conversations.list",
+  "users.conversations",
+  "conversations.info",
+  "conversations.history",
+  "conversations.replies",
+  "conversations.members",
+  "search.messages",
+  "search.files",
+  "users.list",
+  "users.info",
+  "emoji.list",
+  "reactions.get",
+  "files.info",
+]);
 const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const success = (value) => ({ _tag: "Success", value });
 const failure = (reason, extra = {}) => ({ _tag: "Failure", reason, ...extra });
@@ -332,6 +349,8 @@ export const createSlackApiToolHandler = ({
       return failure("reauthorization-required", { dispatch: "not-dispatched" });
     const write = definition.classification !== "read";
     const uncertain = write ? "unknown" : "read-only";
+    const formEncoded =
+      definition.encoding === "form" || formEncodedReadMethods.has(definition.method);
     let response;
     try {
       response = await fetchImplementation(new URL(definition.method, apiOrigin), {
@@ -341,17 +360,15 @@ export const createSlackApiToolHandler = ({
         headers: {
           Accept: "application/json",
           Authorization: `Bearer ${credential.unsafeRead()}`,
-          "Content-Type":
-            definition.encoding === "form"
-              ? "application/x-www-form-urlencoded"
-              : "application/json; charset=utf-8",
+          "Content-Type": formEncoded
+            ? "application/x-www-form-urlencoded"
+            : "application/json; charset=utf-8",
         },
-        body:
-          definition.encoding === "form"
-            ? new URLSearchParams(
-                Object.entries(parsed.value).map(([key, value]) => [key, String(value)]),
-              ).toString()
-            : JSON.stringify(parsed.value),
+        body: formEncoded
+          ? new URLSearchParams(
+              Object.entries(parsed.value).map(([key, value]) => [key, String(value)]),
+            ).toString()
+          : JSON.stringify(parsed.value),
       });
     } catch {
       return failure("network-failed", { dispatch: uncertain });

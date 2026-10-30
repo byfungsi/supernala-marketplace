@@ -38,7 +38,7 @@ it("creates a validated 32-tool package with exact MCP catalog, OAuth and host a
   if (Result.isFailure(source)) throw source.failure;
   expect(source.success.manifest).toMatchObject({
     id: "slack",
-    version: "1.1.1",
+    version: "1.1.2",
     network: { allowedHosts: ["slack.com"] },
   });
   expect(source.success.catalog.tools).toHaveLength(32);
@@ -77,7 +77,7 @@ it("creates a validated 32-tool package with exact MCP catalog, OAuth and host a
   const prepared = await preparePluginPackage({
     source: source.success,
     marketplaceId: PluginMarketplaceId.make("supernala-public"),
-    versionId: PluginVersionId.make("supernala-public:supernala:slack@1.1.1"),
+    versionId: PluginVersionId.make("supernala-public:supernala:slack@1.1.2"),
     publishedAt: 1793340000000,
   });
   if (Result.isFailure(prepared)) throw prepared.failure;
@@ -124,9 +124,13 @@ it("reads channel history with a user token, bounded time window and one page", 
   expect(new Headers(request?.init?.headers).get("authorization")).toBe("Bearer fixture");
   expect(request?.init?.redirect).toBe("error");
   expect(request?.init?.signal).toBeInstanceOf(AbortSignal);
-  expect(JSON.parse(Schema.decodeUnknownSync(Schema.String)(request?.init?.body))).toEqual({
+  expect(
+    Object.fromEntries(
+      new URLSearchParams(Schema.decodeUnknownSync(Schema.String)(request?.init?.body)),
+    ),
+  ).toEqual({
     channel: "C123",
-    limit: 15,
+    limit: "15",
     oldest: "1793300000.000000",
     latest: "1793386400.000000",
   });
@@ -153,13 +157,92 @@ it("retains pagination after local filtering, including an empty matching page",
     },
   });
   expect(
-    JSON.parse(Schema.decodeUnknownSync(Schema.String)(transport.requests[0]?.init?.body)),
+    Object.fromEntries(
+      new URLSearchParams(
+        Schema.decodeUnknownSync(Schema.String)(transport.requests[0]?.init?.body),
+      ),
+    ),
   ).toEqual({
-    limit: 100,
-    exclude_archived: true,
+    limit: "100",
+    exclude_archived: "true",
     types: "public_channel,private_channel",
     cursor: "previous",
   });
+});
+
+// Reproduces the observed default-public listing and missing query/user parameters
+// at a form-decoding gateway. Live acceptance must still be checked against Slack.
+it("delivers channel types, searches and user IDs through the Slack form interface", async () => {
+  const privateChannel = { id: "G123", name: "fe-pr-review", is_private: true };
+  const fetchImplementation: typeof fetch = async (input, init) => {
+    const request = new Request(input, init);
+    const parameters = new URLSearchParams(
+      request.headers.get("content-type") === "application/x-www-form-urlencoded"
+        ? await request.text()
+        : "",
+    );
+    switch (new URL(request.url).pathname) {
+      case "/api/conversations.list":
+      case "/api/users.conversations":
+        return jsonResponse({
+          ok: true,
+          channels: parameters.get("types")?.split(",").includes("private_channel")
+            ? [privateChannel]
+            : [{ id: "C123", name: "general", is_private: false }],
+        });
+      case "/api/search.messages":
+        return parameters.get("query") === "in:fe-pr-review after:2026-10-29 + review & ship"
+          ? jsonResponse({ ok: true, messages: { matches: [message] } })
+          : jsonResponse({ ok: false, error: "No query passed" });
+      case "/api/users.info":
+        return parameters.get("user") === "U123"
+          ? jsonResponse({ ok: true, user: { id: "U123", is_bot: false } })
+          : jsonResponse({ ok: false, error: "user_not_found" });
+      default:
+        throw new Error("Unexpected Slack form fixture method");
+    }
+  };
+  const call = createSlackApiToolHandler({ accessToken: "synthetic", fetch: fetchImplementation });
+  for (const tool of ["slack_search_channels", "slack_list_user_channels"]) {
+    expect(await call(tool, {})).toMatchObject({
+      _tag: "Success",
+      value: { channels: [privateChannel] },
+    });
+  }
+  expect(
+    await call("slack_search_messages", {
+      query: "in:fe-pr-review after:2026-10-29 + review & ship",
+    }),
+  ).toMatchObject({ _tag: "Success", value: { messages: { matches: [message] } } });
+  expect(await call("slack_read_user_profile", { user_id: "U123" })).toMatchObject({
+    _tag: "Success",
+    value: { user: { id: "U123", is_bot: false } },
+  });
+});
+
+it("roundtrips Slack query punctuation and Unicode in form bodies", async () => {
+  await FastCheck.assert(
+    FastCheck.asyncProperty(
+      FastCheck.array(FastCheck.constantFrom("é", "中", "🙂", " ", "+", "&", "=", "%", "\n", "a"), {
+        minLength: 1,
+        maxLength: 40,
+      }).map((characters) => characters.join("")),
+      async (query) => {
+        const fetchImplementation: typeof fetch = async (input, init) => {
+          const request = new Request(input, init);
+          const form = await request.formData();
+          return jsonResponse({ ok: true, query: form.get("query"), messages: { matches: [] } });
+        };
+        expect(
+          await createSlackApiToolHandler({ accessToken: "synthetic", fetch: fetchImplementation })(
+            "slack_search_messages",
+            { query },
+          ),
+        ).toMatchObject({ _tag: "Success", value: { query, messages: { matches: [] } } });
+      },
+    ),
+    { seed: 20261030, numRuns: 100 },
+  );
 });
 
 it("filters user names without dropping the provider's next cursor", async () => {
@@ -466,9 +549,17 @@ it.each(apiCases)(
     expect(transport.requests).toHaveLength(1);
     expect(transport.requests[0]?.url).toBe(`https://slack.com/api/${method}`);
     expect(transport.requests[0]?.init?.method).toBe("POST");
-    expect(
-      JSON.parse(Schema.decodeUnknownSync(Schema.String)(transport.requests[0]?.init?.body)),
-    ).toEqual(body);
+    const requestBody = Schema.decodeUnknownSync(Schema.String)(transport.requests[0]?.init?.body);
+    if (
+      new Headers(transport.requests[0]?.init?.headers).get("content-type") ===
+      "application/x-www-form-urlencoded"
+    ) {
+      expect(Object.fromEntries(new URLSearchParams(requestBody))).toEqual(
+        Object.fromEntries(Object.entries(body).map(([key, value]) => [key, String(value)])),
+      );
+    } else {
+      expect(JSON.parse(requestBody)).toEqual(body);
+    }
   },
 );
 
