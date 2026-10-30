@@ -1173,6 +1173,66 @@ const applicationDatabaseWithOpenApi = async (): Promise<DatabaseSync> => {
   return database;
 };
 
+it("publishes the Slack Web API package alongside the existing hosted Slack version", async () => {
+  const decoded = validateManagedRemotePluginRelease(
+    JSON.parse(await readFile("plugins/remotes/slack.json", "utf8")),
+    "publication",
+  );
+  if (Result.isFailure(decoded)) throw new Error(decoded.failure);
+  const previous = await providerExpansionCandidate(decoded.success);
+  const next = await candidate("plugins/slack-api");
+  const definition = decodePluginOAuthProviderDefinition(
+    Schema.decodeUnknownSync(Schema.Json)(
+      JSON.parse(await readFile("plugins/slack-api/oauth-provider.json", "utf8")),
+    ),
+  );
+  if (Result.isFailure(definition) || previous.oauthProviderDefinition === undefined) {
+    throw new Error("slack-publication-oauth-definition-missing");
+  }
+  const database = await applicationDatabase();
+  try {
+    database.exec(
+      await readFile("fixtures/sql/phase1-0141-hosted-mcp-preregistered-oauth.sql", "utf8"),
+    );
+    for (const [provider, registrationId] of [
+      [previous.oauthProviderDefinition, decoded.success.runtime.providerRegistrationId],
+      [definition.success, "slack-web-api-oauth-v1"],
+    ] as const) {
+      const digest = await digestPluginOAuthProviderDefinition(provider);
+      admitProviderChainOAuthDefinition(database, provider, digest);
+      admitProviderChainEnvironmentRegistration(
+        database,
+        { providerRegistrationId: registrationId },
+        provider,
+        digest,
+      );
+    }
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+    expect(await adapter.stage(previous)).toEqual(Result.succeed(undefined));
+    expect(await adapter.finalize(previous)).toEqual(Result.succeed(undefined));
+    expect(await adapter.readPublished(previous)).toEqual(Result.succeed(true));
+    expect(await adapter.stage(next)).toEqual(Result.succeed(undefined));
+    database
+      .prepare(
+        "UPDATE plugin_artifacts SET status='available', verified_at=1 WHERE artifact_digest=?",
+      )
+      .run(next.artifactDigest);
+    expect(await adapter.finalize(next)).toEqual(Result.succeed(undefined));
+    expect(await adapter.readPublished(next)).toEqual(Result.succeed(true));
+    expect(await adapter.readPublished(previous)).toEqual(Result.succeed(true));
+    expect(
+      database.prepare("SELECT COUNT(*) AS count FROM plugin_definitions").get(),
+    ).toMatchObject({ count: 1 });
+    expect(
+      database
+        .prepare("SELECT COUNT(*) AS count FROM plugin_versions WHERE status='published'")
+        .get(),
+    ).toMatchObject({ count: 2 });
+  } finally {
+    database.close();
+  }
+});
+
 it("keeps the Gmail review stale and rehearses newly bound Workspace OAuth authority", async () => {
   const releaseRoot = await mkdtemp(path.join(os.tmpdir(), "gmail-release-publication-"));
   const database = await applicationDatabase();

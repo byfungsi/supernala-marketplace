@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "id": "slack",
   "publisher": "supernala",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "name": "Slack (Preview)",
-  "description": "Supernala's own MCP server for Slack Web API conversations, message and file search, profiles, messages, reactions, files, canvases and lists. User OAuth and agent approvals apply. Preview for pilot testing; Slack Marketplace approval remains pending.",
+  "description": "Preview for testing Slack MCP with an existing authorized workspace. Search messages, channels, files, canvases and lists. Slack Marketplace approval is pending; availability may be restricted by Slack.",
   "license": "MIT",
   "licenseEvidence": {
     "kind": "spdx-mit-full-text",

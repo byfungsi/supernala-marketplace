@@ -38,7 +38,7 @@ it("creates a validated 32-tool package with exact MCP catalog, OAuth and host a
   if (Result.isFailure(source)) throw source.failure;
   expect(source.success.manifest).toMatchObject({
     id: "slack",
-    version: "1.1.0",
+    version: "1.1.1",
     network: { allowedHosts: ["slack.com"] },
   });
   expect(source.success.catalog.tools).toHaveLength(32);
@@ -77,7 +77,7 @@ it("creates a validated 32-tool package with exact MCP catalog, OAuth and host a
   const prepared = await preparePluginPackage({
     source: source.success,
     marketplaceId: PluginMarketplaceId.make("supernala-public"),
-    versionId: PluginVersionId.make("supernala-public:supernala:slack@1.1.0"),
+    versionId: PluginVersionId.make("supernala-public:supernala:slack@1.1.1"),
     publishedAt: 1793340000000,
   });
   if (Result.isFailure(prepared)) throw prepared.failure;
