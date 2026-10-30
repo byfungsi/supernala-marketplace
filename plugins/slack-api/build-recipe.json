@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "source": "plugins/slack-api/source/server.mjs",
+  "output": "plugins/slack-api/dist/server.mjs",
+  "manifest": "plugins/slack-api/package-manifest.json",
+  "runtime": "node-22.x",
+  "runtimeDependencies": [],
+  "networkDuringBuild": false,
+  "lifecycleScripts": false,
+  "deterministicCopy": true,
+  "license": "MIT",
+  "licenseFile": "plugins/slack-api/LICENSE",
+  "noticeFile": "plugins/slack-api/NOTICE",
+  "preservedThirdPartyNotices": [],
+  "packageFiles": [
+    {
+      "source": "plugins/slack-api/package-manifest.json",
+      "destination": "plugin.json",
+      "sha256": "a6bd4676709f3f20cc39496483d73aeacf0d8d89a7df37524a9d67177f9f70a3"
+    },
+    {
+      "source": "plugins/slack-api/catalog.json",
+      "destination": "catalog.json",
+      "sha256": "542f6f738a447b03ade5d5c096d913f97e425760ad42cf2251a14c2d961d2008"
+    },
+    {
+      "source": "plugins/slack-api/config.json",
+      "destination": "config.json",
+      "sha256": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334"
+    },
+    {
+      "source": "plugins/slack-api/provenance.json",
+      "destination": "provenance.json",
+      "sha256": "14f0d71964823b04ddbee4c3846b9ea0f30ab6753fb4ce828969902ec40ff1fc"
+    },
+    {
+      "source": "plugins/slack-api/LICENSE",
+      "destination": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    {
+      "source": "plugins/slack-api/NOTICE",
+      "destination": "NOTICE",
+      "sha256": "bce139bef43dc08bed34661c1c44e2108a564cc82b21ce61ad05987106f85926"
+    },
+    {
+      "source": "plugins/slack-api/source/server.mjs",
+      "destination": "dist/server.mjs",
+      "sha256": "0e3de624282622e6133ae8405514694f2845e7d6a7dbb31c8f5e16e3ed305169"
+    },
+    {
+      "source": "plugins/slack-api/source/slack-web-api.mjs",
+      "destination": "dist/slack-web-api.mjs",
+      "sha256": "7cbdcc2ef20e0712748d562393b576e6e060b2403875a4d186523279871dd5c8"
+    },
+    {
+      "source": "plugins/slack-api/source/slack-tool-catalog.mjs",
+      "destination": "dist/slack-tool-catalog.mjs",
+      "sha256": "e421be651660b0e738def3f2ddf6e9da9716d3ba330fa2544abdc01674f50873"
+    }
+  ]
+}

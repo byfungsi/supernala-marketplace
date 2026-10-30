@@ -1,0 +1,44 @@
+{
+  "providerRegistration": "slack-web-api-oauth-v1",
+  "providerDefinition": {
+    "path": "oauth-provider.json",
+    "canonicalSha256": "61e8a1f31cfbf996d1928653e6290faa887c3e9d902290d90d037a8b4c5e1614"
+  },
+  "providerMetadata": {
+    "provider": "slack-web-api",
+    "resourceIdentity": "slack-web-api",
+    "registrationMode": "platform-pre-registered",
+    "source": "platform",
+    "approvedScopes": [
+      "canvases:read",
+      "canvases:write",
+      "channels:history",
+      "channels:read",
+      "channels:write",
+      "chat:write",
+      "emoji:read",
+      "files:read",
+      "files:write",
+      "groups:history",
+      "groups:read",
+      "groups:write",
+      "im:history",
+      "im:read",
+      "im:write",
+      "lists:read",
+      "lists:write",
+      "mpim:history",
+      "mpim:read",
+      "mpim:write",
+      "reactions:read",
+      "reactions:write",
+      "search:read",
+      "users:read"
+    ]
+  },
+  "deploymentClient": {
+    "clientIdBinding": "SLACK_CLIENT_ID",
+    "clientSecretBinding": "SLACK_CLIENT_SECRET",
+    "tokenEndpointAuthMethod": "client_secret_post"
+  }
+}

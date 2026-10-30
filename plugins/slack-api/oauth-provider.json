@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "protocol": "oauth2-authorization-code",
+  "issuer": "https://slack.com",
+  "provider": "slack-web-api",
+  "resourceIdentity": "slack-web-api",
+  "authorizationEndpoint": "https://slack.com/oauth/v2_user/authorize",
+  "tokenEndpoint": "https://slack.com/api/oauth.v2.user.access",
+  "tokenEndpointAuthMethod": "client_secret_post",
+  "authorizationResponseIssuer": "not-supported",
+  "pkce": {
+    "method": "S256"
+  },
+  "authorizationParameters": [],
+  "scopes": [
+    "canvases:read",
+    "canvases:write",
+    "channels:history",
+    "channels:read",
+    "channels:write",
+    "chat:write",
+    "emoji:read",
+    "files:read",
+    "files:write",
+    "groups:history",
+    "groups:read",
+    "groups:write",
+    "im:history",
+    "im:read",
+    "im:write",
+    "lists:read",
+    "lists:write",
+    "mpim:history",
+    "mpim:read",
+    "mpim:write",
+    "reactions:read",
+    "reactions:write",
+    "search:read",
+    "users:read"
+  ],
+  "account": {
+    "kind": "https-json",
+    "endpoint": "https://slack.com/api/auth.test",
+    "authorization": "bearer",
+    "subjectPath": ["user_id"],
+    "displayLabelPath": ["team"],
+    "subjectStability": "stable",
+    "maximumResponseBytes": 16384,
+    "maximumJsonDepth": 8,
+    "maximumObjectKeys": 100,
+    "maximumSubjectLength": 300,
+    "maximumDisplayLabelLength": 160
+  },
+  "tokens": {
+    "accessTokenType": "bearer",
+    "expiresIn": {
+      "required": true,
+      "minimumSeconds": 1,
+      "maximumSeconds": 43200
+    },
+    "grantedScopes": {
+      "whenPresent": "exact-match",
+      "whenOmitted": "requested-scopes",
+      "separator": ",",
+      "implicitScopes": ["identify"]
+    },
+    "initialRefreshToken": "required",
+    "refreshResponseToken": "retain-current-if-omitted"
+  },
+  "refresh": {
+    "kind": "standard-form-post",
+    "invalidGrant": "reauthorization-required",
+    "ambiguousOutcome": "fail-closed-no-replay"
+  },
+  "revocation": {
+    "kind": "none"
+  }
+}

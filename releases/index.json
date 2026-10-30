@@ -15,6 +15,12 @@
   ],
   "plugins": [
     {
+      "sourceDirectory": "plugins/slack-api",
+      "kind": "managed-package",
+      "publicationEligible": false,
+      "reason": "API-backed Slack MCP candidate; exact platform client admission, release approval and live OAuth/read acceptance remain required. Existing hosted-MCP publication is unchanged."
+    },
+    {
       "sourceDirectory": "plugins/openapi-inventory",
       "kind": "managed-openapi",
       "publicationEligible": false,

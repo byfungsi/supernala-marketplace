@@ -66,7 +66,7 @@ const digestJson = (value: Parameters<typeof canonicalPluginJson>[0]) =>
   digestPluginBytes(new TextEncoder().encode(canonicalPluginJson(value)));
 
 const createCliFixture = async (
-  authentication: "none" | "oauth" = "none",
+  authentication: "none" | "oauth" | "oauth-platform" = "none",
 ): Promise<{
   readonly root: string;
   readonly bundleDirectory: string;
@@ -78,14 +78,15 @@ const createCliFixture = async (
   await cp(path.join(repositoryRoot, "plugins", "offline-fixture"), sourceDirectory, {
     recursive: true,
   });
-  if (authentication === "oauth") {
+  if (authentication !== "none") {
+    const providerDirectory = authentication === "oauth" ? "gmail" : "slack-api";
     await Promise.all([
       cp(
-        path.join(repositoryRoot, "plugins", "gmail", "oauth-provider.json"),
+        path.join(repositoryRoot, "plugins", providerDirectory, "oauth-provider.json"),
         path.join(sourceDirectory, "oauth-provider.json"),
       ),
       cp(
-        path.join(repositoryRoot, "plugins", "gmail", "platform-bindings.json"),
+        path.join(repositoryRoot, "plugins", providerDirectory, "platform-bindings.json"),
         path.join(sourceDirectory, "platform-bindings.json"),
       ),
     ]);
@@ -97,14 +98,24 @@ const createCliFixture = async (
       `${JSON.stringify(
         {
           ...manifest,
-          authentication: {
-            kind: "oauth",
-            providerRegistration: "google-gmail-rest-v1",
-            providerDefinitionDigest:
-              "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
-            requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
-            credentialDelivery: "short-lived-access-token-only",
-          },
+          authentication:
+            authentication === "oauth-platform"
+              ? Schema.decodeUnknownSync(Schema.Struct({ authentication: Schema.JsonObject }))(
+                  JSON.parse(
+                    await readFile(
+                      path.join(repositoryRoot, "plugins/slack-api/package-manifest.json"),
+                      "utf8",
+                    ),
+                  ),
+                ).authentication
+              : {
+                  kind: "oauth",
+                  providerRegistration: "google-gmail-rest-v1",
+                  providerDefinitionDigest:
+                    "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
+                  requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+                  credentialDelivery: "short-lived-access-token-only",
+                },
         },
         null,
         2,
@@ -240,6 +251,25 @@ it("carries exact five-field OAuth authority through actual CLI build and dry-ru
       credentialDelivery: "short-lived-access-token-only",
     });
     const dryRun = await runReleaseCli(fixture.root, ["publish", "release-output", "--dry-run"]);
+    expect(JSON.parse(dryRun.stdout)).toEqual({ mode: "dry-run", writes: 0, bundles: 1 });
+  } finally {
+    await rm(fixture.root, { recursive: true });
+  }
+});
+
+it("builds and verifies a platform OAuth package through the actual release CLI without Workspace admission", async () => {
+  const fixture = await createCliFixture("oauth-platform");
+  try {
+    const build = await runReleaseCli(fixture.root, [
+      "build",
+      "baseline.json",
+      "release-output",
+      "a".repeat(40),
+      "1",
+    ]);
+    expect(build).toMatchObject({ exitCode: 0, stderr: "" });
+    const dryRun = await runReleaseCli(fixture.root, ["publish", "release-output", "--dry-run"]);
+    expect(dryRun).toMatchObject({ exitCode: 0, stderr: "" });
     expect(JSON.parse(dryRun.stdout)).toEqual({ mode: "dry-run", writes: 0, bundles: 1 });
   } finally {
     await rm(fixture.root, { recursive: true });
