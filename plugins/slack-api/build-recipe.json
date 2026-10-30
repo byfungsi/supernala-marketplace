@@ -56,7 +56,7 @@
     {
       "source": "plugins/slack-api/source/slack-tool-catalog.mjs",
       "destination": "dist/slack-tool-catalog.mjs",
-      "sha256": "e421be651660b0e738def3f2ddf6e9da9716d3ba330fa2544abdc01674f50873"
+      "sha256": "5aabb6719d4ee9b340c9d19743630ef95f3c570db6c5d71da76a3596746962dc"
     }
   ]
 }

@@ -157,6 +157,7 @@ it("retains pagination after local filtering, including an empty matching page",
   ).toEqual({
     limit: 100,
     exclude_archived: true,
+    types: "public_channel,private_channel",
     cursor: "previous",
   });
 });

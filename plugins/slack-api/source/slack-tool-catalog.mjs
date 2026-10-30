@@ -85,7 +85,7 @@ export const slackApiToolDefinitions = [
     ["channels", "response_metadata"],
     {
       localFilter: "channels",
-      defaults: { limit: 100, exclude_archived: true },
+      defaults: { limit: 100, exclude_archived: true, types: "public_channel,private_channel" },
       localFields: ["keywords"],
     },
   ),
@@ -97,7 +97,13 @@ export const slackApiToolDefinitions = [
     [],
     ["channels:read", "groups:read", "im:read", "mpim:read"],
     ["channels", "response_metadata"],
-    { defaults: { limit: 100, exclude_archived: true } },
+    {
+      defaults: {
+        limit: 100,
+        exclude_archived: true,
+        types: "public_channel,private_channel,im,mpim",
+      },
+    },
   ),
   tool(
     "slack_read_channel_info",
