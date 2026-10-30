@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "slack",
+  "publisher": "supernala",
+  "version": "1.1.0",
+  "name": "Slack (Preview)",
+  "description": "Supernala's own MCP server for Slack Web API conversations, message and file search, profiles, messages, reactions, files, canvases and lists. User OAuth and agent approvals apply. Preview for pilot testing; Slack Marketplace approval remains pending.",
+  "license": "MIT",
+  "licenseEvidence": {
+    "kind": "spdx-mit-full-text",
+    "license": {
+      "path": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    "notice": {
+      "path": "NOTICE",
+      "sha256": "bce139bef43dc08bed34661c1c44e2108a564cc82b21ce61ad05987106f85926"
+    }
+  },
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "catalog": {
+    "path": "catalog.json",
+    "sha256": "542f6f738a447b03ade5d5c096d913f97e425760ad42cf2251a14c2d961d2008"
+  },
+  "config": {
+    "path": "config.json",
+    "sha256": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334"
+  },
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "slack-web-api-oauth-v1",
+    "providerDefinitionDigest": "61e8a1f31cfbf996d1928653e6290faa887c3e9d902290d90d037a8b4c5e1614",
+    "requestedScopes": [
+      "canvases:read",
+      "canvases:write",
+      "channels:history",
+      "channels:read",
+      "channels:write",
+      "chat:write",
+      "emoji:read",
+      "files:read",
+      "files:write",
+      "groups:history",
+      "groups:read",
+      "groups:write",
+      "im:history",
+      "im:read",
+      "im:write",
+      "lists:read",
+      "lists:write",
+      "mpim:history",
+      "mpim:read",
+      "mpim:write",
+      "reactions:read",
+      "reactions:write",
+      "search:read",
+      "users:read"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "network": {
+    "allowedHosts": ["slack.com"]
+  },
+  "limits": {
+    "expandedBytes": 1048576,
+    "files": 20
+  },
+  "provenance": "provenance.json"
+}

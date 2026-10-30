@@ -43,10 +43,10 @@ import {
 } from "./remote-release-bundle.js";
 import { ReleaseSet } from "./release-set.js";
 import {
-  loadReviewedWorkspaceOAuthProviderAuthority,
   WorkspaceOAuthProviderAuthorityAdmission,
   type ReviewedWorkspaceOAuthProviderAuthority,
 } from "./workspace-oauth-provider-authority.js";
+import { loadReviewedPackagedOAuthProviderAuthority } from "./packaged-oauth-provider-authority.js";
 import {
   LocalReleaseCoordinator,
   ReleaseAttemptId,
@@ -537,15 +537,19 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
     if (loaded.releaseDigest !== bundle.releaseDigest || loaded.reviewId !== bundle.reviewId) {
       fail("release-set-candidate-mismatch");
     }
-    const oauthProviderAuthority =
+    const reviewedOAuthProvider =
       source.kind === "managed-package" && loaded.authentication.kind === "oauth"
         ? unwrap(
-            await loadReviewedWorkspaceOAuthProviderAuthority({
+            await loadReviewedPackagedOAuthProviderAuthority({
               sourceDirectory: source.path,
               authentication: loaded.authentication,
             }),
             (error) => error,
           )
+        : null;
+    const oauthProviderAuthority =
+      reviewedOAuthProvider?.kind === "workspace-oauth-app"
+        ? reviewedOAuthProvider.authority
         : null;
     verifiedBundles.push({ candidate: loaded, review: trustedReview, oauthProviderAuthority });
     verifiedSetEntries.push({

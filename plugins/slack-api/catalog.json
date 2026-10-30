@@ -1,0 +1,1179 @@
+{
+  "id": "slack-web-api-catalog-v1",
+  "schemaVersion": 1,
+  "tools": [
+    {
+      "id": "slack.slack_search_channels",
+      "mcpName": "slack_search_channels",
+      "title": "search channels",
+      "description": "Find accessible Slack channels by name on one page. Continue with next_cursor even when a filtered page is empty; this is not semantic search.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "keywords": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "types": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "exclude_archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_list_user_channels",
+      "mcpName": "slack_list_user_channels",
+      "title": "list user channels",
+      "description": "List one page of conversations the connected user belongs to. Follow response_metadata.next_cursor for more.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "types": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "exclude_archived": {
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_read_channel_info",
+      "mcpName": "slack_read_channel_info",
+      "title": "read channel info",
+      "description": "Read metadata for one Slack conversation ID.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          }
+        },
+        "required": ["channel_id"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_read_channel",
+      "mcpName": "slack_read_channel",
+      "title": "read channel",
+      "description": "Read at most 15 messages from one channel page. Unapproved commercial apps are limited to one request per minute per workspace for this method. Honor retryAfterSeconds; never loop past rate limits.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 15
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "oldest": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          },
+          "latest": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          },
+          "inclusive": {
+            "type": "boolean"
+          }
+        },
+        "required": ["channel_id"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_read_thread",
+      "mcpName": "slack_read_thread",
+      "title": "read thread",
+      "description": "Read at most 15 messages from one Slack thread page, including its root. This method has its own one-request-per-minute limit for unapproved commercial apps.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 15
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "oldest": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          },
+          "latest": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          },
+          "inclusive": {
+            "type": "boolean"
+          },
+          "message_ts": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          }
+        },
+        "required": ["channel_id", "message_ts"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_list_channel_members",
+      "mcpName": "slack_list_channel_members",
+      "title": "list channel members",
+      "description": "List one page of member IDs in a Slack conversation.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          }
+        },
+        "required": ["channel_id"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_search_messages",
+      "mcpName": "slack_search_messages",
+      "title": "search messages",
+      "description": "Search messages visible to the connected user using Slack query syntax such as in:channel after:2026-10-01. Returns one page; not an exhaustive channel history.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "sort": {
+            "type": "string",
+            "enum": ["score", "timestamp"]
+          },
+          "sort_dir": {
+            "type": "string",
+            "enum": ["asc", "desc"]
+          }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_search_files",
+      "mcpName": "slack_search_files",
+      "title": "search files",
+      "description": "Search file metadata visible to the connected user using Slack query syntax; returns one page without downloading file bytes.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_search_users",
+      "mcpName": "slack_search_users",
+      "title": "search users",
+      "description": "Find Slack users by name on one page. Continue using next_cursor even if this filtered page is empty.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "keywords": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_read_user_profile",
+      "mcpName": "slack_read_user_profile",
+      "title": "read user profile",
+      "description": "Read a user's Slack profile by encoded user ID.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "user_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[UW][A-Z0-9]+$"
+          },
+          "include_locale": {
+            "type": "boolean"
+          }
+        },
+        "required": ["user_id"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_search_emojis",
+      "mcpName": "slack_search_emojis",
+      "title": "search emojis",
+      "description": "Find workspace custom emoji by name; aliases remain aliases, and no image is fetched.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_send_message",
+      "mcpName": "slack_send_message",
+      "title": "send message",
+      "description": "Send a message as the connected Slack user. Confirm destination and content; this is a real external write. Unfurls are disabled.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40000
+          },
+          "thread_ts": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          },
+          "reply_broadcast": {
+            "type": "boolean"
+          }
+        },
+        "required": ["channel_id", "message"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_schedule_message",
+      "mcpName": "slack_schedule_message",
+      "title": "schedule message",
+      "description": "Schedule a real Slack message at post_at (Unix seconds). Reconcile an uncertain outcome before trying again.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40000
+          },
+          "thread_ts": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          },
+          "post_at": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 9999999999
+          },
+          "reply_broadcast": {
+            "type": "boolean"
+          }
+        },
+        "required": ["channel_id", "message", "post_at"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_update_message",
+      "mcpName": "slack_update_message",
+      "title": "update message",
+      "description": "Replace a message the connected user is allowed to edit; inspect its current content and confirm the replacement first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          },
+          "message_ts": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40000
+          }
+        },
+        "required": ["channel_id", "message_ts", "message"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_delete_message",
+      "mcpName": "slack_delete_message",
+      "title": "delete message",
+      "description": "Delete one Slack message the connected user is allowed to delete. This destructive action requires explicit authorization.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          },
+          "message_ts": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          }
+        },
+        "required": ["channel_id", "message_ts"],
+        "additionalProperties": false
+      },
+      "classification": "destructive",
+      "defaultPolicy": "block",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_create_channel",
+      "mcpName": "slack_create_channel",
+      "title": "create channel",
+      "description": "Create a public or private Slack channel with the connected user's authority.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[a-z0-9_-]+$"
+          },
+          "is_private": {
+            "type": "boolean"
+          }
+        },
+        "required": ["name"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_open_conversation",
+      "mcpName": "slack_open_conversation",
+      "title": "open conversation",
+      "description": "Open or resume a DM or group DM with the specified user IDs; does not send a message.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "users": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[UW][A-Z0-9]+$"
+            },
+            "minItems": 1,
+            "maxItems": 8
+          }
+        },
+        "required": ["users"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_add_reaction",
+      "mcpName": "slack_add_reaction",
+      "title": "add reaction",
+      "description": "Add an emoji reaction to a Slack message using an emoji name without colons.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          },
+          "message_ts": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          },
+          "emoji": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": ["channel_id", "message_ts", "emoji"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_remove_reaction",
+      "mcpName": "slack_remove_reaction",
+      "title": "remove reaction",
+      "description": "Remove the connected user's emoji reaction from one message.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          },
+          "message_ts": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          },
+          "emoji": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          }
+        },
+        "required": ["channel_id", "message_ts", "emoji"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_get_reactions",
+      "mcpName": "slack_get_reactions",
+      "title": "get reactions",
+      "description": "Read reactions on a Slack message.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          },
+          "message_ts": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          }
+        },
+        "required": ["channel_id", "message_ts"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_read_file",
+      "mcpName": "slack_read_file",
+      "title": "read file",
+      "description": "Read Slack file metadata and existing preview text. Does not download arbitrary URLs or attachment bytes.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^F[A-Z0-9]+$"
+          }
+        },
+        "required": ["file_id"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_get_file_upload_url",
+      "mcpName": "slack_get_file_upload_url",
+      "title": "get file upload url",
+      "description": "Reserve a Slack file upload. The returned upload URL is temporary and private; bytes must be uploaded before completion. This tool does not upload bytes.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "filename": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "content_length": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10485760
+          },
+          "alt_txt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "snippet_type": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          }
+        },
+        "required": ["filename", "content_length"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_complete_file_upload",
+      "mcpName": "slack_complete_file_upload",
+      "title": "complete file upload",
+      "description": "Finalize a file whose bytes have already been uploaded. Supplying channel_id shares it with that conversation; confirm the destination first.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "file_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^F[A-Z0-9]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "channel_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[CDG][A-Z0-9]+$"
+          },
+          "thread_ts": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32,
+            "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+          },
+          "initial_comment": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          }
+        },
+        "required": ["file_id"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_read_canvas",
+      "mcpName": "slack_read_canvas",
+      "title": "read canvas",
+      "description": "Read the connected user's authorized Slack canvas content. Availability depends on Slack plan and permissions.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "canvas_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^F[A-Z0-9]+$"
+          }
+        },
+        "required": ["canvas_id"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_create_canvas",
+      "mcpName": "slack_create_canvas",
+      "title": "create canvas",
+      "description": "Create a Slack canvas from Markdown. Requires a Slack plan with canvases and authorized write access.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60000
+          }
+        },
+        "required": ["title", "content"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_find_canvas_sections",
+      "mcpName": "slack_find_canvas_sections",
+      "title": "find canvas sections",
+      "description": "Find section IDs containing text in a Slack canvas before editing a section.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "canvas_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^F[A-Z0-9]+$"
+          },
+          "contains_text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        },
+        "required": ["canvas_id", "contains_text"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_update_canvas",
+      "mcpName": "slack_update_canvas",
+      "title": "update canvas",
+      "description": "Apply one Markdown canvas edit. Relative inserts and section replacement require section_id; replacing without it replaces the canvas. Confirm replacement content.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "canvas_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^F[A-Z0-9]+$"
+          },
+          "operation": {
+            "type": "string",
+            "enum": ["insert_at_start", "insert_at_end", "insert_before", "insert_after", "replace"]
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60000
+          },
+          "section_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
+        "required": ["canvas_id", "operation", "content"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_read_list",
+      "mcpName": "slack_read_list",
+      "title": "read list",
+      "description": "Read one page of Slack list rows together with its column schema. Use column IDs for record writes. Requires a paid Slack plan.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "cursor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "list_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^F[A-Z0-9]+$"
+          },
+          "archived": {
+            "type": "boolean"
+          }
+        },
+        "required": ["list_id"],
+        "additionalProperties": false
+      },
+      "classification": "read",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_create_list",
+      "mcpName": "slack_create_list",
+      "title": "create list",
+      "description": "Create a Slack list, optionally with explicit columns or task tracking fields. Requires a paid Slack plan.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["text", "number", "checkbox", "date", "user", "email", "phone", "link"]
+                },
+                "is_primary_column": {
+                  "type": "boolean"
+                }
+              },
+              "required": ["key", "name", "type"],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 30
+          },
+          "todo_mode": {
+            "type": "boolean"
+          }
+        },
+        "required": ["name"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_update_list",
+      "mcpName": "slack_update_list",
+      "title": "update list",
+      "description": "Update the name, description or task-tracking mode of a Slack list; does not delete columns.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^F[A-Z0-9]+$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "todo_mode": {
+            "type": "boolean"
+          }
+        },
+        "required": ["list_id"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_add_list_record",
+      "mcpName": "slack_add_list_record",
+      "title": "add list record",
+      "description": "Add one Slack list row using column IDs from slack_read_list. Each field must have exactly one value type; text is converted to Slack rich text.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^F[A-Z0-9]+$"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "column_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 10000
+                },
+                "number": {
+                  "type": "number"
+                },
+                "checkbox": {
+                  "type": "boolean"
+                },
+                "date": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10,
+                    "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                  },
+                  "minItems": 1,
+                  "maxItems": 10
+                },
+                "user": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80,
+                    "pattern": "^[UW][A-Z0-9]+$"
+                  },
+                  "minItems": 1,
+                  "maxItems": 20
+                },
+                "select": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "minItems": 1,
+                  "maxItems": 20
+                }
+              },
+              "required": ["column_id"],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 30
+          },
+          "parent_item_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          }
+        },
+        "required": ["list_id", "fields"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "slack.slack_update_list_record",
+      "mcpName": "slack_update_list_record",
+      "title": "update list record",
+      "description": "Update specified cells of one Slack list row. Use verified row and column IDs; each cell needs exactly one value type.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^F[A-Z0-9]+$"
+          },
+          "record_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "column_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 80
+                },
+                "text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 10000
+                },
+                "number": {
+                  "type": "number"
+                },
+                "checkbox": {
+                  "type": "boolean"
+                },
+                "date": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10,
+                    "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                  },
+                  "minItems": 1,
+                  "maxItems": 10
+                },
+                "user": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80,
+                    "pattern": "^[UW][A-Z0-9]+$"
+                  },
+                  "minItems": 1,
+                  "maxItems": 20
+                },
+                "select": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "minItems": 1,
+                  "maxItems": 20
+                }
+              },
+              "required": ["column_id"],
+              "additionalProperties": false
+            },
+            "minItems": 1,
+            "maxItems": 30
+          }
+        },
+        "required": ["list_id", "record_id", "fields"],
+        "additionalProperties": false
+      },
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    }
+  ]
+}

@@ -1,0 +1,2270 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "slack",
+    "semanticVersion": "1.1.0"
+  },
+  "reviewId": "slack-1.1.0-owner-authorized-api-mcp-pilot-20261030",
+  "reviewer": "Supernala Owner (independent review waived, not passed)",
+  "reviewedAt": 1793357402261,
+  "sourceInputDigest": "3c9808113e8cd3e11d7f992aa371f034690cbe48503b939b382e479cd0f09a8c",
+  "artifactDigest": "a01cc9cef4c2d77badd61f22f8e0d4399c0631c0c2f9e6b0661b2451305bf757",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "slack-web-api-oauth-v1",
+    "providerDefinitionDigest": "61e8a1f31cfbf996d1928653e6290faa887c3e9d902290d90d037a8b4c5e1614",
+    "requestedScopes": [
+      "canvases:read",
+      "canvases:write",
+      "channels:history",
+      "channels:read",
+      "channels:write",
+      "chat:write",
+      "emoji:read",
+      "files:read",
+      "files:write",
+      "groups:history",
+      "groups:read",
+      "groups:write",
+      "im:history",
+      "im:read",
+      "im:write",
+      "lists:read",
+      "lists:write",
+      "mpim:history",
+      "mpim:read",
+      "mpim:write",
+      "reactions:read",
+      "reactions:write",
+      "search:read",
+      "users:read"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "542f6f738a447b03ade5d5c096d913f97e425760ad42cf2251a14c2d961d2008",
+  "configDigest": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
+  "provenanceDigest": "d3d35fd3d93993149ca3e2dc248aede1d0773e850814b6179bcd3d7f7330fd20",
+  "authorityBeforeIdentity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "slack",
+    "semanticVersion": "1.0.0"
+  },
+  "authorityBeforeReleaseDigest": "4a5d4e77f1e05a19060035f509b3fab20a99958daf174e996ff38e468d9ca321",
+  "authorityBefore": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": [
+      "canvases:read",
+      "canvases:write",
+      "channels:history",
+      "channels:read",
+      "channels:write",
+      "chat:write",
+      "emoji:read",
+      "files:read",
+      "files:write",
+      "groups:history",
+      "groups:read",
+      "groups:write",
+      "im:history",
+      "im:read",
+      "im:write",
+      "lists:read",
+      "lists:write",
+      "mpim:history",
+      "mpim:read",
+      "mpim:write",
+      "reactions:read",
+      "reactions:write",
+      "search:read.files",
+      "search:read.im",
+      "search:read.mpim",
+      "search:read.private",
+      "search:read.public",
+      "search:read.users",
+      "users:read",
+      "users:read.email"
+    ],
+    "endpoint": "https://mcp.slack.com/mcp",
+    "endpointRegistrationId": "slack-mcp-v1",
+    "providerRegistrationId": "slack-app-oauth-v1",
+    "providerDefinitionDigest": "00e8d8e9c28c251aea42896f6db47c5cbd6a4796587bce2ca2261016307f89e0",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "slack-app-oauth-v1",
+      "providerDefinitionDigest": "00e8d8e9c28c251aea42896f6db47c5cbd6a4796587bce2ca2261016307f89e0",
+      "requestedScopes": [
+        "canvases:read",
+        "canvases:write",
+        "channels:history",
+        "channels:read",
+        "channels:write",
+        "chat:write",
+        "emoji:read",
+        "files:read",
+        "files:write",
+        "groups:history",
+        "groups:read",
+        "groups:write",
+        "im:history",
+        "im:read",
+        "im:write",
+        "lists:read",
+        "lists:write",
+        "mpim:history",
+        "mpim:read",
+        "mpim:write",
+        "reactions:read",
+        "reactions:write",
+        "search:read.files",
+        "search:read.im",
+        "search:read.mpim",
+        "search:read.private",
+        "search:read.public",
+        "search:read.users",
+        "users:read",
+        "users:read.email"
+      ],
+      "clientRegistration": {
+        "kind": "pre-registered"
+      },
+      "identity": {
+        "kind": "https-json",
+        "endpoint": "https://slack.com/api/auth.test",
+        "authorization": "bearer",
+        "subjectPaths": [["team_id"], ["user_id"]],
+        "displayLabelPath": ["team"],
+        "subjectStability": "stable",
+        "maximumResponseBytes": 65536,
+        "maximumJsonDepth": 8,
+        "maximumObjectKeys": 256
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "slack.slack_add_list_record",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "description": "Search all lists"
+            },
+            "columns": {
+              "type": "object",
+              "description": "Enter the data for each field"
+            }
+          },
+          "required": ["list_id", "columns"]
+        }
+      },
+      {
+        "id": "slack.slack_add_reaction",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "description": "The ID of the channel containing the message"
+            },
+            "message_ts": {
+              "type": "string",
+              "description": "Timestamp of the message to react to"
+            },
+            "emoji": {
+              "type": "string",
+              "description": "Reaction (emoji) name without colons"
+            }
+          },
+          "required": ["channel_id", "message_ts", "emoji"]
+        }
+      },
+      {
+        "id": "slack.slack_complete_file_upload",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file_id": {
+              "type": "string",
+              "description": "File ID returned by slack_get_file_upload_url (e.g., 'F0ABC12345')"
+            },
+            "title": {
+              "type": "string",
+              "description": "Display title for the file"
+            },
+            "channel_id": {
+              "type": "string",
+              "description": "Encoded channel ID to share the file in (e.g., 'C0ABC12345', or 'D0ABC12345' for a DM). Channel names and user IDs are not accepted"
+            },
+            "thread_ts": {
+              "type": "string",
+              "description": "Message timestamp to upload as a thread reply"
+            },
+            "initial_comment": {
+              "type": "string",
+              "description": "Message text to accompany the file when shared"
+            }
+          },
+          "required": ["file_id"]
+        }
+      },
+      {
+        "id": "slack.slack_create_canvas",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "description": "Concise but descriptive name for the canvas. Do not include the title in the content section."
+            },
+            "content": {
+              "type": "string",
+              "description": "The content of the canvas, formatted as Canvas-flavored Markdown.\n\nREQUIRED: Must be a non-empty string when updating canvas content. Only omit this field if you are updating ONLY the title.\n\nThe canvas content, formatted as Canvas-flavored Markdown.\n\nCanvas-flavored Markdown is different from Slack message formatting. When creating content for Canvases, adhere to the following Canvas-only rules:\n- The content should be formatted as standard Markdown, including headers, lists, links, checklists, tables, and other Markdown formatting.\n- When writing user IDs, you should format them as: `![](@U15CTCJ83)` where `U15CTCJ83` is the user\\'s Slack ID.\n- When user references are used in their own line, they will render as larger cards, if referenced inline they will render as special text.\n- When writing channel IDs, you should format them as: `![](#C15CTCJ83)` where `C15CTCJ83` is the channel\\'s Slack ID. Always use the channel\\'s ID, NEVER use the channel name.\n- NEVER output a channel as <#C1234567890> or a user as <@U1234567890>, even when part of a text quote, instead use the format above.\n- Links should be formatted as: `[link text](https://example.com)`. Do not surround the link in angle brackets.\n- IMPORTANT: Only use these URL schemes in links: `http://`, `https://`, `mailto:`, `tel:`, `ftp://`, `slack://`, or relative paths starting with `/`. Other schemes like `javascript:`, `data:`, `file:` will be automatically removed from the canvas.\n- For intra-canvas anchor links (e.g. a table of contents linking to sections within the same canvas), use the canvas URL with a `focus_section_id` query parameter: `[Section Title](https://<workspace>.slack.com/docs/<team_id>/<file_id>?focus_section_id=<section_id>)`. The section_id values come from the section_id_mapping. Fragment-only anchors like `[text](#heading)` are not supported and will be stripped.\n- Images should be formatted as: `![alt text](https://example.com/image.png)`\n- Salesforce records should be formatted as: `![](ssr:<org_id>/<record_id>)` where `<org_id>` is the Salesforce org ID and `<record_id>` is the Salesforce record ID, the org ID and record ID should be the full IDs which would be 18 characters long. Example: `![](ssr:70Dj038B0WJ0ACNCSD/X01j50VP066SCCIPDJ)`\n- Salesforce records syntax must appear only in a top-level, stand-alone line. Salesforce records are not supported in other elements\n- Quoted text should be formatted as: `> This is quoted text`, but you should only use quotes on their own line.\n- Slack-style emojis are supported, e.g. :tada: or :wave:\n- Use only ATX headings `#`, `##`, `###`. NEVER use deeper headings `####`-`######`.\n- Do not place headings inside list items.\n- In list items, allow only paragraphs with inline formatting.\n- Thematic breaks (---, ***, ___) are only allowed at the top level.\n- When nesting lists, do not mix list types:\n  - Numbered lists can only contain nested numbered lists, and cannot contain nested bulleted lists\n  - Bulleted lists can only contain nested bulleted lists, and cannot contain nested numbered lists\n- Code blocks are not allowed inside list items.\n- In table cells, <br> can be used for multi-line content, e.g. 'line one<br>line two', and markdown escape sequences (e.g., `\\>`, `\\*`, `\\-`, `\\#`) MUST be preserved exactly as written.\n- The title provided through the `title` field will be used as the title of the canvas. Do not include the title in the content section.\n\n<example1>\n# Headers\n# Status\n:large_green_circle: On Track\n# Goal\nThe channel to coordinate the build, testing, and launch of Platypus\n# :people_hugging:Stakeholders\n![](@U071CCRCVFH)\n\n![](@UQSSGHV0Q)\n# :books:Resources\n* Project Plan\n* Google Drive\n# :slack:Related channels\n* ![](#C073UAJRW4R) - Project Channel\n* ![](#C084UBTRX4J) - [GTM Channel](https://gtm.wiki.com)\n</example1>\n<example2>\n|Message|User Author|\n|---|---|\n|[Here is the python guide](https://team.slack.com/archives/C016VCYCL74/p1727122965001469)|![](@U071CCRCVFH)|\n|[The Java guide isn\\'t ready](https://team.slack.com/archives/C016VCYCL74/p1727122965001469)|![](@UQSSGHV0Q)|\\n\\n\n# Python Guide\\n\n## Step 1\\n\n```python\nprint(\"Hello, world!\")\n```\\n\\n\n</example2>\n\n- When a layout is requested use the ::: {.layout} as the starting delimiter and ::: as the ending delimiter of the full layout. Then each column should be wrapped in ::: {.column} as the starting delimiter and ::: as the ending delimiter. There can only be up to 3 columns in a layout and tables and callouts are not supported in layouts or columns.\n- Callouts should be formatted with ::: {.callout} as the starting delimiter and ::: as the ending delimiter in markdown. Use them to highlight important information, such as warnings, important prerequisites, and notices.\n- Do not use tables within callouts and callouts cannot be nested within other elements.\n<example_markdown_with_callout>\n::: {.callout}\nThis is a callout\n:::\n</example_markdown_with_callout>\n- Block quotes support the following content: plain text paragraphs with inline formatting, headings, lists, and code blocks.\n- In block quotes, do not use any of the following: dividers, images, cards, callouts, column, tables, or blockquotes (no nested blockquotes).\n- In tables, block quotes are supported, but block quotes in tables ONLY support plain text paragraphs and inline formatting.\n\n\nCRITICAL RESTRICTIONS - Canvas Nesting Rules (MUST FOLLOW):\n- In list items, ONLY use: plain text paragraphs with inline formatting (bold, italic, inline `code`, links).\n- Code blocks, block quotes, and headings must always be separated from lists by blank lines.\n- In layouts no tables or callouts are supported.- Blockquotes are allowed in callouts or columns.\n- Non-blockquote layouts are not supported in tables or callouts.\n<example_correct_usage>\n- Item with inline `code` formatting\n- Item with **bold** text and [links](https://example.com)\n</example_correct_usage>\n\n<example_blocks_and_quotes_outside_lists>\n```\ncode block at top level\n```\n\n- List item one\n- List item two\n\n> Block quote at top level\n\n### Heading at top level\n</example_blocks_and_quotes_outside_lists>\n\n\nWHEN CITING SOURCES:\n- When your content references information from web search results or other sources, you MUST include inline citation links using the [[N]](url) format throughout the content, exactly as you would in a chat response.\n- Place citations inline next to the claims they support, e.g. \"Shaidorov won gold [[7]](https://en.wikipedia.org/wiki/...)\"\n- Do NOT collapse all sources into a single \"Source:\" line at the bottom. Each fact should be cited where it appears.\n- The citation links will be automatically enriched with page titles for readability.\n- Format date headings and key dates (including due dates, deadlines, milestones) as ![](slack_date:YYYY-MM-DD) ONLY. Never append day names or date text.\n\n## Examples of appropriate usage of date formatting in your output:\nCorrect usage:\n<example_date_heading_correct>\n## ![](slack_date:2025-12-16)\n</example_date_heading_correct>\n\nIncorrect usage (has day name and date text):\n<example_date_heading_incorrect>\n## ![](slack_date:2025-12-16) December 16th - Monday\n</example_date_heading_incorrect>- User Profile Cards: To display a user's profile card as a standalone section (not inline), use the format ![](@user_id) where user_id is the Slack user ID. CRITICAL: Use parentheses () around @user_id, NOT angle brackets <>. Example: ![](@U0TDAU873). Profile cards should be on their own line and will render as larger cards with user information.\n## Examples of appropriate usage of user profile cards in your output:\nCorrect usage (standalone profile card on its own line):\n<example_user_profile_card_correct>\n# Team Members\n![](@U0TDAU873)\n\n![](@U12345678)\n</example_user_profile_card_correct>- Slack Files: ONLY for files with URLs matching *.slack.com/files/*, ALWAYS embed using ![](file_reference). For standalone display (card): place on its own line. For inline reference (clickable text): embed directly in paragraph like \"The ![](https://example.slack.com/files/U123/F456/doc.pdf) contains...\". Do not use this syntax for non-Slack files."
+            }
+          },
+          "required": ["title", "content"]
+        }
+      },
+      {
+        "id": "slack.slack_create_conversation",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "user_ids": {
+              "type": "array",
+              "description": "User IDs. For DM/MPDM (no channel_name): 1=DM, 2-8=group DM. For channel creation: users to invite (up to 1000).",
+              "items": {
+                "type": "string"
+              }
+            },
+            "channel_name": {
+              "type": "string",
+              "description": "Name for the new channel. If provided, creates a channel instead of a DM/MPDM. Lowercase, no spaces (use hyphens), max 80 chars."
+            },
+            "is_private": {
+              "type": "boolean",
+              "description": "If true, creates a private channel. Only used with channel_name. Default: false."
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "id": "slack.slack_create_list",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the list (required)."
+            },
+            "description": {
+              "type": "string",
+              "description": "Optional description of the list."
+            },
+            "columns": {
+              "type": "array",
+              "description": "Optional list of column definitions. The first text column becomes the primary column; if none is provided a \"Task\" text column is prepended as primary. Column order is preserved.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Column display name (required)."
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Column type (required).",
+                    "enum": [
+                      "text",
+                      "rich_text",
+                      "number",
+                      "currency",
+                      "rating",
+                      "select",
+                      "multi_select",
+                      "date",
+                      "user",
+                      "checkbox",
+                      "email",
+                      "phone",
+                      "channel",
+                      "attachment"
+                    ]
+                  },
+                  "options": {
+                    "type": "object",
+                    "description": "Required for select/multi_select columns: the allowed choices. Accepts a list of strings, a list of {label,value,color} objects, or an object with a \"choices\" key."
+                  }
+                },
+                "required": ["name", "type"]
+              }
+            }
+          },
+          "required": ["name"]
+        }
+      },
+      {
+        "id": "slack.slack_get_file_upload_url",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "filename": {
+              "type": "string",
+              "description": "Name of the file being uploaded (e.g., 'report.pdf')"
+            },
+            "content_length": {
+              "type": "integer",
+              "description": "Exact size of the file in bytes (minimum 1)"
+            },
+            "snippet_type": {
+              "type": "string",
+              "description": "Programming language for code snippets (e.g., 'python', 'javascript')"
+            },
+            "alt_txt": {
+              "type": "string",
+              "description": "Alt text description for image accessibility (max 1000 chars)"
+            }
+          },
+          "required": ["filename", "content_length"]
+        }
+      },
+      {
+        "id": "slack.slack_get_reactions",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "description": "The ID of the channel containing the message"
+            },
+            "message_ts": {
+              "type": "string",
+              "description": "Timestamp of the message to get reactions for"
+            }
+          },
+          "required": ["channel_id", "message_ts"]
+        }
+      },
+      {
+        "id": "slack.slack_list_channel_members",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "description": "ID of the channel to list members from"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Number of members to return per page (default: 30, max: 30)"
+            },
+            "cursor": {
+              "type": "string",
+              "description": "Pagination cursor from previous response"
+            },
+            "response_format": {
+              "type": "string",
+              "description": "Level of detail (default: 'detailed'). Options: 'detailed', 'concise', 'ids_only'",
+              "enum": ["detailed", "concise", "ids_only"]
+            },
+            "include_deleted": {
+              "type": "boolean",
+              "description": "Include deleted/deactivated users in the member list (default: false)"
+            },
+            "include_bots": {
+              "type": "boolean",
+              "description": "Include bots and apps in the member list (default: false)"
+            }
+          },
+          "required": ["channel_id"]
+        }
+      },
+      {
+        "id": "slack.slack_list_user_channels",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "types": {
+              "type": "string",
+              "description": "Comma-separated list of channel types to include. Valid values: public_channel, private_channel, mpim, im. Default: \"public_channel,private_channel\" (DMs and Group DMs are excluded unless explicitly listed)."
+            },
+            "name_prefix": {
+              "type": "string",
+              "description": "Filter channels whose name starts with this string (case-insensitive)"
+            },
+            "exclude_archived": {
+              "type": "boolean",
+              "description": "Exclude archived channels (default: false)"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Max channels to return (default: 50, max: 200)"
+            },
+            "cursor": {
+              "type": "string",
+              "description": "Pagination cursor from previous response. Ignored when name_prefix is provided, because prefix filtering scans multiple internal pages and cannot resume from a single cursor."
+            },
+            "format": {
+              "type": "string",
+              "description": "Output format: 'full' (default, all details), 'ids_only' (just channel IDs), or 'names_only' (just channel names)"
+            },
+            "team_id": {
+              "type": "string",
+              "description": "Encoded workspace ID (e.g. \"T012AB3C4\") to list channels from. On a multi-workspace org, channel memberships are per-workspace; without this, results come from the user's default workspace only."
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "id": "slack.slack_read_canvas",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "description": "The id of the canvas"
+            }
+          },
+          "required": ["canvas_id"]
+        }
+      },
+      {
+        "id": "slack.slack_read_channel",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "description": "ID of the Channel, private group, or IM channel to fetch history for. Can also be a user_id to read DM history."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Number of messages to return, between 1 and 100. Default value is 100."
+            },
+            "cursor": {
+              "type": "string",
+              "description": "Paginate through collections of data by setting the cursor parameter to a next_cursor attribute returned by a previous request"
+            },
+            "latest": {
+              "type": "string",
+              "description": "End of time range of messages to include in results (timestamp)"
+            },
+            "oldest": {
+              "type": "string",
+              "description": "Start of time range of messages to include in results (timestamp)"
+            },
+            "response_format": {
+              "type": "string",
+              "description": "Level of detail: 'detailed' (default, includes reactions + thread info) or 'concise'."
+            }
+          },
+          "required": ["channel_id"]
+        }
+      },
+      {
+        "id": "slack.slack_read_file",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file_id": {
+              "type": "string",
+              "description": "The encoded Slack file ID to read (e.g., 'F0ABC12345')"
+            }
+          },
+          "required": ["file_id"]
+        }
+      },
+      {
+        "id": "slack.slack_read_list",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "description": "The id of the list"
+            },
+            "list_title": {
+              "type": "string",
+              "description": "The title of the list"
+            },
+            "format": {
+              "type": "string",
+              "description": "Output format: 'markdown' (default) or 'csv'",
+              "enum": ["markdown", "csv"]
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Maximum number of records to return. Default: 100"
+            },
+            "cursor": {
+              "type": "string",
+              "description": "Pagination cursor returned by a previous call as `next_cursor`. An opaque token — pass it back verbatim; do not construct or modify it. Omit to read from the first record."
+            },
+            "schema_only": {
+              "type": "boolean",
+              "description": "When true, return only the column schema (names and types) without fetching any records. Default: false"
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "id": "slack.slack_read_thread",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "description": "Channel, private group, or IM channel to fetch thread replies for"
+            },
+            "message_ts": {
+              "type": "string",
+              "description": "Timestamp of the parent message (e.g. \"1234567890.123456\"). Must be a string in Slack ts format with a decimal point."
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Number of messages to return, between 1 and 1000. Default value is 100."
+            },
+            "cursor": {
+              "type": "string",
+              "description": "Paginate through collections of data by setting the cursor parameter to a next_cursor attribute returned by a previous request"
+            },
+            "latest": {
+              "type": "string",
+              "description": "End of time range of messages to include in results. Slack ts format string (e.g. \"1234567890.123456\")."
+            },
+            "oldest": {
+              "type": "string",
+              "description": "Start of time range of messages to include in results. Slack ts format string (e.g. \"1234567890.123456\")."
+            },
+            "response_format": {
+              "type": "string",
+              "description": "Level of detail: 'detailed' (default, includes reactions + thread info) or 'concise'."
+            }
+          },
+          "required": ["channel_id", "message_ts"]
+        }
+      },
+      {
+        "id": "slack.slack_read_user_profile",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "description": "Slack user ID to look up (e.g., 'U0ABC12345'). Defaults to current user if not provided"
+            },
+            "include_locale": {
+              "type": "boolean",
+              "description": "Include user's locale information. Default: false"
+            },
+            "response_format": {
+              "type": "string",
+              "description": "Level of detail in response. 'detailed' includes all fields, 'concise' shows essential info. Default: detailed'",
+              "enum": ["detailed", "concise"]
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "id": "slack.slack_schedule_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "description": "Channel where message will be scheduled"
+            },
+            "message": {
+              "type": "string",
+              "description": "Message content to schedule"
+            },
+            "post_at": {
+              "type": "integer",
+              "description": "Unix timestamp when message should be sent (2 min future minimum, 120 days max)"
+            },
+            "thread_ts": {
+              "type": "string",
+              "description": "Message timestamp to reply to (for thread replies)"
+            },
+            "reply_broadcast": {
+              "type": "boolean",
+              "description": "Broadcast thread reply to channel"
+            }
+          },
+          "required": ["channel_id", "message", "post_at"]
+        }
+      },
+      {
+        "id": "slack.slack_search_channels",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_types": {
+              "type": "string",
+              "description": "Comma-separated list of channel types to include in the search. Defaults to public_channel. Mix and match channel types by providing a comma-separated list of any combination of public_channel, private_channel. Example: public_channel,private_channel; Second Example: public_channel"
+            },
+            "cursor": {
+              "type": "string",
+              "description": "The cursor returned by the API. Omit this parameter for the first request, and use this to get the next page of results"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Number of results to return, up to a max of 20. Defaults to 20."
+            },
+            "response_format": {
+              "type": "string",
+              "description": "Level of detail (default: 'detailed'). Options: 'detailed', 'concise'",
+              "enum": ["detailed", "concise"]
+            },
+            "include_archived": {
+              "type": "boolean",
+              "description": "Include archived channels in the search results"
+            },
+            "keywords": {
+              "type": "array",
+              "description": "Array of lexical search terms. Each element MUST be a single word (no spaces) OR an exact phrase in quotes. All elements are AND'd (every element must match). Use the author test: only include words the author would naturally write.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "natural_language_query": {
+              "type": "string",
+              "description": "The user's question restated in conversational tone. Used for semantic reranking. Do not include filter-like content (people, channels, dates) — those belong in filters. Pass an empty string when the query is purely structural (only filters, no semantic question)."
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "id": "slack.slack_search_emojis",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Search emoji names by case-insensitive substring match. Supports comma-separated terms (e.g., \"party,wave,rocket\")."
+            }
+          },
+          "required": ["query"]
+        }
+      },
+      {
+        "id": "slack.slack_search_public",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "content_types": {
+              "type": "string",
+              "description": "Content types to include, a comma-separated list of any combination of messages, files. Here's more info about the content types: messages: Slack messages from public channels accessible to the acting user\nfiles: Files of all types accessible to the acting user\n"
+            },
+            "context_channel_id": {
+              "type": "string",
+              "description": "Context channel ID to support boosting the search results for a channel when applicable"
+            },
+            "cursor": {
+              "type": "string",
+              "description": "The cursor returned by the API. Omit this parameter for the first request, and use this to get the next page of results"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Number of results to return, up to a max of 20. Defaults to 20."
+            },
+            "after": {
+              "type": "string",
+              "description": "Only messages after this Unix timestamp (inclusive)"
+            },
+            "before": {
+              "type": "string",
+              "description": "Only messages before this Unix timestamp (inclusive)"
+            },
+            "include_bots": {
+              "type": "boolean",
+              "description": "Include bot messages (default: false)"
+            },
+            "sort": {
+              "type": "string",
+              "description": "Sort order: 'score' (relevance, default) or 'timestamp' (newest first unless sort_dir is 'asc').",
+              "enum": ["score", "timestamp"]
+            },
+            "sort_dir": {
+              "type": "string",
+              "description": "Sort direction (default: 'desc'). Options: 'asc', 'desc'",
+              "enum": ["asc", "desc"]
+            },
+            "response_format": {
+              "type": "string",
+              "description": "Level of detail (default: 'detailed'). Options: 'detailed', 'concise'",
+              "enum": ["detailed", "concise"]
+            },
+            "include_context": {
+              "type": "boolean",
+              "description": "Include surrounding context messages for each result (default: true). Ignored when response_format is 'concise', which never shows context. Set to false to reduce response size."
+            },
+            "max_context_length": {
+              "type": "integer",
+              "description": "Max character length for each context message. Longer messages are truncated."
+            },
+            "only_my_channels": {
+              "type": "boolean",
+              "description": "Limit results to public channels the user is a member of. Set to true when the user asks to search only their own or joined channels. Default: false."
+            },
+            "keywords": {
+              "type": "array",
+              "description": "Array of lexical search terms. Each element MUST be a single word (no spaces) OR an exact phrase in quotes. All elements are AND'd (every element must match). Use the author test: only include words the author would naturally write.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "filters": {
+              "type": "string",
+              "description": "Slack search modifiers (e.g., 'from:<@U123> in:<#C456> after:2025-01-01'). Use for people, channels, dates, and content type constraints."
+            },
+            "natural_language_query": {
+              "type": "string",
+              "description": "The user's question restated in conversational tone. Used for semantic reranking. Do not include filter-like content (people, channels, dates) — those belong in filters. Pass an empty string when the query is purely structural (only filters, no semantic question)."
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "id": "slack.slack_search_public_and_private",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_types": {
+              "type": "string",
+              "description": "Comma-separated list of channel types to include in the search. Defaults to 'public_channel,private_channel,mpim,im' (all channel types including private channels, group DMs, and DMs). Mix and match channel types by providing a comma-separated list of any combination of `public_channel`, `private_channel`, `mpim`, `im`"
+            },
+            "content_types": {
+              "type": "string",
+              "description": "Content types to include, a comma-separated list of any combination of messages, files. Here's more info about the content types: messages: Slack messages from channels accessible to the acting user\nfiles: Files of all types accessible to the acting user\n"
+            },
+            "context_channel_id": {
+              "type": "string",
+              "description": "Context channel ID to support boosting the search results for a channel when applicable"
+            },
+            "cursor": {
+              "type": "string",
+              "description": "The cursor returned by the API. Omit this parameter for the first request, and use this to get the next page of results"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Number of results to return, up to a max of 20. Defaults to 20."
+            },
+            "after": {
+              "type": "string",
+              "description": "Only messages after this Unix timestamp (inclusive)"
+            },
+            "before": {
+              "type": "string",
+              "description": "Only messages before this Unix timestamp (inclusive)"
+            },
+            "include_bots": {
+              "type": "boolean",
+              "description": "Include bot messages (default: false)"
+            },
+            "sort": {
+              "type": "string",
+              "description": "Sort order: 'score' (relevance, default) or 'timestamp' (newest first unless sort_dir is 'asc').",
+              "enum": ["score", "timestamp"]
+            },
+            "sort_dir": {
+              "type": "string",
+              "description": "Sort direction (default: 'desc'). Options: 'asc', 'desc'",
+              "enum": ["asc", "desc"]
+            },
+            "response_format": {
+              "type": "string",
+              "description": "Level of detail (default: 'detailed'). Options: 'detailed', 'concise'",
+              "enum": ["detailed", "concise"]
+            },
+            "include_context": {
+              "type": "boolean",
+              "description": "Include surrounding context messages for each result (default: true). Ignored when response_format is 'concise', which never shows context. Set to false to reduce response size."
+            },
+            "max_context_length": {
+              "type": "integer",
+              "description": "Max character length for each context message. Longer messages are truncated."
+            },
+            "only_my_channels": {
+              "type": "boolean",
+              "description": "Limit results to channels the user is a member of. Set to true when the user asks to search only their own or joined channels. Default: false."
+            },
+            "keywords": {
+              "type": "array",
+              "description": "Array of lexical search terms. Each element MUST be a single word (no spaces) OR an exact phrase in quotes. All elements are AND'd (every element must match). Use the author test: only include words the author would naturally write.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "filters": {
+              "type": "string",
+              "description": "Slack search modifiers (e.g., 'from:<@U123> in:<#C456> after:2025-01-01'). Use for people, channels, dates, and content type constraints."
+            },
+            "natural_language_query": {
+              "type": "string",
+              "description": "The user's question restated in conversational tone. Used for semantic reranking. Do not include filter-like content (people, channels, dates) — those belong in filters. Pass an empty string when the query is purely structural (only filters, no semantic question)."
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "id": "slack.slack_search_users",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "cursor": {
+              "type": "string",
+              "description": "The cursor returned by the API. Omit this parameter for the first request, and use this to get the next page of results"
+            },
+            "limit": {
+              "type": "integer",
+              "description": "Number of results to return, up to a max of 20. Defaults to 20."
+            },
+            "response_format": {
+              "type": "string",
+              "description": "Level of detail (default: 'detailed'). Options: 'detailed', 'concise'",
+              "enum": ["detailed", "concise"]
+            },
+            "keywords": {
+              "type": "array",
+              "description": "Array of lexical search terms. Each element MUST be a single word (no spaces) OR an exact phrase in quotes. All elements are AND'd (every element must match). Use the author test: only include words the author would naturally write.",
+              "items": {
+                "type": "string"
+              }
+            },
+            "natural_language_query": {
+              "type": "string",
+              "description": "The user's question restated in conversational tone. Used for semantic reranking. Do not include filter-like content (people, channels, dates) — those belong in filters. Pass an empty string when the query is purely structural (only filters, no semantic question)."
+            }
+          },
+          "required": []
+        }
+      },
+      {
+        "id": "slack.slack_send_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "description": "Search all channels"
+            },
+            "message": {
+              "type": "string",
+              "description": "Add a message"
+            },
+            "thread_ts": {
+              "type": "string",
+              "description": "Provide another message's ts value to make this message a reply"
+            },
+            "reply_broadcast": {
+              "type": "boolean",
+              "description": "Also send to conversation"
+            },
+            "draft_id": {
+              "type": "string",
+              "description": "ID of the draft to delete after sending"
+            },
+            "unfurl_app_links": {
+              "type": "boolean",
+              "description": "Set to true to enable link previews from installed apps (e.g. GitHub, Jira) in the message"
+            }
+          },
+          "required": ["channel_id", "message"]
+        }
+      },
+      {
+        "id": "slack.slack_send_message_draft",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "description": "Channel to create draft in"
+            },
+            "message": {
+              "type": "string",
+              "description": "The message content in standard markdown"
+            },
+            "thread_ts": {
+              "type": "string",
+              "description": "Timestamp of the parent message to create a draft reply in a thread"
+            }
+          },
+          "required": ["channel_id", "message"]
+        }
+      },
+      {
+        "id": "slack.slack_update_canvas",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "description": "ID of the canvas to update (e.g., \"F1234567890\")"
+            },
+            "sections": {
+              "type": "array",
+              "description": "Preferred: array of edit operations applied atomically against a single document snapshot. Max 100 operations. Use this for any update with one or more edits.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "edit_type": {
+                    "type": "string",
+                    "description": "The type of edit operation to perform on the section.",
+                    "enum": ["append", "prepend", "replace", "delete"]
+                  },
+                  "section_id": {
+                    "type": "string",
+                    "description": "Target section ID from slack_read_canvas."
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "Markdown content for this operation. Not needed for delete.\n\nREQUIRED: Must be a non-empty string when updating canvas content. Only omit this field if you are updating ONLY the title.\n\nThe canvas content, formatted as Canvas-flavored Markdown.\n\nCanvas-flavored Markdown is different from Slack message formatting. When creating content for Canvases, adhere to the following Canvas-only rules:\n- The content should be formatted as standard Markdown, including headers, lists, links, checklists, tables, and other Markdown formatting.\n- When writing user IDs, you should format them as: `![](@U15CTCJ83)` where `U15CTCJ83` is the user\\'s Slack ID.\n- When user references are used in their own line, they will render as larger cards, if referenced inline they will render as special text.\n- When writing channel IDs, you should format them as: `![](#C15CTCJ83)` where `C15CTCJ83` is the channel\\'s Slack ID. Always use the channel\\'s ID, NEVER use the channel name.\n- NEVER output a channel as <#C1234567890> or a user as <@U1234567890>, even when part of a text quote, instead use the format above.\n- Links should be formatted as: `[link text](https://example.com)`. Do not surround the link in angle brackets.\n- IMPORTANT: Only use these URL schemes in links: `http://`, `https://`, `mailto:`, `tel:`, `ftp://`, `slack://`, or relative paths starting with `/`. Other schemes like `javascript:`, `data:`, `file:` will be automatically removed from the canvas.\n- For intra-canvas anchor links (e.g. a table of contents linking to sections within the same canvas), use the canvas URL with a `focus_section_id` query parameter: `[Section Title](https://<workspace>.slack.com/docs/<team_id>/<file_id>?focus_section_id=<section_id>)`. The section_id values come from the section_id_mapping. Fragment-only anchors like `[text](#heading)` are not supported and will be stripped.\n- Images should be formatted as: `![alt text](https://example.com/image.png)`\n- Salesforce records should be formatted as: `![](ssr:<org_id>/<record_id>)` where `<org_id>` is the Salesforce org ID and `<record_id>` is the Salesforce record ID, the org ID and record ID should be the full IDs which would be 18 characters long. Example: `![](ssr:70Dj038B0WJ0ACNCSD/X01j50VP066SCCIPDJ)`\n- Salesforce records syntax must appear only in a top-level, stand-alone line. Salesforce records are not supported in other elements\n- Quoted text should be formatted as: `> This is quoted text`, but you should only use quotes on their own line.\n- Slack-style emojis are supported, e.g. :tada: or :wave:\n- Use only ATX headings `#`, `##`, `###`. NEVER use deeper headings `####`-`######`.\n- Do not place headings inside list items.\n- In list items, allow only paragraphs with inline formatting.\n- Thematic breaks (---, ***, ___) are only allowed at the top level.\n- When nesting lists, do not mix list types:\n  - Numbered lists can only contain nested numbered lists, and cannot contain nested bulleted lists\n  - Bulleted lists can only contain nested bulleted lists, and cannot contain nested numbered lists\n- Code blocks are not allowed inside list items.\n- In table cells, <br> can be used for multi-line content, e.g. 'line one<br>line two', and markdown escape sequences (e.g., `\\>`, `\\*`, `\\-`, `\\#`) MUST be preserved exactly as written.\n- The title provided through the `title` field will be used as the title of the canvas. Do not include the title in the content section.\n\n<example1>\n# Headers\n# Status\n:large_green_circle: On Track\n# Goal\nThe channel to coordinate the build, testing, and launch of Platypus\n# :people_hugging:Stakeholders\n![](@U071CCRCVFH)\n\n![](@UQSSGHV0Q)\n# :books:Resources\n* Project Plan\n* Google Drive\n# :slack:Related channels\n* ![](#C073UAJRW4R) - Project Channel\n* ![](#C084UBTRX4J) - [GTM Channel](https://gtm.wiki.com)\n</example1>\n<example2>\n|Message|User Author|\n|---|---|\n|[Here is the python guide](https://team.slack.com/archives/C016VCYCL74/p1727122965001469)|![](@U071CCRCVFH)|\n|[The Java guide isn\\'t ready](https://team.slack.com/archives/C016VCYCL74/p1727122965001469)|![](@UQSSGHV0Q)|\\n\\n\n# Python Guide\\n\n## Step 1\\n\n```python\nprint(\"Hello, world!\")\n```\\n\\n\n</example2>\n\n- When a layout is requested use the ::: {.layout} as the starting delimiter and ::: as the ending delimiter of the full layout. Then each column should be wrapped in ::: {.column} as the starting delimiter and ::: as the ending delimiter. There can only be up to 3 columns in a layout and tables and callouts are not supported in layouts or columns.\n- Callouts should be formatted with ::: {.callout} as the starting delimiter and ::: as the ending delimiter in markdown. Use them to highlight important information, such as warnings, important prerequisites, and notices.\n- Do not use tables within callouts and callouts cannot be nested within other elements.\n<example_markdown_with_callout>\n::: {.callout}\nThis is a callout\n:::\n</example_markdown_with_callout>\n- Block quotes support the following content: plain text paragraphs with inline formatting, headings, lists, and code blocks.\n- In block quotes, do not use any of the following: dividers, images, cards, callouts, column, tables, or blockquotes (no nested blockquotes).\n- In tables, block quotes are supported, but block quotes in tables ONLY support plain text paragraphs and inline formatting.\n\n\nCRITICAL RESTRICTIONS - Canvas Nesting Rules (MUST FOLLOW):\n- In list items, ONLY use: plain text paragraphs with inline formatting (bold, italic, inline `code`, links).\n- Code blocks, block quotes, and headings must always be separated from lists by blank lines.\n- In layouts no tables or callouts are supported.- Blockquotes are allowed in callouts or columns.\n- Non-blockquote layouts are not supported in tables or callouts.\n<example_correct_usage>\n- Item with inline `code` formatting\n- Item with **bold** text and [links](https://example.com)\n</example_correct_usage>\n\n<example_blocks_and_quotes_outside_lists>\n```\ncode block at top level\n```\n\n- List item one\n- List item two\n\n> Block quote at top level\n\n### Heading at top level\n</example_blocks_and_quotes_outside_lists>\n\n\nWHEN CITING SOURCES:\n- When your content references information from web search results or other sources, you MUST include inline citation links using the [[N]](url) format throughout the content, exactly as you would in a chat response.\n- Place citations inline next to the claims they support, e.g. \"Shaidorov won gold [[7]](https://en.wikipedia.org/wiki/...)\"\n- Do NOT collapse all sources into a single \"Source:\" line at the bottom. Each fact should be cited where it appears.\n- The citation links will be automatically enriched with page titles for readability.\n- Format date headings and key dates (including due dates, deadlines, milestones) as ![](slack_date:YYYY-MM-DD) ONLY. Never append day names or date text.\n\n## Examples of appropriate usage of date formatting in your output:\nCorrect usage:\n<example_date_heading_correct>\n## ![](slack_date:2025-12-16)\n</example_date_heading_correct>\n\nIncorrect usage (has day name and date text):\n<example_date_heading_incorrect>\n## ![](slack_date:2025-12-16) December 16th - Monday\n</example_date_heading_incorrect>- User Profile Cards: To display a user's profile card as a standalone section (not inline), use the format ![](@user_id) where user_id is the Slack user ID. CRITICAL: Use parentheses () around @user_id, NOT angle brackets <>. Example: ![](@U0TDAU873). Profile cards should be on their own line and will render as larger cards with user information.\n## Examples of appropriate usage of user profile cards in your output:\nCorrect usage (standalone profile card on its own line):\n<example_user_profile_card_correct>\n# Team Members\n![](@U0TDAU873)\n\n![](@U12345678)\n</example_user_profile_card_correct>- Slack Files: ONLY for files with URLs matching *.slack.com/files/*, ALWAYS embed using ![](file_reference). For standalone display (card): place on its own line. For inline reference (clickable text): embed directly in paragraph like \"The ![](https://example.slack.com/files/U123/F456/doc.pdf) contains...\". Do not use this syntax for non-Slack files."
+                  }
+                },
+                "required": ["edit_type"]
+              }
+            },
+            "action": {
+              "type": "string",
+              "description": "Legacy single-edit type. Prefer `sections`. One of append, prepend, replace.",
+              "enum": ["append", "prepend", "replace"]
+            },
+            "content": {
+              "type": "string",
+              "description": "Legacy single-edit markdown content. Prefer `sections`."
+            },
+            "section_id": {
+              "type": "string",
+              "description": "Legacy single-edit target section ID from slack_read_canvas. Prefer `sections`."
+            }
+          },
+          "required": ["canvas_id"]
+        }
+      },
+      {
+        "id": "slack.slack_update_list",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "description": "The ID of the list to update (e.g., 'F0ABC123')."
+            },
+            "name": {
+              "type": "string",
+              "description": "New name for the list."
+            },
+            "description": {
+              "type": "string",
+              "description": "New description for the list."
+            },
+            "icon": {
+              "type": "string",
+              "description": "New icon emoji (e.g., ':rocket:')."
+            },
+            "columns_to_add": {
+              "type": "array",
+              "description": "Columns to add to the list.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "Column display name (required)."
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "Column type (required).",
+                    "enum": [
+                      "text",
+                      "rich_text",
+                      "message",
+                      "link",
+                      "number",
+                      "date",
+                      "user",
+                      "attachment",
+                      "checkbox",
+                      "email",
+                      "phone",
+                      "channel",
+                      "rating",
+                      "created_by",
+                      "last_edited_by",
+                      "created_time",
+                      "last_edited_time",
+                      "vote",
+                      "assignee",
+                      "due_date",
+                      "completed",
+                      "select",
+                      "multi_select"
+                    ]
+                  },
+                  "options": {
+                    "type": "object",
+                    "description": "For select/multi_select columns: an object with a \"choices\" array of {value, label, color} objects. Ignored for other types."
+                  }
+                },
+                "required": ["name", "type"]
+              }
+            },
+            "columns_to_update": {
+              "type": "array",
+              "description": "Columns to update. Address each column by its key from slack_read_list schema_only, NOT its display name.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "The column's key (required)."
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "New display name."
+                  },
+                  "type": {
+                    "type": "string",
+                    "description": "New column type.",
+                    "enum": [
+                      "text",
+                      "rich_text",
+                      "message",
+                      "link",
+                      "number",
+                      "date",
+                      "user",
+                      "attachment",
+                      "checkbox",
+                      "email",
+                      "phone",
+                      "channel",
+                      "rating",
+                      "created_by",
+                      "last_edited_by",
+                      "created_time",
+                      "last_edited_time",
+                      "vote",
+                      "assignee",
+                      "due_date",
+                      "completed",
+                      "select",
+                      "multi_select"
+                    ]
+                  },
+                  "options": {
+                    "type": "object",
+                    "description": "For select/multi_select columns: an object with a \"choices\" array of {value, label, color} objects. Ignored for other types."
+                  }
+                },
+                "required": ["key"]
+              }
+            },
+            "columns_to_delete": {
+              "type": "array",
+              "description": "Columns to delete. Address each column by its key from slack_read_list schema_only, NOT its display name.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "description": "The column's key (required)."
+                  }
+                },
+                "required": ["key"]
+              }
+            }
+          },
+          "required": ["list_id"]
+        }
+      },
+      {
+        "id": "slack.slack_update_list_record",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "description": "The ID of the list containing the record (required)."
+            },
+            "record_id": {
+              "type": "string",
+              "description": "The ID of the record (row) to update (required)."
+            },
+            "updated_columns": {
+              "type": "object",
+              "description": "Key-value pairs mapping column display names or column keys to new values (required). Only the provided columns are changed."
+            }
+          },
+          "required": ["list_id", "record_id", "updated_columns"]
+        }
+      }
+    ],
+    "allowedHosts": ["mcp.slack.com"],
+    "config": []
+  },
+  "authorityBeforeDigest": "73ff0735c4fa700b8a352c88be2c1c9dbe1d3406a0cbacc50e4abf6ac4f1eeae",
+  "authorityAfter": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "oauth",
+    "requestedScopes": [
+      "canvases:read",
+      "canvases:write",
+      "channels:history",
+      "channels:read",
+      "channels:write",
+      "chat:write",
+      "emoji:read",
+      "files:read",
+      "files:write",
+      "groups:history",
+      "groups:read",
+      "groups:write",
+      "im:history",
+      "im:read",
+      "im:write",
+      "lists:read",
+      "lists:write",
+      "mpim:history",
+      "mpim:read",
+      "mpim:write",
+      "reactions:read",
+      "reactions:write",
+      "search:read",
+      "users:read"
+    ],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "slack-web-api-oauth-v1",
+    "providerDefinitionDigest": "61e8a1f31cfbf996d1928653e6290faa887c3e9d902290d90d037a8b4c5e1614",
+    "tools": [
+      {
+        "id": "slack.slack_search_channels",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "keywords": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "types": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "exclude_archived": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_list_user_channels",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "types": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "exclude_archived": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_channel_info",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            }
+          },
+          "required": ["channel_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_channel",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "oldest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "latest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "inclusive": {
+              "type": "boolean"
+            }
+          },
+          "required": ["channel_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_thread",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "oldest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "latest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "inclusive": {
+              "type": "boolean"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            }
+          },
+          "required": ["channel_id", "message_ts"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_list_channel_members",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            }
+          },
+          "required": ["channel_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_messages",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "sort": {
+              "type": "string",
+              "enum": ["score", "timestamp"]
+            },
+            "sort_dir": {
+              "type": "string",
+              "enum": ["asc", "desc"]
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_files",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_users",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "keywords": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_user_profile",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[UW][A-Z0-9]+$"
+            },
+            "include_locale": {
+              "type": "boolean"
+            }
+          },
+          "required": ["user_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_emojis",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_send_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40000
+            },
+            "thread_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "reply_broadcast": {
+              "type": "boolean"
+            }
+          },
+          "required": ["channel_id", "message"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_schedule_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40000
+            },
+            "thread_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "post_at": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9999999999
+            },
+            "reply_broadcast": {
+              "type": "boolean"
+            }
+          },
+          "required": ["channel_id", "message", "post_at"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40000
+            }
+          },
+          "required": ["channel_id", "message_ts", "message"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_delete_message",
+        "classification": "destructive",
+        "defaultPolicy": "block",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            }
+          },
+          "required": ["channel_id", "message_ts"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_create_channel",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9_-]+$"
+            },
+            "is_private": {
+              "type": "boolean"
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_open_conversation",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "users": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[UW][A-Z0-9]+$"
+              },
+              "minItems": 1,
+              "maxItems": 8
+            }
+          },
+          "required": ["users"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_add_reaction",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "emoji": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": ["channel_id", "message_ts", "emoji"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_remove_reaction",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "emoji": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": ["channel_id", "message_ts", "emoji"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_get_reactions",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            }
+          },
+          "required": ["channel_id", "message_ts"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_file",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            }
+          },
+          "required": ["file_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_get_file_upload_url",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "filename": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "content_length": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10485760
+            },
+            "alt_txt": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "snippet_type": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50
+            }
+          },
+          "required": ["filename", "content_length"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_complete_file_upload",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "thread_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "initial_comment": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": ["file_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_canvas",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            }
+          },
+          "required": ["canvas_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_create_canvas",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "content": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60000
+            }
+          },
+          "required": ["title", "content"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_find_canvas_sections",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "contains_text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": ["canvas_id", "contains_text"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_canvas",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "operation": {
+              "type": "string",
+              "enum": [
+                "insert_at_start",
+                "insert_at_end",
+                "insert_before",
+                "insert_after",
+                "replace"
+              ]
+            },
+            "content": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60000
+            },
+            "section_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": ["canvas_id", "operation", "content"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_list",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "archived": {
+              "type": "boolean"
+            }
+          },
+          "required": ["list_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_create_list",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["text", "number", "checkbox", "date", "user", "email", "phone", "link"]
+                  },
+                  "is_primary_column": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["key", "name", "type"],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 30
+            },
+            "todo_mode": {
+              "type": "boolean"
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_list",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "todo_mode": {
+              "type": "boolean"
+            }
+          },
+          "required": ["list_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_add_list_record",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "column_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  },
+                  "number": {
+                    "type": "number"
+                  },
+                  "checkbox": {
+                    "type": "boolean"
+                  },
+                  "date": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 10,
+                      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 10
+                  },
+                  "user": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80,
+                      "pattern": "^[UW][A-Z0-9]+$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  },
+                  "select": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": ["column_id"],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 30
+            },
+            "parent_item_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          },
+          "required": ["list_id", "fields"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_list_record",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "record_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "column_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  },
+                  "number": {
+                    "type": "number"
+                  },
+                  "checkbox": {
+                    "type": "boolean"
+                  },
+                  "date": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 10,
+                      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 10
+                  },
+                  "user": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80,
+                      "pattern": "^[UW][A-Z0-9]+$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  },
+                  "select": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": ["column_id"],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 30
+            }
+          },
+          "required": ["list_id", "record_id", "fields"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["slack.com"],
+    "config": []
+  },
+  "authorityDigest": "c6cc1ec1e5b1ef8327d89d39096567d7b965911e73cef941dfe5a49c23d01f98",
+  "authorityDiffDigest": "b493115398804ebf236efcd4f87d79b035ec60eac48d24e14b6269c4fc93ee29",
+  "releaseDigest": "e40b546fd52445d257932e6dd86e999897e3181b8d0c5f218b396cb4db182c8b",
+  "decision": "approved"
+}

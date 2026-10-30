@@ -54,12 +54,25 @@ it("labels the owner-authorized Slack preview without claiming directory approva
   expect(Result.isSuccess(parsed)).toBe(true);
   expect(source.name).toBe("Slack (Preview)");
   expect(source.description).toContain("approval is pending");
-  const index = JSON.parse(await readFile("releases/index.json", "utf8"));
+  const index = Schema.decodeUnknownSync(
+    Schema.Struct({
+      plugins: Schema.Array(
+        Schema.Struct({
+          sourceDirectory: Schema.String,
+          publicationEligible: Schema.Boolean,
+        }),
+      ),
+    }),
+  )(JSON.parse(await readFile("releases/index.json", "utf8")));
   expect(
     index.plugins.find(
       (entry: { readonly sourceDirectory: string }) =>
         entry.sourceDirectory === "plugins/remotes/slack.json",
     )?.publicationEligible,
+  ).toBe(false);
+  expect(
+    index.plugins.find((entry) => entry.sourceDirectory === "plugins/slack-api")
+      ?.publicationEligible,
   ).toBe(true);
 });
 

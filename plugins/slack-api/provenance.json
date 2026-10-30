@@ -1,0 +1,23 @@
+{
+  "source": {
+    "type": "first-party",
+    "path": "plugins/slack-api/source/server.mjs",
+    "upstream": null
+  },
+  "build": {
+    "recipe": "plugins/slack-api/build-recipe.json",
+    "runtimeDependencies": [],
+    "networkDuringBuild": false
+  },
+  "license": {
+    "spdx": "MIT",
+    "status": "approved-first-party-source",
+    "file": "plugins/slack-api/LICENSE",
+    "notice": "plugins/slack-api/NOTICE",
+    "copyright": "Copyright (c) 2026 Supernala contributors"
+  },
+  "publication": {
+    "eligible": true,
+    "reason": "Owner authorized Slack API MCP pilot publication on 2026-10-30; independent review waived, not passed; exact client admission and live acceptance remain required"
+  }
+}
