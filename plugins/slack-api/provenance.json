@@ -17,7 +17,7 @@
     "copyright": "Copyright (c) 2026 Supernala contributors"
   },
   "publication": {
-    "eligible": false,
-    "reason": "API-backed MCP candidate; exact OAuth client admission, publication approval and live user acceptance remain required"
+    "eligible": true,
+    "reason": "Owner authorized Slack API MCP pilot publication on 2026-10-30; independent review waived, not passed; exact client admission and live acceptance remain required"
   }
 }

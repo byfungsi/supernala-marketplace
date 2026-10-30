@@ -31,7 +31,7 @@
     {
       "source": "plugins/slack-api/provenance.json",
       "destination": "provenance.json",
-      "sha256": "14f0d71964823b04ddbee4c3846b9ea0f30ab6753fb4ce828969902ec40ff1fc"
+      "sha256": "51631f1715d70e0801a98ea68e41c6291661c501bf93384b27da7e81cbdc9461"
     },
     {
       "source": "plugins/slack-api/LICENSE",

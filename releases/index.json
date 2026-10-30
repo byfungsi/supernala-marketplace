@@ -17,8 +17,8 @@
     {
       "sourceDirectory": "plugins/slack-api",
       "kind": "managed-package",
-      "publicationEligible": false,
-      "reason": "API-backed Slack MCP candidate; exact platform client admission, release approval and live OAuth/read acceptance remain required. Existing hosted-MCP publication is unchanged."
+      "publicationEligible": true,
+      "reason": "Owner authorized Slack 1.1.0 API-backed MCP pilot publication on 2026-10-30; independent review waived, not passed. Exact deployed client admission and trusted publication/readback remain required."
     },
     {
       "sourceDirectory": "plugins/openapi-inventory",
@@ -131,8 +131,8 @@
     {
       "sourceDirectory": "plugins/remotes/slack.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": true,
-      "reason": "Owner explicitly authorized a Slack preview listing for testing with the existing authorized workspace before Slack Marketplace approval. Independent review waived, not passed; no Slack directory approval or general-workspace availability is claimed. Exact deployed client custody and trusted publication/readback are required."
+      "publicationEligible": false,
+      "reason": "Superseded as the release source by the owner-authorized Slack 1.1.0 API-backed MCP package. Existing hosted-MCP installations remain published and pinned; this does not revoke connections."
     }
   ]
 }

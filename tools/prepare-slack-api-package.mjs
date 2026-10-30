@@ -138,9 +138,9 @@ await writeJson("provenance.json", {
     copyright: "Copyright (c) 2026 Supernala contributors",
   },
   publication: {
-    eligible: false,
+    eligible: true,
     reason:
-      "API-backed MCP candidate; exact OAuth client admission, publication approval and live user acceptance remain required",
+      "Owner authorized Slack API MCP pilot publication on 2026-10-30; independent review waived, not passed; exact client admission and live acceptance remain required",
   },
 });
 const licenseDigest = sha256(await readFile(new URL("LICENSE", directory)));
