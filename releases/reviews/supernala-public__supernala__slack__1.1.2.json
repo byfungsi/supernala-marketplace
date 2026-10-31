@@ -1,0 +1,2239 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "slack",
+    "semanticVersion": "1.1.2"
+  },
+  "reviewId": "slack-1.1.2-read-parameter-patch-20261030",
+  "reviewer": "Supernala Owner (independent review waived, not passed)",
+  "reviewedAt": 1793377479713,
+  "sourceInputDigest": "47842b341da8964a348a3e8a09bcf530067519683213c9b9ea2620ca17124d4a",
+  "artifactDigest": "3a0aa7160bbbc94882dd5d256e687b63b95f36437b901d36f74f0dc4152b5612",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "slack-web-api-oauth-v1",
+    "providerDefinitionDigest": "61e8a1f31cfbf996d1928653e6290faa887c3e9d902290d90d037a8b4c5e1614",
+    "requestedScopes": [
+      "canvases:read",
+      "canvases:write",
+      "channels:history",
+      "channels:read",
+      "channels:write",
+      "chat:write",
+      "emoji:read",
+      "files:read",
+      "files:write",
+      "groups:history",
+      "groups:read",
+      "groups:write",
+      "im:history",
+      "im:read",
+      "im:write",
+      "lists:read",
+      "lists:write",
+      "mpim:history",
+      "mpim:read",
+      "mpim:write",
+      "reactions:read",
+      "reactions:write",
+      "search:read",
+      "users:read"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "542f6f738a447b03ade5d5c096d913f97e425760ad42cf2251a14c2d961d2008",
+  "configDigest": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
+  "provenanceDigest": "d3d35fd3d93993149ca3e2dc248aede1d0773e850814b6179bcd3d7f7330fd20",
+  "authorityBeforeIdentity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "slack",
+    "semanticVersion": "1.1.1"
+  },
+  "authorityBeforeReleaseDigest": "2add5a27885ec47321d2f060eac791b2f3fd6bb35f9bc40df2b99148a4cfafb9",
+  "authorityBefore": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "oauth",
+    "requestedScopes": [
+      "canvases:read",
+      "canvases:write",
+      "channels:history",
+      "channels:read",
+      "channels:write",
+      "chat:write",
+      "emoji:read",
+      "files:read",
+      "files:write",
+      "groups:history",
+      "groups:read",
+      "groups:write",
+      "im:history",
+      "im:read",
+      "im:write",
+      "lists:read",
+      "lists:write",
+      "mpim:history",
+      "mpim:read",
+      "mpim:write",
+      "reactions:read",
+      "reactions:write",
+      "search:read",
+      "users:read"
+    ],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "slack-web-api-oauth-v1",
+    "providerDefinitionDigest": "61e8a1f31cfbf996d1928653e6290faa887c3e9d902290d90d037a8b4c5e1614",
+    "tools": [
+      {
+        "id": "slack.slack_search_channels",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "keywords": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "types": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "exclude_archived": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_list_user_channels",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "types": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "exclude_archived": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_channel_info",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            }
+          },
+          "required": ["channel_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_channel",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "oldest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "latest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "inclusive": {
+              "type": "boolean"
+            }
+          },
+          "required": ["channel_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_thread",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "oldest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "latest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "inclusive": {
+              "type": "boolean"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            }
+          },
+          "required": ["channel_id", "message_ts"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_list_channel_members",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            }
+          },
+          "required": ["channel_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_messages",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "sort": {
+              "type": "string",
+              "enum": ["score", "timestamp"]
+            },
+            "sort_dir": {
+              "type": "string",
+              "enum": ["asc", "desc"]
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_files",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_users",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "keywords": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_user_profile",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[UW][A-Z0-9]+$"
+            },
+            "include_locale": {
+              "type": "boolean"
+            }
+          },
+          "required": ["user_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_emojis",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_send_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40000
+            },
+            "thread_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "reply_broadcast": {
+              "type": "boolean"
+            }
+          },
+          "required": ["channel_id", "message"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_schedule_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40000
+            },
+            "thread_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "post_at": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9999999999
+            },
+            "reply_broadcast": {
+              "type": "boolean"
+            }
+          },
+          "required": ["channel_id", "message", "post_at"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40000
+            }
+          },
+          "required": ["channel_id", "message_ts", "message"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_delete_message",
+        "classification": "destructive",
+        "defaultPolicy": "block",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            }
+          },
+          "required": ["channel_id", "message_ts"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_create_channel",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9_-]+$"
+            },
+            "is_private": {
+              "type": "boolean"
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_open_conversation",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "users": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[UW][A-Z0-9]+$"
+              },
+              "minItems": 1,
+              "maxItems": 8
+            }
+          },
+          "required": ["users"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_add_reaction",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "emoji": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": ["channel_id", "message_ts", "emoji"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_remove_reaction",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "emoji": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": ["channel_id", "message_ts", "emoji"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_get_reactions",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            }
+          },
+          "required": ["channel_id", "message_ts"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_file",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            }
+          },
+          "required": ["file_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_get_file_upload_url",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "filename": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "content_length": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10485760
+            },
+            "alt_txt": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "snippet_type": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50
+            }
+          },
+          "required": ["filename", "content_length"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_complete_file_upload",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "thread_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "initial_comment": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": ["file_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_canvas",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            }
+          },
+          "required": ["canvas_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_create_canvas",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "content": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60000
+            }
+          },
+          "required": ["title", "content"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_find_canvas_sections",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "contains_text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": ["canvas_id", "contains_text"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_canvas",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "operation": {
+              "type": "string",
+              "enum": [
+                "insert_at_start",
+                "insert_at_end",
+                "insert_before",
+                "insert_after",
+                "replace"
+              ]
+            },
+            "content": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60000
+            },
+            "section_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": ["canvas_id", "operation", "content"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_list",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "archived": {
+              "type": "boolean"
+            }
+          },
+          "required": ["list_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_create_list",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["text", "number", "checkbox", "date", "user", "email", "phone", "link"]
+                  },
+                  "is_primary_column": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["key", "name", "type"],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 30
+            },
+            "todo_mode": {
+              "type": "boolean"
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_list",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "todo_mode": {
+              "type": "boolean"
+            }
+          },
+          "required": ["list_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_add_list_record",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "column_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  },
+                  "number": {
+                    "type": "number"
+                  },
+                  "checkbox": {
+                    "type": "boolean"
+                  },
+                  "date": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 10,
+                      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 10
+                  },
+                  "user": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80,
+                      "pattern": "^[UW][A-Z0-9]+$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  },
+                  "select": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": ["column_id"],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 30
+            },
+            "parent_item_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          },
+          "required": ["list_id", "fields"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_list_record",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "record_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "column_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  },
+                  "number": {
+                    "type": "number"
+                  },
+                  "checkbox": {
+                    "type": "boolean"
+                  },
+                  "date": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 10,
+                      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 10
+                  },
+                  "user": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80,
+                      "pattern": "^[UW][A-Z0-9]+$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  },
+                  "select": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": ["column_id"],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 30
+            }
+          },
+          "required": ["list_id", "record_id", "fields"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["slack.com"],
+    "config": []
+  },
+  "authorityBeforeDigest": "c6cc1ec1e5b1ef8327d89d39096567d7b965911e73cef941dfe5a49c23d01f98",
+  "authorityAfter": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "oauth",
+    "requestedScopes": [
+      "canvases:read",
+      "canvases:write",
+      "channels:history",
+      "channels:read",
+      "channels:write",
+      "chat:write",
+      "emoji:read",
+      "files:read",
+      "files:write",
+      "groups:history",
+      "groups:read",
+      "groups:write",
+      "im:history",
+      "im:read",
+      "im:write",
+      "lists:read",
+      "lists:write",
+      "mpim:history",
+      "mpim:read",
+      "mpim:write",
+      "reactions:read",
+      "reactions:write",
+      "search:read",
+      "users:read"
+    ],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "slack-web-api-oauth-v1",
+    "providerDefinitionDigest": "61e8a1f31cfbf996d1928653e6290faa887c3e9d902290d90d037a8b4c5e1614",
+    "tools": [
+      {
+        "id": "slack.slack_search_channels",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "keywords": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "types": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "exclude_archived": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_list_user_channels",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "types": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "exclude_archived": {
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_channel_info",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            }
+          },
+          "required": ["channel_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_channel",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "oldest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "latest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "inclusive": {
+              "type": "boolean"
+            }
+          },
+          "required": ["channel_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_thread",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 15
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "oldest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "latest": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "inclusive": {
+              "type": "boolean"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            }
+          },
+          "required": ["channel_id", "message_ts"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_list_channel_members",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            }
+          },
+          "required": ["channel_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_messages",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "sort": {
+              "type": "string",
+              "enum": ["score", "timestamp"]
+            },
+            "sort_dir": {
+              "type": "string",
+              "enum": ["asc", "desc"]
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_files",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_users",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "keywords": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_user_profile",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "user_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[UW][A-Z0-9]+$"
+            },
+            "include_locale": {
+              "type": "boolean"
+            }
+          },
+          "required": ["user_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_search_emojis",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_send_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40000
+            },
+            "thread_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "reply_broadcast": {
+              "type": "boolean"
+            }
+          },
+          "required": ["channel_id", "message"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_schedule_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40000
+            },
+            "thread_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "post_at": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9999999999
+            },
+            "reply_broadcast": {
+              "type": "boolean"
+            }
+          },
+          "required": ["channel_id", "message", "post_at"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40000
+            }
+          },
+          "required": ["channel_id", "message_ts", "message"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_delete_message",
+        "classification": "destructive",
+        "defaultPolicy": "block",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            }
+          },
+          "required": ["channel_id", "message_ts"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_create_channel",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[a-z0-9_-]+$"
+            },
+            "is_private": {
+              "type": "boolean"
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_open_conversation",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "users": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80,
+                "pattern": "^[UW][A-Z0-9]+$"
+              },
+              "minItems": 1,
+              "maxItems": 8
+            }
+          },
+          "required": ["users"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_add_reaction",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "emoji": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": ["channel_id", "message_ts", "emoji"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_remove_reaction",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "emoji": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            }
+          },
+          "required": ["channel_id", "message_ts", "emoji"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_get_reactions",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "message_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            }
+          },
+          "required": ["channel_id", "message_ts"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_file",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            }
+          },
+          "required": ["file_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_get_file_upload_url",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "filename": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "content_length": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 10485760
+            },
+            "alt_txt": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "snippet_type": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 50
+            }
+          },
+          "required": ["filename", "content_length"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_complete_file_upload",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "file_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "channel_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^[CDG][A-Z0-9]+$"
+            },
+            "thread_ts": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32,
+              "pattern": "^[0-9]{1,20}\\.[0-9]{1,10}$"
+            },
+            "initial_comment": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 4000
+            }
+          },
+          "required": ["file_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_canvas",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            }
+          },
+          "required": ["canvas_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_create_canvas",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "content": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60000
+            }
+          },
+          "required": ["title", "content"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_find_canvas_sections",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "contains_text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            }
+          },
+          "required": ["canvas_id", "contains_text"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_canvas",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "canvas_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "operation": {
+              "type": "string",
+              "enum": [
+                "insert_at_start",
+                "insert_at_end",
+                "insert_before",
+                "insert_after",
+                "replace"
+              ]
+            },
+            "content": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 60000
+            },
+            "section_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "required": ["canvas_id", "operation", "content"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_read_list",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "cursor": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "archived": {
+              "type": "boolean"
+            }
+          },
+          "required": ["list_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_create_list",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "columns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["text", "number", "checkbox", "date", "user", "email", "phone", "link"]
+                  },
+                  "is_primary_column": {
+                    "type": "boolean"
+                  }
+                },
+                "required": ["key", "name", "type"],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 30
+            },
+            "todo_mode": {
+              "type": "boolean"
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_list",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "description": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "todo_mode": {
+              "type": "boolean"
+            }
+          },
+          "required": ["list_id"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_add_list_record",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "column_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  },
+                  "number": {
+                    "type": "number"
+                  },
+                  "checkbox": {
+                    "type": "boolean"
+                  },
+                  "date": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 10,
+                      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 10
+                  },
+                  "user": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80,
+                      "pattern": "^[UW][A-Z0-9]+$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  },
+                  "select": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": ["column_id"],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 30
+            },
+            "parent_item_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            }
+          },
+          "required": ["list_id", "fields"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "slack.slack_update_list_record",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "list_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80,
+              "pattern": "^F[A-Z0-9]+$"
+            },
+            "record_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "fields": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "column_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80
+                  },
+                  "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 10000
+                  },
+                  "number": {
+                    "type": "number"
+                  },
+                  "checkbox": {
+                    "type": "boolean"
+                  },
+                  "date": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 10,
+                      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 10
+                  },
+                  "user": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 80,
+                      "pattern": "^[UW][A-Z0-9]+$"
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  },
+                  "select": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 100
+                    },
+                    "minItems": 1,
+                    "maxItems": 20
+                  }
+                },
+                "required": ["column_id"],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 30
+            }
+          },
+          "required": ["list_id", "record_id", "fields"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["slack.com"],
+    "config": []
+  },
+  "authorityDigest": "c6cc1ec1e5b1ef8327d89d39096567d7b965911e73cef941dfe5a49c23d01f98",
+  "authorityDiffDigest": "b7e4e45364aa7ecccb29be72c28b69161cc31f2456cfb4838dcce4aba60bb06e",
+  "releaseDigest": "bcdef2035e4026a2aaaf6eb804d1bb1709786bea09f2b4b4ddff514cce640530",
+  "decision": "approved"
+}

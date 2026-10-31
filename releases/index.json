@@ -18,7 +18,7 @@
       "sourceDirectory": "plugins/slack-api",
       "kind": "managed-package",
       "publicationEligible": true,
-      "reason": "Owner authorized the API-backed MCP pilot on 2026-10-30; independent review waived, not passed. Slack 1.1.1 preserves shared listing metadata after 1.1.0 staging failed. Exact artifact review, stopped-attempt recovery approval, and trusted publication/readback remain required."
+      "reason": "Owner authorized the API-backed MCP pilot and focused Slack fixes on 2026-10-30; independent review waived, not passed. Slack 1.1.2 prepares a read-parameter compatibility patch with unchanged catalog and OAuth authority. Exact artifact approval and trusted publication/readback remain required; live read acceptance is pending."
     },
     {
       "sourceDirectory": "plugins/openapi-inventory",
