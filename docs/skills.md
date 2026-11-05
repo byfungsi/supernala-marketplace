@@ -55,6 +55,12 @@ The command:
 
 Bytes always land before rows, so a visible version never points at a missing file. Publishing the same release again changes nothing, so an interrupted run is retried by running it again. Skills need no release journal: version rows are immutable and idempotent in the application itself. No third-party code runs to build a Skill, so no isolated build clone is needed. Withdrawing a version or disabling a Skill is an application operation; publishing never reverses it.
 
+## Unpublishing
+
+Publishing never hides or removes anything. To take a Skill out of the Marketplace, disable its definition in the application database: `UPDATE marketplace_skill_definitions SET status = 'disabled', updated_at = <now> WHERE skill_definition_id = '<id>' AND status = 'active'`. A disabled Skill disappears from the catalog, its detail page and installs. Workspaces that already installed it keep their editable copy, and its published version stays intact, so setting the status back to `active` restores it. Then remove the Skill's source and its `releases/skills.json` entry here, so the repository matches what is offered.
+
+Fit matters as well as license: offer Skills that help Supernala's Owners and Bots. Leave out Skills for a different product's brand, developer tooling Supernala cannot run (such as mobile apps or local test runners) or another vendor's API.
+
 ## Credentials
 
 Publication reads `$HOME/.config/supernala-marketplace/production.skills.env`, or another file passed with `--credentials FILE`. The file must be mode `600`, owned by the operator, outside the checkout, and contain exactly these keys:

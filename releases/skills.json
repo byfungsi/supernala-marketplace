@@ -2,27 +2,12 @@
   "schemaVersion": 1,
   "skills": [
     {
-      "id": "anthropic/academy-guide",
-      "publicationEligible": true,
-      "reason": "Owner approved publication on 2026-11-05. Apache-2.0 verified at the pinned upstream commit; exact files reviewed in this repository."
-    },
-    {
       "id": "anthropic/algorithmic-art",
       "publicationEligible": true,
       "reason": "Owner approved publication on 2026-11-05. Apache-2.0 verified at the pinned upstream commit; exact files reviewed in this repository."
     },
     {
-      "id": "anthropic/brand-guidelines",
-      "publicationEligible": true,
-      "reason": "Owner approved publication on 2026-11-05. Apache-2.0 verified at the pinned upstream commit; exact files reviewed in this repository."
-    },
-    {
       "id": "anthropic/canvas-design",
-      "publicationEligible": true,
-      "reason": "Owner approved publication on 2026-11-05. Apache-2.0 verified at the pinned upstream commit; exact files reviewed in this repository."
-    },
-    {
-      "id": "anthropic/claude-api",
       "publicationEligible": true,
       "reason": "Owner approved publication on 2026-11-05. Apache-2.0 verified at the pinned upstream commit; exact files reviewed in this repository."
     },
@@ -38,11 +23,6 @@
     },
     {
       "id": "anthropic/internal-comms",
-      "publicationEligible": true,
-      "reason": "Owner approved publication on 2026-11-05. Apache-2.0 verified at the pinned upstream commit; exact files reviewed in this repository."
-    },
-    {
-      "id": "anthropic/mcp-builder",
       "publicationEligible": true,
       "reason": "Owner approved publication on 2026-11-05. Apache-2.0 verified at the pinned upstream commit; exact files reviewed in this repository."
     },
@@ -67,22 +47,12 @@
       "reason": "Owner approved publication on 2026-11-05. Apache-2.0 verified at the pinned upstream commit; exact files reviewed in this repository."
     },
     {
-      "id": "anthropic/webapp-testing",
-      "publicationEligible": true,
-      "reason": "Owner approved publication on 2026-11-05. Apache-2.0 verified at the pinned upstream commit; exact files reviewed in this repository."
-    },
-    {
       "id": "vercel/composition-patterns",
       "publicationEligible": true,
       "reason": "Owner approved publication on 2026-11-05. MIT verified at the pinned upstream commit; exact files reviewed in this repository."
     },
     {
       "id": "vercel/react-best-practices",
-      "publicationEligible": true,
-      "reason": "Owner approved publication on 2026-11-05. MIT verified at the pinned upstream commit; exact files reviewed in this repository."
-    },
-    {
-      "id": "vercel/react-native-skills",
       "publicationEligible": true,
       "reason": "Owner approved publication on 2026-11-05. MIT verified at the pinned upstream commit; exact files reviewed in this repository."
     },
