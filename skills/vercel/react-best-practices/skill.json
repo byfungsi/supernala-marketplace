@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "marketplaceId": "supernala-public",
+  "publisher": {
+    "namespace": "vercel",
+    "name": "Vercel"
+  },
+  "slug": "react-best-practices",
+  "version": "1.0.0",
+  "name": "React best practices",
+  "shortDescription": "Performance guidelines from Vercel for React and Next.js: no waterfalls, smaller bundles, faster renders.",
+  "longDescription": "",
+  "categories": ["Development"],
+  "featuredRank": 3,
+  "license": "MIT",
+  "attribution": "Copyright (c) Vercel. Licensed under the MIT License; the license notice is included as LICENSE. From vercel-labs/agent-skills at 1a2c79d4e6c4.",
+  "source": {
+    "_tag": "github",
+    "repository": "vercel-labs/agent-skills",
+    "commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+    "path": "skills/react-best-practices"
+  },
+  "addedFiles": ["LICENSE"]
+}

@@ -383,6 +383,10 @@ const main = async (): Promise<void> => {
       );
       return;
     }
+    case "skills": {
+      const { runSkillCommand } = await import("./marketplace-skill-cli.js");
+      return runSkillCommand(arguments_);
+    }
     case "validate":
       return validateCommand(requireArgument(arguments_, 0, "source-directory"));
     case "create":
@@ -439,7 +443,7 @@ const main = async (): Promise<void> => {
       );
     default:
       return fail(
-        "expected deploy|create|validate|prepare|discover-openapi|inspect|diff-authority|conformance|validate-remotes|capture-remote-catalog|plan-publication|verify-plan|public-safety|export-schemas",
+        "expected deploy|skills|create|validate|prepare|discover-openapi|inspect|diff-authority|conformance|validate-remotes|capture-remote-catalog|plan-publication|verify-plan|public-safety|export-schemas",
       );
   }
 };

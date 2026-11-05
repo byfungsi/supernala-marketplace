@@ -1,9 +1,10 @@
+import { createHash } from "node:crypto";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { expect, it } from "@effect/vitest";
 import { zipSync } from "fflate";
-import { inspectPublicRepositorySafety } from "./public-repo-safety.js";
+import { inspectPublicRepositorySafety, PUBLIC_SAFETY_REVIEWS_FILE } from "./public-repo-safety.js";
 
 it("reports only sanitized finding locations and types", async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-safety-"));
@@ -65,4 +66,36 @@ it("rejects high-ratio archives before expansion", async () => {
     location: "candidate.plugin",
     type: "unreadable-archive",
   });
+});
+
+it("accepts a reviewed finding only while its file keeps the reviewed bytes", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "marketplace-safety-review-"));
+  const placeholder = ["api", "_key", " = ", '"your-', 'api-key-here"'].join("");
+  await writeFile(path.join(root, "docs.md"), placeholder);
+  expect(await inspectPublicRepositorySafety(root)).toEqual([
+    { location: "docs.md", type: "assigned-secret" },
+  ]);
+
+  await mkdir(path.join(root, "releases"));
+  await writeFile(
+    path.join(root, PUBLIC_SAFETY_REVIEWS_FILE),
+    JSON.stringify({
+      schemaVersion: 1,
+      reviewed: [
+        {
+          location: "docs.md",
+          type: "assigned-secret",
+          sha256: createHash("sha256").update(placeholder).digest("hex"),
+          reason: "Documentation placeholder.",
+        },
+      ],
+    }),
+  );
+  expect(await inspectPublicRepositorySafety(root)).toEqual([]);
+
+  // Any change to the reviewed file needs a fresh review.
+  await writeFile(path.join(root, "docs.md"), `${placeholder}\n`);
+  expect(await inspectPublicRepositorySafety(root)).toEqual([
+    { location: "docs.md", type: "assigned-secret" },
+  ]);
 });

@@ -3,3 +3,7 @@ compatibility/openapi-v1/plugin-openapi-contract.v1.schema.json
 schemas/openapi-contract.schema.json
 # Resend's hosted OpenAPI bytes are pinned exactly; formatting changes their digest.
 plugins/resend-api/openapi-95bcbad452fed0381d6d35e24b6f370076a733fbeea2515026bca21113e62712.json
+# Curated Skill folders are the exact upstream bytes at their pinned commits; formatting would
+# change their digests. The vendored application schema is byte-for-byte too.
+skills/*/*/files/
+compatibility/marketplace-skills/*.sql

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "marketplaceId": "supernala-public",
+  "publisher": {
+    "namespace": "anthropic",
+    "name": "Anthropic"
+  },
+  "slug": "canvas-design",
+  "version": "1.0.0",
+  "name": "Canvas design",
+  "shortDescription": "Original posters and visual art as PNG or PDF, guided by a written design philosophy and bundled open fonts.",
+  "longDescription": "",
+  "categories": ["Design", "Creative"],
+  "featuredRank": 4,
+  "license": "Apache-2.0",
+  "attribution": "Copyright Anthropic, PBC. Licensed under the Apache License 2.0; see LICENSE.txt. From anthropics/skills at ca45fc496a34. Bundled fonts in canvas-fonts/ are licensed under the SIL Open Font License 1.1; each font's license is included beside it.",
+  "source": {
+    "_tag": "github",
+    "repository": "anthropics/skills",
+    "commit": "ca45fc496a3436251f191354091d557da31c15b5",
+    "path": "skills/canvas-design"
+  },
+  "addedFiles": []
+}
