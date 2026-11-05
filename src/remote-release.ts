@@ -13,6 +13,7 @@ import {
 } from "./plugin-contract.js";
 import { PluginAuthStrategyDefinition } from "./plugin-auth-strategy.js";
 import { OAuthScopeSet, PluginOAuthProviderDefinition } from "./oauth-provider-definition.js";
+import { PluginSystemFeatures, parsePluginSystemFeatures } from "./plugin-system-feature.js";
 
 /** Curated managed-remote authoring record; staged records cannot enter a publication plan. */
 export const ManagedRemotePluginRelease = Schema.Struct({
@@ -47,6 +48,7 @@ export const ManagedRemotePluginRelease = Schema.Struct({
     Schema.check(Schema.isMaxLength(100)),
   ),
   catalog: PluginCatalogSnapshot,
+  systemFeatures: Schema.optionalKey(PluginSystemFeatures),
   config: PluginConfigSchema,
   allowedHosts: Schema.Array(Schema.String).pipe(Schema.check(Schema.isLengthBetween(1, 100))),
   protocolPolicy: Schema.optionalKey(
@@ -74,10 +76,17 @@ export function validateManagedRemotePluginRelease(
   input: unknown,
   mode: "authoring" | "publication",
 ): Result.Result<ManagedRemotePluginRelease, string> {
-  const parsed = Schema.decodeUnknownResult(ManagedRemotePluginRelease)(input).pipe(
-    Result.mapError(() => "remote-release-invalid"),
-  );
+  const parsed = Schema.decodeUnknownResult(ManagedRemotePluginRelease, {
+    onExcessProperty: "error",
+  })(input).pipe(Result.mapError(() => "remote-release-invalid"));
   if (Result.isFailure(parsed)) return parsed;
+  if (parsed.success.systemFeatures !== undefined) {
+    const features = parsePluginSystemFeatures(
+      parsed.success.systemFeatures,
+      parsed.success.catalog,
+    );
+    if (Result.isFailure(features)) return Result.fail(features.failure);
+  }
   let endpoint: URL;
   try {
     endpoint = new URL(parsed.success.endpoint);

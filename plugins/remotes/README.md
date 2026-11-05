@@ -4,6 +4,8 @@ These records preserve fixed provider endpoints, OAuth definitions, registration
 
 | Provider              | Offline declaration                                                | Candidate tools                   | Live promotion blockers                                        |
 | --------------------- | ------------------------------------------------------------------ | --------------------------------- | -------------------------------------------------------------- |
+| Canva                 | Developer Portal OAuth; staged-unverified                          | Awaiting exact consented schemas  | Private client setup, OAuth lifecycle, identity                |
+| Buffer                | Dynamic OAuth, PKCE S256; staged-unverified                        | Awaiting exact consented schemas  | Consented capture, account identity, token lifecycle, review   |
 | Gmail                 | Preserved Workspace-owned OAuth behavior                           | Existing package catalog          | Developer Preview eligibility and OAuth verification           |
 | Atlassian Rovo / Jira | Dynamic OAuth; staged-unverified                                   | Awaiting exact public schemas     | Exact schemas and MCP identity/resource output paths           |
 | Linear                | Dynamic OAuth, PKCE S256, read/write scopes; reviewed subset       | 65 authenticated tools            | Live catalog equality, workspace identity, privacy, acceptance |
@@ -20,6 +22,22 @@ HTTPS origin. The resulting document is served at
 `$PUBLIC_ORIGIN/.well-known/oauth-client/resend.json`; its redirect URI must remain exactly
 `$PUBLIC_ORIGIN/v1/plugins/oauth/callback`. The approved production origin is `https://supernala.com`;
 the declaration and deployed document must be updated together if that origin changes.
+
+## Canva candidate
+
+Canva's current official endpoint is `https://api.canva.com/connect/v1/mcp`. The Developer Portal
+setup requires an app with Canva MCP enabled, a client ID and secret, and registered redirect URLs.
+The older `mcp.canva.com` CIMD surface has different resource and authorization-server metadata;
+do not mix its authority into this registration. The retained CIMD template is historical material.
+See [Canva MCP publication](../../docs/canva-mcp.md) for current setup and remaining evidence.
+
+## Buffer candidate
+
+Buffer's fixed endpoint is `https://mcp.buffer.com/mcp`. Public metadata advertises dynamic client
+registration at `https://auth.buffer.com/reg` and PKCE S256. Its proposed scopes include named post,
+idea and template writes as well as reads and analytics; exact schemas and policy await consented
+capture. Connections cover the user's accessible organizations and channels. See
+[Buffer MCP publication](../../docs/buffer-mcp.md) for identity, lifecycle and review requirements.
 
 ## Minimal Rovo promotion evidence
 

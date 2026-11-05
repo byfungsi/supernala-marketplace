@@ -1,0 +1,7 @@
+{
+  "contractVersion": 1,
+  "owner": "@supernala/domain",
+  "sourcePath": "packages/domain/src/plugin-system-feature.ts",
+  "sourceFile": "plugin-system-feature.v1.source.txt",
+  "sourceSha256": "98811d7df68164ba70bdd91fe92b2c60767e4205a0a340886e9b20e733ddd833"
+}

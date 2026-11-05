@@ -432,6 +432,27 @@ describe("Plugin OAuth provider definition", () => {
   });
 
   it.each([
+    "https://identity.aurora.example/tenant",
+    "https://identity.aurora.example/tenants/primary",
+    "https://identity.aurora.example/tenant/",
+    "https://identity.aurora.example/tenant%2Fprimary",
+  ])("preserves the exact tenant-scoped issuer %s in canonical authority", async (issuer) => {
+    const parsed = decodePluginOAuthProviderDefinition({ ...auroraDefinition, issuer });
+    expect(Result.isSuccess(parsed)).toBe(true);
+    if (Result.isFailure(parsed)) throw new Error("tenant-issuer-definition-invalid");
+    expect(parsed.success.issuer).toBe(issuer);
+    const canonical = new TextDecoder().decode(
+      encodePluginOAuthProviderDefinitionCanonicalJson(parsed.success),
+    );
+    expect(canonical).toContain(JSON.stringify(issuer));
+    const origin = decodePluginOAuthProviderDefinition(auroraDefinition);
+    if (Result.isFailure(origin)) throw new Error("origin-issuer-definition-invalid");
+    expect(await digestPluginOAuthProviderDefinition(parsed.success)).not.toBe(
+      await digestPluginOAuthProviderDefinition(origin.success),
+    );
+  });
+
+  it.each([
     ["tokenEndpoint", "https://identity.aurora.example:443/oauth/token"],
     ["tokenEndpoint", " https://identity.aurora.example/oauth/token"],
     ["tokenEndpoint", "https://identity.aurora.example/oauth/token?"],
@@ -445,8 +466,13 @@ describe("Plugin OAuth provider definition", () => {
     ["tokenEndpoint", "https://identity.aurora.example:8443/oauth/token"],
     ["tokenEndpoint", "https://synthetic-user@identity.aurora.example/oauth/token"],
     ["issuer", "https://identity.aurora.example/"],
-    ["issuer", "https://identity.aurora.example/oauth"],
     ["issuer", "https://identity.aurora.example?"],
+    ["issuer", "https://identity.aurora.example/tenant?scope=read"],
+    ["issuer", "https://identity.aurora.example/tenant#fragment"],
+    ["issuer", "https://identity.aurora.example/one/../tenant"],
+    ["issuer", "https://IDENTITY.aurora.example/tenant"],
+    ["issuer", "https://identity.aurora.example/%74enant"],
+    ["issuer", "https://identity.aurora.example/%2ftenant"],
   ] as const)("rejects non-exact %s spelling %s", (field, value) => {
     expect(
       Result.isFailure(

@@ -3,7 +3,7 @@ import { canonicalPluginJson, digestPluginBytes, PluginSha256 } from "./plugin-c
 
 const ObservedMcpTool = Schema.Struct({
   name: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 160))),
-  description: Schema.optionalKey(Schema.String.pipe(Schema.check(Schema.isMaxLength(1_000)))),
+  description: Schema.optionalKey(Schema.String.pipe(Schema.check(Schema.isMaxLength(16_384)))),
   inputSchema: Schema.JsonObject,
 });
 

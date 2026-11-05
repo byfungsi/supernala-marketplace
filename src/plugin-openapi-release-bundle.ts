@@ -137,6 +137,7 @@ export async function buildPluginOpenApiReleaseBundle(input: {
   const configDigest = await digestPluginBytes(new TextEncoder().encode(JSON.stringify(config)));
   const provenance = {
     sourceDigest: compiled.contract.sourceDigest,
+    ...(source.systemFeatures === undefined ? {} : { systemFeatures: source.systemFeatures }),
     ...(source.hostedSource === undefined ? {} : { hostedSource: source.hostedSource }),
   };
   const provenanceDigest = await digestJson(provenance);

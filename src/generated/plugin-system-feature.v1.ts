@@ -1,0 +1,241 @@
+// GENERATED from @supernala/domain system feature contract v1.
+// Source SHA-256: 98811d7df68164ba70bdd91fe92b2c60767e4205a0a340886e9b20e733ddd833
+// Run tools/vendor-plugin-system-feature-contract.mjs; do not edit.
+import { Effect, Schema } from "effect";
+import { PluginToolId } from "../plugin-contract.js";
+
+const BoundedText = Schema.Trimmed.pipe(Schema.check(Schema.isLengthBetween(1, 2_048)));
+
+const JsonPath = Schema.Array(
+  Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 120))),
+).pipe(Schema.check(Schema.isLengthBetween(1, 12)));
+
+/** Versioned unfurl input; URL recognition and account selection belong to the consumer. */
+export const PluginUnfurlInput = Schema.Struct({ resourceReference: BoundedText });
+/** Versioned unfurl input independent of any provider tool schema. */
+export interface PluginUnfurlInput extends Schema.Schema.Type<typeof PluginUnfurlInput> {}
+
+const HttpsUrl = BoundedText.pipe(
+  Schema.check(
+    Schema.makeFilter((value) => {
+      try {
+        const url = new URL(value);
+
+        return url.protocol === "https:" && url.username === "" && url.password === "";
+      } catch {
+        return false;
+      }
+    }),
+  ),
+);
+
+/** Unfurl contract v1; optional icon URLs are metadata, not permission to fetch them. */
+export const PluginUnfurlDetail = Schema.Struct({
+  title: Schema.Trimmed.pipe(Schema.check(Schema.isLengthBetween(1, 500))),
+  canonicalUrl: HttpsUrl,
+  iconUrl: Schema.optionalKey(HttpsUrl),
+  description: Schema.optionalKey(
+    Schema.Trimmed.pipe(Schema.check(Schema.isLengthBetween(1, 2_000))),
+  ),
+});
+/** Provider-independent resource metadata returned by unfurl contract v1. */
+export interface PluginUnfurlDetail extends Schema.Schema.Type<typeof PluginUnfurlDetail> {}
+
+const InputField = Schema.Struct({
+  target: JsonPath.pipe(
+    Schema.check(
+      Schema.makeFilter((path) =>
+        path.every((segment) => !["__proto__", "prototype", "constructor"].includes(segment)),
+      ),
+    ),
+  ),
+  source: Schema.Union([
+    Schema.Struct({
+      kind: Schema.Literal("input"),
+      path: Schema.Tuple([Schema.Literal("resourceReference")]),
+    }),
+    Schema.Struct({ kind: Schema.Literal("literal"), value: Schema.Json }),
+  ]),
+});
+
+const OutputField = Schema.Struct({
+  path: JsonPath,
+});
+
+/** Immutable read-only tool mapping implementing the Supernala-owned unfurl v1 contract. */
+export const PluginSystemFeatureOperation = Schema.Struct({
+  feature: Schema.Literal("unfurl"),
+  contractVersion: Schema.Literal(1),
+  operation: Schema.Literal("get-detail"),
+  access: Schema.Literal("read-only"),
+  toolId: PluginToolId,
+  inputMapping: Schema.Struct({
+    schemaVersion: Schema.Literal(1),
+    fields: Schema.Array(InputField).pipe(
+      Schema.check(Schema.isLengthBetween(1, 32)),
+      Schema.check(
+        Schema.makeFilter((fields) =>
+          fields.every((field, index) =>
+            fields.every(
+              (other, otherIndex) =>
+                index === otherIndex ||
+                !field.target.every((segment, offset) => other.target[offset] === segment),
+            ),
+          ),
+        ),
+      ),
+    ),
+  }),
+  outputMapping: Schema.Struct({
+    schemaVersion: Schema.Literal(1),
+    kind: Schema.Literal("json-fields"),
+    envelope: Schema.Literals(["json", "mcp-structured", "mcp-text-json"]),
+    title: OutputField,
+    canonicalUrl: OutputField,
+    iconUrl: Schema.optionalKey(OutputField),
+    description: Schema.optionalKey(OutputField),
+  }),
+});
+/** Exact feature operation mapping published in reviewed release provenance. */
+export interface PluginSystemFeatureOperation extends Schema.Schema.Type<
+  typeof PluginSystemFeatureOperation
+> {}
+
+/** Declaration schema v1 is independent of feature and mapping contract versions. */
+export const PluginSystemFeatures = Schema.Struct({
+  schemaVersion: Schema.Literal(1),
+  operations: Schema.Array(PluginSystemFeatureOperation).pipe(
+    Schema.check(Schema.isLengthBetween(1, 32)),
+    Schema.check(
+      Schema.makeFilter(
+        (operations) =>
+          new Set(
+            operations.map(
+              (entry) => `${entry.feature}:${entry.contractVersion}:${entry.operation}`,
+            ),
+          ).size === operations.length,
+      ),
+    ),
+  ),
+}).pipe(
+  Schema.check(Schema.makeFilter((declaration) => JSON.stringify(declaration).length <= 131_072)),
+);
+/** Reviewed feature declarations; unsupported versions are rejected rather than upgraded. */
+export interface PluginSystemFeatures extends Schema.Schema.Type<typeof PluginSystemFeatures> {}
+
+/** Safe mapping failure without provider payloads or resource references. */
+export class PluginSystemMappingFailure extends Schema.TaggedError<PluginSystemMappingFailure>()(
+  "PluginSystemMappingFailure",
+  { reason: Schema.Literals(["input-invalid", "input-path-missing", "result-invalid"]) },
+) {
+  override get message(): string {
+    return `System Plugin mapping failed: ${this.reason}`;
+  }
+}
+
+const readJsonPath = (value: Schema.Json, path: ReadonlyArray<string>): Schema.Json | undefined => {
+  let current: Schema.Json | undefined = value;
+  for (const segment of path) {
+    if (!Schema.is(Schema.JsonObject)(current) || !Object.hasOwn(current, segment))
+      return undefined;
+    current = current[segment];
+  }
+
+  return current;
+};
+
+/** Maps bounded feature input into tool argument objects without executing code. */
+export const mapSystemPluginInput: (
+  operation: PluginSystemFeatureOperation,
+  input: PluginUnfurlInput,
+) => Effect.Effect<Schema.JsonObject, PluginSystemMappingFailure> = Effect.fn(
+  "SystemPlugin.mapInput",
+)(function* (operation: PluginSystemFeatureOperation, input: PluginUnfurlInput) {
+  const parsed = yield* Schema.decodeUnknownEffect(PluginUnfurlInput, {
+    onExcessProperty: "error",
+  })(input).pipe(
+    Effect.mapError(() => new PluginSystemMappingFailure({ reason: "input-invalid" })),
+  );
+
+  const argumentsObject: Schema.JsonObject = {};
+  for (const field of operation.inputMapping.fields) {
+    const value =
+      field.source.kind === "literal"
+        ? field.source.value
+        : readJsonPath(parsed, field.source.path);
+    if (value === undefined) {
+      return yield* Effect.fail(new PluginSystemMappingFailure({ reason: "input-path-missing" }));
+    }
+    let target = argumentsObject;
+    for (const segment of field.target.slice(0, -1)) {
+      const current = Object.hasOwn(target, segment) ? target[segment] : undefined;
+      if (Schema.is(Schema.JsonObject)(current)) {
+        target = current;
+      } else {
+        const nested: Schema.JsonObject = {};
+        Object.defineProperty(target, segment, { value: nested, enumerable: true });
+        target = nested;
+      }
+    }
+    const leaf = field.target.at(-1);
+    if (leaf === undefined) {
+      return yield* Effect.fail(new PluginSystemMappingFailure({ reason: "input-invalid" }));
+    }
+    Object.defineProperty(target, leaf, { value, enumerable: true });
+  }
+
+  return argumentsObject;
+});
+
+/** Parses an explicit provider envelope and projects the validated unfurl v1 result. */
+export const mapSystemPluginOutput: (
+  operation: PluginSystemFeatureOperation,
+  value: Schema.Json,
+) => Effect.Effect<PluginUnfurlDetail, PluginSystemMappingFailure> = Effect.fn(
+  "SystemPlugin.mapOutput",
+)(function* (operation: PluginSystemFeatureOperation, value: Schema.Json) {
+  const invalid = () => new PluginSystemMappingFailure({ reason: "result-invalid" });
+  if (JSON.stringify(value).length > 262_144) return yield* Effect.fail(invalid());
+  let root = value;
+  const mapping = operation.outputMapping;
+  if (mapping.envelope !== "json") {
+    const envelope = yield* Schema.decodeUnknownEffect(
+      Schema.Struct({
+        isError: Schema.optionalKey(Schema.Boolean),
+        structuredContent: Schema.optionalKey(Schema.JsonObject),
+        content: Schema.optionalKey(Schema.Array(Schema.JsonObject)),
+      }),
+    )(value).pipe(Effect.mapError(invalid));
+    if (envelope.isError === true) return yield* Effect.fail(invalid());
+    if (mapping.envelope === "mcp-structured") {
+      if (envelope.structuredContent === undefined) return yield* Effect.fail(invalid());
+      root = envelope.structuredContent;
+    } else {
+      const text = envelope.content?.filter((entry) => entry.type === "text");
+      const first = text?.[0];
+      if (text?.length !== 1 || first === undefined || !Schema.is(Schema.String)(first.text)) {
+        return yield* Effect.fail(invalid());
+      }
+      root = yield* Schema.decodeUnknownEffect(Schema.fromJsonString(Schema.JsonObject))(
+        first.text,
+      ).pipe(Effect.mapError(invalid));
+    }
+  }
+
+  const title = readJsonPath(root, mapping.title.path);
+  const canonicalUrl = readJsonPath(root, mapping.canonicalUrl.path);
+  if (title === undefined || canonicalUrl === undefined) return yield* Effect.fail(invalid());
+  const projected: Schema.JsonObject = { title, canonicalUrl };
+  for (const field of ["iconUrl", "description"] as const) {
+    const definition = mapping[field];
+    const optionalValue =
+      definition === undefined ? undefined : readJsonPath(root, definition.path);
+    if (optionalValue !== undefined) {
+      Object.defineProperty(projected, field, { value: optionalValue, enumerable: true });
+    }
+  }
+
+  return yield* Schema.decodeUnknownEffect(PluginUnfurlDetail)(projected).pipe(
+    Effect.mapError(invalid),
+  );
+});

@@ -186,6 +186,7 @@ export async function buildManagedRemoteReleaseBundle(input: {
     protocolPolicy: remote.protocolPolicy,
     evidenceUrls: remote.evidenceUrls ?? [],
     verificationNotes: remote.verificationNotes,
+    ...(remote.systemFeatures === undefined ? {} : { systemFeatures: remote.systemFeatures }),
   } as const;
   const provenance =
     remote.authStrategy === undefined || authStrategyDigest === undefined

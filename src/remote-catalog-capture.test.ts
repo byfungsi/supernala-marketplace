@@ -29,3 +29,18 @@ it("rejects duplicate tool names and malformed schemas", async () => {
     Result.fail("remote-catalog-capture-invalid"),
   );
 });
+
+it("retains bounded provider descriptions longer than curated catalog summaries", async () => {
+  const description = "Provider tool instructions. ".repeat(250);
+  const captured = await captureRemoteMcpCatalog({
+    tools: [{ name: "generate-design", description, inputSchema: { type: "object" } }],
+  });
+  expect(Result.isSuccess(captured)).toBe(true);
+  if (Result.isFailure(captured)) throw new Error(captured.failure);
+  expect(captured.success.tools[0]?.description).toBe(description);
+  expect(
+    await captureRemoteMcpCatalog({
+      tools: [{ name: "oversized", description: "x".repeat(16_385), inputSchema: {} }],
+    }),
+  ).toEqual(Result.fail("remote-catalog-capture-invalid"));
+});

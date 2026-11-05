@@ -132,6 +132,9 @@ export const PluginBootstrapMcpOperation = Schema.Struct({
   maximumOutputBytes: Schema.Int.pipe(
     Schema.check(Schema.isBetween({ minimum: 1, maximum: 1_048_576 })),
   ),
+  resultTextContentIndex: Schema.optionalKey(
+    Schema.Int.pipe(Schema.check(Schema.isBetween({ minimum: 0, maximum: 19 }))),
+  ),
 })
 
 /** Fixed reviewed bootstrap MCP operation; neither tool name nor input is model supplied. */
@@ -414,6 +417,7 @@ export const PluginSetupSubmission = Schema.Union([
     resourceId: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 300))),
   }),
   Schema.Struct({ _tag: Schema.Literal("DevicePollingCancelled") }),
+  Schema.Struct({ _tag: Schema.Literal("SetupCancelled") }),
 ])
 
 /** Submitted Owner setup input; secret field values are redacted immediately at the API boundary. */

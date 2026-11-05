@@ -114,9 +114,12 @@ const HttpsIssuer = Schema.String.pipe(
       (value) => {
         const url = parseExactHttpsUrl(value);
 
-        return url !== null && url.origin === value;
+        // Preserve slashless origins and exact tenant paths as distinct issuer identities.
+        return (
+          url !== null && (url.origin === value || (url.pathname !== "/" && url.href === value))
+        );
       },
-      { expected: "an exact slashless HTTPS issuer origin without normalization" },
+      { expected: "an exact HTTPS issuer origin or tenant URL without normalization" },
     ),
   ),
 );

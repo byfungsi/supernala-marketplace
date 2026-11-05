@@ -2,6 +2,7 @@ import { promises as fs } from "node:fs";
 import { randomUUID } from "node:crypto";
 import path from "node:path";
 import { Result, Schema } from "effect";
+import { PluginSystemFeatures, parsePluginSystemFeatures } from "./plugin-system-feature.js";
 import { digestPluginBytes, PluginSha256, PluginToolId } from "./plugin-contract.js";
 import {
   compilePluginOpenApi,
@@ -38,6 +39,7 @@ export const PluginOpenApiSource = Schema.Struct({
   name: Schema.NonEmptyString,
   description: Schema.NonEmptyString,
   license: Schema.NonEmptyString,
+  systemFeatures: Schema.optionalKey(PluginSystemFeatures),
   hostedSource: Schema.optionalKey(
     Schema.Struct({
       url: Schema.NonEmptyString,
@@ -120,6 +122,13 @@ export async function loadPluginOpenApiSource(sourcePath: string): Promise<
     const sourceText = new TextDecoder("utf-8", { fatal: true }).decode(sourceBytes);
     const compiled = await compilePluginOpenApi({ sourceText, authoring: source.success });
     if (Result.isFailure(compiled)) return Result.fail(compiled.failure);
+    if (source.success.systemFeatures !== undefined) {
+      const features = parsePluginSystemFeatures(
+        source.success.systemFeatures,
+        compiled.success.contract.catalog,
+      );
+      if (Result.isFailure(features)) return Result.fail(features.failure);
+    }
     return Result.succeed({ source: source.success, sourceText, compiled: compiled.success });
   } catch {
     return Result.fail("openapi-source-invalid");
