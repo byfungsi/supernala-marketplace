@@ -1,0 +1,16 @@
+{
+  "owner": "byfungsi/supernala",
+  "applicationCommit": "4b7f063a03c4317e753f96751c29663173ff865c",
+  "files": {
+    "0163_marketplace_skills.sql": {
+      "sourcePath": "apps/api/application-migrations/0163_marketplace_skills.sql",
+      "sha256": "4d7af53d73acae297d8f82a0c781c929eb0e6fee89c9d5555dec99f62a7bc146"
+    },
+    "plugin_marketplaces.sql": {
+      "sourcePath": "apps/api/application-migrations/0042_plugin_control_plane.sql",
+      "excerpt": "CREATE TABLE plugin_marketplaces and its supernala-public seed",
+      "sha256": "c6511e79713ee07374487c60623075d22f23a031497182fca5125c9822d7828b"
+    }
+  },
+  "contract": "packages/domain/src/marketplace-skill.ts and packages/domain/src/agent-skill-bundle.ts"
+}

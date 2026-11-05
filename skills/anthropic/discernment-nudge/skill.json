@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "marketplaceId": "supernala-public",
+  "publisher": {
+    "namespace": "anthropic",
+    "name": "Anthropic"
+  },
+  "slug": "discernment-nudge",
+  "version": "1.0.0",
+  "name": "Discernment nudge",
+  "shortDescription": "After a substantive answer, adds a short prompt to check assumptions and verify before acting on it.",
+  "longDescription": "",
+  "categories": ["Productivity"],
+  "featuredRank": null,
+  "license": "Apache-2.0",
+  "attribution": "Copyright Anthropic, PBC. Licensed under the Apache License 2.0; see LICENSE.txt. From anthropics/skills at ca45fc496a34.",
+  "source": {
+    "_tag": "github",
+    "repository": "anthropics/skills",
+    "commit": "ca45fc496a3436251f191354091d557da31c15b5",
+    "path": "skills/discernment-nudge"
+  },
+  "addedFiles": []
+}

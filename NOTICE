@@ -8,3 +8,12 @@ Third-party dependencies, copied upstream material, provider services,
 trademarks, and remote-provider content remain subject to their respective
 licenses and terms. Synthetic fixture metadata describes test data only and
 does not grant rights in third-party material.
+
+Curated Skill folders under skills/*/*/files/ are copied unchanged from their
+upstream repositories at the commits recorded in each skills/*/*/skill.json,
+and remain under their upstream licenses (Apache License 2.0 for
+anthropics/skills; MIT for vercel-labs/agent-skills). Each folder ships its
+license. Bundled fonts in skills/anthropic/canvas-design/files/canvas-fonts/
+are licensed under the SIL Open Font License 1.1, with each font's license
+beside it. Where an upstream Skill declared MIT only in its frontmatter,
+Supernala added the MIT notice as LICENSE, recorded in that skill.json.

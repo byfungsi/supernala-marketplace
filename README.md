@@ -2,6 +2,8 @@
 
 Public, curated source and offline tooling for Supernala Plugin releases. This repository owns reviewed authoring source, deterministic build recipes, authority review records, and publication history. Private R2 owns executable bytes; application D1 alone controls Store visibility and installability.
 
+It also curates the Marketplace **Skills** catalog: reviewed Skill folders from permissively licensed upstreams, pinned to exact commits under `skills/` and published with `pnpm marketplace skills publish`. See [curated Marketplace Skills](docs/skills.md).
+
 ## Commands
 
 ```sh
@@ -53,6 +55,8 @@ pnpm marketplace deploy --environment production --recover-attempt ATTEMPT_UUID
 ```
 
 Failed/uncertain attempts retain a non-expiring lock. Explicit recovery abandons only the attempt, not Plugin records or artifacts; the next deployment reconciles the durable baseline.
+
+Skill folders under `skills/*/*/files/` are third-party material under their own licenses (Apache-2.0 or MIT, recorded in each `skill.json` and shipped in each folder). They are not covered by this repository's MIT License.
 
 Supernala-authored repository source is licensed under the [MIT License](LICENSE), copyright 2026 Supernala contributors. See [NOTICE](NOTICE) for scope. This does not relicense third-party dependencies, copied upstream material, provider services, trademarks, or remote-provider content; their respective licenses and terms continue to apply.
 

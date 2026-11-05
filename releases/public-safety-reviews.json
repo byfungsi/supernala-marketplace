@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "reviewed": [
+    {
+      "location": "skills/anthropic/claude-api/files/csharp/claude-api/README.md",
+      "type": "assigned-secret",
+      "sha256": "87a2cc5c6e670e0bf34120f9a592d321567eea57c716c06791f6d2dcaba08b00",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. Reads the key from an environment variable; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/curl/examples.md",
+      "type": "assigned-secret",
+      "sha256": "4520e447d37924e62fe982923f3eceea5338dbf3b3a0d25d0f914272c16b90a0",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. A your-api-key placeholder and an ANTHROPIC_API_KEY variable reference; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/curl/managed-agents.md",
+      "type": "assigned-secret",
+      "sha256": "faa7dd3d83cfd32d1faabb13fee5902e041285579b00256f17fd21681ed3ff2a",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. A your-api-key placeholder and an ANTHROPIC_API_KEY variable reference; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/go/managed-agents/README.md",
+      "type": "assigned-secret",
+      "sha256": "0343be8d49f94687fe5e068ad69d9e05253b408e7bcd0e230b39924f6404facc",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. Elided Slack token examples ending in an ellipsis; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/php/managed-agents/README.md",
+      "type": "assigned-secret",
+      "sha256": "2f9ada8a85098a7a4a7265c29fadb74d695a33bf19bc6d5df3a2c275b4a535b2",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. A your-api-key placeholder; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/python/claude-api/README.md",
+      "type": "assigned-secret",
+      "sha256": "284fbc6408809afd27288da95c5fb32daa48bd77518cd5fd4e973cc05363eaa8",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. A your-api-key placeholder; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/python/managed-agents/README.md",
+      "type": "assigned-secret",
+      "sha256": "82b6e5847027b0ffe5976116e5c249a58e9e2781eb09e914a81ee2f9eb970245",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. A your-api-key placeholder; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/ruby/claude-api/README.md",
+      "type": "assigned-secret",
+      "sha256": "c7de89d236f22bc0b44a091a45ee186ec057caa021a71acd4d3849599cbf3b36",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. A your-api-key placeholder; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/ruby/managed-agents/README.md",
+      "type": "assigned-secret",
+      "sha256": "729ba22b8711a09192006d169098f16b933dd124ff36421772e4334d862306ab",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. A your-api-key placeholder and an elided Slack token example; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/shared/managed-agents-scheduled-deployments.md",
+      "type": "assigned-secret",
+      "sha256": "3fdf7bd691b4f798149d7ebdb933dcee7d14d5d47dd6bf8196c41b819223175e",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. An ANTHROPIC_API_KEY variable reference; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/shared/managed-agents-tools.md",
+      "type": "assigned-secret",
+      "sha256": "9a9fd54ebb5e81eb0c6b7505f1cadc420fed5696cdab3e0080dd00ccf2e37b6f",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. Angle-bracket token placeholders; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/shared/models.md",
+      "type": "assigned-secret",
+      "sha256": "c1af1f093d46fd58e50ef3e8e28d339650f333059bfc49a63d01d0175675161b",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. An ANTHROPIC_API_KEY variable reference; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/shared/preserved-thinking-migration/drop_block_probe.py",
+      "type": "assigned-secret",
+      "sha256": "f23abb75bc079d835f57da7598ac5a1bee4318214ab803185feb94d8db8c4b88",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. Passes a key variable read at runtime; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/typescript/claude-api/README.md",
+      "type": "assigned-secret",
+      "sha256": "b2a01ccbaa0d4406e400bcd8efc033759af5d646a97aab744aee55bf07d6ab16",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. A your-api-key placeholder; no credential."
+    },
+    {
+      "location": "skills/anthropic/claude-api/files/typescript/managed-agents/README.md",
+      "type": "assigned-secret",
+      "sha256": "5daf6b0c6a443e1ae720b0a7343e061ebdbaeb751dd674f37f9abf9d12efc66f",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. A your-api-key placeholder; no credential."
+    },
+    {
+      "location": "skills/anthropic/mcp-builder/files/reference/evaluation.md",
+      "type": "assigned-secret",
+      "sha256": "8c99479f8a2d22a636c38e274537aac3610879e26f34e0709825077c4576f427",
+      "reason": "Vendored upstream Skill documentation, reviewed 2026-11-05. Illustrative example values in evaluation docs; no credential."
+    }
+  ]
+}

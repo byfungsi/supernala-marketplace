@@ -11,7 +11,7 @@
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm --filter @supernala/marketplace-infra typecheck && pnpm test",
     "format": "oxfmt .",
     "format:check": "oxfmt . --check",
-    "lint": "oxlint . --type-aware --type-check --deny-warnings",
+    "lint": "oxlint . --type-aware --type-check --deny-warnings --ignore-pattern 'skills/*/*/files/**'",
     "marketplace": "tsx src/cli.ts",
     "release": "tsx src/release-cli.ts",
     "test": "vitest run",
@@ -20,7 +20,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "catalog:",
     "effect": "catalog:",
-    "fflate": "catalog:"
+    "fflate": "catalog:",
+    "yaml": "catalog:"
   },
   "devDependencies": {
     "@effect/vitest": "catalog:",

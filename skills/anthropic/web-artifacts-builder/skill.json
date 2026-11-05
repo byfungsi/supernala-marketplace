@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "marketplaceId": "supernala-public",
+  "publisher": {
+    "namespace": "anthropic",
+    "name": "Anthropic"
+  },
+  "slug": "web-artifacts-builder",
+  "version": "1.0.0",
+  "name": "Web artifacts builder",
+  "shortDescription": "Multi-component HTML apps with React, Tailwind CSS and shadcn/ui, bundled into a single file.",
+  "longDescription": "",
+  "categories": ["Development", "Design"],
+  "featuredRank": null,
+  "license": "Apache-2.0",
+  "attribution": "Copyright Anthropic, PBC. Licensed under the Apache License 2.0; see LICENSE.txt. From anthropics/skills at ca45fc496a34.",
+  "source": {
+    "_tag": "github",
+    "repository": "anthropics/skills",
+    "commit": "ca45fc496a3436251f191354091d557da31c15b5",
+    "path": "skills/web-artifacts-builder"
+  },
+  "addedFiles": []
+}

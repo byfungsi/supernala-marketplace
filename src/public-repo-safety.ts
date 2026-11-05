@@ -1,6 +1,7 @@
+import { createHash } from "node:crypto";
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { Result } from "effect";
+import { Result, Schema } from "effect";
 import { unzipSync } from "fflate";
 import { parsePluginZipEntries } from "./package-archive.js";
 
@@ -59,11 +60,45 @@ const scanBytes = (location: string, bytes: Uint8Array): ReadonlyArray<PublicRep
     .map(({ type }) => ({ location, type }));
 };
 
+/**
+ * Findings a maintainer reviewed as non-secret, such as a "your-api-key" placeholder in vendored
+ * upstream documentation. Each review pins one finding to the exact bytes of its file, so any
+ * change to that file, or any new finding, fails the scan again.
+ */
+export const PUBLIC_SAFETY_REVIEWS_FILE = "releases/public-safety-reviews.json";
+
+const PublicSafetyReviews = Schema.Struct({
+  schemaVersion: Schema.Literal(1),
+  reviewed: Schema.Array(
+    Schema.Struct({
+      location: Schema.String,
+      type: Schema.String,
+      sha256: Schema.String.pipe(Schema.check(Schema.isPattern(/^[0-9a-f]{64}$/u))),
+      reason: Schema.String.pipe(Schema.check(Schema.isLengthBetween(1, 500))),
+    }),
+  ),
+});
+
+const readPublicSafetyReviews = async (root: string) => {
+  let json: unknown;
+  try {
+    json = JSON.parse(await fs.readFile(path.join(root, PUBLIC_SAFETY_REVIEWS_FILE), "utf8"));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+    throw new Error("public-safety-reviews-unreadable", { cause: error });
+  }
+  const decoded = Schema.decodeUnknownResult(PublicSafetyReviews)(json);
+  if (Result.isFailure(decoded)) throw new Error("public-safety-reviews-invalid");
+
+  return decoded.success.reviewed;
+};
+
 /** Scan tracked, untracked, ignored, and generated archive content without exposing matches. */
 export async function inspectPublicRepositorySafety(
   root: string,
 ): Promise<ReadonlyArray<PublicRepoSafetyFinding>> {
   const findings: Array<PublicRepoSafetyFinding> = [];
+  const fileDigests = new Map<string, string>();
   const visit = async (directory: string): Promise<void> => {
     const entries = await fs.readdir(directory, { withFileTypes: true });
     for (const entry of entries) {
@@ -76,7 +111,11 @@ export async function inspectPublicRepositorySafety(
         await visit(absolute);
       } else if (entry.isFile()) {
         const bytes = new Uint8Array(await fs.readFile(absolute));
-        findings.push(...scanBytes(relative, bytes));
+        const fileFindings = scanBytes(relative, bytes);
+        if (fileFindings.length > 0) {
+          fileDigests.set(relative, createHash("sha256").update(bytes).digest("hex"));
+        }
+        findings.push(...fileFindings);
         if (entry.name.endsWith(".plugin") || entry.name.endsWith(".zip")) {
           try {
             if (bytes.byteLength > 20 * 1_048_576) throw new Error("archive-input-too-large");
@@ -110,8 +149,18 @@ export async function inspectPublicRepositorySafety(
     }
   };
   await visit(path.resolve(root));
-  return findings.toSorted(
-    (left, right) =>
-      left.location.localeCompare(right.location) || left.type.localeCompare(right.type),
-  );
+  const reviews = await readPublicSafetyReviews(root);
+  const reviewed = (finding: PublicRepoSafetyFinding) =>
+    reviews.some(
+      (review) =>
+        review.location === finding.location &&
+        review.type === finding.type &&
+        review.sha256 === fileDigests.get(finding.location),
+    );
+  return findings
+    .filter((finding) => !reviewed(finding))
+    .toSorted(
+      (left, right) =>
+        left.location.localeCompare(right.location) || left.type.localeCompare(right.type),
+    );
 }
