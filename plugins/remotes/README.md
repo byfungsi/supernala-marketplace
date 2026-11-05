@@ -5,7 +5,7 @@ These records preserve fixed provider endpoints, OAuth definitions, registration
 | Provider                           | Offline declaration                                                 | Candidate tools                   | Live promotion blockers                                        |
 | ---------------------------------- | ------------------------------------------------------------------- | --------------------------------- | -------------------------------------------------------------- |
 | Cloudflare                         | Dynamic OAuth, PKCE S256, 62 bounded scopes; `whoami` identity      | 4 code-mode tools (approval exec) | Live catalog equality, privacy, acceptance                     |
-| Canva                              | Developer Portal OAuth; Owner review waiver                         | 49 consented tools                | Private platform registration and app deployment               |
+| Canva                              | Developer Portal OAuth; Owner review waiver                         | 49 consented tools                | Unpublished: `canva@1.0.0` revoked on 2026-11-05; not offered  |
 | Buffer                             | Dynamic OAuth; Owner review waiver                                  | 17 consented tools                | Explicit bootstrap content selection app release               |
 | Gmail                              | Preserved Workspace-owned OAuth behavior                            | Existing package catalog          | Developer Preview eligibility and OAuth verification           |
 | Atlassian Rovo / Jira / Confluence | Dynamic OAuth; Owner review waiver                                  | 117 consented tools               | Coordinated tenant-issuer app release and publication          |
