@@ -119,8 +119,8 @@
     {
       "sourceDirectory": "plugins/remotes/canva.json",
       "kind": "managed-remote-mcp",
-      "publicationEligible": true,
-      "reason": "Owner-authorized 49-tool consented Canva Developer Portal catalog and exact OAuth authority; independent review waived, not passed. Coordinated app deployment and verified private platform client admission must precede trusted publication."
+      "publicationEligible": false,
+      "reason": "Unpublished on 2026-11-05: Supernala will not offer a Canva app. canva@1.0.0 is revoked in production and its two installations are version-revoked (no accounts were connected). A revoked version must stay ineligible, or every deploy fails with published-version-revoked. The reviewed source is kept as history."
     },
     {
       "sourceDirectory": "plugins/remotes/github.json",

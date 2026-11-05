@@ -151,3 +151,15 @@ it("publishes the Owner-authorized Atlassian personal-token preview without clai
     )?.publicationEligible,
   ).toBe(true);
 });
+
+it("keeps the revoked Canva release out of every deploy", async () => {
+  // canva@1.0.0 is revoked in production; an eligible revoked source fails the whole release
+  // selection with published-version-revoked, so it must stay ineligible.
+  const index = JSON.parse(await readFile("releases/index.json", "utf8"));
+  const canva = index.plugins.find(
+    (entry: { readonly sourceDirectory: string }) =>
+      entry.sourceDirectory === "plugins/remotes/canva.json",
+  );
+  expect(canva?.publicationEligible).toBe(false);
+  expect(canva?.reason).toContain("revoked");
+});
