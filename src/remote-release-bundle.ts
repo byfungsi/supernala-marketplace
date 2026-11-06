@@ -97,16 +97,25 @@ const loadReviewedRemote = async (sourceFile: string) => {
   }
 };
 
-/** Builds a reviewed managed remote bundle containing declarations only and no executable bytes. */
-export async function buildManagedRemoteReleaseBundle(input: {
+interface ManagedRemoteDerivationInput {
   readonly sourceFile: string;
-  readonly outputDirectory: string;
   readonly sharedInputDigest: typeof PluginSha256.Type;
   readonly mergeCommit: string;
   readonly releaseOrdinal: number;
   readonly review: ReleaseReview;
   readonly previousPublished: PreviousPublishedAuthority | null;
-}): Promise<Result.Result<IncrementalReleaseCandidate, string>> {
+}
+
+interface ManagedRemoteDerivation {
+  readonly remote: typeof ManagedRemotePluginRelease.Type;
+  readonly candidate: IncrementalReleaseCandidate;
+  readonly authorityAfter: ReturnType<typeof deriveManagedRemoteAuthoritySnapshot>;
+}
+
+/** Derives a candidate from protected source; the review supplies only baseline and review metadata. */
+async function deriveManagedRemoteCandidate(
+  input: ManagedRemoteDerivationInput,
+): Promise<Result.Result<ManagedRemoteDerivation, string>> {
   const loaded = await loadReviewedRemote(input.sourceFile);
   if (Result.isFailure(loaded)) return Result.fail(loaded.failure);
   const remote = loaded.success;
@@ -254,6 +263,31 @@ export async function buildManagedRemoteReleaseBundle(input: {
     reviewer: input.review.reviewer,
     reviewedAt: input.review.reviewedAt,
   };
+  return Result.succeed({ remote, candidate, authorityAfter });
+}
+
+/** Builds a reviewed managed remote bundle containing declarations only and no executable bytes. */
+export async function buildManagedRemoteReleaseBundle(input: {
+  readonly sourceFile: string;
+  readonly outputDirectory: string;
+  readonly sharedInputDigest: typeof PluginSha256.Type;
+  readonly mergeCommit: string;
+  readonly releaseOrdinal: number;
+  readonly review: ReleaseReview;
+  readonly previousPublished: PreviousPublishedAuthority | null;
+}): Promise<Result.Result<IncrementalReleaseCandidate, string>> {
+  const derived = await deriveManagedRemoteCandidate(input);
+  if (Result.isFailure(derived)) return Result.fail(derived.failure);
+  const { remote, candidate, authorityAfter } = derived.success;
+  const {
+    sourceInputDigest,
+    configDigest,
+    provenanceDigest,
+    authorityDigest,
+    authorityDiffDigest,
+    releaseDigest,
+    authentication,
+  } = candidate;
   if (
     input.review.artifactDigest !== null ||
     input.review.sourceInputDigest !== sourceInputDigest ||
@@ -275,6 +309,78 @@ export async function buildManagedRemoteReleaseBundle(input: {
     `${JSON.stringify(SerializedRemoteCandidate.make({ schemaVersion: 1, ...durableCandidate, ...(remote.authStrategy === undefined ? {} : { authStrategy: remote.authStrategy }), ...(remote.oauthProviderDefinition === undefined ? {} : { oauthProviderDefinition: remote.oauthProviderDefinition }), kind: "managed-remote-mcp", artifactDigest: null, artifactByteLength: null, remote }), null, 2)}\n`,
   );
   return Result.succeed(candidate);
+}
+
+/**
+ * Drafts the first-publication review for a managed remote from its protected source. The
+ * result is an approval record bound to exact digests; committing it is the owner decision.
+ */
+export async function draftManagedRemoteBootstrapReview(input: {
+  readonly sourceFile: string;
+  readonly sharedInputDigest: typeof PluginSha256.Type;
+  readonly reviewId: string;
+  readonly reviewer: string;
+  readonly reviewedAt: number;
+}): Promise<Result.Result<ReleaseReview, string>> {
+  const loaded = await loadReviewedRemote(input.sourceFile);
+  if (Result.isFailure(loaded)) return Result.fail(loaded.failure);
+  const authorityBefore = deriveBootstrapAuthoritySnapshot(
+    deriveManagedRemoteAuthoritySnapshot(loaded.success),
+  );
+  const placeholder = PluginSha256.make("0".repeat(64));
+  const metadata = {
+    schemaVersion: 1,
+    identity: PluginReleaseIdentity.make({
+      marketplaceId: loaded.success.marketplaceId,
+      publisherNamespace: loaded.success.publisherNamespace,
+      pluginSlug: loaded.success.pluginSlug,
+      semanticVersion: loaded.success.version,
+    }),
+    reviewId: input.reviewId,
+    reviewer: input.reviewer,
+    reviewedAt: input.reviewedAt,
+    artifactDigest: null,
+    authorityBeforeIdentity: null,
+    authorityBeforeReleaseDigest: null,
+    authorityBefore,
+    authorityBeforeDigest: await digestJson(authorityBefore),
+    decision: "approved",
+  } as const;
+  const provisional: ReleaseReview = {
+    ...metadata,
+    sourceInputDigest: placeholder,
+    authentication: PackagedPluginAuthentication.make({ kind: "none" }),
+    catalogDigest: placeholder,
+    configDigest: placeholder,
+    provenanceDigest: placeholder,
+    authorityAfter: authorityBefore,
+    authorityDigest: placeholder,
+    authorityDiffDigest: placeholder,
+    releaseDigest: placeholder,
+  };
+  const derived = await deriveManagedRemoteCandidate({
+    sourceFile: input.sourceFile,
+    sharedInputDigest: input.sharedInputDigest,
+    mergeCommit: "0".repeat(40),
+    releaseOrdinal: 0,
+    review: provisional,
+    previousPublished: null,
+  });
+  if (Result.isFailure(derived)) return Result.fail(derived.failure);
+  const { candidate, authorityAfter } = derived.success;
+  return Result.succeed({
+    ...metadata,
+    sourceInputDigest: candidate.sourceInputDigest,
+    authentication: candidate.authentication,
+    ...(candidate.authStrategy === undefined ? {} : { authStrategy: candidate.authStrategy }),
+    catalogDigest: candidate.catalogDigest,
+    configDigest: candidate.configDigest,
+    provenanceDigest: candidate.provenanceDigest,
+    authorityAfter,
+    authorityDigest: candidate.authorityDigest,
+    authorityDiffDigest: candidate.authorityDiffDigest,
+    releaseDigest: candidate.releaseDigest,
+  });
 }
 
 /** Re-derives a managed remote candidate from its protected declaration and review. */

@@ -47,6 +47,20 @@ Workflow action pins are recorded in `compatibility/github-action-pins.json`. Th
 
 `pnpm release publish <directory> --dry-run` needs no credentials and writes nothing. Production mode requires matching source commit, ordinal, artifact scans, full-identity reviews, release-set approval, and one-shot durable attempt admission. Use the local deploy wrapper, not manual environment-variable emulation. Failures retain the non-expiring lock; explicit stopped-process recovery is documented in the local deployment guide.
 
+## Offline staging against the application schema
+
+Application D1 triggers own publication authority, so the SQL guards above are not the whole contract. `vendor/supernala-application-schema/schema.sql` is the schema produced by every Supernala application migration at the commit recorded in its manifest. `src/application-schema-staging.test.ts` drafts a bootstrap review for each publication-eligible managed remote, builds it, and stages and finalizes it against that schema. Pre-registered clients get a seeded operator registration and material source, as production requires. A failure names the rejecting statement and trigger message.
+
+Refresh the snapshot from a Supernala checkout at the deployed commit after any plugin-related application migration: `node tools/vendor-application-schema.mjs vendor /path/to/supernala`. The staging test verifies its digest. The tool is deliberately not a `package.json` script: `package.json` is a release shared input, and changing it changes every published Plugin's source input digest. A remote that needs an application migration must wait until that migration is deployed and vendored.
+
+## Drafting a first-publication review
+
+`pnpm release draft-remote-review plugins/remotes/<slug>.json <review-id> <reviewer>` writes `releases/reviews/<identity>.json` for a publication-eligible managed remote with no published predecessor. Its digests come from the same derivation the release build verifies. It never replaces an existing review. Committing the file is the owner's approval of the exact authority it lists. Later versions need lineage from the verified published predecessor and are not drafted by this command.
+
+## Failure reasons
+
+The local deploy reports the release tool's code-shaped reason, for example `local-release-phase-failed:release-review-missing` or `local-release-phase-failed:application-stage-failed:d1-trigger-abort-plugin-version-oauth-authority-shape-is-invalid`. Raw child output and provider text are never surfaced. D1 trigger aborts are classified only when the message is a letters-only sentence, so no SQL values pass through.
+
 ## Application compatibility and remaining gates
 
 The pinned Phase 1 package and publication contracts now accept reviewed `github-app` metadata and require an explicit matching publication expectation. No credential value enters the archive, Config, or static platform bindings: the trusted Actor privately supplies `PLUGIN_ACCESS_TOKEN`. The candidate source is MIT-licensed, but Marketplace does not publish GitHub until provider registration, independent release review, and live acceptance are separately verified.

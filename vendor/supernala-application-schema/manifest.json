@@ -1,0 +1,6 @@
+{
+  "owner": "@supernala/api",
+  "sourceCommit": "8c4da055c00176b93e46432c9f78847abd67677e",
+  "latestMigration": "0166_scope_free_dynamic_mcp_oauth.sql",
+  "schemaSha256": "45d5af3fc3df9918ec3229f638b289a8af9682bd597ea5542b98a5771e20496e"
+}

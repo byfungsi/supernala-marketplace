@@ -35,6 +35,12 @@ const failBatchGuard = (
   params,
 });
 
+/** Keeps classified transport reasons, which carry no provider text, on stage failures. */
+const stageFailure = (transportFailure: string): string =>
+  /^(?:d1-[a-z0-9-]+|http-transport-failed|http-response-too-large)$/u.test(transportFailure)
+    ? `application-stage-failed:${transportFailure}`
+    : "application-stage-failed";
+
 const ExistingConfigRow = Schema.Struct({
   config_schema_id: Schema.NonEmptyString,
   schema_digest: PluginSha256,
@@ -658,7 +664,7 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
         return this.#stage(candidate, true, authentication.success);
       }
     }
-    return Result.fail("application-stage-failed");
+    return Result.fail(stageFailure(result.failure));
   }
 
   async #stageManagedRemote(
@@ -1162,11 +1168,7 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
     }
     const result = await this.database.batch(statements);
     if (Result.isSuccess(result)) return Result.succeed(undefined);
-    const transportReason =
-      /^(?:d1-[a-z0-9-]+|http-transport-failed|http-response-too-large)$/u.test(result.failure)
-        ? `:${result.failure}`
-        : "";
-    return Result.fail(`application-stage-failed${transportReason}`);
+    return Result.fail(stageFailure(result.failure));
   }
 
   async finalize(candidate: IncrementalReleaseCandidate) {
