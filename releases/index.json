@@ -133,6 +133,12 @@
       "kind": "managed-remote-mcp",
       "publicationEligible": false,
       "reason": "Superseded as the release source by the owner-authorized Slack 1.1.0 API-backed MCP package. Existing hosted-MCP installations remain published and pinned; this does not revoke connections."
+    },
+    {
+      "sourceDirectory": "plugins/remotes/repliz.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Owner-authorized authenticated tools/list capture with 73-tool reviewed-subset authority excluding social account-connect tools; requires app support for the exact slash-origin issuer. Live consent, workspace identity, privacy review, and production acceptance remain pending."
     }
   ]
 }
