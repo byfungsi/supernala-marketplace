@@ -12,6 +12,7 @@ import { verifyPublishedReleaseBaseline } from "./release-baseline.js";
 import {
   buildManagedPackageReleaseBundle,
   calculateManagedPackageSourceInputDigest,
+  digestReleaseSharedInputs,
   loadManagedPackageReleaseBundle,
   readReleaseBundleIdentity,
   releaseBundleDirectory,
@@ -39,6 +40,7 @@ import {
 import {
   buildManagedRemoteReleaseBundle,
   calculateManagedRemoteSourceInputDigest,
+  draftManagedRemoteBootstrapReview,
   loadManagedRemoteReleaseBundle,
 } from "./remote-release-bundle.js";
 import { ReleaseSet } from "./release-set.js";
@@ -117,17 +119,13 @@ const readJson = async <S extends Schema.ConstraintDecoder<unknown>>(
     JSON.parse(await fs.readFile(file, "utf8")),
   );
 
-const digestSharedInputs = async (
-  files: ReadonlyArray<string>,
-): Promise<typeof PluginSha256.Type> => {
-  const entries = [];
-  for (const file of files.toSorted()) {
-    entries.push({
-      file,
-      digest: await digestPluginBytes(new Uint8Array(await fs.readFile(file))),
-    });
-  }
-  return digestPluginBytes(new TextEncoder().encode(JSON.stringify(entries)));
+/** A selected release without its protected review fails with a named reason, not a file error. */
+const readReleaseReview = async (file: string): Promise<ReleaseReview> => {
+  const exists = await fs.access(file).then(
+    () => true,
+    () => false,
+  );
+  return exists ? readJson(file, ReleaseReview) : fail("release-review-missing");
 };
 
 const exportBaseline = async (output: string, mergeCommit: string): Promise<void> => {
@@ -193,7 +191,7 @@ const selectAndBuild = async (input: {
   const baselineEnvelope = await readJson(input.baselineFile, VerifiedReleaseBaseline);
   if (baselineEnvelope.mergeCommit !== input.mergeCommit) fail("baseline-merge-commit-mismatch");
   const baseline = baselineEnvelope.records;
-  const sharedInputDigest = await digestSharedInputs(index.sharedInputs);
+  const sharedInputDigest = await digestReleaseSharedInputs(index.sharedInputs);
   const states: Array<ReleaseSourceState> = [];
   const sourceByKey = new Map<
     string,
@@ -312,7 +310,7 @@ const selectAndBuild = async (input: {
         `${state.identity.publisherNamespace}/${state.identity.pluginSlug}@${state.identity.semanticVersion}`,
       ) ?? fail("selected-source-missing");
     const reviewFile = releaseReviewFile(state.identity);
-    const review = await readJson(reviewFile, ReleaseReview);
+    const review = await readReleaseReview(reviewFile);
     const output = releaseBundleDirectory(input.outputDirectory, state.identity);
     const previousAuthorityRecord = baseline
       .filter(
@@ -417,7 +415,7 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
   }
   if (releaseOrdinal !== releaseSet.releaseOrdinal) fail("release-ordinal-mismatch");
   const index = await readJson("releases/index.json", ReleaseIndex);
-  const sharedInputDigest = await digestSharedInputs(index.sharedInputs);
+  const sharedInputDigest = await digestReleaseSharedInputs(index.sharedInputs);
   const sourceByKey = new Map<
     string,
     {
@@ -502,7 +500,7 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
       sourceByKey.get(
         `${claimedIdentity.publisherNamespace}/${claimedIdentity.pluginSlug}@${claimedIdentity.semanticVersion}`,
       ) ?? fail("release-source-not-eligible");
-    const trustedReview = await readJson(releaseReviewFile(claimedIdentity), ReleaseReview);
+    const trustedReview = await readReleaseReview(releaseReviewFile(claimedIdentity));
     const safetyFindings = await inspectPublicRepositorySafety(bundleDirectory);
     if (safetyFindings.length > 0) fail("release-artifact-public-safety-failed");
     const loaded = unwrap(
@@ -652,6 +650,48 @@ const publishBundles = async (directory: string, dryRun: boolean): Promise<void>
   unwrap(await coordinator.finish(attemptId, "completed"), (error) => error.reason);
 };
 
+/** Writes a first-publication review for one managed remote; never replaces an existing review. */
+const draftRemoteReview = async (
+  sourceFile: string,
+  reviewId: string,
+  reviewer: string,
+): Promise<void> => {
+  const index = await readJson("releases/index.json", ReleaseIndex);
+  if (
+    !index.plugins.some(
+      (plugin) =>
+        plugin.kind === "managed-remote-mcp" &&
+        plugin.publicationEligible &&
+        plugin.sourceDirectory === sourceFile,
+    )
+  ) {
+    fail("remote-source-not-publication-eligible");
+  }
+  const review = unwrap(
+    await draftManagedRemoteBootstrapReview({
+      sourceFile,
+      sharedInputDigest: await digestReleaseSharedInputs(index.sharedInputs),
+      reviewId,
+      reviewer,
+      reviewedAt: Date.now(),
+    }),
+    (error) => error,
+  );
+  const reviewFile = releaseReviewFile(review.identity);
+  const written = await fs
+    .writeFile(reviewFile, `${JSON.stringify(review, null, 2)}\n`, {
+      flag: "wx",
+    })
+    .then(
+      () => true,
+      () => false,
+    );
+  if (!written) fail("release-review-exists");
+  process.stdout.write(
+    `${JSON.stringify({ reviewFile, releaseDigest: review.releaseDigest, tools: review.authorityAfter.tools.length })}\n`,
+  );
+};
+
 const main = async (): Promise<void> => {
   const [command, ...arguments_] = process.argv.slice(2);
   if (command === "baseline") {
@@ -691,7 +731,14 @@ const main = async (): Promise<void> => {
       arguments_[1] === "--dry-run",
     );
   }
-  fail("expected baseline|build|publish");
+  if (command === "draft-remote-review") {
+    return draftRemoteReview(
+      arguments_[0] ?? fail("remote-source-required"),
+      arguments_[1] ?? fail("review-id-required"),
+      arguments_[2] ?? fail("reviewer-required"),
+    );
+  }
+  fail("expected baseline|build|publish|draft-remote-review");
 };
 
 main().catch((error: unknown) => {

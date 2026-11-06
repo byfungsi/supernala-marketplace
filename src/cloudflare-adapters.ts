@@ -222,6 +222,15 @@ const classifyD1Failure = (body: Uint8Array): string | null => {
     for (const [pattern, reason] of patterns) {
       if (parsed.success.errors.some((error) => pattern.test(error.message))) return reason;
     }
+    // Application triggers abort with fixed sentences; letters-only text carries no SQL values.
+    for (const error of parsed.success.errors) {
+      const sentence = /^(?:D1_ERROR: )?([A-Z][A-Za-z ]{2,118}[a-z]): SQLITE_CONSTRAINT\b/u.exec(
+        error.message,
+      )?.[1];
+      if (sentence !== undefined) {
+        return `d1-trigger-abort-${sentence.toLowerCase().replaceAll(/ +/gu, "-")}`;
+      }
+    }
     return null;
   } catch {
     return null;

@@ -282,6 +282,19 @@ it("runs actual CLI build and zero-write dry-run, then rejects descriptor tamper
     const serializedReview = Schema.decodeUnknownSync(Schema.JsonObject)(
       JSON.parse(await readFile(fixture.reviewFile, "utf8")),
     );
+    await rm(fixture.reviewFile);
+    const missingReviewRejected = await runReleaseCli(fixture.root, [
+      "build",
+      "baseline.json",
+      "release-output-missing-review",
+      "a".repeat(40),
+      "1",
+    ]);
+    expect(missingReviewRejected).toMatchObject({
+      exitCode: 1,
+      stderr: "Release failed: release-review-missing\n",
+    });
+
     await writeFile(
       fixture.reviewFile,
       JSON.stringify({

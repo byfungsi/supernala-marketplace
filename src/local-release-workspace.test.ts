@@ -100,6 +100,21 @@ it("does not pass ambient secrets or Node injection into a real build child", as
     });
     expect(Result.isFailure(failed)).toBe(true);
     expect(JSON.stringify(failed)).not.toContain("private-provider-response");
+    expect(Result.isFailure(failed) && failed.failure.reason).toBe("local-release-phase-failed");
+
+    const coded = await runReleaseProcess({
+      executable: process.execPath,
+      arguments: [
+        "-e",
+        "console.error('Error: secret-token-value\\nRelease failed: application-stage-failed:d1-unique-constraint');process.exit(1)",
+      ],
+      cwd: home,
+      environment: releaseProcessEnvironment(home),
+    });
+    expect(Result.isFailure(coded) && coded.failure.reason).toBe(
+      "local-release-phase-failed:application-stage-failed:d1-unique-constraint",
+    );
+    expect(JSON.stringify(coded)).not.toContain("secret-token-value");
   } finally {
     await rm(home, { recursive: true, force: true });
   }

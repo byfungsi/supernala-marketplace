@@ -98,6 +98,20 @@ export const releaseIdentityFileStem = (identity: PluginReleaseIdentity): string
     .map(encodePathSegment)
     .join("__");
 
+/** Digests the release-system files shared by every Plugin release, in stable order. */
+export const digestReleaseSharedInputs = async (
+  files: ReadonlyArray<string>,
+): Promise<typeof PluginSha256.Type> => {
+  const entries = [];
+  for (const file of files.toSorted()) {
+    entries.push({
+      file,
+      digest: await digestPluginBytes(new Uint8Array(await fs.readFile(file))),
+    });
+  }
+  return digestPluginBytes(new TextEncoder().encode(JSON.stringify(entries)));
+};
+
 export const releaseReviewFile = (identity: PluginReleaseIdentity): string =>
   path.join("releases", "reviews", `${releaseIdentityFileStem(identity)}.json`);
 

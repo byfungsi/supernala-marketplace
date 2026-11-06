@@ -203,6 +203,11 @@ it.each([
   ["FOREIGN KEY constraint failed: private-value", "d1-foreign-key-constraint"],
   ["no such table: private-value", "d1-schema-missing"],
   ["too many SQL variables: private-value", "d1-bound-parameter-limit"],
+  [
+    "Plugin version OAuth authority shape is invalid: SQLITE_CONSTRAINT",
+    "d1-trigger-abort-plugin-version-oauth-authority-shape-is-invalid",
+  ],
+  ["Value private-value is invalid: SQLITE_CONSTRAINT", "d1-http-400"],
   ["private-value", "d1-http-400"],
 ])("reports a safe D1 failure category for %s", async (message, reason) => {
   const transport = new CloudflareD1RestTransport(

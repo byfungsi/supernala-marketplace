@@ -16,6 +16,16 @@ export const releaseProcessEnvironment = (
   GIT_CONFIG_GLOBAL: "/dev/null",
 });
 
+/** Only code-shaped reasons from the release tools' own failure lines leave a failed child. */
+const childFailureReason = (stderr: string): string | null => {
+  const reasons = [
+    ...stderr.matchAll(
+      /^(?:Release failed|Marketplace [a-z-]+ failed): ([a-z0-9][a-z0-9:-]{0,159})(?:[.\s]|$)/gmu,
+    ),
+  ];
+  return reasons.at(-1)?.[1] ?? null;
+};
+
 /** Runs one local release phase with bounded captured output; child failures never expose secret-bearing text. */
 export function runReleaseProcess(input: {
   readonly executable: string;
@@ -31,6 +41,7 @@ export function runReleaseProcess(input: {
     });
     let output = "";
     let oversized = false;
+    let stderr = "";
     child.stdout.setEncoding("utf8").on("data", (chunk: string) => {
       if (output.length + chunk.length > 4 * 1_048_576) {
         oversized = true;
@@ -38,20 +49,29 @@ export function runReleaseProcess(input: {
       }
       output += chunk;
     });
-    // Drain without storing provider errors or private paths.
-    child.stderr.resume();
+    // Retain a bounded tail only to extract a code-shaped failure reason; never surface it raw.
+    child.stderr.setEncoding("utf8").on("data", (chunk: string) => {
+      stderr = (stderr + chunk).slice(-65_536);
+    });
     child.once("error", () =>
       resolve(
         Result.fail(new LocalReleaseFailure({ reason: "local-release-process-start-failed" })),
       ),
     );
-    child.once("close", (code) =>
+    child.once("close", (code) => {
+      if (code === 0 && !oversized) return resolve(Result.succeed(output.trim()));
+      const reason = childFailureReason(stderr);
       resolve(
-        code === 0 && !oversized
-          ? Result.succeed(output.trim())
-          : Result.fail(new LocalReleaseFailure({ reason: "local-release-phase-failed" })),
-      ),
-    );
+        Result.fail(
+          new LocalReleaseFailure({
+            reason:
+              reason === null
+                ? "local-release-phase-failed"
+                : `local-release-phase-failed:${reason}`,
+          }),
+        ),
+      );
+    });
   });
 }
 
