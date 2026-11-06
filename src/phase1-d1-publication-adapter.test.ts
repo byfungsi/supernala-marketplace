@@ -2099,7 +2099,7 @@ for (const remote of providerExpansionDeclarations) {
   });
 }
 
-for (const slug of ["atlassian", "canva", "buffer"]) {
+for (const slug of ["atlassian", "canva"]) {
   it(`publishes and reads back the captured ${slug} declaration with exact OAuth custody`, async () => {
     const decoded = validateManagedRemotePluginRelease(
       JSON.parse(await readFile(`plugins/remotes/${slug}.json`, "utf8")),
@@ -3948,4 +3948,38 @@ it("publishes the personal-token method against the existing identical OAuth cat
     database.prepare("SELECT count(*) AS count FROM plugin_auth_strategy_definitions").get(),
   ).toMatchObject({ count: 2 });
   database.close();
+});
+
+it("publishes the Buffer API-key version without OAuth provider custody", async () => {
+  const parsed = validateManagedRemotePluginRelease(
+    JSON.parse(await readFile("plugins/remotes/buffer.json", "utf8")),
+    "publication",
+  );
+  if (Result.isFailure(parsed)) throw new Error(parsed.failure);
+  const release = await providerExpansionCandidate(parsed.success);
+  expect(release.oauthProviderDefinition).toBeUndefined();
+  expect(release.authentication).toEqual({ kind: "none" });
+  const database = await applicationDatabase();
+  try {
+    const adapter = new Phase1D1PublicationAdapter(new SQLiteD1Transport(database));
+    expect(await adapter.stage(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.finalize(release)).toEqual(Result.succeed(undefined));
+    expect(await adapter.readPublished(release)).toEqual(Result.succeed(true));
+    expect(
+      database
+        .prepare(
+          "SELECT auth_profile, authentication_kind, provider_definition_digest FROM plugin_versions WHERE plugin_version_id = ?",
+        )
+        .get(release.version.id),
+    ).toMatchObject({
+      auth_profile: "api-key",
+      authentication_kind: "none",
+      provider_definition_digest: null,
+    });
+    expect(
+      database.prepare("SELECT count(*) AS count FROM plugin_catalog_tools").get(),
+    ).toMatchObject({ count: 17 });
+  } finally {
+    database.close();
+  }
 });

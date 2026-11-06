@@ -114,7 +114,7 @@
       "sourceDirectory": "plugins/remotes/buffer.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
-      "reason": "Owner-authorized 17-tool consented Buffer catalog and exact OAuth authority; independent review waived, not passed. Coordinated bootstrap content-selection app deployment and trusted publication/readback remain required."
+      "reason": "Owner authorized buffer@1.1.0 on 2026-11-06: per-user Bearer API key replaces dynamic OAuth after Buffer began rejecting registration for non-localhost redirects. Same 17-tool consented catalog, endpoint and provider registration; independent review waived, not passed. Trusted publication/readback and live key acceptance remain required."
     },
     {
       "sourceDirectory": "plugins/remotes/canva.json",

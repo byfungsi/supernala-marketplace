@@ -41,6 +41,12 @@ it.each([
       ),
     ),
   );
+  // Buffer reuses its consented OAuth capture but connects with a per-user API key.
+  if (slug === "buffer") {
+    expect(release.authStrategy?.profile).toBe("api-key");
+    expect(release.oauthProviderDefinition).toBeUndefined();
+    return;
+  }
   if (release.oauthProviderDefinition === undefined) throw new Error("provider-definition-missing");
   expect(release.providerDefinitionDigest).toBe(
     await digestPluginOAuthProviderDefinition(release.oauthProviderDefinition),
