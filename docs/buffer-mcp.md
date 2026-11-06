@@ -1,47 +1,48 @@
 # Buffer MCP publication
 
-The declaration targets `https://mcp.buffer.com/mcp` using dynamic OAuth registration. The Owner authorized the captured source and waived independent review (not passed). Coordinated
-bootstrap transport deployment and trusted publication remain required.
+`buffer@1.1.0` connects to `https://mcp.buffer.com/mcp` with each user's own Buffer API key.
+It replaces the dynamic OAuth method of `buffer@1.0.0`. The Owner authorized the change on
+2026-11-06 and waived independent review (not passed).
 
-## Captured evidence
+## Why OAuth was replaced
 
-The Owner completed final consent on 2026-10-28. The server granted exactly eight resource scopes:
-account read, idea read/write, insights read, post read/write and snippet read/write. The final
-request omits `offline_access`; Buffer still issues a refresh token. Requesting that protocol scope
-would produce a granted scope string excluding it, which conflicts with the existing exact-scope
-policy. The final eight-scope request and refresh both returned the exact reviewed resource scopes.
+On 2026-11-06 Buffer's registration endpoint (`https://auth.buffer.com/reg`) began rejecting
+dynamic client registration for Supernala's callback with `400 invalid_client_metadata`
+("Invalid public MCP client registration request"). The same request succeeds with a
+`localhost` redirect, so Buffer limits public dynamic registration to local clients. Hosted
+products need a registered app client, whose rate limits are shared by every user of that
+client. A per-user API key instead counts against each user's own Buffer plan.
 
-`fixtures/mcp/captures/buffer-20261028.json` preserves 17 exact named tools covering accounts,
-channels, posts, ideas, analytics and templates. Every captured schema is retained in the source
-catalog. Writes require approval; delete operations are destructive and require approval. Generic
-GraphQL execution tools are not in this consented catalog and are not invented from documentation.
+## API-key connection
 
-`get_account` returned account `id` and `name` in JSON text content block 0, followed by a separate
-rate-limit block. The reviewed bootstrap operation explicitly selects block 0 with
-`resultTextContentIndex`; undeclared multipart responses continue failing closed. The application
-transport resolved that identity against the live consented server. This is an account-wide
-connection across accessible organizations and channels, not an organization-isolated OAuth grant.
+Buffer documents Bearer API-key access for MCP clients that can set a request header
+([Other AI tools](https://developers.buffer.com/guides/integrations/other-ai-tools.html)).
+Users create a key in Buffer under Settings → API and paste it into the credential form. The
+application keeps the key in the encrypted credential Vault and sends it only as
+`Authorization: Bearer <key>` from the trusted adapter. Users never put keys in chat, Plugin
+Config, Skill instructions or Files.
 
-Initial and refresh responses returned Bearer tokens with a 3,600-second access lifetime and
-rotated refresh tokens. Credential-free policy facts and redacted identity shapes are retained in
-`fixtures/mcp/captures/provider-evidence-20261028.json`. Public metadata advertises no revocation
-endpoint; disconnect deactivates local access without claiming remote token revocation.
+Identity resolves through the reviewed `get_account` bootstrap operation. It returns account
+`id` and `name` in JSON text content block 0, followed by a separate rate-limit block;
+`resultTextContentIndex` selects block 0 and undeclared multipart responses fail closed. A key
+reaches every organization and channel in the account. Disconnecting deactivates local access;
+users revoke the key itself in Buffer.
 
-## Public metadata
+The version reuses the existing `buffer-mcp-v1` endpoint and `buffer-oauth-v1` provider
+registration identities, because endpoint URLs have one durable identity. No OAuth client or
+token is used for key connections. Requests share the user's plan limits with their other keys
+and MCP connections.
 
-Checked against the [official MCP guide](https://developers.buffer.com/guides/integrations/mcp.html),
-[resource metadata](https://mcp.buffer.com/.well-known/oauth-protected-resource/mcp) and
-[authorization metadata](https://auth.buffer.com/.well-known/oauth-authorization-server):
+## Catalog evidence
 
-- Resource: `https://mcp.buffer.com/mcp`.
-- Issuer: `https://auth.buffer.com`.
-- Authorization `/auth`, token `/token`, DCR `/reg`, PKCE S256 and token authentication `none`.
-- Authorization code and refresh grants; resource parameter support.
+`fixtures/mcp/captures/buffer-20261028.json` preserves the 17 exact named tools from the
+Owner-consented OAuth capture on 2026-10-28, covering accounts, channels, posts, ideas,
+analytics and templates. The schemas are unchanged in 1.1.0. Writes require approval; delete
+operations are destructive and require approval. No API-key `tools/list` capture is claimed;
+runtime reviewed-subset reconciliation limits access to the tools actually available.
 
 ## Remaining acceptance
 
-The Owner waived independent source/authority review; it was not passed. Retain exact digest
-approval, deploy the app's explicit
-bootstrap content-selection contract, publish through the trusted operator flow, and verify durable
-readback and Store visibility. Then verify normal installation, per-user consent, invocation,
-refresh/reconnect and disconnect in production. No post or template mutation was needed for capture.
+Publish through the trusted operator flow and verify durable readback and Store visibility.
+Then verify, with a real user key: update from 1.0.0, connection and identity, a read
+invocation, an approved write and disconnect.

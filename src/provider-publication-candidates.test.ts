@@ -69,25 +69,33 @@ it("keeps Canva Developer Portal authority separate from the earlier CIMD surfac
   });
 });
 
-it("binds Buffer discovery to the advertised resource and dynamic authorization server", async () => {
+it("connects Buffer with a per-user Bearer API key instead of dynamic OAuth", async () => {
   const parsed = validateManagedRemotePluginRelease(
     JSON.parse(await readFile("plugins/remotes/buffer.json", "utf8")),
-    "authoring",
+    "publication",
   );
   if (Result.isFailure(parsed)) throw new Error(parsed.failure);
   expect(parsed.success).toMatchObject({
+    version: "1.1.0",
     endpoint: "https://mcp.buffer.com/mcp",
     allowedHosts: ["mcp.buffer.com"],
-    oauthRegistrationMode: "dynamic",
+    runtime: { endpointRegistrationId: "buffer-mcp-v1", providerRegistrationId: "buffer-oauth-v1" },
     authStrategy: {
-      resourceMetadataUrl: "https://mcp.buffer.com/.well-known/oauth-protected-resource/mcp",
-      clientRegistration: {
-        kind: "dynamic",
-        authorizationServerMetadataUrl:
-          "https://auth.buffer.com/.well-known/oauth-authorization-server",
+      profile: "api-key",
+      providerRegistrationId: "buffer-oauth-v1",
+      fields: [{ key: "token", secret: true }],
+      delivery: [
+        { kind: "header", field: "token", headerName: "authorization", encoding: "bearer" },
+      ],
+      identity: {
+        kind: "mcp-tool",
+        operation: { toolName: "get_account", resultTextContentIndex: 0 },
       },
+      resources: { kind: "none" },
     },
   });
-  expect(parsed.success.scopes).not.toContain("offline_access");
-  expect(parsed.success.scopes).toContain("posts:write");
+  expect(parsed.success.scopes).toEqual([]);
+  expect(parsed.success.oauthProviderDefinition).toBeUndefined();
+  expect(parsed.success.providerDefinitionDigest).toBeUndefined();
+  expect(parsed.success.verificationNotes).toContain("no API-key tools/list capture");
 });

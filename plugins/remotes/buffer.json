@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:buffer@1.0.0",
+  "id": "supernala-public:supernala:buffer@1.1.0",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "buffer",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "name": "Buffer",
-  "description": "Buffer hosted MCP integration for social channels, posts, ideas, analytics, and reusable templates; catalog capture and authority review pending",
+  "description": "Connect Buffer with your own Buffer API key to work with social channels, posts, ideas, analytics and reusable templates. Writes require approval.",
   "license": "LicenseRef-Provider-Service",
   "runtime": {
     "_tag": "ManagedRemoteMcp",
@@ -18,27 +18,27 @@
   },
   "endpoint": "https://mcp.buffer.com/mcp",
   "oauthRegistrationMode": "dynamic",
-  "providerDefinitionDigest": "ea347525080358f8aee8c4a08369d4bf600485739673e137be4726810b7eab99",
   "authStrategy": {
     "schemaVersion": 1,
-    "profile": "mcp-oauth",
+    "profile": "api-key",
     "providerRegistrationId": "buffer-oauth-v1",
-    "providerDefinitionDigest": "ea347525080358f8aee8c4a08369d4bf600485739673e137be4726810b7eab99",
-    "requestedScopes": [
-      "account:read",
-      "ideas:read",
-      "ideas:write",
-      "insights:read",
-      "posts:read",
-      "posts:write",
-      "snippets:read",
-      "snippets:write"
+    "fields": [
+      {
+        "key": "token",
+        "label": "Buffer API key",
+        "secret": true,
+        "minimumLength": 8,
+        "maximumLength": 8192
+      }
     ],
-    "clientRegistration": {
-      "kind": "dynamic",
-      "authorizationServerMetadataUrl": "https://auth.buffer.com/.well-known/oauth-authorization-server"
-    },
-    "resourceMetadataUrl": "https://mcp.buffer.com/.well-known/oauth-protected-resource/mcp",
+    "delivery": [
+      {
+        "kind": "header",
+        "field": "token",
+        "headerName": "authorization",
+        "encoding": "bearer"
+      }
+    ],
     "identity": {
       "kind": "mcp-tool",
       "operation": {
@@ -59,16 +59,7 @@
       "kind": "none"
     }
   },
-  "scopes": [
-    "account:read",
-    "ideas:read",
-    "ideas:write",
-    "insights:read",
-    "posts:read",
-    "posts:write",
-    "snippets:read",
-    "snippets:write"
-  ],
+  "scopes": [],
   "catalog": {
     "id": "buffer-live-tools-list-20261028",
     "schemaVersion": 1,
@@ -78,7 +69,7 @@
         "id": "buffer.create_idea",
         "mcpName": "create_idea",
         "title": "create_idea",
-        "description": "Create a new content idea in a Buffer organization. Ideas are drafts for future social media posts \u2014 use them to capture concepts, attach media, and tag with categories. Use get_account if the organization ID is unknown. Returns the created idea record. Do not use this tool to publish or schedule posts.",
+        "description": "Create a new content idea in a Buffer organization. Ideas are drafts for future social media posts — use them to capture concepts, attach media, and tag with categories. Use get_account if the organization ID is unknown. Returns the created idea record. Do not use this tool to publish or schedule posts.",
         "classification": "write",
         "defaultPolicy": "require-approval",
         "inputSchema": {
@@ -198,7 +189,7 @@
         "id": "buffer.create_post",
         "mcpName": "create_post",
         "title": "create_post",
-        "description": "Create and schedule a social media post to a Buffer channel. Supports all platforms: Instagram, Facebook, Twitter, LinkedIn, Pinterest, YouTube, Google Business, Mastodon, TikTok, Threads, Bluesky, Substack, and Start Page. Use get_account if the organization ID is unknown. Use list_channels if the channel ID is unknown. \n\nMinimum requirements by service:\n- Twitter/Mastodon/Threads/Bluesky: text only\n- Facebook: requires metadata.facebook.type\n- Instagram: requires image or video asset + metadata.instagram.type\n- TikTok: requires image or video asset\n- Pinterest: requires image + metadata.pinterest.boardServiceId (get from get_channel)\n- YouTube: requires video + metadata.youtube.title + metadata.youtube.categoryId\n- Substack: text, an image or video asset, or metadata.substack.linkAttachment\n- Google Business: requires metadata.google.type\n\n\nFor threaded posts, set BOTH outer text and metadata.{platform}.thread, include ALL thread items, match outer text\u2026",
+        "description": "Create and schedule a social media post to a Buffer channel. Supports all platforms: Instagram, Facebook, Twitter, LinkedIn, Pinterest, YouTube, Google Business, Mastodon, TikTok, Threads, Bluesky, Substack, and Start Page. Use get_account if the organization ID is unknown. Use list_channels if the channel ID is unknown. \n\nMinimum requirements by service:\n- Twitter/Mastodon/Threads/Bluesky: text only\n- Facebook: requires metadata.facebook.type\n- Instagram: requires image or video asset + metadata.instagram.type\n- TikTok: requires image or video asset\n- Pinterest: requires image + metadata.pinterest.boardServiceId (get from get_channel)\n- YouTube: requires video + metadata.youtube.title + metadata.youtube.categoryId\n- Substack: text, an image or video asset, or metadata.substack.linkAttachment\n- Google Business: requires metadata.google.type\n\n\nFor threaded posts, set BOTH outer text and metadata.{platform}.thread, include ALL thread items, match outer text…",
         "classification": "write",
         "defaultPolicy": "require-approval",
         "inputSchema": {
@@ -228,7 +219,7 @@
               "type": "string",
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-              "description": "ISO 8601 with timezone offset (YYYY-MM-DDThh:mm:ss\u00b1hh:mm); required for customScheduled. Build the offset from the get_account timezone and anchor relative times (\"tomorrow\") on its currentTime; must be in the future."
+              "description": "ISO 8601 with timezone offset (YYYY-MM-DDThh:mm:ss±hh:mm); required for customScheduled. Build the offset from the get_account timezone and anchor relative times (\"tomorrow\") on its currentTime; must be in the future."
             },
             "tagIds": {
               "type": "array",
@@ -2145,7 +2136,7 @@
         "id": "buffer.edit_post",
         "mcpName": "edit_post",
         "title": "edit_post",
-        "description": "Edit an existing post in Buffer. Reuse known post details. Use get_post when required information is missing or up-to-date data is requested or needed. Leave schedulingType out unless the user is switching between reminder and automatic publishing: omitting it keeps the post publishing the way it already does. Leave mode and dueAt out unless the user is rescheduling: omitting them keeps the post in its current queue slot or custom time. Sending a mode reschedules the post even when it matches the current one.\n\nEvery edit is re-validated as a whole post against the same rules as creation; it is not merged with the stored post. Carry the current assets and metadata forward and change only what the user asked to change. Dropping an asset or metadata field the post requires will reject the edit.\n\nFor threaded posts, set BOTH outer text and metadata.{platform}.thread, include ALL thread items, match outer text to the first item's text, and use the top-level\u2026",
+        "description": "Edit an existing post in Buffer. Reuse known post details. Use get_post when required information is missing or up-to-date data is requested or needed. Leave schedulingType out unless the user is switching between reminder and automatic publishing: omitting it keeps the post publishing the way it already does. Leave mode and dueAt out unless the user is rescheduling: omitting them keeps the post in its current queue slot or custom time. Sending a mode reschedules the post even when it matches the current one.\n\nEvery edit is re-validated as a whole post against the same rules as creation; it is not merged with the stored post. Carry the current assets and metadata forward and change only what the user asked to change. Dropping an asset or metadata field the post requires will reject the edit.\n\nFor threaded posts, set BOTH outer text and metadata.{platform}.thread, include ALL thread items, match outer text to the first item's text, and use the top-level…",
         "classification": "write",
         "defaultPolicy": "require-approval",
         "inputSchema": {
@@ -2174,7 +2165,7 @@
               "type": "string",
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-              "description": "ISO 8601 with timezone offset (YYYY-MM-DDThh:mm:ss\u00b1hh:mm); only valid with customScheduled. Build the offset from the get_account timezone and anchor relative times (\"tomorrow\") on its currentTime; must be in the future."
+              "description": "ISO 8601 with timezone offset (YYYY-MM-DDThh:mm:ss±hh:mm); only valid with customScheduled. Build the offset from the get_account timezone and anchor relative times (\"tomorrow\") on its currentTime; must be in the future."
             },
             "tagIds": {
               "type": "array",
@@ -4024,7 +4015,7 @@
         "id": "buffer.get_aggregated_post_metrics",
         "mcpName": "get_aggregated_post_metrics",
         "title": "get_aggregated_post_metrics",
-        "description": "Returns aggregate post analytics (sums and averages) for a Buffer organization over a date range. Use this when the user wants totals across many posts \u2014 e.g. \"total reach in the last 2 weeks\", \"engagement on posts tagged #launch\". Free plans: startDateTime must be within the last 31 days. The response always includes a baseline trio of metrics (postCount, reactions, comments); additional metrics (reach, impressions, engagement rate, etc.) are included only when every channel in the filter set supports them. The `metricsUpdatedAt` field carries the freshness of the aggregate \u2014 metrics refresh daily, so values can lag the source network by up to ~24h. It is null when no posts matched the filter. For per-post analytics on a single post, use get_post; for many posts, use list_posts. Use get_account if the organization ID is unknown; use list_channels if needed channel IDs are unknown.",
+        "description": "Returns aggregate post analytics (sums and averages) for a Buffer organization over a date range. Use this when the user wants totals across many posts — e.g. \"total reach in the last 2 weeks\", \"engagement on posts tagged #launch\". Free plans: startDateTime must be within the last 31 days. The response always includes a baseline trio of metrics (postCount, reactions, comments); additional metrics (reach, impressions, engagement rate, etc.) are included only when every channel in the filter set supports them. The `metricsUpdatedAt` field carries the freshness of the aggregate — metrics refresh daily, so values can lag the source network by up to ~24h. It is null when no posts matched the filter. For per-post analytics on a single post, use get_post; for many posts, use list_posts. Use get_account if the organization ID is unknown; use list_channels if needed channel IDs are unknown.",
         "classification": "read",
         "defaultPolicy": "allow",
         "inputSchema": {
@@ -4075,7 +4066,7 @@
                     "pattern": "^[a-f\\d]{24}$",
                     "description": "A tag ID."
                   },
-                  "description": "Tag IDs to include posts from (OR semantics \u2014 a post matches if any of its tags appear in this list)."
+                  "description": "Tag IDs to include posts from (OR semantics — a post matches if any of its tags appear in this list)."
                 },
                 "isEmpty": {
                   "description": "If true, also include posts that have no tags assigned. Combinable with `in` for a union filter. Defaults to false.",
@@ -4127,7 +4118,7 @@
               "description": "The ID of the post to retrieve. Use list_posts if the post ID is unknown."
             },
             "includeMetrics": {
-              "description": "Set true to also return per-post analytics (reactions, comments, impressions, etc.) and `metricsUpdatedAt` (freshness timestamp; metrics refresh daily, can lag up to ~24h). Default false \u2014 adds latency and response size. Only set true when the user asks about post performance.",
+              "description": "Set true to also return per-post analytics (reactions, comments, impressions, etc.) and `metricsUpdatedAt` (freshness timestamp; metrics refresh daily, can lag up to ~24h). Default false — adds latency and response size. Only set true when the user asks about post performance.",
               "type": "boolean"
             }
           },
@@ -4282,7 +4273,7 @@
         "id": "buffer.list_posts",
         "mcpName": "list_posts",
         "title": "list_posts",
-        "description": "Lists posts from a Buffer organization with filters for channels, status, tags, and dates. Returns post details including id, status, allowedActions, via, text, scheduled/sent times, channel info, tags, assets, and errors. Supports pagination using Relay-style cursors. Set `includeMetrics: true` to additionally return per-post analytics on each post \u2014 only do so when the user asks about post performance, as it materially increases response size. For totals/sums across many posts, prefer `get_aggregated_post_metrics`. Use get_account if the organization ID is unknown, and list_channels if needed channel IDs are unknown.",
+        "description": "Lists posts from a Buffer organization with filters for channels, status, tags, and dates. Returns post details including id, status, allowedActions, via, text, scheduled/sent times, channel info, tags, assets, and errors. Supports pagination using Relay-style cursors. Set `includeMetrics: true` to additionally return per-post analytics on each post — only do so when the user asks about post performance, as it materially increases response size. For totals/sums across many posts, prefer `get_aggregated_post_metrics`. Use get_account if the organization ID is unknown, and list_channels if needed channel IDs are unknown.",
         "classification": "read",
         "defaultPolicy": "allow",
         "inputSchema": {
@@ -4387,7 +4378,7 @@
               "type": "string"
             },
             "includeMetrics": {
-              "description": "Set true to also return per-post analytics (reactions, comments, impressions, etc.) and `metricsUpdatedAt` on each post. Default false \u2014 adds latency and response size; with up to 100 posts per page, the cost adds up. Only set true when the user asks about post performance. For totals across many posts, prefer `get_aggregated_post_metrics`.",
+              "description": "Set true to also return per-post analytics (reactions, comments, impressions, etc.) and `metricsUpdatedAt` on each post. Default false — adds latency and response size; with up to 100 posts per page, the cost adds up. Only set true when the user asks about post performance. For totals across many posts, prefer `get_aggregated_post_metrics`.",
               "type": "boolean"
             }
           },
@@ -4447,60 +4438,9 @@
     "maximumCatalogPages": 10
   },
   "evidenceUrls": [
+    "https://developers.buffer.com/guides/integrations/other-ai-tools.html",
     "https://developers.buffer.com/guides/integrations/mcp.html",
-    "https://mcp.buffer.com/.well-known/oauth-protected-resource/mcp",
-    "https://auth.buffer.com/.well-known/oauth-authorization-server",
-    "https://integrations.sh/buffer.com/buffer-mcp-server/"
+    "https://developers.buffer.com/guides/authentication.html"
   ],
-  "verificationNotes": "Owner-consented 2026-10-28 final capture contains 17 exact named tools covering channels, posts, ideas, analytics and templates. get_account returns stable id and name in JSON text block 0, beside a separate rateLimit block; the reviewed resultTextContentIndex selects that block explicitly. Initial and refresh responses returned Bearer tokens with expires_in 3600, exactly eight granted resource scopes and rotated refresh tokens. Final authorization omits offline_access while still receiving a refresh token. Connections are account-wide across accessible organizations and channels. The app transport resolved this identity successfully. Writes require approval and deletes are destructive. Remote token revocation is not advertised; disconnect deactivates local access. Coordinated application deployment, trusted publication and production acceptance remain pending. The Owner waived independent source/authority review; it was not passed.",
-  "oauthProviderDefinition": {
-    "schemaVersion": 1,
-    "protocol": "oauth2-authorization-code",
-    "issuer": "https://auth.buffer.com",
-    "provider": "buffer-mcp",
-    "resourceIdentity": "https://mcp.buffer.com/mcp",
-    "authorizationEndpoint": "https://auth.buffer.com/auth",
-    "tokenEndpoint": "https://auth.buffer.com/token",
-    "tokenEndpointAuthMethod": "none",
-    "authorizationResponseIssuer": "not-supported",
-    "pkce": {
-      "method": "S256"
-    },
-    "authorizationParameters": [],
-    "scopes": [
-      "account:read",
-      "ideas:read",
-      "ideas:write",
-      "insights:read",
-      "posts:read",
-      "posts:write",
-      "snippets:read",
-      "snippets:write"
-    ],
-    "account": {
-      "kind": "declaration-managed"
-    },
-    "tokens": {
-      "accessTokenType": "bearer",
-      "expiresIn": {
-        "required": true,
-        "minimumSeconds": 1,
-        "maximumSeconds": 3600
-      },
-      "grantedScopes": {
-        "whenPresent": "exact-match",
-        "whenOmitted": "requested-scopes"
-      },
-      "initialRefreshToken": "required",
-      "refreshResponseToken": "retain-current-if-omitted"
-    },
-    "refresh": {
-      "kind": "standard-form-post",
-      "invalidGrant": "reauthorization-required",
-      "ambiguousOutcome": "fail-closed-no-replay"
-    },
-    "revocation": {
-      "kind": "none"
-    }
-  }
+  "verificationNotes": "Owner-authorized switch to per-user API keys on 2026-11-06 after Buffer began rejecting dynamic client registration for non-localhost redirect URIs (invalid_client_metadata), which left the OAuth 1.0.0 setup unable to start. Buffer documents Bearer API-key access to the same MCP endpoint. Users paste a personal key from Buffer Settings → API in the credential form; the Vault-owned adapter sends it as an Authorization Bearer header and validates identity through the reviewed get_account bootstrap operation (JSON text block 0). The 17 reviewed tool schemas are unchanged from the Owner-consented 2026-10-28 OAuth capture at the same endpoint; no API-key tools/list capture or successful key connection is claimed. Requests count against the user plan rate limits shared with their other keys and MCP connections. A key is account-wide across accessible organizations and channels. Writes require approval and deletes are destructive. Disconnect deactivates local access; users revoke keys in Buffer. Independent review waived, not passed; trusted publication and live key acceptance remain pending."
 }
