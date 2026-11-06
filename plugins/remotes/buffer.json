@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
   "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:buffer@1.1.0",
+  "id": "supernala-public:supernala:buffer@1.1.1",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "buffer",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "name": "Buffer",
-  "description": "Connect Buffer with your own Buffer API key to work with social channels, posts, ideas, analytics and reusable templates. Writes require approval.",
+  "description": "Buffer hosted MCP integration for social channels, posts, ideas, analytics, and reusable templates; catalog capture and authority review pending",
   "license": "LicenseRef-Provider-Service",
   "runtime": {
     "_tag": "ManagedRemoteMcp",

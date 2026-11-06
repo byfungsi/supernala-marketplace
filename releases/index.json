@@ -114,7 +114,7 @@
       "sourceDirectory": "plugins/remotes/buffer.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
-      "reason": "Owner authorized buffer@1.1.0 on 2026-11-06: per-user Bearer API key replaces dynamic OAuth after Buffer began rejecting registration for non-localhost redirects. Same 17-tool consented catalog, endpoint and provider registration; independent review waived, not passed. Trusted publication/readback and live key acceptance remain required."
+      "reason": "Owner authorized buffer@1.1.1 on 2026-11-06 (1.1.0 failed finalize with a changed description and is retained as a failed record): per-user Bearer API key replaces dynamic OAuth after Buffer began rejecting registration for non-localhost redirects. Same 17-tool consented catalog, endpoint and provider registration; independent review waived, not passed. Trusted publication/readback and live key acceptance remain required."
     },
     {
       "sourceDirectory": "plugins/remotes/canva.json",
