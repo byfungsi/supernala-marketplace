@@ -1,0 +1,2941 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-publishable",
+  "id": "supernala-public:supernala:repliz@1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "repliz",
+  "version": "1.0.0",
+  "name": "Repliz",
+  "description": "Repliz hosted MCP integration for social comments, DMs, contacts, scheduled posts, content, automations, templates, reports, and storage",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "repliz-mcp-v1",
+    "providerRegistrationId": "repliz-oauth-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://mcp.repliz.com/mcp",
+  "oauthRegistrationMode": "dynamic",
+  "providerDefinitionDigest": "ae139ccc825d04c4e802d47e01eedf8b4ac0c8cf32405b519e536687eda7ef4d",
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "repliz-oauth-v1",
+    "providerDefinitionDigest": "ae139ccc825d04c4e802d47e01eedf8b4ac0c8cf32405b519e536687eda7ef4d",
+    "requestedScopes": [],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://mcp.repliz.com/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://mcp.repliz.com/.well-known/oauth-protected-resource/mcp",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Repliz connection (workspace identity pending)"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "oauthProviderDefinition": {
+    "schemaVersion": 1,
+    "protocol": "oauth2-authorization-code",
+    "issuer": "https://mcp.repliz.com/",
+    "provider": "repliz-mcp",
+    "resourceIdentity": "https://mcp.repliz.com/mcp",
+    "authorizationEndpoint": "https://mcp.repliz.com/authorize",
+    "tokenEndpoint": "https://mcp.repliz.com/token",
+    "tokenEndpointAuthMethod": "none",
+    "authorizationResponseIssuer": "required",
+    "pkce": {
+      "method": "S256"
+    },
+    "authorizationParameters": [],
+    "scopes": [],
+    "account": {
+      "kind": "declaration-managed"
+    },
+    "tokens": {
+      "accessTokenType": "bearer",
+      "expiresIn": {
+        "required": true,
+        "minimumSeconds": 1,
+        "maximumSeconds": 86400
+      },
+      "grantedScopes": {
+        "whenPresent": "exact-match",
+        "whenOmitted": "requested-scopes"
+      },
+      "initialRefreshToken": "required",
+      "refreshResponseToken": "retain-current-if-omitted"
+    },
+    "refresh": {
+      "kind": "standard-form-post",
+      "invalidGrant": "reauthorization-required",
+      "ambiguousOutcome": "fail-closed-no-replay"
+    },
+    "revocation": {
+      "kind": "none"
+    },
+    "scopeAuthority": "registered-app-permissions"
+  },
+  "scopes": [],
+  "catalog": {
+    "id": "repliz-tools-list-20261106",
+    "schemaVersion": 1,
+    "digest": "dd1804c5325a5f70411e5d9a01587f27efcc2f656fff63ddfef6f8d6522461dd",
+    "tools": [
+      {
+        "id": "repliz.complete_file",
+        "mcpName": "repliz_complete_file",
+        "title": "Complete File Upload",
+        "description": "Step 3 of 3 — Finalize a file upload after the binary has been PUT to the presigned URL.\n\nProvide the `fileId` (the `id` field from `repliz_init_file`). On success, the file status changes from `pending` to `success` and is available for use in schedules.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fileId": {
+              "type": "string",
+              "description": "The file id from the `id` field returned by `repliz_init_file`."
+            }
+          },
+          "required": ["fileId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.count_accounts",
+        "mcpName": "repliz_count_accounts",
+        "title": "Count Accounts",
+        "description": "Get the number of accounts connected to your Repliz workspace, per platform, with the plan's account limit. With an operator's API key, `operator` holds the same per-platform count for the accounts assigned to that operator; otherwise it is null.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.count_contacts",
+        "mcpName": "repliz_count_contacts",
+        "title": "Count Contacts",
+        "description": "Count contacts per funnel stage with the same filters as repliz_list_contacts, plus how many follow-ups are due.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "search": {
+              "type": "string",
+              "description": "Search in contact name and note."
+            },
+            "tag": {
+              "type": "string",
+              "description": "Only contacts with this exact tag (see repliz_list_contact_tags)."
+            },
+            "followUp": {
+              "type": "string",
+              "enum": ["scheduled", "due"],
+              "description": "'scheduled' for contacts with a follow-up, 'due' for follow-ups whose time has passed."
+            },
+            "accountIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Only contacts of these account id(s)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.create_automation",
+        "mcpName": "repliz_create_automation",
+        "title": "Create Automation",
+        "description": "Create a new content automation rule for a specific post/content.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contentId": {
+              "type": "string",
+              "description": "The content id to attach automation to."
+            },
+            "accountId": {
+              "type": "string",
+              "description": "The account id that owns the content."
+            },
+            "config": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Automation configuration object (delete, reply, like, message, story). Keywords in message, story and chat (Instagram and Facebook) can answer with buttons: a keyword.values item { \"keyword\", \"type\": \"opening\", \"opening\": { postback, additional, webUrl } } instead of { \"keyword\", \"text\" }. Send the \"id\" Repliz returns on such a keyword back unchanged, or the buttons in DMs already sent stop working. Schema: https://docs.repliz.com/api/guides/automation-config#keyword-with-buttons"
+            }
+          },
+          "required": ["contentId", "accountId", "config"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.create_content_comment",
+        "mcpName": "repliz_create_content_comment",
+        "title": "Comment on Content",
+        "description": "Post a comment on a piece of content, or reply to an existing comment by passing `commentId`. Add `image` { url, mimetype, thumbnail? } to send a picture with the text on Facebook, Threads, TikTok, LinkedIn and X (Twitter).",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contentId": {
+              "type": "string",
+              "description": "The content id to comment on."
+            },
+            "accountId": {
+              "type": "string",
+              "description": "The account id posting the comment."
+            },
+            "text": {
+              "type": "string",
+              "description": "The comment text."
+            },
+            "commentId": {
+              "type": "string",
+              "description": "Reply to this comment id instead of the post."
+            },
+            "image": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "description": "Public URL of the image file."
+                },
+                "thumbnail": {
+                  "type": "string"
+                },
+                "mimetype": {
+                  "type": "string",
+                  "description": "e.g. image/jpeg"
+                }
+              },
+              "required": ["url", "mimetype"],
+              "additionalProperties": false,
+              "description": "Optional image sent along with the text. Supported on Facebook, Threads, TikTok, LinkedIn and X (Twitter), ignored on other platforms."
+            }
+          },
+          "required": ["contentId", "accountId", "text"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.create_schedule",
+        "mcpName": "repliz_create_schedule",
+        "title": "Create Scheduled Post",
+        "description": "Schedule a post to be published to a connected account at a specific time.\n\nPost type support by platform:\n- text: Facebook, Threads, WhatsApp, Telegram\n- image: Facebook, Instagram, Threads, TikTok, LinkedIn, WhatsApp, Telegram, Pinterest\n- video: Facebook, Instagram, Threads, TikTok, YouTube, LinkedIn, WhatsApp, Telegram, Pinterest\n- reel: Facebook\n- album: Facebook, Instagram, Threads, TikTok, LinkedIn, Pinterest (carousel of 2-5 images)\n- link: Facebook (provide `meta` for the link preview)\n- story: Facebook, Instagram\n\nFor media posts, attach `medias`. For threaded/multi-part posts, attach `replies`. A WhatsApp post goes to the account's Status, and a Telegram post to its story, unless `additionalInfo.channel` names a channel or group from repliz_whatsapp_channels or repliz_telegram_channels; create one schedule per target. A Pinterest pin must name a board from repliz_pinterest_boards in `additionalInfo.channel` (one schedule per board); `title` (max 100) is the pin title, `desc…",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "The target account id to publish to."
+            },
+            "type": {
+              "type": "string",
+              "enum": ["text", "image", "video", "reel", "album", "link", "story"],
+              "description": "The kind of post to create."
+            },
+            "description": {
+              "type": "string",
+              "description": "The post caption/body text. Use '' if not needed."
+            },
+            "scheduleAt": {
+              "type": "string",
+              "description": "When to publish, as an ISO 8601 UTC timestamp, e.g. 2026-06-20T09:00:00.000Z."
+            },
+            "title": {
+              "type": "string",
+              "description": "Post title (used by some platforms, e.g. YouTube and Pinterest)."
+            },
+            "topic": {
+              "type": "string",
+              "description": "Optional internal topic/label."
+            },
+            "medias": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["image", "video"],
+                    "description": "Media type."
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "Public URL of the media file."
+                  },
+                  "thumbnail": {
+                    "type": "string",
+                    "description": "Public URL of the thumbnail image."
+                  },
+                  "alt": {
+                    "type": "string",
+                    "description": "Alt text / accessibility description."
+                  },
+                  "customThumbnail": {
+                    "type": "boolean",
+                    "description": "Whether a custom thumbnail is used."
+                  }
+                },
+                "required": ["type", "url"],
+                "additionalProperties": false,
+                "description": "A single media item attached to the post."
+              },
+              "description": "Media items for image/video/reel/album/story/link posts."
+            },
+            "meta": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "default": ""
+                },
+                "description": {
+                  "type": "string",
+                  "default": ""
+                },
+                "url": {
+                  "type": "string",
+                  "default": ""
+                }
+              },
+              "additionalProperties": false,
+              "description": "Link preview metadata (for 'link' posts)."
+            },
+            "additionalInfo": {
+              "type": "object",
+              "properties": {
+                "isAiGenerated": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Label the post as made or changed with AI, with each platform own label. Used by TikTok video, YouTube video, Facebook reel, Pinterest and Threads (the post and every reply of the thread)."
+                },
+                "isDraft": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "isAutoAddMusic": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "isShareToFeed": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether to share to Instagram main feed. Only applicable for Instagram scheduled posts with type 'video'."
+                },
+                "privacy": {
+                  "type": "string",
+                  "enum": ["public", "unlisted", "private"],
+                  "default": "public",
+                  "description": "YouTube only: who can watch the video. 'unlisted' is watchable by link only, 'private' only by the channel owner. A private video is not listed by repliz_list_content, so its automation and statistics don't run."
+                },
+                "trialParams": {
+                  "type": "object",
+                  "properties": {
+                    "graduationStrategy": {
+                      "type": "string",
+                      "enum": ["", "MANUAL", "SS_PERFORMANCE"],
+                      "description": "'MANUAL': the user shares the reel with their followers from the Instagram app. 'SS_PERFORMANCE': Instagram shares it with the followers automatically if it performs well. Empty for a regular reel."
+                    }
+                  },
+                  "required": ["graduationStrategy"],
+                  "additionalProperties": false,
+                  "default": {
+                    "graduationStrategy": ""
+                  },
+                  "description": "Instagram only, type 'video': post the reel as a trial reel, shown to non-followers first. Omit for a regular reel."
+                },
+                "collaborators": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "music": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Music track ID."
+                    },
+                    "artist": {
+                      "type": "string",
+                      "description": "Music artist name."
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Music track name/title."
+                    },
+                    "thumbnail": {
+                      "type": "string",
+                      "description": "Music track thumbnail URL."
+                    },
+                    "volume": {
+                      "type": "object",
+                      "properties": {
+                        "video": {
+                          "type": "number",
+                          "default": 50,
+                          "description": "Video volume level (e.g. 50)."
+                        },
+                        "music": {
+                          "type": "number",
+                          "default": 100,
+                          "description": "Music volume level (e.g. 100)."
+                        }
+                      },
+                      "additionalProperties": false,
+                      "description": "Volume settings for video and music.",
+                      "default": {
+                        "video": 50,
+                        "music": 100
+                      }
+                    }
+                  },
+                  "required": ["id", "artist", "name", "thumbnail"],
+                  "additionalProperties": false,
+                  "description": "Background music attached to the post."
+                },
+                "products": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "thumbnail": {
+                        "type": "string"
+                      },
+                      "currency": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "number"
+                      }
+                    },
+                    "required": ["id", "name", "thumbnail", "currency", "price"],
+                    "additionalProperties": false
+                  },
+                  "default": []
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "mentions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "targetCountries": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "channel": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Channel, group or board ID as listed: WhatsApp ends in @newsletter or @g.us, Telegram is a number like -1001234567890, a Pinterest board is a number like 1006921296753698211."
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Channel, group or board name."
+                    },
+                    "picture": {
+                      "type": "string",
+                      "default": "",
+                      "description": "Channel, group or board picture URL."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": ["channel", "group", "board"],
+                      "description": "Whether it is a channel, a group or a Pinterest board ('board'). Telegram ids look alike, so this decides where it posts."
+                    }
+                  },
+                  "required": ["id", "name", "type"],
+                  "additionalProperties": false,
+                  "description": "WhatsApp and Telegram: the channel or group to post to, an item from repliz_whatsapp_channels or repliz_telegram_channels; omit to post to the account's WhatsApp Status or Telegram story. Pinterest (required): the board to pin to, an item from repliz_pinterest_boards."
+                },
+                "link": {
+                  "type": "string",
+                  "description": "Pinterest only: the destination URL the pin opens when tapped."
+                },
+                "textAttachment": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "maxLength": 10000,
+                      "description": "The attached text, up to 10,000 characters, posted as plain text. Empty for no attachment."
+                    },
+                    "link": {
+                      "type": "string",
+                      "default": "",
+                      "description": "Optional link shown at the end of the attachment."
+                    }
+                  },
+                  "required": ["text"],
+                  "additionalProperties": false,
+                  "description": "Threads only, type 'text': a long text attached under the post that opens like an article. Each text reply can have its own in replies[].textAttachment. A post can have at most 5 links, counting the description and this link."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Optional extras: collaborators, music, products, tags, mentions, isShareToFeed (Instagram video), privacy (YouTube: public, unlisted or private), trialParams (Instagram video: trial reel with graduationStrategy MANUAL or SS_PERFORMANCE), targetCountries, channel (WhatsApp, Telegram, Pinterest board), link (Pinterest), textAttachment (Threads text: a long text up to 10,000 characters, like an article, with an optional link)."
+            },
+            "replies": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "default": ""
+                  },
+                  "description": {
+                    "type": "string",
+                    "default": ""
+                  },
+                  "topic": {
+                    "type": "string",
+                    "default": ""
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["text", "image", "video", "reel", "album", "link", "story"]
+                  },
+                  "medias": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/properties/medias/items"
+                    },
+                    "default": []
+                  },
+                  "textAttachment": {
+                    "$ref": "#/properties/additionalInfo/properties/textAttachment",
+                    "description": "Threads 'text' replies only: a long text attached under the reply that opens like an article, with the same rules as additionalInfo.textAttachment."
+                  },
+                  "delay": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1440,
+                    "description": "Minutes to wait after the post before it (the main post for the first reply) is published. 0 or omitted posts it right away. Not less than the delay of the reply before it, and all delays together at most 1440 (24 hours)."
+                  }
+                },
+                "required": ["type"],
+                "additionalProperties": false
+              },
+              "description": "Follow-up posts in a thread/chain (Threads or X only), in order. Each can wait its own delay in minutes after the post before it."
+            },
+            "templateId": {
+              "type": "string",
+              "description": "Optional automation template id to apply to this post."
+            }
+          },
+          "required": ["accountId", "type", "description", "scheduleAt"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.create_template",
+        "mcpName": "repliz_create_template",
+        "title": "Create Automation Template",
+        "description": "Create a new reusable automation template containing configuration and content rules for content automations.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "Name of the automation template (e.g. 'Auto Comment')."
+            },
+            "config": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Automation template configuration object containing rules (delete, reply, like, message, chat, story). Keywords in message, story and chat (Instagram and Facebook) can answer with buttons: a keyword.values item { \"keyword\", \"type\": \"opening\", \"opening\": { postback, additional, webUrl } } instead of { \"keyword\", \"text\" }. Send the \"id\" Repliz returns on such a keyword back unchanged, or the buttons in DMs already sent stop working. Schema: https://docs.repliz.com/api/guides/automation-config#keyword-with-buttons"
+            }
+          },
+          "required": ["name", "config"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_account",
+        "mcpName": "repliz_delete_account",
+        "title": "Delete Account",
+        "description": "Disconnect and remove an account from your Repliz workspace. This is irreversible — confirm with the user before calling.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "The Repliz account id to remove."
+            }
+          },
+          "required": ["accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_automation",
+        "mcpName": "repliz_delete_automation",
+        "title": "Delete Automation",
+        "description": "Remove/delete a content automation rule. Irreversible — confirm before calling.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "automationId": {
+              "type": "string",
+              "description": "The automation id to remove."
+            }
+          },
+          "required": ["automationId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_comment",
+        "mcpName": "repliz_delete_comment",
+        "title": "Delete Comment",
+        "description": "Delete a comment from the social media platform by its id. Irreversible — confirm with the user before calling.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "commentId": {
+              "type": "string",
+              "description": "The comment id to delete."
+            }
+          },
+          "required": ["commentId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_contact",
+        "mcpName": "repliz_delete_contact",
+        "title": "Delete Contact",
+        "description": "Delete a contact with its stage, tags, note and follow-up. Irreversible — confirm with the user before calling. A new comment or message from the person creates the contact again from the `new` stage.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contactId": {
+              "type": "string",
+              "description": "The contact id."
+            }
+          },
+          "required": ["contactId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_content",
+        "mcpName": "repliz_delete_content",
+        "title": "Delete Content",
+        "description": "Remove/delete a published post/content from a connected account. Irreversible — confirm before calling.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contentId": {
+              "type": "string",
+              "description": "The content id to remove."
+            },
+            "accountId": {
+              "type": "string",
+              "description": "The account id that owns the content."
+            }
+          },
+          "required": ["contentId", "accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_content_comment",
+        "mcpName": "repliz_delete_content_comment",
+        "title": "Delete Content Comment",
+        "description": "Delete a comment on a piece of content. Irreversible — confirm before calling.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contentId": {
+              "type": "string",
+              "description": "The content id."
+            },
+            "commentId": {
+              "type": "string",
+              "description": "The comment id to delete."
+            },
+            "accountId": {
+              "type": "string",
+              "description": "The account id that owns the content."
+            }
+          },
+          "required": ["contentId", "commentId", "accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_file",
+        "mcpName": "repliz_delete_file",
+        "title": "Delete Storage File",
+        "description": "Permanently delete a single file from storage by its id. Irreversible — confirm before calling.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fileId": {
+              "type": "string",
+              "description": "The file id to delete."
+            }
+          },
+          "required": ["fileId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_files",
+        "mcpName": "repliz_delete_files",
+        "title": "Delete Multiple Storage Files",
+        "description": "Permanently delete several files at once by their ids. Irreversible — confirm before calling.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fileIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "description": "Array of file ids to delete."
+            }
+          },
+          "required": ["fileIds"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_schedule",
+        "mcpName": "repliz_delete_schedule",
+        "title": "Delete Scheduled Post",
+        "description": "Delete a single scheduled post by id. Irreversible — confirm before calling.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "scheduleId": {
+              "type": "string",
+              "description": "The schedule id to delete."
+            }
+          },
+          "required": ["scheduleId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_schedules",
+        "mcpName": "repliz_delete_schedules",
+        "title": "Delete Multiple Scheduled Posts",
+        "description": "Delete several scheduled posts at once by their ids. Irreversible — confirm before calling.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "scheduleIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "description": "The schedule ids to delete."
+            }
+          },
+          "required": ["scheduleIds"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.delete_template",
+        "mcpName": "repliz_delete_template",
+        "title": "Delete Automation Template",
+        "description": "Delete an automation template. Irreversible — confirm before calling.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "string",
+              "description": "The template id to delete."
+            }
+          },
+          "required": ["templateId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_account",
+        "mcpName": "repliz_get_account",
+        "title": "Get Account",
+        "description": "Get details of a single connected account by its Repliz account id.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "The Repliz account id (e.g. 680affa5ce12f2f72916f67e)."
+            }
+          },
+          "required": ["accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_account_statistics",
+        "mcpName": "repliz_get_account_statistics",
+        "title": "Get Account Statistics",
+        "description": "Retrieve aggregated statistics and activity metrics for a specific connected account, including platform-specific overview metrics. Available for Instagram, Threads, TikTok, Pinterest and YouTube. Instagram returns the profile's followers, following and posts, the last 30 days' totals (reach, views, accounts engaged, interactions, likes, comments, shares, saves, replies, reposts, profile link taps, new follows and unfollows), daily reach, and the followers' age, gender, country and city as 0-1 shares (follows and demographics need at least 100 followers). Threads returns the followers, the last 30 days' views, likes, replies, reposts, quotes and link clicks, plus the followers' age, gender, country and city as 0-1 shares for profiles with at least 100 followers. TikTok returns the profile counts and the daily metrics of the last 30 days up to yesterday. YouTube returns the channel's lifetime subscribers, views, videos and likes, plus the last 28 days of YouTube Analytics (views, watch…",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "The Repliz account id (e.g. 680affa5ce12f2f72916f67e)."
+            }
+          },
+          "required": ["accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_automation",
+        "mcpName": "repliz_get_automation",
+        "title": "Get Automation",
+        "description": "Get full details of a single content automation by its automation id.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "automationId": {
+              "type": "string",
+              "description": "The automation id."
+            }
+          },
+          "required": ["automationId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_chat",
+        "mcpName": "repliz_get_chat",
+        "title": "Get Chat",
+        "description": "Get the details of a single conversation by its chat id.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "chatId": {
+              "type": "string",
+              "description": "The chat id."
+            }
+          },
+          "required": ["chatId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_comment",
+        "mcpName": "repliz_get_comment",
+        "title": "Get Comment",
+        "description": "Get the full details of a single comment by its id.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "commentId": {
+              "type": "string",
+              "description": "The comment id."
+            }
+          },
+          "required": ["commentId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_contact",
+        "mcpName": "repliz_get_contact",
+        "title": "Get Contact",
+        "description": "Get one contact with its stage, tags, note, follow-up and last interaction.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contactId": {
+              "type": "string",
+              "description": "The contact id."
+            }
+          },
+          "required": ["contactId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_contact_by_chat",
+        "mcpName": "repliz_get_contact_by_chat",
+        "title": "Get Contact by Chat",
+        "description": "Get the contact of the person in a direct message chat, to tag them or plan a follow-up. Creates the contact when the chat started before contacts existed; an existing contact only gets the chat linked.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "chatId": {
+              "type": "string",
+              "description": "The chat id from repliz_list_chats."
+            }
+          },
+          "required": ["chatId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_contact_by_comment",
+        "mcpName": "repliz_get_contact_by_comment",
+        "title": "Get Contact by Comment",
+        "description": "Get the contact of the person who wrote a comment in your inbox, to tag them or plan a follow-up. Creates the contact when the comment came in before contacts existed; an existing contact is not changed.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "commentId": {
+              "type": "string",
+              "description": "The comment id from repliz_list_comments."
+            }
+          },
+          "required": ["commentId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_content",
+        "mcpName": "repliz_get_content",
+        "title": "Get Content",
+        "description": "Get the details of a single piece of content.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contentId": {
+              "type": "string",
+              "description": "The content id."
+            },
+            "accountId": {
+              "type": "string",
+              "description": "The account id that owns the content."
+            }
+          },
+          "required": ["contentId", "accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_content_comments",
+        "mcpName": "repliz_get_content_comments",
+        "title": "Get Content Comments",
+        "description": "List comments on a piece of content. Pass `commentId` to fetch replies to a specific comment. Uses cursor pagination via `nextToken`.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contentId": {
+              "type": "string",
+              "description": "The content id."
+            },
+            "accountId": {
+              "type": "string",
+              "description": "The account id that owns the content."
+            },
+            "commentId": {
+              "type": "string",
+              "description": "Fetch replies under this comment id."
+            },
+            "nextToken": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response."
+            }
+          },
+          "required": ["contentId", "accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_content_statistic",
+        "mcpName": "repliz_get_content_statistic",
+        "title": "Get Content Statistics",
+        "description": "Get engagement statistics/insights for a piece of content. For Instagram, `mediaProductType` tells the post type: FEED adds follows, profile visits and profile activity; REELS adds average and total watch time in seconds and skip rate (percent skipped in the first 3 seconds); STORY adds follows, profile visits, profile activity, replies and navigation (no likes, comments or saves). For a YouTube video, `insight` adds YouTube Analytics: watch time in minutes, average view duration in seconds, average percentage viewed, subscribers gained and lost and shares since upload, daily views and watch time of the last 28 days, and views per traffic source (e.g. YT_SEARCH, RELATED_VIDEO, SHORTS). New videos can show 0 there for 2-3 days, and the insight is cached for 6 hours.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contentId": {
+              "type": "string",
+              "description": "The content id."
+            },
+            "accountId": {
+              "type": "string",
+              "description": "The account id that owns the content."
+            }
+          },
+          "required": ["contentId", "accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_file",
+        "mcpName": "repliz_get_file",
+        "title": "Get Storage File",
+        "description": "Get the full details of a single stored file by its id.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fileId": {
+              "type": "string",
+              "description": "The file id."
+            }
+          },
+          "required": ["fileId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_me_addon",
+        "mcpName": "repliz_get_me_addon",
+        "title": "Get Account Addon Limits",
+        "description": "Retrieve addon information and resource allocations (accounts, operators, storage, Twitter/X addon) for your Repliz account.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_report",
+        "mcpName": "repliz_get_report",
+        "title": "Get Report",
+        "description": "Get full details of a single report by its report id.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "reportId": {
+              "type": "string",
+              "description": "The report id."
+            }
+          },
+          "required": ["reportId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_schedule",
+        "mcpName": "repliz_get_schedule",
+        "title": "Get Scheduled Post",
+        "description": "Get the full details of a single scheduled post by its id.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "scheduleId": {
+              "type": "string",
+              "description": "The schedule id."
+            }
+          },
+          "required": ["scheduleId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_storage_statistic",
+        "mcpName": "repliz_get_storage_statistic",
+        "title": "Get Storage Statistics",
+        "description": "Retrieve storage usage statistics: total files, used bytes, free bytes, and storage limit.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.get_template",
+        "mcpName": "repliz_get_template",
+        "title": "Get Automation Template",
+        "description": "Retrieve detailed information and configuration of a specific automation template by its id.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "string",
+              "description": "The template id."
+            }
+          },
+          "required": ["templateId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.init_file",
+        "mcpName": "repliz_init_file",
+        "title": "Init File Upload",
+        "description": "Step 1 of 3 — Initialize a file upload session.\n\nProvide the filename, file size in bytes, and MIME type. The response contains:\n- `id`     — the fileId used in subsequent steps\n- `upload` — the presigned PUT URL to upload the file binary to\n- `key`    — the storage object key\n- `url`    — the final public URL of the file after upload is complete\n\nAfter this call, use `repliz_upload_file` to push the file, then `repliz_complete_file` to finalize.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "filename": {
+              "type": "string",
+              "description": "Original filename including extension, e.g. 'video.mp4'."
+            },
+            "size": {
+              "type": "integer",
+              "exclusiveMinimum": 0,
+              "description": "File size in bytes. Must match the actual file you will upload."
+            },
+            "mimetype": {
+              "type": "string",
+              "description": "MIME type of the file, e.g. 'video/mp4', 'image/jpeg', 'image/png'."
+            }
+          },
+          "required": ["filename", "size", "mimetype"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.like_content_comment",
+        "mcpName": "repliz_like_content_comment",
+        "title": "Like Content Comment",
+        "description": "Like or add a reaction to a specific comment on a piece of content using a connected account.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contentId": {
+              "type": "string",
+              "description": "The content id containing the comment."
+            },
+            "commentId": {
+              "type": "string",
+              "description": "The comment id to like."
+            },
+            "accountId": {
+              "type": "string",
+              "description": "The account id used to perform the like action."
+            }
+          },
+          "required": ["contentId", "commentId", "accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.link_metadata",
+        "mcpName": "repliz_link_metadata",
+        "title": "Get Link Metadata",
+        "description": "Fetch Open Graph / link-preview metadata (title, description, image) for a URL. Useful for building the `meta` field of a 'link' post.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "string",
+              "description": "The URL to fetch metadata for."
+            }
+          },
+          "required": ["url"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_accounts",
+        "mcpName": "repliz_list_accounts",
+        "title": "List Accounts",
+        "description": "List the social accounts connected to your Repliz workspace. Returns each account's id, platform, username, picture, and status. Supports pagination and filtering by platform type, search term, or connection status.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Page number (1-based)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Items per page."
+            },
+            "types": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "facebook",
+                  "instagram",
+                  "threads",
+                  "tiktok",
+                  "linkedin",
+                  "youtube",
+                  "shopee",
+                  "twitter",
+                  "whatsapp",
+                  "telegram",
+                  "pinterest"
+                ]
+              },
+              "description": "Filter by platform(s), e.g. [\"facebook\", \"instagram\"]."
+            },
+            "search": {
+              "type": "string",
+              "description": "Search by account name or username."
+            },
+            "status": {
+              "type": "string",
+              "enum": ["connected", "disconnected"],
+              "description": "Only connected accounts, or only disconnected ones that have to be reconnected first. Every account when omitted."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_automations",
+        "mcpName": "repliz_list_automations",
+        "title": "List Automations",
+        "description": "List configured content automations. Supports pagination and filtering by account id(s) and search query.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Page number (1-based)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Items per page."
+            },
+            "accountIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter automations by account id(s)."
+            },
+            "search": {
+              "type": "string",
+              "description": "Search query string."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_chats",
+        "mcpName": "repliz_list_chats",
+        "title": "List Chats",
+        "description": "List direct-message conversations across connected accounts. Supports pagination and filtering by status (unread/unreplied), account(s), and search.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Page number (1-based)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Items per page."
+            },
+            "status": {
+              "type": "string",
+              "enum": ["unread", "unreplied"],
+              "description": "Filter by chat status."
+            },
+            "accountIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by account id(s)."
+            },
+            "search": {
+              "type": "string",
+              "description": "Search conversations."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_comments",
+        "mcpName": "repliz_list_comments",
+        "title": "List Comments",
+        "description": "List comments in your Repliz inbox across connected accounts. Supports pagination and filtering by status, account(s), and search term.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Page number (1-based)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Items per page."
+            },
+            "status": {
+              "type": "string",
+              "enum": ["pending", "resolved", "ignored"],
+              "description": "Filter by handling status."
+            },
+            "accountIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter to comments belonging to these account id(s)."
+            },
+            "search": {
+              "type": "string",
+              "description": "Search within comment text."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_contact_tags",
+        "mcpName": "repliz_list_contact_tags",
+        "title": "List Contact Tags",
+        "description": "List every tag used on your contacts, sorted by name.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_contacts",
+        "mcpName": "repliz_list_contacts",
+        "title": "List Contacts",
+        "description": "List contacts: people who commented on or messaged your connected accounts, created automatically by Repliz. Each has a funnel stage (new, contacted, interested, won, lost), tags, a note, an optional follow-up reminder and the last comment or message. Sorted by latest interaction, or by nearest follow-up when followUp is set.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Page number (1-based)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Items per page."
+            },
+            "stage": {
+              "type": "string",
+              "enum": ["new", "contacted", "interested", "won", "lost"],
+              "description": "Filter by funnel stage."
+            },
+            "search": {
+              "type": "string",
+              "description": "Search in contact name and note."
+            },
+            "tag": {
+              "type": "string",
+              "description": "Only contacts with this exact tag (see repliz_list_contact_tags)."
+            },
+            "followUp": {
+              "type": "string",
+              "enum": ["scheduled", "due"],
+              "description": "'scheduled' for contacts with a follow-up, 'due' for follow-ups whose time has passed."
+            },
+            "accountIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Only contacts of these account id(s)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_content",
+        "mcpName": "repliz_list_content",
+        "title": "List Content",
+        "description": "List published content (posts/media or stories) for a connected account. Uses cursor pagination via `nextToken`. WhatsApp and Telegram accounts list the posts of one of their channels, so pass `channelId`. Pinterest accounts list all their pins, or the pins of one board with `channelId`. A Threads post with a text attachment includes `textAttachment` ({ text, link }).",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "The account id whose content to list."
+            },
+            "type": {
+              "type": "string",
+              "enum": ["media", "story"],
+              "description": "Content type to list."
+            },
+            "channelId": {
+              "type": "string",
+              "description": "Required for WhatsApp and Telegram accounts: the id of a channel (type 'channel', not a group) from repliz_whatsapp_channels or repliz_telegram_channels. Optional for Pinterest: a board id from repliz_pinterest_boards."
+            },
+            "nextToken": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response."
+            }
+          },
+          "required": ["accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_files",
+        "mcpName": "repliz_list_files",
+        "title": "List Storage Files",
+        "description": "List uploaded files with pagination and optional filename search. Each file includes id, filename, size, mimetype, url, and status.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Page number (1-based)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Items per page."
+            },
+            "search": {
+              "type": "string",
+              "description": "Filter files by filename (partial match)."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_messages",
+        "mcpName": "repliz_list_messages",
+        "title": "List Chat Messages",
+        "description": "List the messages within a conversation, paginated (newest first).",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "chatId": {
+              "type": "string",
+              "description": "The chat id."
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Page number (1-based)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Items per page."
+            }
+          },
+          "required": ["chatId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_reports",
+        "mcpName": "repliz_list_reports",
+        "title": "List Reports",
+        "description": "List system and analytics reports. Supports pagination and filtering by type, status, account id(s), and search term.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Page number (1-based)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Items per page."
+            },
+            "type": {
+              "type": "string",
+              "description": "Report type filter."
+            },
+            "status": {
+              "type": "string",
+              "description": "Report status filter."
+            },
+            "accountIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter reports to specific connected account id(s)."
+            },
+            "search": {
+              "type": "string",
+              "description": "Search query string."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_schedules",
+        "mcpName": "repliz_list_schedules",
+        "title": "List Scheduled Posts",
+        "description": "List scheduled and published posts. Supports pagination and filtering by account(s), status, and date range.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Page number (1-based)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Items per page."
+            },
+            "accountIds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Filter by account id(s)."
+            },
+            "status": {
+              "type": "string",
+              "enum": ["pending", "process", "error", "success"],
+              "description": "Filter by post status."
+            },
+            "fromDate": {
+              "type": "string",
+              "description": "ISO 8601 start of date range filter."
+            },
+            "toDate": {
+              "type": "string",
+              "description": "ISO 8601 end of date range filter."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.list_templates",
+        "mcpName": "repliz_list_templates",
+        "title": "List Automation Templates",
+        "description": "Retrieve a list of automation templates. Useful for browsing and selecting templates before creating or configuring automations.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "page": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "description": "Page number (1-based)."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "description": "Items per page."
+            },
+            "search": {
+              "type": "string",
+              "description": "Search query string."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.message_content_comment",
+        "mcpName": "repliz_message_content_comment",
+        "title": "Send DM to Content Commenter",
+        "description": "Send a private message (DM) to the author of a comment on your content. Provide `text` and/or a `button` payload.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contentId": {
+              "type": "string",
+              "description": "The content id."
+            },
+            "accountId": {
+              "type": "string",
+              "description": "The account id sending the message."
+            },
+            "commentId": {
+              "type": "string",
+              "description": "The comment id whose author will be messaged."
+            },
+            "text": {
+              "type": "string",
+              "description": "The message text."
+            },
+            "button": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string"
+                },
+                "image": {
+                  "type": "string"
+                },
+                "buttons": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "web_url",
+                      "default": "web_url"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": ["title", "url"],
+                  "additionalProperties": false
+                }
+              },
+              "required": ["text", "buttons"],
+              "additionalProperties": false,
+              "description": "Optional interactive button payload."
+            }
+          },
+          "required": ["contentId", "accountId", "commentId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.pinterest_boards",
+        "mcpName": "repliz_pinterest_boards",
+        "title": "List Pinterest Boards",
+        "description": "List the boards of a connected Pinterest account. A Pinterest post always goes to a board: pass the chosen item as `additionalInfo.channel` when scheduling (one schedule per board), or its id as `channelId` in repliz_list_content.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "The connected Pinterest account id."
+            }
+          },
+          "required": ["accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.read_chat",
+        "mcpName": "repliz_read_chat",
+        "title": "Mark Chat as Read",
+        "description": "Mark a conversation as read.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "chatId": {
+              "type": "string",
+              "description": "The chat id to mark read."
+            }
+          },
+          "required": ["chatId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.remove_contact_follow_up",
+        "mcpName": "repliz_remove_contact_follow_up",
+        "title": "Remove Contact Follow-up",
+        "description": "Clear the follow-up of a contact, when it is done or no longer needed.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contactId": {
+              "type": "string",
+              "description": "The contact id."
+            }
+          },
+          "required": ["contactId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.reply_comment",
+        "mcpName": "repliz_reply_comment",
+        "title": "Reply to Comment",
+        "description": "Post a public reply to a comment. The reply is published to the original platform (Facebook, Instagram, etc.). Add `image` { url, mimetype, thumbnail? } to send a picture with the text on Facebook, Threads, TikTok, LinkedIn and X (Twitter).",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "commentId": {
+              "type": "string",
+              "description": "The comment id to reply to."
+            },
+            "text": {
+              "type": "string",
+              "description": "The reply text to publish."
+            },
+            "image": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "description": "Public URL of the image file."
+                },
+                "thumbnail": {
+                  "type": "string"
+                },
+                "mimetype": {
+                  "type": "string",
+                  "description": "e.g. image/jpeg"
+                }
+              },
+              "required": ["url", "mimetype"],
+              "additionalProperties": false,
+              "description": "Optional image sent along with the reply text. Supported on Facebook, Threads, TikTok, LinkedIn and X (Twitter), ignored on other platforms."
+            }
+          },
+          "required": ["commentId", "text"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.retry_report",
+        "mcpName": "repliz_retry_report",
+        "title": "Retry Report",
+        "description": "Retry generating or processing a report that failed or encountered errors.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "reportId": {
+              "type": "string",
+              "description": "The report id to retry."
+            }
+          },
+          "required": ["reportId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.retry_schedule",
+        "mcpName": "repliz_retry_schedule",
+        "title": "Retry Scheduled Post",
+        "description": "Retry publishing a scheduled post that previously failed (status 'error'). For a thread whose main post is published but a reply failed, only that reply and the ones after it are posted again. Fails while a reply is still waiting for its delay.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "scheduleId": {
+              "type": "string",
+              "description": "The schedule id to retry."
+            }
+          },
+          "required": ["scheduleId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.search_threads_content",
+        "mcpName": "repliz_search_threads_content",
+        "title": "Search Threads Content",
+        "description": "Search public Threads posts by keyword. Requires a connected Threads account id (used to authorize the search). Supports filtering by sort, search mode, media type, date range (since/until timestamps in seconds), and author username. Uses cursor pagination via `nextToken`.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "A connected Threads account id to search with."
+            },
+            "search": {
+              "type": "string",
+              "description": "The keyword or phrase to search for."
+            },
+            "sort": {
+              "type": "string",
+              "enum": ["TOP", "RECENT"],
+              "description": "Sort order for search results ('TOP' or 'RECENT')."
+            },
+            "mode": {
+              "type": "string",
+              "enum": ["KEYWORD", "TAG"],
+              "description": "Search mode ('KEYWORD' for keyword search, 'TAG' for hashtag search)."
+            },
+            "type": {
+              "type": "string",
+              "enum": ["TEXT", "IMAGE", "VIDEO"],
+              "description": "Filter results by post media type ('TEXT', 'IMAGE', or 'VIDEO')."
+            },
+            "since": {
+              "type": "integer",
+              "description": "Start timestamp filter as Unix epoch in seconds."
+            },
+            "until": {
+              "type": "integer",
+              "description": "End timestamp filter as Unix epoch in seconds."
+            },
+            "username": {
+              "type": "string",
+              "description": "Filter posts authored by a specific Threads username."
+            },
+            "nextToken": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response."
+            }
+          },
+          "required": ["accountId", "search"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.search_threads_user",
+        "mcpName": "repliz_search_threads_user",
+        "title": "Get Threads User Profile",
+        "description": "Look up the public profile of a Threads user by username. Requires a connected Threads account id.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "A connected Threads account id to search with."
+            },
+            "username": {
+              "type": "string",
+              "description": "The Threads username to look up."
+            }
+          },
+          "required": ["accountId", "username"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.search_threads_user_content",
+        "mcpName": "repliz_search_threads_user_content",
+        "title": "Get Threads User Content",
+        "description": "Fetch public Threads posts authored by a specific username. Requires a connected Threads account id. Uses cursor pagination via `nextToken`.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "A connected Threads account id to search with."
+            },
+            "username": {
+              "type": "string",
+              "description": "The Threads username whose posts to fetch."
+            },
+            "nextToken": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response."
+            }
+          },
+          "required": ["accountId", "username"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.send_message",
+        "mcpName": "repliz_send_message",
+        "title": "Send Chat Message",
+        "description": "Send a message in a conversation. Set `type` and provide the matching field:\n- text: provide `text`\n- image: provide `image` { url, mimetype, thumbnail? }\n- video: provide `video` { url, duration, mimetype, thumbnail? }\n- audio: provide `audio` { url, duration, mimetype }\n- document: provide `document` { url, name, size, mimetype }\n- button: provide `button` { text, buttons:{ title, url }, image? }",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "chatId": {
+              "type": "string",
+              "description": "The chat id to send to."
+            },
+            "type": {
+              "type": "string",
+              "enum": ["text", "image", "video", "audio", "document", "button"],
+              "description": "The message type."
+            },
+            "text": {
+              "type": "string",
+              "description": "Text content (for type 'text')."
+            },
+            "image": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "thumbnail": {
+                  "type": "string"
+                },
+                "mimetype": {
+                  "type": "string",
+                  "description": "e.g. image/jpeg"
+                }
+              },
+              "required": ["url", "mimetype"],
+              "additionalProperties": false
+            },
+            "video": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "thumbnail": {
+                  "type": "string"
+                },
+                "duration": {
+                  "type": "number",
+                  "description": "Duration in seconds."
+                },
+                "mimetype": {
+                  "type": "string",
+                  "description": "e.g. video/mp4"
+                }
+              },
+              "required": ["url", "duration", "mimetype"],
+              "additionalProperties": false
+            },
+            "audio": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "duration": {
+                  "type": "number",
+                  "description": "Duration in seconds."
+                },
+                "mimetype": {
+                  "type": "string",
+                  "description": "e.g. audio/mp3"
+                }
+              },
+              "required": ["url", "duration", "mimetype"],
+              "additionalProperties": false
+            },
+            "document": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "number",
+                  "description": "File size in bytes."
+                },
+                "mimetype": {
+                  "type": "string",
+                  "description": "e.g. application/pdf"
+                }
+              },
+              "required": ["url", "name", "size", "mimetype"],
+              "additionalProperties": false
+            },
+            "button": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "type": "string",
+                  "description": "Body text shown above the button(s)."
+                },
+                "image": {
+                  "type": "string",
+                  "description": "Optional image URL."
+                },
+                "buttons": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "const": "web_url",
+                      "default": "web_url"
+                    },
+                    "title": {
+                      "type": "string",
+                      "description": "Button label."
+                    },
+                    "url": {
+                      "type": "string",
+                      "description": "URL the button opens."
+                    }
+                  },
+                  "required": ["title", "url"],
+                  "additionalProperties": false,
+                  "description": "The button definition."
+                }
+              },
+              "required": ["text", "buttons"],
+              "additionalProperties": false,
+              "description": "An interactive button message."
+            }
+          },
+          "required": ["chatId", "type"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.set_contact_follow_up",
+        "mcpName": "repliz_set_contact_follow_up",
+        "title": "Set Contact Follow-up",
+        "description": "Plan a follow-up reminder for a contact, replacing the current one. It only reminds the user in Repliz and sends nothing to the contact. `at` must be a future ISO 8601 timestamp.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contactId": {
+              "type": "string",
+              "description": "The contact id."
+            },
+            "at": {
+              "type": "string",
+              "description": "When to follow up, ISO 8601 in the future, e.g. 2026-11-05T09:00:00+07:00."
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "What to do, e.g. send the price list."
+            },
+            "message": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Optional message drafted for the follow-up. Repliz doesn't send it by itself: send it with repliz_send_message (chatId) or repliz_reply_comment (lastCommentId) when the time comes."
+            }
+          },
+          "required": ["contactId", "at"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.shopee_products",
+        "mcpName": "repliz_shopee_products",
+        "title": "List Shopee Products",
+        "description": "List Shopee products for a connected Shopee account. Useful for tagging products on posts. Uses cursor pagination via `nextToken`.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "The connected Shopee account id."
+            },
+            "nextToken": {
+              "type": "string",
+              "description": "Pagination cursor from a previous response."
+            }
+          },
+          "required": ["accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.telegram_channels",
+        "mcpName": "repliz_telegram_channels",
+        "title": "List Telegram Channels",
+        "description": "List the Telegram channels a connected Telegram account owns and the groups it belongs to. Pass the chosen item as `additionalInfo.channel` when scheduling a Telegram post to it. Pictures come inline as base64, so they are left empty here.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "The connected Telegram account id."
+            }
+          },
+          "required": ["accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.tiktok_trending_music",
+        "mcpName": "repliz_tiktok_trending_music",
+        "title": "TikTok Trending Music",
+        "description": "Get trending TikTok music for a given genre, country, and time window. Useful for picking a `music` track when scheduling a TikTok post.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "genre": {
+              "type": "string",
+              "default": "ALL",
+              "description": "Music genre. Use 'ALL' for everything, or a specific genre such as POP, ROCK, EDM, HIP_HOP/RAP, K-POP, LO-FI, etc."
+            },
+            "countryCode": {
+              "type": "string",
+              "minLength": 2,
+              "maxLength": 2,
+              "description": "ISO 3166-1 alpha-2 country code, e.g. 'ID', 'US', 'GB'."
+            },
+            "dateRange": {
+              "type": "string",
+              "enum": ["1DAY", "7DAY", "30DAY", "90DAY"],
+              "default": "7DAY",
+              "description": "Trending window."
+            }
+          },
+          "required": ["countryCode"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.update_account_automation",
+        "mcpName": "repliz_update_account_automation",
+        "title": "Update Account Automation",
+        "description": "Update the default automation configurations (delete, reply, like, message, chat, story) for a connected account. Keywords in message, story and chat (Instagram and Facebook) can answer with buttons: a keyword.values item { \"keyword\", \"type\": \"opening\", \"opening\": { postback, additional, webUrl } } instead of { \"keyword\", \"text\" }. Send the \"id\" Repliz returns on such a keyword back unchanged, or the buttons in DMs already sent stop working. Schema: https://docs.repliz.com/api/guides/automation-config#keyword-with-buttons",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "The Repliz account id."
+            },
+            "delete": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Delete automation configuration object."
+            },
+            "reply": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Reply automation configuration object."
+            },
+            "like": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Like automation configuration object."
+            },
+            "message": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Message automation configuration object."
+            },
+            "chat": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Chat automation configuration object."
+            },
+            "story": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Story automation configuration object."
+            }
+          },
+          "required": ["accountId", "delete", "reply", "like", "message", "chat", "story"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.update_automation",
+        "mcpName": "repliz_update_automation",
+        "title": "Update Automation",
+        "description": "Update the configuration of an existing content automation.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "automationId": {
+              "type": "string",
+              "description": "The automation id to update."
+            },
+            "config": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Updated automation configuration object (delete, reply, like, message, story). Keywords in message, story and chat (Instagram and Facebook) can answer with buttons: a keyword.values item { \"keyword\", \"type\": \"opening\", \"opening\": { postback, additional, webUrl } } instead of { \"keyword\", \"text\" }. Send the \"id\" Repliz returns on such a keyword back unchanged, or the buttons in DMs already sent stop working. Schema: https://docs.repliz.com/api/guides/automation-config#keyword-with-buttons"
+            }
+          },
+          "required": ["automationId", "config"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.update_comment_status",
+        "mcpName": "repliz_update_comment_status",
+        "title": "Update Comment Status",
+        "description": "Update the handling status of a comment in your Repliz inbox (pending, resolved, or ignored).",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "commentId": {
+              "type": "string",
+              "description": "The comment id."
+            },
+            "status": {
+              "type": "string",
+              "enum": ["pending", "resolved", "ignored"],
+              "description": "The new status."
+            }
+          },
+          "required": ["commentId", "status"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.update_contact",
+        "mcpName": "repliz_update_contact",
+        "title": "Update Contact",
+        "description": "Change the funnel stage, tags or note of a contact. Fields you leave out keep their current value. `tags` replaces the whole list, so include the existing tags (from repliz_get_contact) when adding one.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "contactId": {
+              "type": "string",
+              "description": "The contact id."
+            },
+            "stage": {
+              "type": "string",
+              "enum": ["new", "contacted", "interested", "won", "lost"],
+              "description": "New funnel stage."
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 30
+              },
+              "maxItems": 20,
+              "description": "Every tag of the contact, at most 20 of up to 30 characters."
+            },
+            "note": {
+              "type": "string",
+              "maxLength": 2000,
+              "description": "New note, replacing the current one."
+            }
+          },
+          "required": ["contactId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.update_schedule",
+        "mcpName": "repliz_update_schedule",
+        "title": "Update Scheduled Post",
+        "description": "Update an existing scheduled post. The account cannot be changed; provide the new content fields. `scheduleAt` must be a future ISO 8601 timestamp. `additionalInfo` is replaced as a whole, so repeat `additionalInfo.channel` when updating a WhatsApp or Telegram channel or group post, or it moves to Status or story, and always for a Pinterest pin (its board) together with `additionalInfo.link`. A YouTube video without `additionalInfo.privacy` goes back to public, an Instagram trial reel without `additionalInfo.trialParams` becomes a regular reel, and a Threads post without `additionalInfo.textAttachment` loses its text attachment.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "scheduleId": {
+              "type": "string",
+              "description": "The schedule id to update."
+            },
+            "type": {
+              "type": "string",
+              "enum": ["text", "image", "video", "reel", "album", "link", "story"],
+              "description": "The kind of post."
+            },
+            "description": {
+              "type": "string",
+              "description": "The post caption/body text."
+            },
+            "scheduleAt": {
+              "type": "string",
+              "description": "New publish time as ISO 8601 UTC timestamp."
+            },
+            "title": {
+              "type": "string"
+            },
+            "topic": {
+              "type": "string"
+            },
+            "medias": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": ["image", "video"],
+                    "description": "Media type."
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "Public URL of the media file."
+                  },
+                  "thumbnail": {
+                    "type": "string",
+                    "description": "Public URL of the thumbnail image."
+                  },
+                  "alt": {
+                    "type": "string",
+                    "description": "Alt text / accessibility description."
+                  },
+                  "customThumbnail": {
+                    "type": "boolean",
+                    "description": "Whether a custom thumbnail is used."
+                  }
+                },
+                "required": ["type", "url"],
+                "additionalProperties": false,
+                "description": "A single media item attached to the post."
+              }
+            },
+            "meta": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "default": ""
+                },
+                "description": {
+                  "type": "string",
+                  "default": ""
+                },
+                "url": {
+                  "type": "string",
+                  "default": ""
+                }
+              },
+              "additionalProperties": false,
+              "description": "Link preview metadata. Used for 'link' posts; otherwise leave empty."
+            },
+            "additionalInfo": {
+              "type": "object",
+              "properties": {
+                "isAiGenerated": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Label the post as made or changed with AI, with each platform own label. Used by TikTok video, YouTube video, Facebook reel, Pinterest and Threads (the post and every reply of the thread)."
+                },
+                "isDraft": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "isAutoAddMusic": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "isShareToFeed": {
+                  "type": "boolean",
+                  "default": false,
+                  "description": "Whether to share to Instagram main feed. Only applicable for Instagram scheduled posts with type 'video'."
+                },
+                "privacy": {
+                  "type": "string",
+                  "enum": ["public", "unlisted", "private"],
+                  "default": "public",
+                  "description": "YouTube only: who can watch the video. 'unlisted' is watchable by link only, 'private' only by the channel owner. A private video is not listed by repliz_list_content, so its automation and statistics don't run."
+                },
+                "trialParams": {
+                  "type": "object",
+                  "properties": {
+                    "graduationStrategy": {
+                      "type": "string",
+                      "enum": ["", "MANUAL", "SS_PERFORMANCE"],
+                      "description": "'MANUAL': the user shares the reel with their followers from the Instagram app. 'SS_PERFORMANCE': Instagram shares it with the followers automatically if it performs well. Empty for a regular reel."
+                    }
+                  },
+                  "required": ["graduationStrategy"],
+                  "additionalProperties": false,
+                  "default": {
+                    "graduationStrategy": ""
+                  },
+                  "description": "Instagram only, type 'video': post the reel as a trial reel, shown to non-followers first. Omit for a regular reel."
+                },
+                "collaborators": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "music": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Music track ID."
+                    },
+                    "artist": {
+                      "type": "string",
+                      "description": "Music artist name."
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Music track name/title."
+                    },
+                    "thumbnail": {
+                      "type": "string",
+                      "description": "Music track thumbnail URL."
+                    },
+                    "volume": {
+                      "type": "object",
+                      "properties": {
+                        "video": {
+                          "type": "number",
+                          "default": 50,
+                          "description": "Video volume level (e.g. 50)."
+                        },
+                        "music": {
+                          "type": "number",
+                          "default": 100,
+                          "description": "Music volume level (e.g. 100)."
+                        }
+                      },
+                      "additionalProperties": false,
+                      "description": "Volume settings for video and music.",
+                      "default": {
+                        "video": 50,
+                        "music": 100
+                      }
+                    }
+                  },
+                  "required": ["id", "artist", "name", "thumbnail"],
+                  "additionalProperties": false,
+                  "description": "Background music attached to the post."
+                },
+                "products": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "thumbnail": {
+                        "type": "string"
+                      },
+                      "currency": {
+                        "type": "string"
+                      },
+                      "price": {
+                        "type": "number"
+                      }
+                    },
+                    "required": ["id", "name", "thumbnail", "currency", "price"],
+                    "additionalProperties": false
+                  },
+                  "default": []
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "mentions": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "targetCountries": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "default": []
+                },
+                "channel": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Channel, group or board ID as listed: WhatsApp ends in @newsletter or @g.us, Telegram is a number like -1001234567890, a Pinterest board is a number like 1006921296753698211."
+                    },
+                    "name": {
+                      "type": "string",
+                      "description": "Channel, group or board name."
+                    },
+                    "picture": {
+                      "type": "string",
+                      "default": "",
+                      "description": "Channel, group or board picture URL."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": ["channel", "group", "board"],
+                      "description": "Whether it is a channel, a group or a Pinterest board ('board'). Telegram ids look alike, so this decides where it posts."
+                    }
+                  },
+                  "required": ["id", "name", "type"],
+                  "additionalProperties": false,
+                  "description": "WhatsApp and Telegram: the channel or group to post to, an item from repliz_whatsapp_channels or repliz_telegram_channels; omit to post to the account's WhatsApp Status or Telegram story. Pinterest (required): the board to pin to, an item from repliz_pinterest_boards."
+                },
+                "link": {
+                  "type": "string",
+                  "description": "Pinterest only: the destination URL the pin opens when tapped."
+                },
+                "textAttachment": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "maxLength": 10000,
+                      "description": "The attached text, up to 10,000 characters, posted as plain text. Empty for no attachment."
+                    },
+                    "link": {
+                      "type": "string",
+                      "default": "",
+                      "description": "Optional link shown at the end of the attachment."
+                    }
+                  },
+                  "required": ["text"],
+                  "additionalProperties": false,
+                  "description": "Threads only, type 'text': a long text attached under the post that opens like an article. Each text reply can have its own in replies[].textAttachment. A post can have at most 5 links, counting the description and this link."
+                }
+              },
+              "additionalProperties": false,
+              "description": "Optional extras: collaborators, music, tagged products, hashtags, mentions, isShareToFeed (Instagram video), privacy (YouTube), trialParams (Instagram video), target countries, channel (WhatsApp, Telegram, Pinterest board), link (Pinterest), textAttachment (Threads text)."
+            },
+            "replies": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "default": ""
+                  },
+                  "description": {
+                    "type": "string",
+                    "default": ""
+                  },
+                  "topic": {
+                    "type": "string",
+                    "default": ""
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["text", "image", "video", "reel", "album", "link", "story"]
+                  },
+                  "medias": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/properties/medias/items"
+                    },
+                    "default": []
+                  },
+                  "textAttachment": {
+                    "$ref": "#/properties/additionalInfo/properties/textAttachment",
+                    "description": "Threads 'text' replies only: a long text attached under the reply that opens like an article, with the same rules as additionalInfo.textAttachment."
+                  },
+                  "delay": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1440,
+                    "description": "Minutes to wait after the post before it (the main post for the first reply) is published. 0 or omitted posts it right away. Not less than the delay of the reply before it, and all delays together at most 1440 (24 hours)."
+                  }
+                },
+                "required": ["type"],
+                "additionalProperties": false
+              }
+            },
+            "templateId": {
+              "type": "string"
+            }
+          },
+          "required": ["scheduleId", "type", "description", "scheduleAt"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.update_template",
+        "mcpName": "repliz_update_template",
+        "title": "Update Automation Template",
+        "description": "Update the configuration or rules of an existing automation template.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "templateId": {
+              "type": "string",
+              "description": "The template id to update."
+            },
+            "name": {
+              "type": "string",
+              "description": "Updated template name."
+            },
+            "config": {
+              "type": "object",
+              "additionalProperties": {},
+              "description": "Updated automation template configuration object containing rules (delete, reply, like, message, chat, story). Keywords in message, story and chat (Instagram and Facebook) can answer with buttons: a keyword.values item { \"keyword\", \"type\": \"opening\", \"opening\": { postback, additional, webUrl } } instead of { \"keyword\", \"text\" }. Send the \"id\" Repliz returns on such a keyword back unchanged, or the buttons in DMs already sent stop working. Schema: https://docs.repliz.com/api/guides/automation-config#keyword-with-buttons"
+            }
+          },
+          "required": ["templateId", "name", "config"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.upload_file",
+        "mcpName": "repliz_upload_file",
+        "title": "Upload File to Presigned URL",
+        "description": "Step 2 of 3 — Copy a file from a public URL to the presigned URL returned by `repliz_init_file`.\n\nThis server runs remotely and has no access to your local disk. Host the file at a publicly reachable https URL first, or upload it to the presigned URL yourself with a direct PUT from your own machine and skip straight to `repliz_complete_file`.\n\nProvide:\n- `uploadUrl`  — the `upload` field from `repliz_init_file`, passed through unchanged\n- `sourceUrl`  — public http(s) URL of the file to copy\n- `mimetype`   — must match exactly what was used in `repliz_init_file`\n\nAfter this succeeds, call `repliz_complete_file` with the fileId to finalize.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "uploadUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "The presigned PUT URL from the `upload` field of `repliz_init_file`, passed through unchanged."
+            },
+            "sourceUrl": {
+              "type": "string",
+              "format": "uri",
+              "description": "Public http(s) URL of the file to copy, e.g. 'https://example.com/video.mp4'."
+            },
+            "mimetype": {
+              "type": "string",
+              "description": "MIME type, must match what was declared in `repliz_init_file`."
+            }
+          },
+          "required": ["uploadUrl", "sourceUrl", "mimetype"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "repliz.whatsapp_channels",
+        "mcpName": "repliz_whatsapp_channels",
+        "title": "List WhatsApp Channels",
+        "description": "List the WhatsApp channels a connected WhatsApp account owns and the groups it belongs to. Pass the chosen item as `additionalInfo.channel` when scheduling a WhatsApp post to it.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "accountId": {
+              "type": "string",
+              "description": "The connected WhatsApp account id."
+            }
+          },
+          "required": ["accountId"],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "maximumOutputBytes": 1048576
+      }
+    ]
+  },
+  "config": {
+    "revision": 1,
+    "fields": []
+  },
+  "allowedHosts": ["mcp.repliz.com"],
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://docs.repliz.com/tutorial/mcp.html",
+    "https://mcp.repliz.com/.well-known/oauth-protected-resource/mcp",
+    "https://mcp.repliz.com/.well-known/oauth-authorization-server"
+  ],
+  "verificationNotes": "Owner-authorized capture on 2026-11-06 used one authenticated Repliz OAuth session to read the provider tools/list catalog (115 tools, one page, server repliz-mcp 2.0.0, protocol 2025-06-18). The 73 admitted tools are a reviewed subset covering accounts, comments, contacts, chats, content, Threads research, scheduled posts, automations, templates, reports, and storage (38 read, 16 write, 19 destructive). Classifications follow the provider readOnlyHint/destructiveHint annotations; every write and destructive tool requires approval. The 42 social-platform account-connect tools (authorize, exchange, connect, reconnect, page/channel/organization pickers, WhatsApp/Telegram sessions and Telegram password) are excluded because they relay third-party OAuth codes, QR sessions, or passwords through chat. Repliz metadata documents Streamable HTTP, dynamic client registration, PKCE S256, an authorization-response issuer, and authorization-code plus refresh grants; it advertises no scopes and no revocation endpoint. The consent page exchanges a workspace Public API access/secret key pair for an encrypted bearer token. Token responses carried no scope, a 3,600-second access lifetime, and a rotated refresh token. Tool availability depends on the connected workspace plan. No stable user identity tool exists, so the workspace remains an opaque connection. Live Store consent, privacy review, and production acceptance remain pending."
+}

@@ -453,11 +453,12 @@ describe("Plugin OAuth provider definition", () => {
   });
 
   it.each([
+    "https://identity.aurora.example/",
     "https://identity.aurora.example/tenant",
     "https://identity.aurora.example/tenants/primary",
     "https://identity.aurora.example/tenant/",
     "https://identity.aurora.example/tenant%2Fprimary",
-  ])("preserves the exact tenant-scoped issuer %s in canonical authority", async (issuer) => {
+  ])("preserves the exact issuer %s distinct from the slashless origin", async (issuer) => {
     const parsed = decodePluginOAuthProviderDefinition({ ...auroraDefinition, issuer });
     expect(Result.isSuccess(parsed)).toBe(true);
     if (Result.isFailure(parsed)) throw new Error("tenant-issuer-definition-invalid");
@@ -486,7 +487,6 @@ describe("Plugin OAuth provider definition", () => {
     ["tokenEndpoint", "https://identity.aurora.example/oauth/%2ftoken"],
     ["tokenEndpoint", "https://identity.aurora.example:8443/oauth/token"],
     ["tokenEndpoint", "https://synthetic-user@identity.aurora.example/oauth/token"],
-    ["issuer", "https://identity.aurora.example/"],
     ["issuer", "https://identity.aurora.example?"],
     ["issuer", "https://identity.aurora.example/tenant?scope=read"],
     ["issuer", "https://identity.aurora.example/tenant#fragment"],

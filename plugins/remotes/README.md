@@ -13,6 +13,7 @@ These records preserve fixed provider endpoints, OAuth definitions, registration
 | Maple                              | Dynamic OAuth, PKCE S256, `mcp:tools`; read-only reviewed subset    | 24 authenticated read tools       | Live catalog equality, org identity, privacy, acceptance       |
 | Notion                             | Dynamic OAuth, PKCE, rotated refresh, `notion-fetch` self identity  | Four documentation-derived tools  | Live catalog equality, per-plan access, privacy, acceptance    |
 | PostHog                            | Dynamic OAuth, PKCE S256, 42 bounded scopes; OIDC userinfo identity | 1 CLI-mode tool (approval exec)   | Live catalog equality, privacy, acceptance                     |
+| Repliz                             | Dynamic OAuth, PKCE S256, scope-free; slash-origin issuer           | 73 authenticated tools            | Live catalog equality, workspace identity, privacy, acceptance |
 | Resend                             | Deployed public CIMD OAuth; `emails:send` only                      | `send-email` from official source | Live catalog equality, team identity, privacy, acceptance      |
 
 Notion's MCP token is never sent to REST `/v1/users/me`. Resend OAuth is the default; API-key bearer

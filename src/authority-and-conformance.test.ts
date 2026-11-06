@@ -165,6 +165,7 @@ describe("authority and protocol gates", () => {
       ["atlassian", true],
       ["canva", true],
       ["buffer", true],
+      ["repliz", true],
       ["gmail", false],
       ["resend", true],
     ] as const) {
@@ -274,6 +275,74 @@ describe("authority and protocol gates", () => {
       ),
     ).toBe(true);
     expect(decoded.success.catalog.tools.map((tool) => tool.mcpName)).not.toContain("run_sql");
+    expect(decoded.success.catalog.digest).toBe(
+      await digestPluginBytes(
+        new TextEncoder().encode(
+          canonicalPluginJson({
+            schemaVersion: decoded.success.catalog.schemaVersion,
+            tools: decoded.success.catalog.tools,
+          }),
+        ),
+      ),
+    );
+    expect(
+      Result.isSuccess(validateManagedRemotePluginRelease(decoded.success, "publication")),
+    ).toBe(true);
+  });
+
+  it("keeps Repliz bound to its slash-origin issuer and reviewed catalog without account-connect tools", async () => {
+    const value: unknown = JSON.parse(await readFile("plugins/remotes/repliz.json", "utf8"));
+    const decoded = validateManagedRemotePluginRelease(value, "authoring");
+    expect(Result.isSuccess(decoded)).toBe(true);
+    if (Result.isFailure(decoded)) return;
+
+    expect(decoded.success.endpoint).toBe("https://mcp.repliz.com/mcp");
+    expect(decoded.success.scopes).toEqual([]);
+    expect(decoded.success.authStrategy).toMatchObject({
+      profile: "mcp-oauth",
+      providerRegistrationId: "repliz-oauth-v1",
+      requestedScopes: [],
+      clientRegistration: {
+        kind: "dynamic",
+        authorizationServerMetadataUrl:
+          "https://mcp.repliz.com/.well-known/oauth-authorization-server",
+      },
+      resourceMetadataUrl: "https://mcp.repliz.com/.well-known/oauth-protected-resource/mcp",
+      identity: { kind: "opaque-connection" },
+    });
+    expect(decoded.success.oauthProviderDefinition).toMatchObject({
+      issuer: "https://mcp.repliz.com/",
+      authorizationEndpoint: "https://mcp.repliz.com/authorize",
+      tokenEndpoint: "https://mcp.repliz.com/token",
+      tokenEndpointAuthMethod: "none",
+      authorizationResponseIssuer: "required",
+      scopeAuthority: "registered-app-permissions",
+      revocation: { kind: "none" },
+    });
+    if (decoded.success.oauthProviderDefinition === undefined) return;
+    expect(decoded.success.providerDefinitionDigest).toBe(
+      await digestPluginOAuthProviderDefinition(decoded.success.oauthProviderDefinition),
+    );
+    const tools = decoded.success.catalog.tools;
+    expect(tools).toHaveLength(73);
+    expect(
+      tools.filter((tool) =>
+        /^repliz_(authorize|exchange|connect|reconnect)_|_(whatsapp|telegram)_session$|^repliz_send_telegram_password$/u.test(
+          tool.mcpName,
+        ),
+      ),
+    ).toEqual([]);
+    expect(
+      tools.every((tool) =>
+        tool.classification === "read"
+          ? tool.defaultPolicy === "allow"
+          : tool.defaultPolicy === "require-approval",
+      ),
+    ).toBe(true);
+    expect(tools.find((tool) => tool.mcpName === "repliz_delete_schedule")).toMatchObject({
+      classification: "destructive",
+      defaultPolicy: "require-approval",
+    });
     expect(decoded.success.catalog.digest).toBe(
       await digestPluginBytes(
         new TextEncoder().encode(
