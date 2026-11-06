@@ -76,7 +76,11 @@ it("connects Buffer with a per-user Bearer API key instead of dynamic OAuth", as
   );
   if (Result.isFailure(parsed)) throw new Error(parsed.failure);
   expect(parsed.success).toMatchObject({
-    version: "1.1.0",
+    version: "1.1.1",
+    // Name and description live on the shared Plugin definition; finalize rejects any change.
+    name: "Buffer",
+    description:
+      "Buffer hosted MCP integration for social channels, posts, ideas, analytics, and reusable templates; catalog capture and authority review pending",
     endpoint: "https://mcp.buffer.com/mcp",
     allowedHosts: ["mcp.buffer.com"],
     runtime: { endpointRegistrationId: "buffer-mcp-v1", providerRegistrationId: "buffer-oauth-v1" },

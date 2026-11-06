@@ -1,6 +1,6 @@
 # Buffer MCP publication
 
-`buffer@1.1.0` connects to `https://mcp.buffer.com/mcp` with each user's own Buffer API key.
+`buffer@1.1.1` connects to `https://mcp.buffer.com/mcp` with each user's own Buffer API key.
 It replaces the dynamic OAuth method of `buffer@1.0.0`. The Owner authorized the change on
 2026-11-06 and waived independent review (not passed).
 
@@ -33,11 +33,18 @@ registration identities, because endpoint URLs have one durable identity. No OAu
 token is used for key connections. Requests share the user's plan limits with their other keys
 and MCP connections.
 
+## Release history
+
+`buffer@1.1.0` staged but failed finalize with `immutable-version-conflict`: it changed the
+description, which lives on the shared Plugin definition and is immutable across versions. Its
+failed journal record and staged row are retained. `buffer@1.1.1` keeps the published definition
+description and is otherwise identical.
+
 ## Catalog evidence
 
 `fixtures/mcp/captures/buffer-20261028.json` preserves the 17 exact named tools from the
 Owner-consented OAuth capture on 2026-10-28, covering accounts, channels, posts, ideas,
-analytics and templates. The schemas are unchanged in 1.1.0. Writes require approval; delete
+analytics and templates. The schemas are unchanged in 1.1.1. Writes require approval; delete
 operations are destructive and require approval. No API-key `tools/list` capture is claimed;
 runtime reviewed-subset reconciliation limits access to the tools actually available.
 
