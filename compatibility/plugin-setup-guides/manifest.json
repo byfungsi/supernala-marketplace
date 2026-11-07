@@ -1,0 +1,11 @@
+{
+  "owner": "byfungsi/supernala",
+  "applicationCommit": "04615a7b62bd2e8ff0bb6238c935e11266578aee",
+  "files": {
+    "0177_plugin_setup_guides.sql": {
+      "sourcePath": "apps/api/application-migrations/0177_plugin_setup_guides.sql",
+      "sha256": "4f45c4723aa3e6a305c421f004ac6dadcb8a04d63be0208b294152ddf1a3075d"
+    }
+  },
+  "contract": "packages/domain/src/plugin-setup-guide.ts"
+}
