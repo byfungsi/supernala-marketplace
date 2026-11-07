@@ -4,6 +4,8 @@ Public, curated source and offline tooling for Supernala Plugin releases. This r
 
 It also curates the Marketplace **Skills** catalog: reviewed Skill folders from permissively licensed upstreams, pinned to exact commits under `skills/` and published with `pnpm marketplace skills publish`. See [curated Marketplace Skills](docs/skills.md).
 
+Every publication-eligible app also has an Owner-facing setup guide under `guides/`, published with `pnpm marketplace guides publish`. See [Plugin setup guides](docs/plugin-setup-guides.md).
+
 ## Commands
 
 ```sh
