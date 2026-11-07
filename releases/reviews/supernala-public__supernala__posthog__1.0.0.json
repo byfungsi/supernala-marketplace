@@ -136,12 +136,8 @@
       "kind": "oidc-userinfo",
       "endpoint": "https://oauth.posthog.com/oauth/userinfo/",
       "authorization": "bearer",
-      "subjectPath": [
-        "sub"
-      ],
-      "displayLabelPath": [
-        "email"
-      ],
+      "subjectPath": ["sub"],
+      "displayLabelPath": ["email"],
       "subjectStability": "stable",
       "maximumResponseBytes": 65536,
       "maximumJsonDepth": 4,
@@ -263,12 +259,8 @@
         "kind": "oidc-userinfo",
         "endpoint": "https://oauth.posthog.com/oauth/userinfo/",
         "authorization": "bearer",
-        "subjectPath": [
-          "sub"
-        ],
-        "displayLabelPath": [
-          "email"
-        ],
+        "subjectPath": ["sub"],
+        "displayLabelPath": ["email"],
         "subjectStability": "stable",
         "maximumResponseBytes": 65536,
         "maximumJsonDepth": 4,
@@ -303,17 +295,11 @@
               "description": "Pass the exact conversation_id from the server's previous response, unchanged. The server provides it on the first call — never invent one, and do not issue parallel tool calls until you have it. Keep passing the same conversation_id for the rest of the conversation, including after later user messages or on a different task; do not reset it when the user starts a new request."
             }
           },
-          "required": [
-            "command",
-            "context",
-            "llm_model"
-          ]
+          "required": ["command", "context", "llm_model"]
         }
       }
     ],
-    "allowedHosts": [
-      "mcp.posthog.com"
-    ],
+    "allowedHosts": ["mcp.posthog.com"],
     "config": []
   },
   "authorityDigest": "d32c54a0d8faa90ff0d2be82b9f5d9d5c463a3284542feb30e4af5286afc7eb9",
