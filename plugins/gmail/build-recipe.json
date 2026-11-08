@@ -16,7 +16,7 @@
     {
       "source": "plugins/gmail/package-manifest.json",
       "destination": "plugin.json",
-      "sha256": "e5784c6a70192898ea0ac0484c01b391b42a152a79dfd21589495f3c05659331"
+      "sha256": "d3e0ade3c6f31bff31832a6f0d5a5aa8a314ae6f4d4c0c591556d2664f26e441"
     },
     {
       "source": "plugins/gmail/catalog.json",

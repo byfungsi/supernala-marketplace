@@ -4,7 +4,7 @@
   "publisher": "supernala",
   "version": "0.2.0",
   "name": "Gmail",
-  "description": "First-party Gmail search, reading and plain-text sending from one connected account",
+  "description": "Narrow first-party Gmail message and draft search and reading tools",
   "license": "MIT",
   "licenseEvidence": {
     "kind": "spdx-mit-full-text",
