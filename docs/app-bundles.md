@@ -4,11 +4,12 @@ The Owner installs, updates, and uninstalls an **app**. Immutable Plugin release
 are its internal runtime components. The application owns the curated membership
 registry and commits lifecycle changes across all components atomically.
 
-| App       | Component releases                                     | Account setup                                                                            |
-| --------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| Gmail     | `gmail@0.2.1`                                          | One account reads and sends; choose each Bot's read and send access.                     |
-| Resend    | `resend@1.0.3` + `resend-api@1.0.0`                    | Sign in, provide an API key, or connect both; choose Bot access for each connection.     |
-| Atlassian | `atlassian` (Rovo MCP sign-in) + `atlassian-api@1.0.0` | Sign in for Jira and Confluence, or use a Jira API token with scopes (no admin setting). |
+| App       | Component releases                                     | Account setup                                                                                                                 |
+| --------- | ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Gmail     | `gmail@0.2.1`                                          | One account reads and sends; choose each Bot's read and send access.                                                          |
+| Resend    | `resend@1.0.3` + `resend-api@1.0.0`                    | Sign in, provide an API key, or connect both; choose Bot access for each connection.                                          |
+| Atlassian | `atlassian` (Rovo MCP sign-in) + `atlassian-api@1.0.0` | Sign in for Jira and Confluence, or use a Jira API token with scopes (no admin setting).                                      |
+| Jev       | `jev@1.0.0` + `jev-openrouter@1.0.0`                   | Your TypeSafe API key or your OpenRouter API key; both give Bots and workflows the same Ask Jev tool. See [jev.md](./jev.md). |
 
 Gmail 0.2.1 replaced the separate `gmail` (read) and `gmail-send` components with one release under a new `google-gmail-rest-v2` registration, so one Google consent covers reading and sending. `gmail-send@0.1.0` stays published for history; the application no longer offers it. (0.2.0 failed to stage in production and is never published: a Plugin keeps the description it was first published with.)
 

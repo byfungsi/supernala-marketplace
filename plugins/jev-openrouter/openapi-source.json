@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pluginVersionId": "supernala-public:supernala:jev-openrouter@1.0.0",
+  "catalogSnapshotId": "jev-openrouter-catalog-v1",
+  "providerRegistrationId": "openrouter-decisions-v1",
+  "credential": {
+    "field": "api_key",
+    "label": "OpenRouter API key",
+    "minimumLength": 8,
+    "maximumLength": 512,
+    "displayLabel": "Jev (OpenRouter)",
+    "securityScheme": "bearerAuth"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "openrouter-decisions-v1",
+    "fields": [
+      {
+        "key": "api_key",
+        "label": "OpenRouter API key",
+        "secret": true,
+        "minimumLength": 8,
+        "maximumLength": 512
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "header",
+        "field": "api_key",
+        "headerName": "Authorization",
+        "encoding": "bearer"
+      }
+    ],
+    "verification": {
+      "kind": "https-json",
+      "endpoint": "https://openrouter.ai/api/v1/key",
+      "expectedStatus": 200,
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 512
+    },
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Jev (OpenRouter)"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "operations": [
+    {
+      "operationId": "askJev",
+      "toolId": "jev.ask",
+      "title": "Ask Jev",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    }
+  ],
+  "status": "reviewed-publishable",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "jev-openrouter",
+  "version": "1.0.0",
+  "name": "Jev (OpenRouter)",
+  "description": "TypeSafe's Jev decision model through OpenRouter's Decisions API with your OpenRouter API key: classify, score and yes/no decisions with calibrated probabilities.",
+  "license": "LicenseRef-Provider-Service"
+}

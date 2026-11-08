@@ -1,0 +1,211 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "jev",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "jev-1.0.0-ask-jev-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794150626032,
+  "sourceInputDigest": "407fff76d82a15afb249a124f14ed8059edae35244225e7c7aa537573041b7f7",
+  "artifactDigest": "f2e2b5f96fb791b4dc8684c392ef67df9a313927ad18caa6da0251c40ee2eb7f",
+  "authentication": {
+    "kind": "none"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "typesafe-api-v1",
+    "fields": [
+      {
+        "key": "api_key",
+        "label": "TypeSafe API key",
+        "secret": true,
+        "minimumLength": 8,
+        "maximumLength": 512
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "header",
+        "field": "api_key",
+        "headerName": "Authorization",
+        "encoding": "bearer"
+      }
+    ],
+    "verification": {
+      "kind": "https-json",
+      "endpoint": "https://api.typesafe.ai/v1/models",
+      "expectedStatus": 200,
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 512
+    },
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Jev (TypeSafe)"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "catalogDigest": "26feb4ec79c2e6dfe851229d35ffe92008d87e8cc6bae8e3660c4bf10628cd06",
+  "configDigest": "23542ea5e9d621ef4adc58cf4740ef4bd4a36fc20a0786bd129cb487d782d6c3",
+  "provenanceDigest": "9aa2eb3a4cee701c32dd74a8ff878799a2a7c6ce9f2cb91f07f4773703839bd1",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [],
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "b98d01227e1a4dcc71b9940e1212f70f379351fcc2cf27fae9ca06e8045c6b19",
+  "authorityAfter": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [
+      {
+        "toolId": "jev.ask",
+        "method": "POST",
+        "origin": "https://api.typesafe.ai",
+        "pathTemplate": "/v1/systemone",
+        "parameters": [
+          {
+            "name": "TypeSafe-Danger-Zone-Long-Context",
+            "location": "header",
+            "required": false
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      }
+    ],
+    "authenticationKind": "api-key",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "typesafe-api-v1",
+    "providerDefinitionDigest": null,
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "api-key",
+      "providerRegistrationId": "typesafe-api-v1",
+      "fields": [
+        {
+          "key": "api_key",
+          "label": "TypeSafe API key",
+          "secret": true,
+          "minimumLength": 8,
+          "maximumLength": 512
+        }
+      ],
+      "delivery": [
+        {
+          "kind": "header",
+          "field": "api_key",
+          "headerName": "Authorization",
+          "encoding": "bearer"
+        }
+      ],
+      "verification": {
+        "kind": "https-json",
+        "endpoint": "https://api.typesafe.ai/v1/models",
+        "expectedStatus": 200,
+        "maximumResponseBytes": 65536,
+        "maximumJsonDepth": 8,
+        "maximumObjectKeys": 512
+      },
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Jev (TypeSafe)"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "jev.ask",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "headers": {
+              "type": "object",
+              "properties": {
+                "TypeSafe-Danger-Zone-Long-Context": {
+                  "type": "string",
+                  "enum": ["true"],
+                  "description": "Send `true` only when state and questions exceed 64k tokens; raises the limit to 262k but is slower and less accurate."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "model": {
+                  "type": "string",
+                  "enum": ["jev-latest", "jev-1.14.0"],
+                  "description": "Jev model; `jev-latest` follows the newest release."
+                },
+                "state": {
+                  "type": ["string", "object", "array"],
+                  "description": "The content every question refers to: text, or a JSON object or array of related context such as {\"subject\":...,\"message\":...}. Keep it focused; long state lowers accuracy."
+                },
+                "questions": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["choice", "score", "noul"],
+                        "description": "Question type."
+                      },
+                      "instructions": {
+                        "type": "string",
+                        "maxLength": 8000,
+                        "description": "What to decide, rate or evaluate."
+                      },
+                      "criteria": {
+                        "type": ["object", "array"],
+                        "description": "choice: {option name: when it applies}. score: [lowest level, ..., highest level]. noul: optional {\"true\": ..., \"false\": ...}."
+                      }
+                    },
+                    "required": ["type"],
+                    "additionalProperties": false
+                  },
+                  "description": "Questions about `state`, each under a name you choose (letters, digits, underscores); answers come back under the same names. Ask several at once: it costs no more and is just as fast. Types: `choice` picks one option; `criteria` maps each option name to when it applies, e.g. {\"billing\":\"Charges, refunds, invoices\",\"bug\":\"Something is broken\"}; the answer has `choice`, `confidence` and `probabilities` per option. `score` rates against ordered levels; `criteria` is a list of 1-10 level descriptions from lowest (0) up; the answer has the expected `score`, `confidence`, `legend` and `probabilities` per level. `noul` is a yes/no question or statement; optional `criteria` {\"true\":\"what counts as yes\",\"false\":\"what counts as no\"}; the answer `noul` is the probability of yes (0-1). Jev returns typed answers only; it never writes text."
+                }
+              },
+              "required": ["model", "state", "questions"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["api.typesafe.ai"],
+    "config": []
+  },
+  "authorityDigest": "eb6003c1df6670c25d9224e035c5eb2f016eb0c4fc64658dddcde401c2413f82",
+  "authorityDiffDigest": "64ee1c548b320ec409255381d51d7b869d24f36dd87b61eb48526a3cfda7f817",
+  "releaseDigest": "4cc22528ba2c1614d4ec1784f1208d52b29b0e548d2e82233a3513591613a1a6",
+  "decision": "approved"
+}

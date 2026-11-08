@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "pluginVersionId": "supernala-public:supernala:jev@1.0.0",
+  "catalogSnapshotId": "jev-catalog-v1",
+  "providerRegistrationId": "typesafe-api-v1",
+  "credential": {
+    "field": "api_key",
+    "label": "TypeSafe API key",
+    "minimumLength": 8,
+    "maximumLength": 512,
+    "displayLabel": "Jev (TypeSafe)",
+    "securityScheme": "bearerAuth"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "typesafe-api-v1",
+    "fields": [
+      {
+        "key": "api_key",
+        "label": "TypeSafe API key",
+        "secret": true,
+        "minimumLength": 8,
+        "maximumLength": 512
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "header",
+        "field": "api_key",
+        "headerName": "Authorization",
+        "encoding": "bearer"
+      }
+    ],
+    "verification": {
+      "kind": "https-json",
+      "endpoint": "https://api.typesafe.ai/v1/models",
+      "expectedStatus": 200,
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 512
+    },
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Jev (TypeSafe)"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "operations": [
+    {
+      "operationId": "askJev",
+      "toolId": "jev.ask",
+      "title": "Ask Jev",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    }
+  ],
+  "status": "reviewed-publishable",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "jev",
+  "version": "1.0.0",
+  "name": "Jev (TypeSafe)",
+  "description": "TypeSafe's Jev decision model with your TypeSafe API key: classify, score and yes/no decisions with calibrated probabilities.",
+  "license": "LicenseRef-Provider-Service"
+}
