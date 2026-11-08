@@ -54,7 +54,7 @@
       "sourceDirectory": "plugins/gmail-send",
       "kind": "managed-package",
       "publicationEligible": true,
-      "reason": "Published 0.1.0 is kept for history; gmail@0.2.0 reads and sends from one account, and the application no longer offers this separate send-only component"
+      "reason": "Published 0.1.0 is kept for history; gmail@0.2.1 reads and sends from one account, and the application no longer offers this separate send-only component"
     },
     {
       "sourceDirectory": "plugins/remotes/atlassian.json",

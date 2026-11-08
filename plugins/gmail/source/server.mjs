@@ -686,7 +686,7 @@ const startGmailMcpServer = () => {
         respond(request.id, {
           protocolVersion,
           capabilities: { tools: {} },
-          serverInfo: { name: "supernala-gmail", version: "0.2.0" },
+          serverInfo: { name: "supernala-gmail", version: "0.2.1" },
         });
       } else if (request.method === "tools/list") {
         respond(request.id, { tools: gmailToolCatalog });

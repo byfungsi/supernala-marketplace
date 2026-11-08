@@ -16,7 +16,7 @@
     {
       "source": "plugins/gmail/package-manifest.json",
       "destination": "plugin.json",
-      "sha256": "d3e0ade3c6f31bff31832a6f0d5a5aa8a314ae6f4d4c0c591556d2664f26e441"
+      "sha256": "0ea75a17e36e1fc482a3316b741f348021b734a8503842d3bfa7e2db66446150"
     },
     {
       "source": "plugins/gmail/catalog.json",
@@ -36,7 +36,7 @@
     {
       "source": "plugins/gmail/source/server.mjs",
       "destination": "dist/server.mjs",
-      "sha256": "69652117e8b3f05629c3d92059bde7eeff9c69eb3836e41d28e4e7ac082656d5"
+      "sha256": "6c18901399dc59ab6d2b091f2e1d22950d6b5f6a70851f35fe147bf6dc8944af"
     },
     {
       "source": "plugins/gmail/LICENSE",
