@@ -7,11 +7,8 @@ import { buildPluginOpenApiReleaseBundle } from "./plugin-openapi-release-bundle
 import { digestReleaseSharedInputs, releaseReviewFile, ReleaseReview } from "./release-bundle.js";
 import { PluginReleaseIdentity } from "./release-machine.js";
 
-it("binds the Jira REST review to the current source and keeps the site out of Bot input", async () => {
-  const index = Schema.decodeUnknownSync(
-    Schema.Struct({ sharedInputs: Schema.Array(Schema.NonEmptyString) }),
-  )(JSON.parse(await readFile("releases/index.json", "utf8")));
-  const review = Schema.decodeUnknownSync(ReleaseReview, { onExcessProperty: "error" })(
+const decodeReview = async (semanticVersion: string) =>
+  Schema.decodeUnknownSync(ReleaseReview, { onExcessProperty: "error" })(
     JSON.parse(
       await readFile(
         releaseReviewFile(
@@ -19,13 +16,22 @@ it("binds the Jira REST review to the current source and keeps the site out of B
             marketplaceId: "supernala-public",
             publisherNamespace: "supernala",
             pluginSlug: "atlassian-api",
-            semanticVersion: "1.0.0",
+            semanticVersion,
           }),
         ),
         "utf8",
       ),
     ),
   );
+
+it("binds the 1.0.1 review to the current source, with lineage from the published 1.0.0", async () => {
+  const index = Schema.decodeUnknownSync(
+    Schema.Struct({ sharedInputs: Schema.Array(Schema.NonEmptyString) }),
+  )(JSON.parse(await readFile("releases/index.json", "utf8")));
+  const previous = await decodeReview("1.0.0");
+  const review = await decodeReview("1.0.1");
+  // Output limits and descriptions changed; no tool's authority did, so existing grants carry over.
+  expect(review.authorityAfter).toEqual(previous.authorityAfter);
   const outputDirectory = await mkdtemp(path.join(os.tmpdir(), "atlassian-api-release-"));
   try {
     const built = await buildPluginOpenApiReleaseBundle({
@@ -35,7 +41,13 @@ it("binds the Jira REST review to the current source and keeps the site out of B
       mergeCommit: "a".repeat(40),
       releaseOrdinal: 1,
       review,
-      previousPublished: null,
+      previousPublished: {
+        status: "published",
+        durableStateVerified: true,
+        identity: previous.identity,
+        releaseDigest: previous.releaseDigest,
+        authorityDigest: previous.authorityDigest,
+      },
     });
     if (Result.isFailure(built)) throw new Error(built.failure);
     const candidate = built.success;
@@ -49,6 +61,21 @@ it("binds the Jira REST review to the current source and keeps the site out of B
     });
     const tools = candidate.version.catalog.tools;
     expect(tools).toHaveLength(14);
+    // Reads that can return large issues get the platform maximum; the rest keep 256 KiB.
+    const limits = Object.fromEntries(tools.map((tool) => [tool.id, tool.maximumOutputBytes]));
+    for (const id of [
+      "jira.search_issues",
+      "jira.get_issue",
+      "jira.list_comments",
+      "jira.list_issue_type_fields",
+    ]) {
+      expect(limits[id]).toBe(1_048_576);
+    }
+    expect(limits["jira.create_issue"]).toBe(262_144);
+    // The Bot is told to keep searches small rather than ask for every field.
+    const search = tools.find((tool) => tool.id === "jira.search_issues");
+    expect(search?.description).toContain("Always pass `fields`");
+    expect(search?.description).toContain("nextPageToken");
     expect(tools.every((tool) => !JSON.stringify(tool.inputSchema).includes("cloudId"))).toBe(true);
     // Reads run freely; every change asks the Owner first.
     expect(
