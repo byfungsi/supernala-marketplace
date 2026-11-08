@@ -16,8 +16,13 @@ const maximumMimeParts = 200;
 const maximumAttachments = 50;
 const maximumLabels = 100;
 const supportedMcpProtocolVersions = new Set(["2025-03-26", "2025-06-18"]);
+const maximumSendBodyBytes = 65_536;
+const maximumSendMimeBytes = 100_000;
+const maximumSendResponseBytes = 16_384;
+const mailboxPattern =
+  /^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/u;
 
-/** Exact read-only Gmail tool catalog exposed over MCP. */
+/** Exact Gmail tool catalog exposed over MCP: four reading tools and one plain-text send. */
 export const gmailToolCatalog = [
   {
     name: "search_messages",
@@ -65,7 +70,84 @@ export const gmailToolCatalog = [
       additionalProperties: false,
     },
   },
+  {
+    name: "send_message",
+    description:
+      "Send one plain-text email from the connected Gmail account; failed dispatch may be ambiguous",
+    inputSchema: {
+      type: "object",
+      properties: {
+        from: { type: "string", minLength: 3, maxLength: 254 },
+        to: { type: "string", minLength: 3, maxLength: 254 },
+        subject: { type: "string", minLength: 1, maxLength: 998 },
+        bodyText: { type: "string", minLength: 1, maxLength: maximumSendBodyBytes },
+      },
+      required: ["to", "subject", "bodyText"],
+      additionalProperties: false,
+    },
+  },
 ];
+
+const parseSendInput = (value) => {
+  const args = assertExactKeys(
+    value,
+    ["from", "to", "subject", "bodyText"],
+    ["to", "subject", "bodyText"],
+  );
+  const { from, to, subject, bodyText } = args;
+  if (
+    from !== undefined &&
+    (typeof from !== "string" || from.length > 254 || !mailboxPattern.test(from))
+  ) {
+    throw new Error("Gmail send sender invalid");
+  }
+  if (typeof to !== "string" || to.length > 254 || !mailboxPattern.test(to)) {
+    throw new Error("Gmail send recipient invalid");
+  }
+  if (typeof subject !== "string" || subject.length < 1 || subject.length > 998) {
+    throw new Error("Gmail send subject invalid");
+  }
+  for (const character of subject) {
+    if (character.charCodeAt(0) < 32 || character.charCodeAt(0) === 127) {
+      throw new Error("Gmail send subject invalid");
+    }
+  }
+  if (
+    typeof bodyText !== "string" ||
+    bodyText.length < 1 ||
+    Buffer.byteLength(bodyText, "utf8") > maximumSendBodyBytes ||
+    bodyText.includes(String.fromCharCode(0))
+  ) {
+    throw new Error("Gmail send body invalid");
+  }
+  return { from, to, subject, bodyText };
+};
+
+const foldBase64 = (value) => value.match(/.{1,76}/gu)?.join("\r\n") ?? "";
+
+/** Construct bounded, header-safe MIME with no attachments or active HTML. */
+export const encodeGmailSendMime = ({ from, to, subject, bodyText }) => {
+  const subjectWords = [];
+  let word = "";
+  for (const character of subject) {
+    if (Buffer.byteLength(word + character, "utf8") > 36) {
+      subjectWords.push(word);
+      word = "";
+    }
+    word += character;
+  }
+  if (word) subjectWords.push(word);
+  const encodedWords = subjectWords
+    .map((chunk) => `=?UTF-8?B?${Buffer.from(chunk, "utf8").toString("base64")}?=`)
+    .join("\r\n ");
+  const normalizedBody = bodyText.replace(/\r\n|\r|\n/gu, "\r\n");
+  const body = foldBase64(Buffer.from(normalizedBody, "utf8").toString("base64"));
+  const mime = `From: ${from}\r\nTo: ${to}\r\nSubject: ${encodedWords}\r\nMIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n${body}\r\n`;
+  if (Buffer.byteLength(mime, "utf8") > maximumSendMimeBytes) {
+    throw new Error("Gmail send MIME bound exceeded");
+  }
+  return Buffer.from(mime, "utf8").toString("base64url");
+};
 
 const isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 
@@ -419,14 +501,94 @@ const makeGmailRequest =
     );
   };
 
-/** Create the four-tool Gmail handler around an injected transport and actor-owned access token. */
+/** Read a send acknowledgement: only the new message id, within a small bound. */
+const readSendAcknowledgement = async (response) => {
+  const length = response.headers.get("Content-Length");
+  if (
+    length !== null &&
+    (!Number.isSafeInteger(Number(length)) ||
+      Number(length) > maximumSendResponseBytes ||
+      Number(length) < 0)
+  ) {
+    throw new Error("Gmail send response bound exceeded");
+  }
+  if (response.body === null) throw new Error("Gmail send response unavailable");
+  const reader = response.body.getReader();
+  const chunks = [];
+  let total = 0;
+  while (true) {
+    const next = await reader.read();
+    if (next.done) break;
+    total += next.value.byteLength;
+    if (total > maximumSendResponseBytes) {
+      await reader.cancel();
+      throw new Error("Gmail send response bound exceeded");
+    }
+    chunks.push(next.value);
+  }
+  const value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks)));
+  if (
+    !isRecord(value) ||
+    typeof value.id !== "string" ||
+    !/^[A-Za-z0-9_-]{1,256}$/u.test(value.id)
+  ) {
+    throw new Error("Gmail send message identity invalid");
+  }
+  return { messageId: value.id };
+};
+
+/** Create the Gmail handler around an injected transport and actor-owned access token. */
 export const createGmailToolHandler = ({ accessToken, fetch: fetchImplementation = fetch }) => {
-  const request = makeGmailRequest({
-    credential: makeRedactedAccessToken(accessToken),
-    fetch: fetchImplementation,
-  });
+  const credential = makeRedactedAccessToken(accessToken);
+  const request = makeGmailRequest({ credential, fetch: fetchImplementation });
+
+  /** Send exactly one Gmail API request; an ambiguous outcome is never retried. */
+  const sendMessage = async (input) => {
+    const parsed = parseSendInput(input);
+    // One connection reads and sends, so the sender defaults to the connected mailbox.
+    let from = parsed.from;
+    if (from === undefined) {
+      const profile = await request("/gmail/v1/users/me/profile", {});
+      if (
+        !isRecord(profile) ||
+        typeof profile.emailAddress !== "string" ||
+        profile.emailAddress.length > 254 ||
+        !mailboxPattern.test(profile.emailAddress)
+      ) {
+        throw new Error("Gmail send sender unavailable");
+      }
+      from = profile.emailAddress;
+    }
+    const raw = encodeGmailSendMime({ ...parsed, from });
+    let response;
+    try {
+      response = await fetchImplementation(`${gmailApiOrigin}/gmail/v1/users/me/messages/send`, {
+        method: "POST",
+        redirect: "error",
+        signal: AbortSignal.timeout(maximumProviderRequestDurationMs),
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${credential.unsafeRead()}`,
+        },
+        body: JSON.stringify({ raw }),
+      });
+    } catch {
+      throw new Error("Gmail send outcome ambiguous; do not retry automatically");
+    }
+    if (!response.ok) {
+      throw new Error("Gmail send provider rejected request; do not retry automatically");
+    }
+    try {
+      return await readSendAcknowledgement(response);
+    } catch {
+      throw new Error("Gmail send outcome ambiguous; do not retry automatically");
+    }
+  };
+
   return async (name, input) => {
     assertBoundedJson(input);
+    if (name === "send_message") return sendMessage(input);
     if (name === "search_messages") {
       const args = assertExactKeys(input, ["query", "maxResults", "pageToken"], ["query"]);
       const value = await request("/gmail/v1/users/me/messages", {
@@ -524,7 +686,7 @@ const startGmailMcpServer = () => {
         respond(request.id, {
           protocolVersion,
           capabilities: { tools: {} },
-          serverInfo: { name: "supernala-gmail", version: "0.1.0-candidate" },
+          serverInfo: { name: "supernala-gmail", version: "0.2.0" },
         });
       } else if (request.method === "tools/list") {
         respond(request.id, { tools: gmailToolCatalog });

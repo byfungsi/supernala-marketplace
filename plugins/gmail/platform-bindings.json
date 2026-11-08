@@ -1,15 +1,18 @@
 {
-  "providerRegistration": "google-gmail-rest-v1",
+  "providerRegistration": "google-gmail-rest-v2",
   "providerDefinition": {
     "path": "oauth-provider.json",
-    "canonicalSha256": "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07"
+    "canonicalSha256": "e285339aa1ba8d980b70e710bfd81714adb5509bfe28a53e141cf4f6fd53256c"
   },
   "providerMetadata": {
     "provider": "google",
     "resourceIdentity": "gmail.googleapis.com",
     "registrationMode": "workspace-oauth-app",
     "source": "platform",
-    "approvedScopes": ["https://www.googleapis.com/auth/gmail.readonly"]
+    "approvedScopes": [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.send"
+    ]
   },
   "workspaceOAuthApp": {
     "ownership": "workspace-owner",

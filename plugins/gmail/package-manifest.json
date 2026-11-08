@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "id": "gmail",
   "publisher": "supernala",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "name": "Gmail",
-  "description": "Narrow first-party Gmail message and draft search and reading tools",
+  "description": "First-party Gmail search, reading and plain-text sending from one connected account",
   "license": "MIT",
   "licenseEvidence": {
     "kind": "spdx-mit-full-text",
@@ -25,7 +25,7 @@
   },
   "catalog": {
     "path": "catalog.json",
-    "sha256": "b067434f01d2e7048b3a65f71536daad558ab6391ef7660f6d4e559632ce90df"
+    "sha256": "eaf94cb0545faa0672ae67b2d3eb99ddad5675a84475f70ccfbbac2f85ab8ad5"
   },
   "config": {
     "path": "config.json",
@@ -33,9 +33,12 @@
   },
   "authentication": {
     "kind": "oauth",
-    "providerRegistration": "google-gmail-rest-v1",
-    "providerDefinitionDigest": "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
-    "requestedScopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+    "providerRegistration": "google-gmail-rest-v2",
+    "providerDefinitionDigest": "e285339aa1ba8d980b70e710bfd81714adb5509bfe28a53e141cf4f6fd53256c",
+    "requestedScopes": [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.send"
+    ],
     "credentialDelivery": "short-lived-access-token-only"
   },
   "network": {
