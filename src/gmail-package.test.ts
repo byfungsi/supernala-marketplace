@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
-import { expect, it } from "@effect/vitest";
+import { expect, it, onTestFinished } from "@effect/vitest";
 import { Result, Schema } from "effect";
 import {
   deriveBootstrapAuthoritySnapshot,
@@ -869,6 +869,14 @@ it("sends from the connected account by default, as one request it never replays
 });
 
 it("binds the 0.2.0 review to the current source, with lineage from the published 0.1.1", async () => {
+  // ZIP DOS timestamps use civil time; the review was built where releases are published
+  // (UTC+7), so reproduce that environment rather than the runner's.
+  const originalTimezone = process.env.TZ;
+  process.env.TZ = "Asia/Jakarta";
+  onTestFinished(() => {
+    if (originalTimezone === undefined) delete process.env.TZ;
+    else process.env.TZ = originalTimezone;
+  });
   const releaseIndex = Schema.decodeUnknownSync(
     Schema.Struct({
       schemaVersion: Schema.Literal(1),
