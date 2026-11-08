@@ -15,6 +15,10 @@
 
 Tools: get the connected user; search issues with JQL; get an issue; list comments and status changes; find projects and people; list a project's issue types and their fields (reads, default **allow**); create, edit, comment on, change the status of and assign an issue (writes, default **ask each time**). Confluence is not included: a token with scopes covers one app.
 
+## Result size (1.0.1)
+
+Each tool declares `maximumOutputBytes`. 1.0.0 gave every tool 256 KiB, and a JQL search without `fields` returned more than that, which failed a Bot's task. 1.0.1 raises the reads that return issue content (search, get issue, comments, issue-type fields) to the platform maximum of 1 MiB, and the search, get-issue and comments descriptions tell the Bot to request only the fields it needs, keep pages small and continue with `nextPageToken`. Only descriptions and output limits changed: no tool's input schema, classification or policy did, so the authority diff is empty and existing grants carry over on update. The application reports a response over the limit to the Bot as a definite failure with guidance to narrow the request.
+
 ## Release prerequisites
 
 - The application must ship site-scoped API-key support (credential-origin lookup, `https-json-resource` verification and filled parameters) before publication.

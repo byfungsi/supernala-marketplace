@@ -67,7 +67,7 @@
       "get": {
         "operationId": "searchIssuesWithJql",
         "summary": "Search issues with JQL",
-        "description": "Finds issues with a JQL query, e.g. `project = PROJ AND statusCategory != Done ORDER BY updated DESC` or `assignee = currentUser()`. Ask for only the fields you need. Pass nextPageToken from the previous page to continue.",
+        "description": "Finds issues with a JQL query, e.g. `project = PROJ AND statusCategory != Done ORDER BY updated DESC` or `assignee = currentUser()`. Always pass `fields` with only what you need, for example `summary,status,assignee,parent`: omitting it or asking for `*all` (or `description` and `comment`) returns large issues and can exceed the result limit. Keep `maxResults` around 25 and continue with nextPageToken. If a result is too large, call again with fewer fields, a smaller page or a narrower JQL query; read one issue in full with get issue.",
         "parameters": [
           {
             "$ref": "#/components/parameters/cloudId"
@@ -166,7 +166,7 @@
       "get": {
         "operationId": "getIssue",
         "summary": "Get an issue",
-        "description": "Returns one issue by key (PROJ-123) or id.",
+        "description": "Returns one issue by key (PROJ-123) or id. Pass `fields` to keep it small: long descriptions, comments and history can be large.",
         "parameters": [
           {
             "$ref": "#/components/parameters/cloudId"
@@ -256,7 +256,7 @@
       "get": {
         "operationId": "getIssueComments",
         "summary": "List issue comments",
-        "description": "Returns comments on an issue, oldest first.",
+        "description": "Returns comments on an issue, oldest first. Page long threads with maxResults and startAt.",
         "parameters": [
           {
             "$ref": "#/components/parameters/cloudId"

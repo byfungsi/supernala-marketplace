@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "pluginVersionId": "supernala-public:supernala:atlassian-api@1.0.0",
-  "catalogSnapshotId": "atlassian-api-catalog-v1",
+  "pluginVersionId": "supernala-public:supernala:atlassian-api@1.0.1",
+  "catalogSnapshotId": "atlassian-api-catalog-v2",
   "providerRegistrationId": "atlassian-rest-v1",
   "credential": {
     "field": "token",
@@ -94,7 +94,7 @@
       "title": "Search Jira issues with JQL",
       "classification": "read",
       "defaultPolicy": "allow",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "operationId": "getIssue",
@@ -102,7 +102,7 @@
       "title": "Get a Jira issue",
       "classification": "read",
       "defaultPolicy": "allow",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "operationId": "getIssueComments",
@@ -110,7 +110,7 @@
       "title": "List Jira issue comments",
       "classification": "read",
       "defaultPolicy": "allow",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "operationId": "getIssueTransitions",
@@ -150,7 +150,7 @@
       "title": "List fields for a Jira issue type",
       "classification": "read",
       "defaultPolicy": "allow",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "operationId": "createIssue",
@@ -197,7 +197,7 @@
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "atlassian-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Jira (API token)",
   "description": "Jira Cloud REST through Atlassian's API gateway with an email, a Jira API token with scopes, and the site: search, read, create, edit, comment, assign and change status. No admin setting needed.",
   "license": "LicenseRef-Provider-Service"
