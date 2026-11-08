@@ -6,10 +6,10 @@ registry and commits lifecycle changes across all components atomically.
 
 | App    | Component releases                  | Account setup                                                                        |
 | ------ | ----------------------------------- | ------------------------------------------------------------------------------------ |
-| Gmail  | `gmail@0.2.0`                       | One account reads and sends; choose each Bot's read and send access.                 |
+| Gmail  | `gmail@0.2.1`                       | One account reads and sends; choose each Bot's read and send access.                 |
 | Resend | `resend@1.0.3` + `resend-api@1.0.0` | Sign in, provide an API key, or connect both; choose Bot access for each connection. |
 
-Gmail 0.2.0 replaced the separate `gmail` (read) and `gmail-send` components with one release under a new `google-gmail-rest-v2` registration, so one Google consent covers reading and sending. `gmail-send@0.1.0` stays published for history; the application no longer offers it.
+Gmail 0.2.1 replaced the separate `gmail` (read) and `gmail-send` components with one release under a new `google-gmail-rest-v2` registration, so one Google consent covers reading and sending. `gmail-send@0.1.0` stays published for history; the application no longer offers it. (0.2.0 failed to stage in production and is never published: a Plugin keeps the description it was first published with.)
 
 Installation includes every component but does not authorize accounts or grant
 tools. Existing partial installations are completed by the application without

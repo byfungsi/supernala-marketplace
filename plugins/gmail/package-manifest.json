@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "gmail",
   "publisher": "supernala",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "name": "Gmail",
   "description": "Narrow first-party Gmail message and draft search and reading tools",
   "license": "MIT",

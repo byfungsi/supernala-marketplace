@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "gmail",
+    "semanticVersion": "0.2.1"
+  },
+  "reviewId": "gmail-0.2.1-one-account-read-and-send-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794133586918,
+  "sourceInputDigest": "69766e0e1b1290b6e6f5be421357bb79cd863f986d2090c0688cc5d3847bac4b",
+  "artifactDigest": "89ccae09dd592a3dea3431d8e164fb0834f91adb32810cf54f7e56e3981b9410",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-gmail-rest-v2",
+    "providerDefinitionDigest": "e285339aa1ba8d980b70e710bfd81714adb5509bfe28a53e141cf4f6fd53256c",
+    "requestedScopes": [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.send"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "eaf94cb0545faa0672ae67b2d3eb99ddad5675a84475f70ccfbbac2f85ab8ad5",
+  "configDigest": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
+  "provenanceDigest": "29cb3bdd1806b60fb95ddfb14d5f6ace560304be720fe546f4ad848d95550e6f",
+  "authorityBeforeIdentity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "gmail",
+    "semanticVersion": "0.1.1"
+  },
+  "authorityBeforeReleaseDigest": "2ed5d029729107f6fd313aa255f09decc4519066d9538ce6f656aace59d75c1f",
+  "authorityBefore": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "oauth",
+    "requestedScopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "google-gmail-rest-v1",
+    "providerDefinitionDigest": "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
+    "tools": [
+      {
+        "id": "gmail.search_messages",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "maxResults": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25
+            },
+            "pageToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "gmail.get_message",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": ["messageId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "gmail.list_drafts",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "maxResults": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25
+            },
+            "pageToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "gmail.get_draft",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "draftId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": ["draftId"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["gmail.googleapis.com"],
+    "config": []
+  },
+  "authorityBeforeDigest": "fd04d060052be6ce96f2968d1369a7330a9c0b2a4ac38adfb43f0e495683aa51",
+  "authorityAfter": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "oauth",
+    "requestedScopes": [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.send"
+    ],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "google-gmail-rest-v2",
+    "providerDefinitionDigest": "e285339aa1ba8d980b70e710bfd81714adb5509bfe28a53e141cf4f6fd53256c",
+    "tools": [
+      {
+        "id": "gmail.search_messages",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 500
+            },
+            "maxResults": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25
+            },
+            "pageToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "gmail.get_message",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "messageId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": ["messageId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "gmail.list_drafts",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "maxResults": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25
+            },
+            "pageToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "gmail.get_draft",
+        "classification": "read",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "draftId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          },
+          "required": ["draftId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "gmail.send_message",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 254
+            },
+            "to": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 254
+            },
+            "subject": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 998
+            },
+            "bodyText": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536
+            }
+          },
+          "required": ["to", "subject", "bodyText"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["gmail.googleapis.com"],
+    "config": []
+  },
+  "authorityDigest": "99f0f5e80d03a1a86ad5a31628436abe4848d1ea038ab44168cb4404c8529675",
+  "authorityDiffDigest": "428058dfb0a80d504a90033400f36f63007a519087c210e52f7b572bb0cc7f00",
+  "releaseDigest": "a2aef0b7bacc3295f930c1e477fd66d7461ab84e85a1c5f3000f6d499e28928b",
+  "decision": "approved"
+}

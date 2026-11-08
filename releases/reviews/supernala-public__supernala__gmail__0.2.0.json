@@ -9,8 +9,8 @@
   "reviewId": "gmail-0.2.0-one-account-read-and-send-v1",
   "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
   "reviewedAt": 1794128610674,
-  "sourceInputDigest": "5d46b0fe7f3da76090269d68fce78e5222e3f9c9abd2d0ed10b9238ef086b301",
-  "artifactDigest": "77fe30a6db873011ebcf77e7e5b91dd72a34c14d571abff6532cd4bdbb7e7222",
+  "sourceInputDigest": "b67f5f829d6d5cdeca3c176867b812d2eb7cdc1141eb09f3eb80f050a5946427",
+  "artifactDigest": "5dff950983b02d6845e28b70206e42eb03ae958a01aadc7c1166deaec1fa94a4",
   "authentication": {
     "kind": "oauth",
     "providerRegistration": "google-gmail-rest-v2",
@@ -259,6 +259,6 @@
   },
   "authorityDigest": "99f0f5e80d03a1a86ad5a31628436abe4848d1ea038ab44168cb4404c8529675",
   "authorityDiffDigest": "428058dfb0a80d504a90033400f36f63007a519087c210e52f7b572bb0cc7f00",
-  "releaseDigest": "839609e0398998cd6a1f5eb216aa19d10de7add2a310b1cd18b43a6d80db6d44",
+  "releaseDigest": "a60b57c47e2ce21c2ce3368ddfc8d5ff340f5aa0c5f31b4b7e269fdb861737a1",
   "decision": "approved"
 }

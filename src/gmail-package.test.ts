@@ -327,7 +327,7 @@ it("binds the five-field package declaration to the strict canonical Gmail defin
     {
       source: "plugins/gmail/source/server.mjs",
       destination: "dist/server.mjs",
-      sha256: "69652117e8b3f05629c3d92059bde7eeff9c69eb3836e41d28e4e7ac082656d5",
+      sha256: "6c18901399dc59ab6d2b091f2e1d22950d6b5f6a70851f35fe147bf6dc8944af",
     },
     {
       source: "plugins/gmail/LICENSE",
@@ -868,7 +868,7 @@ it("sends from the connected account by default, as one request it never replays
   expect(attempts).toBe(1);
 });
 
-it("binds the 0.2.0 review to the current source, with lineage from the published 0.1.1", async () => {
+it("binds the 0.2.1 review to the current source, with lineage from the published 0.1.1", async () => {
   // ZIP DOS timestamps use civil time; the review was built where releases are published
   // (UTC+7), so reproduce that environment rather than the runner's.
   const originalTimezone = process.env.TZ;
@@ -901,7 +901,7 @@ it("binds the 0.2.0 review to the current source, with lineage from the publishe
       ),
     );
   const previous = await decodeReview("0.1.1");
-  const review = await decodeReview("0.2.0");
+  const review = await decodeReview("0.2.1");
   const source = await validatePluginSource("plugins/gmail");
   if (Result.isFailure(source)) throw source.failure;
   const prepared = await preparePluginPackage({
