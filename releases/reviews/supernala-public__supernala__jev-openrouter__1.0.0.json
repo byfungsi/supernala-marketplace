@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "jev-openrouter",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "jev-openrouter-1.0.0-ask-jev-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794150626462,
+  "sourceInputDigest": "654cee12aefd2269b3f26f2eeb7d53d0c88a6b617c8e58b6c24fda2b99a6096c",
+  "artifactDigest": "b8758645a1bd595a6695ba517a530d1e8646e53bac4df01b15b679ca1cb136a3",
+  "authentication": {
+    "kind": "none"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "openrouter-decisions-v1",
+    "fields": [
+      {
+        "key": "api_key",
+        "label": "OpenRouter API key",
+        "secret": true,
+        "minimumLength": 8,
+        "maximumLength": 512
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "header",
+        "field": "api_key",
+        "headerName": "Authorization",
+        "encoding": "bearer"
+      }
+    ],
+    "verification": {
+      "kind": "https-json",
+      "endpoint": "https://openrouter.ai/api/v1/key",
+      "expectedStatus": 200,
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 512
+    },
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Jev (OpenRouter)"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "catalogDigest": "8b21d98bb68bf5ee3a636314d4b56a0971cdd7814d251b57108c042368510234",
+  "configDigest": "23542ea5e9d621ef4adc58cf4740ef4bd4a36fc20a0786bd129cb487d782d6c3",
+  "provenanceDigest": "401dd88449a23a936cf2f59bac6bcf523d75b458bf9068c57de80714dd1e9aca",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [],
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "b98d01227e1a4dcc71b9940e1212f70f379351fcc2cf27fae9ca06e8045c6b19",
+  "authorityAfter": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [
+      {
+        "toolId": "jev.ask",
+        "method": "POST",
+        "origin": "https://openrouter.ai",
+        "pathTemplate": "/api/alpha/decisions",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      }
+    ],
+    "authenticationKind": "api-key",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "openrouter-decisions-v1",
+    "providerDefinitionDigest": null,
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "api-key",
+      "providerRegistrationId": "openrouter-decisions-v1",
+      "fields": [
+        {
+          "key": "api_key",
+          "label": "OpenRouter API key",
+          "secret": true,
+          "minimumLength": 8,
+          "maximumLength": 512
+        }
+      ],
+      "delivery": [
+        {
+          "kind": "header",
+          "field": "api_key",
+          "headerName": "Authorization",
+          "encoding": "bearer"
+        }
+      ],
+      "verification": {
+        "kind": "https-json",
+        "endpoint": "https://openrouter.ai/api/v1/key",
+        "expectedStatus": 200,
+        "maximumResponseBytes": 65536,
+        "maximumJsonDepth": 8,
+        "maximumObjectKeys": 512
+      },
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Jev (OpenRouter)"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "jev.ask",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "model": {
+                  "type": "string",
+                  "enum": ["typesafe/jev-latest", "typesafe/jev-1.14"],
+                  "description": "Jev model; `typesafe/jev-latest` follows the newest release."
+                },
+                "state": {
+                  "type": ["string", "object", "array"],
+                  "description": "The content every question refers to: text, or a JSON object or array of related context such as {\"subject\":...,\"message\":...}. Keep it focused; long state lowers accuracy."
+                },
+                "questions": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["choice", "score", "noul"],
+                        "description": "Question type."
+                      },
+                      "instructions": {
+                        "type": "string",
+                        "maxLength": 8000,
+                        "description": "What to decide, rate or evaluate."
+                      },
+                      "criteria": {
+                        "type": ["object", "array"],
+                        "description": "choice: {option name: when it applies}. score: [lowest level, ..., highest level]. noul: optional {\"true\": ..., \"false\": ...}."
+                      }
+                    },
+                    "required": ["type"],
+                    "additionalProperties": false
+                  },
+                  "description": "Questions about `state`, each under a name you choose (letters, digits, underscores); answers come back under the same names. Ask several at once: it costs no more and is just as fast. Types: `choice` picks one option; `criteria` maps each option name to when it applies, e.g. {\"billing\":\"Charges, refunds, invoices\",\"bug\":\"Something is broken\"}; the answer has `choice`, `confidence` and `probabilities` per option. `score` rates against ordered levels; `criteria` is a list of 1-10 level descriptions from lowest (0) up; the answer has the expected `score`, `confidence`, `legend` and `probabilities` per level. `noul` is a yes/no question or statement; optional `criteria` {\"true\":\"what counts as yes\",\"false\":\"what counts as no\"}; the answer `noul` is the probability of yes (0-1). Jev returns typed answers only; it never writes text."
+                }
+              },
+              "required": ["model", "state", "questions"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["openrouter.ai"],
+    "config": []
+  },
+  "authorityDigest": "6414d22129bc04531848a0bd5f07f2d95851db30c327a26327a28189ce50bce0",
+  "authorityDiffDigest": "3e38e1ce83775958722f89371d3ae3db1e25d26622ed9b84b3c6793c172999cd",
+  "releaseDigest": "c14a9dd296119050c3cc5d52ff254a7e2e7bb144dfcd6d1c7d702c700315e68a",
+  "decision": "approved"
+}
