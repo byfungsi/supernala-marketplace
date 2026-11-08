@@ -110,10 +110,13 @@ const createCliFixture = async (
                 ).authentication
               : {
                   kind: "oauth",
-                  providerRegistration: "google-gmail-rest-v1",
+                  providerRegistration: "google-gmail-rest-v2",
                   providerDefinitionDigest:
-                    "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
-                  requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+                    "e285339aa1ba8d980b70e710bfd81714adb5509bfe28a53e141cf4f6fd53256c",
+                  requestedScopes: [
+                    "https://www.googleapis.com/auth/gmail.readonly",
+                    "https://www.googleapis.com/auth/gmail.send",
+                  ],
                   credentialDelivery: "short-lived-access-token-only",
                 },
         },
@@ -245,9 +248,12 @@ it("carries exact five-field OAuth authority through actual CLI build and dry-ru
     );
     expect(release.authentication).toEqual({
       kind: "oauth",
-      providerRegistration: "google-gmail-rest-v1",
-      providerDefinitionDigest: "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
-      requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+      providerRegistration: "google-gmail-rest-v2",
+      providerDefinitionDigest: "e285339aa1ba8d980b70e710bfd81714adb5509bfe28a53e141cf4f6fd53256c",
+      requestedScopes: [
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/gmail.send",
+      ],
       credentialDelivery: "short-lived-access-token-only",
     });
     const dryRun = await runReleaseCli(fixture.root, ["publish", "release-output", "--dry-run"]);

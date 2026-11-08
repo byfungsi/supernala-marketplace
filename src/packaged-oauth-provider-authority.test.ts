@@ -31,7 +31,7 @@ it("retains Workspace-owned Gmail provider admission", async () => {
     _tag: "Success",
     success: {
       kind: "workspace-oauth-app",
-      authority: { providerRegistrationId: "google-gmail-rest-v1" },
+      authority: { providerRegistrationId: "google-gmail-rest-v2" },
     },
   });
 });

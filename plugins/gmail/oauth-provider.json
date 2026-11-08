@@ -36,7 +36,10 @@
     "token": "refresh-token"
   },
   "schemaVersion": 1,
-  "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+  "scopes": [
+    "https://www.googleapis.com/auth/gmail.readonly",
+    "https://www.googleapis.com/auth/gmail.send"
+  ],
   "tokenEndpoint": "https://oauth2.googleapis.com/token",
   "tokenEndpointAuthMethod": "client_secret_post",
   "tokens": {

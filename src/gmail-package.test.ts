@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { readFile } from "node:fs/promises";
-import { expect, it } from "@effect/vitest";
+import { expect, it, onTestFinished } from "@effect/vitest";
 import { Result, Schema } from "effect";
 import {
   deriveBootstrapAuthoritySnapshot,
@@ -10,6 +10,7 @@ import {
 import { preparePluginPackage, validatePluginSource } from "./authoring-validation.js";
 import {
   createGmailToolHandler,
+  encodeGmailSendMime,
   gmailToolCatalog,
   parseGmailMessage,
 } from "../plugins/gmail/source/server.mjs";
@@ -29,6 +30,7 @@ import {
   calculateAuthorityBaselineDigest,
   calculateManagedPackageSourceInputDigest,
   calculateReleaseDigest,
+  digestReleaseSharedInputs,
   pluginVersionId,
   releaseReviewFile,
   ReleaseReview,
@@ -36,13 +38,16 @@ import {
 import { PluginReleaseIdentity } from "./release-machine.js";
 
 const gmailProviderDefinitionDigest =
+  "e285339aa1ba8d980b70e710bfd81714adb5509bfe28a53e141cf4f6fd53256c";
+/** The 0.1.x definition, which asked only to read; its published reviews stay pinned to it. */
+const gmailReadonlyProviderDefinitionDigest =
   "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07";
 
 const gmailProviderDefinitionCanonicalJson = [
   '{"account":{"authorization":"bearer","displayLabelPath":["emailAddress"],"endpoint":"https://gmail.googleapis.com/gmail/v1/users/me/profile","kind":"https-json","maximumDisplayLabelLength":160,"maximumJsonDepth":4,"maximumObjectKeys":16,"maximumResponseBytes":16384,"maximumSubjectLength":300,"subjectPath":["emailAddress"],"subjectStability":"mutable"},',
   '"authorizationEndpoint":"https://accounts.google.com/o/oauth2/v2/auth","authorizationParameters":[{"name":"access_type","value":"offline"},{"name":"prompt","value":"consent"}],"authorizationResponseIssuer":"required","issuer":"https://accounts.google.com","pkce":{"method":"S256"},"protocol":"oauth2-authorization-code","provider":"google",',
   '"refresh":{"ambiguousOutcome":"fail-closed-no-replay","invalidGrant":"reauthorization-required","kind":"standard-form-post"},"resourceIdentity":"gmail.googleapis.com","revocation":{"clientAuthentication":"token-only","endpoint":"https://oauth2.googleapis.com/revoke","kind":"standard-form-post","outcome":"best-effort-observed","token":"refresh-token"},',
-  '"schemaVersion":1,"scopes":["https://www.googleapis.com/auth/gmail.readonly"],"tokenEndpoint":"https://oauth2.googleapis.com/token","tokenEndpointAuthMethod":"client_secret_post","tokens":{"accessTokenType":"bearer","expiresIn":{"maximumSeconds":86400,"minimumSeconds":1,"required":true},"grantedScopes":{"whenOmitted":"requested-scopes","whenPresent":"exact-match"},"initialRefreshToken":"required","refreshResponseToken":"retain-current-if-omitted"}}',
+  '"schemaVersion":1,"scopes":["https://www.googleapis.com/auth/gmail.readonly","https://www.googleapis.com/auth/gmail.send"],"tokenEndpoint":"https://oauth2.googleapis.com/token","tokenEndpointAuthMethod":"client_secret_post","tokens":{"accessTokenType":"bearer","expiresIn":{"maximumSeconds":86400,"minimumSeconds":1,"required":true},"grantedScopes":{"whenOmitted":"requested-scopes","whenPresent":"exact-match"},"initialRefreshToken":"required","refreshResponseToken":"retain-current-if-omitted"}}',
 ].join("");
 
 const GmailCandidate = Schema.Struct({
@@ -61,7 +66,7 @@ const GmailCandidate = Schema.Struct({
 });
 
 const GmailPlatformBindings = Schema.Struct({
-  providerRegistration: Schema.Literal("google-gmail-rest-v1"),
+  providerRegistration: Schema.Literal("google-gmail-rest-v2"),
   providerDefinition: Schema.Struct({
     path: Schema.Literal("oauth-provider.json"),
     canonicalSha256: PluginSha256,
@@ -129,24 +134,26 @@ const makeRecordingFetch = (
 
 const encodeBody = (value: string): string => Buffer.from(value).toString("base64url");
 
-it("declares only the four reviewed read tools and sole readonly OAuth scope", async () => {
+it("declares four reading tools and one plain-text send, each needing approval by default", async () => {
   expect(gmailToolCatalog.map((tool) => tool.name)).toEqual([
     "search_messages",
     "get_message",
     "list_drafts",
     "get_draft",
+    "send_message",
   ]);
-  expect(gmailToolCatalog.map((tool) => tool.name)).not.toContain("send_message");
 
   const catalog = Schema.decodeUnknownSync(PackageCatalog, { onExcessProperty: "error" })(
     JSON.parse(await readFile("plugins/gmail/catalog.json", "utf8")),
   );
-  expect(catalog.tools).toHaveLength(4);
-  expect(
-    catalog.tools.every(
-      (tool) => tool.classification === "read" && tool.defaultPolicy === "require-approval",
-    ),
-  ).toBe(true);
+  expect(catalog.tools.map((tool) => [tool.id, tool.classification])).toEqual([
+    ["gmail.search_messages", "read"],
+    ["gmail.get_message", "read"],
+    ["gmail.list_drafts", "read"],
+    ["gmail.get_draft", "read"],
+    ["gmail.send_message", "write"],
+  ]);
+  expect(catalog.tools.every((tool) => tool.defaultPolicy === "require-approval")).toBe(true);
   expect(gmailToolCatalog).toEqual(
     catalog.tools.map((tool) => ({
       name: tool.mcpName,
@@ -173,12 +180,12 @@ it("binds the five-field package declaration to the strict canonical Gmail defin
   const canonicalText = new TextDecoder().decode(canonicalBytes);
 
   expect(canonicalText).toBe(gmailProviderDefinitionCanonicalJson);
-  expect(canonicalBytes.byteLength).toBe(1_499);
+  expect(canonicalBytes.byteLength).toBe(1_544);
   await expect(digestPluginOAuthProviderDefinition(definition)).resolves.toBe(
     gmailProviderDefinitionDigest,
   );
   await expect(digestPluginBytes(new TextEncoder().encode(definitionSource))).resolves.toBe(
-    "329d63038c896a71f15c1aa676ea3f950c0b8202e0d054bd74e40f2162979fb5",
+    "9f646a29671fefe5d01260853be456acb5d2f611af99ed49fcd637476351c89a",
   );
   expect(await digestPluginBytes(new TextEncoder().encode(definitionSource))).not.toBe(
     gmailProviderDefinitionDigest,
@@ -257,11 +264,15 @@ it("binds the five-field package declaration to the strict canonical Gmail defin
     blockingReason: expect.stringContaining("live mailbox acceptance remains pending"),
   });
   expect(manifest.authentication).toEqual(candidate.authentication);
+  // A new registration: the 0.1.x one was reviewed for reading only.
   expect(manifest.authentication).toEqual({
     kind: "oauth",
-    providerRegistration: "google-gmail-rest-v1",
+    providerRegistration: "google-gmail-rest-v2",
     providerDefinitionDigest: gmailProviderDefinitionDigest,
-    requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+    requestedScopes: [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.send",
+    ],
     credentialDelivery: "short-lived-access-token-only",
   });
   expect(Object.keys(manifest.authentication).toSorted()).toEqual([
@@ -301,7 +312,7 @@ it("binds the five-field package declaration to the strict canonical Gmail defin
     {
       source: "plugins/gmail/catalog.json",
       destination: "catalog.json",
-      sha256: "b067434f01d2e7048b3a65f71536daad558ab6391ef7660f6d4e559632ce90df",
+      sha256: "eaf94cb0545faa0672ae67b2d3eb99ddad5675a84475f70ccfbbac2f85ab8ad5",
     },
     {
       source: "plugins/gmail/config.json",
@@ -316,7 +327,7 @@ it("binds the five-field package declaration to the strict canonical Gmail defin
     {
       source: "plugins/gmail/source/server.mjs",
       destination: "dist/server.mjs",
-      sha256: "abf9f4748a455d18c94a023fb4fceea129dff711315e1a969096c7021b492cc2",
+      sha256: "69652117e8b3f05629c3d92059bde7eeff9c69eb3836e41d28e4e7ac082656d5",
     },
     {
       source: "plugins/gmail/LICENSE",
@@ -625,7 +636,7 @@ it("completes the Host stdio handshake without responding to notifications", asy
   });
 });
 
-it("keeps public Gmail declarations free of credential values and write authority", async () => {
+it("keeps public Gmail declarations free of credential values and asks only to read and send", async () => {
   const publicFiles = await Promise.all(
     [
       "plugins/gmail/package-manifest.json",
@@ -642,8 +653,8 @@ it("keeps public Gmail declarations free of credential values and write authorit
   expect(publicText).toContain("workspace-oauth-app");
   expect(publicText).not.toContain("GOOGLE_GMAIL_OAUTH_CLIENT_SECRET");
   expect(publicText).toContain("https://www.googleapis.com/auth/gmail.readonly");
+  expect(publicText).toContain("https://www.googleapis.com/auth/gmail.send");
   expect(publicText).not.toContain("gmail.compose");
-  expect(publicText).not.toContain("gmail.send");
   expect(publicText).not.toContain("gmail.modify");
   expect(publicText).not.toContain("https://mail.google.com/");
   expect(publicText).not.toContain("refresh_token");
@@ -731,7 +742,8 @@ it("binds the Owner-authorized first-publication review to exact Gmail release a
   if (Result.isFailure(prepared)) throw prepared.failure;
   const digestJson = (value: Schema.Json) =>
     digestPluginBytes(new TextEncoder().encode(canonicalPluginJson(value)));
-  const authorityAfter = derivePluginAuthoritySnapshot(source.success);
+  // 0.1.0 is history: its authority is what it recorded, not what the source declares today.
+  const authorityAfter = review.authorityAfter;
   const authorityBefore = deriveBootstrapAuthoritySnapshot(authorityAfter);
   const authorityBeforeDigest = await digestJson(authorityBefore);
   const authorityDigest = await digestJson(authorityAfter);
@@ -782,7 +794,7 @@ it("binds the Owner-authorized first-publication review to exact Gmail release a
     authentication: {
       kind: "oauth",
       providerRegistration: "google-gmail-rest-v1",
-      providerDefinitionDigest: gmailProviderDefinitionDigest,
+      providerDefinitionDigest: gmailReadonlyProviderDefinitionDigest,
       requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
       credentialDelivery: "short-lived-access-token-only",
     },
@@ -809,4 +821,132 @@ it("binds the Owner-authorized first-publication review to exact Gmail release a
   expect(review.authorityAfter.requestedScopes).toEqual([
     "https://www.googleapis.com/auth/gmail.readonly",
   ]);
+});
+
+it("sends from the connected account by default, as one request it never replays", async () => {
+  const sample = { to: "friend@example.test", subject: "Hello", bodyText: "Plain text only." };
+  const requests: Array<{ readonly url: string; readonly method: string | undefined }> = [];
+  const send = createGmailToolHandler({
+    accessToken: "test",
+    fetch: async (input, init) => {
+      const url = input instanceof Request ? input.url : input.toString();
+      requests.push({ url, method: init?.method });
+      return url.endsWith("/users/me/profile")
+        ? jsonResponse({ emailAddress: "owner@example.test" })
+        : jsonResponse({ id: "message-1" });
+    },
+  });
+
+  await expect(send("send_message", sample)).resolves.toEqual({ messageId: "message-1" });
+  // One connection reads and sends, so the sender comes from the mailbox's own profile.
+  expect(requests).toEqual([
+    { url: "https://gmail.googleapis.com/gmail/v1/users/me/profile", method: "GET" },
+    { url: "https://gmail.googleapis.com/gmail/v1/users/me/messages/send", method: "POST" },
+  ]);
+  const mime = Buffer.from(
+    encodeGmailSendMime({ ...sample, from: "owner@example.test" }),
+    "base64url",
+  ).toString("utf8");
+  expect(mime).toContain("From: owner@example.test\r\nTo: friend@example.test");
+
+  await expect(
+    send("send_message", { ...sample, to: "victim@example.test\r\nBcc: someone@example.test" }),
+  ).rejects.toThrow("Gmail send recipient invalid");
+  await expect(send("send_message", { ...sample, cc: "x@example.test" })).rejects.toThrow();
+
+  let attempts = 0;
+  const ambiguous = createGmailToolHandler({
+    accessToken: "test",
+    fetch: async () => {
+      attempts++;
+      throw new Error("network");
+    },
+  });
+  await expect(
+    ambiguous("send_message", { ...sample, from: "owner@example.test" }),
+  ).rejects.toThrow("Gmail send outcome ambiguous; do not retry automatically");
+  expect(attempts).toBe(1);
+});
+
+it("binds the 0.2.0 review to the current source, with lineage from the published 0.1.1", async () => {
+  // ZIP DOS timestamps use civil time; the review was built where releases are published
+  // (UTC+7), so reproduce that environment rather than the runner's.
+  const originalTimezone = process.env.TZ;
+  process.env.TZ = "Asia/Jakarta";
+  onTestFinished(() => {
+    if (originalTimezone === undefined) delete process.env.TZ;
+    else process.env.TZ = originalTimezone;
+  });
+  const releaseIndex = Schema.decodeUnknownSync(
+    Schema.Struct({
+      schemaVersion: Schema.Literal(1),
+      sharedInputs: Schema.Array(Schema.NonEmptyString),
+    }),
+  )(JSON.parse(await readFile("releases/index.json", "utf8")));
+  const sharedInputDigest = await digestReleaseSharedInputs(releaseIndex.sharedInputs);
+  const decodeReview = async (version: string) =>
+    Schema.decodeUnknownSync(ReleaseReview, { onExcessProperty: "error" })(
+      JSON.parse(
+        await readFile(
+          releaseReviewFile(
+            PluginReleaseIdentity.make({
+              marketplaceId: "supernala-public",
+              publisherNamespace: "supernala",
+              pluginSlug: "gmail",
+              semanticVersion: version,
+            }),
+          ),
+          "utf8",
+        ),
+      ),
+    );
+  const previous = await decodeReview("0.1.1");
+  const review = await decodeReview("0.2.0");
+  const source = await validatePluginSource("plugins/gmail");
+  if (Result.isFailure(source)) throw source.failure;
+  const prepared = await preparePluginPackage({
+    source: source.success,
+    marketplaceId: review.identity.marketplaceId,
+    versionId: pluginVersionId(review.identity),
+    publishedAt: review.reviewedAt,
+  });
+  if (Result.isFailure(prepared)) throw prepared.failure;
+  const digestJson = (value: Schema.Json) =>
+    digestPluginBytes(new TextEncoder().encode(canonicalPluginJson(value)));
+  const authorityAfter = derivePluginAuthoritySnapshot(source.success);
+  const authorityDiff = await diffPluginAuthority(previous.authorityAfter, authorityAfter);
+
+  expect(review.authorityBeforeIdentity).toEqual(previous.identity);
+  expect(review.authorityBeforeReleaseDigest).toBe(previous.releaseDigest);
+  expect(review.authorityBeforeDigest).toBe(previous.authorityDigest);
+  expect(review.authorityBefore).toEqual(previous.authorityAfter);
+  expect(review.authorityAfter).toEqual(authorityAfter);
+  expect(review.authorityDigest).toBe(await digestJson(authorityAfter));
+  expect(review.authorityDiffDigest).toBe(authorityDiff.diffDigest);
+  // The diff adds exactly one write tool and the send scope; nothing is removed.
+  expect(authorityDiff.addedTools).toEqual(["gmail.send_message"]);
+  expect(authorityDiff.removedTools).toEqual([]);
+  expect(review.authentication).toEqual(prepared.success.parsed.authentication);
+  expect(review.artifactDigest).toBe(prepared.success.artifactDigest);
+  expect(review.sourceInputDigest).toBe(
+    await calculateManagedPackageSourceInputDigest({
+      sourceDirectory: "plugins/gmail",
+      sharedInputDigest,
+    }),
+  );
+  expect(review.releaseDigest).toBe(
+    await calculateReleaseDigest({
+      identity: review.identity,
+      version: prepared.success.parsed.version,
+      authentication: prepared.success.parsed.authentication,
+      sourceInputDigest: review.sourceInputDigest,
+      catalogDigest: prepared.success.parsed.version.catalog.digest,
+      configDigest: prepared.success.parsed.configDigest,
+      provenanceDigest: await digestJson(prepared.success.parsed.provenance),
+      authorityBaselineDigest: await calculateAuthorityBaselineDigest(review),
+      authorityDigest: review.authorityDigest,
+      authorityDiffDigest: PluginSha256.make(authorityDiff.diffDigest),
+      artifactDigest: prepared.success.artifactDigest,
+    }),
+  );
 });

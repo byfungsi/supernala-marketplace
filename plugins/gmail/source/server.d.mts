@@ -1,4 +1,4 @@
-/** Exact read-only Gmail tool catalog exposed over MCP. */
+/** Exact Gmail tool catalog exposed over MCP: four reading tools and one plain-text send. */
 export const gmailToolCatalog: ReadonlyArray<{
   readonly name: string;
   readonly description: string;
@@ -37,8 +37,16 @@ export interface GmailMessageResult {
 /** Parse one untrusted Gmail message without returning raw MIME or attachment bytes. */
 export function parseGmailMessage(message: unknown): GmailMessageResult;
 
-/** Create the four-tool Gmail handler around an injected transport and actor-owned access token. */
+/** Create the Gmail handler around an injected transport and actor-owned access token. */
 export function createGmailToolHandler(input: {
   readonly accessToken: string | undefined;
   readonly fetch?: typeof globalThis.fetch;
 }): (name: string, input: unknown) => Promise<unknown>;
+
+/** Construct bounded, header-safe plain-text MIME for one message, base64url encoded. */
+export function encodeGmailSendMime(input: {
+  readonly from: string;
+  readonly to: string;
+  readonly subject: string;
+  readonly bodyText: string;
+}): string;

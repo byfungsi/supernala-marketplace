@@ -8,6 +8,7 @@ import { Result, Schema } from "effect";
 import {
   deriveBootstrapAuthoritySnapshot,
   deriveManagedRemoteAuthoritySnapshot,
+  derivePluginAuthoritySnapshot,
   diffPluginAuthority,
 } from "./authority-diff.js";
 import type { D1BatchTransport, D1Statement } from "./cloudflare-adapters.js";
@@ -1271,12 +1272,32 @@ it("keeps the Gmail review stale and rehearses newly bound Workspace OAuth autho
     publishedAt: pinnedReview.reviewedAt,
   });
   if (Result.isFailure(prepared)) throw new Error(prepared.failure.message);
+  // The authority is bound to today's source too (Gmail now reads and sends), keeping the
+  // first-publication lineage this rehearsal exercises.
+  const authorityAfter = derivePluginAuthoritySnapshot(source.success);
+  const authorityBefore = deriveBootstrapAuthoritySnapshot(authorityAfter);
+  const digestAuthority = (value: Schema.Json) =>
+    digestPluginBytes(new TextEncoder().encode(canonicalPluginJson(value)));
+  const authorityBeforeDigest = await digestAuthority(authorityBefore);
+  const authorityDigest = await digestAuthority(authorityAfter);
+  const authorityDiff = await diffPluginAuthority(authorityBefore, authorityAfter);
+  const lineage = {
+    authorityBeforeIdentity: null,
+    authorityBeforeReleaseDigest: null,
+    authorityBefore,
+    authorityBeforeDigest,
+  };
   const review = ReleaseReview.make({
     ...pinnedReview,
+    ...lineage,
     identity,
     sourceInputDigest,
+    authentication: prepared.success.parsed.authentication,
     artifactDigest: prepared.success.artifactDigest,
     catalogDigest: prepared.success.parsed.version.catalog.digest,
+    authorityAfter,
+    authorityDigest,
+    authorityDiffDigest: PluginSha256.make(authorityDiff.diffDigest),
     releaseDigest: await calculateReleaseDigest({
       identity,
       version: prepared.success.parsed.version,
@@ -1285,9 +1306,9 @@ it("keeps the Gmail review stale and rehearses newly bound Workspace OAuth autho
       catalogDigest: prepared.success.parsed.version.catalog.digest,
       configDigest: pinnedReview.configDigest,
       provenanceDigest: pinnedReview.provenanceDigest,
-      authorityBaselineDigest: await calculateAuthorityBaselineDigest(pinnedReview),
-      authorityDigest: pinnedReview.authorityDigest,
-      authorityDiffDigest: pinnedReview.authorityDiffDigest,
+      authorityBaselineDigest: await calculateAuthorityBaselineDigest(lineage),
+      authorityDigest,
+      authorityDiffDigest: PluginSha256.make(authorityDiff.diffDigest),
       artifactDigest: prepared.success.artifactDigest,
     }),
   });
@@ -1354,7 +1375,7 @@ it("keeps the Gmail review stale and rehearses newly bound Workspace OAuth autho
   const journal = new D1ReleaseJournal(new SQLiteD1Transport(journalDatabase));
   expect(Result.isSuccess(await journal.claim(failedRelease))).toBe(true);
   await journal.markFailed(
-    "supernala-public/supernala/gmail@0.1.1",
+    `supernala-public/supernala/gmail@${source.success.manifest.version}`,
     1,
     "application-provider-verification-failed",
   );

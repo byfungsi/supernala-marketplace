@@ -67,9 +67,12 @@ const applicationDatabase = async (): Promise<DatabaseSync> => {
 it("admits Gmail as exact credential-free Workspace OAuth authority", async () => {
   const authentication = Schema.decodeUnknownSync(PackagedPluginAuthentication)({
     kind: "oauth",
-    providerRegistration: "google-gmail-rest-v1",
-    providerDefinitionDigest: "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
-    requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+    providerRegistration: "google-gmail-rest-v2",
+    providerDefinitionDigest: "e285339aa1ba8d980b70e710bfd81714adb5509bfe28a53e141cf4f6fd53256c",
+    requestedScopes: [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.send",
+    ],
     credentialDelivery: "short-lived-access-token-only",
   });
   if (authentication.kind !== "oauth") throw new Error("test-oauth-authentication-invalid");
@@ -161,10 +164,11 @@ it("admits Gmail as exact credential-free Workspace OAuth authority", async () =
         `SELECT registration_mode, approved_scopes_json, client_credential_reference
          FROM provider_registrations WHERE provider_registration_id = ?`,
       )
-      .get("google-gmail-rest-v1"),
+      .get("google-gmail-rest-v2"),
   ).toEqual({
     registration_mode: "workspace-oauth-app",
-    approved_scopes_json: '["https://www.googleapis.com/auth/gmail.readonly"]',
+    approved_scopes_json:
+      '["https://www.googleapis.com/auth/gmail.readonly","https://www.googleapis.com/auth/gmail.send"]',
     client_credential_reference: null,
   });
   expect(
@@ -181,7 +185,7 @@ it("admits Gmail as exact credential-free Workspace OAuth authority", async () =
         `UPDATE provider_registrations SET client_credential_reference = ?
          WHERE provider_registration_id = ?`,
       )
-      .run("synthetic-material-reference", "google-gmail-rest-v1"),
+      .run("synthetic-material-reference", "google-gmail-rest-v2"),
   ).toThrow("OAuth Provider Registration semantic authority is immutable");
   expect(
     await admission.admit({
@@ -204,9 +208,12 @@ it("admits Gmail as exact credential-free Workspace OAuth authority", async () =
 it("rolls back successor admission if the provider authority is revoked after its read", async () => {
   const authentication = Schema.decodeUnknownSync(PackagedPluginAuthentication)({
     kind: "oauth",
-    providerRegistration: "google-gmail-rest-v1",
-    providerDefinitionDigest: "3136b19f7d4b6f3b6597f75c42895bec8b41ab46bd5a984b39f4497ca6a6bc07",
-    requestedScopes: ["https://www.googleapis.com/auth/gmail.readonly"],
+    providerRegistration: "google-gmail-rest-v2",
+    providerDefinitionDigest: "e285339aa1ba8d980b70e710bfd81714adb5509bfe28a53e141cf4f6fd53256c",
+    requestedScopes: [
+      "https://www.googleapis.com/auth/gmail.readonly",
+      "https://www.googleapis.com/auth/gmail.send",
+    ],
     credentialDelivery: "short-lived-access-token-only",
   });
   if (authentication.kind !== "oauth") throw new Error("test-oauth-authentication-invalid");
