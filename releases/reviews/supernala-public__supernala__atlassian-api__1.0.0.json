@@ -1,0 +1,1035 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "atlassian-api",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "atlassian-api-1.0.0-jira-rest-api-token-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794139862885,
+  "sourceInputDigest": "13939040aea54ffe8ea50929f59efddbc374f7d695f9867843d0118554aebefc",
+  "artifactDigest": "d41ed815f085b5367748f7b71a5e9bc79fa981d81fd8628010885e3f05868bd2",
+  "authentication": {
+    "kind": "none"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "atlassian-rest-v1",
+    "fields": [
+      {
+        "key": "email",
+        "label": "Atlassian email",
+        "secret": false,
+        "minimumLength": 3,
+        "maximumLength": 320
+      },
+      {
+        "key": "token",
+        "label": "API token",
+        "secret": true,
+        "minimumLength": 8,
+        "maximumLength": 8192
+      },
+      {
+        "key": "domain",
+        "label": "Atlassian site",
+        "secret": false,
+        "minimumLength": 4,
+        "maximumLength": 300
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "basic",
+        "headerName": "authorization",
+        "usernameField": "email",
+        "passwordField": "token"
+      }
+    ],
+    "verification": {
+      "kind": "https-json-resource",
+      "origin": "https://api.atlassian.com/",
+      "pathBeforeResource": "/ex/jira/",
+      "pathAfterResource": "/rest/api/3/myself",
+      "expectedStatus": 200,
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 256
+    },
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Atlassian site"
+    },
+    "resources": {
+      "kind": "credential-origin",
+      "field": "domain",
+      "allowedHostSuffixes": ["atlassian.net"],
+      "lookup": {
+        "path": "/_edge/tenant_info",
+        "idPath": ["cloudId"],
+        "maximumResponseBytes": 4096,
+        "maximumJsonDepth": 4,
+        "maximumObjectKeys": 32
+      },
+      "binding": {
+        "appliesTo": {
+          "kind": "all-tools-with-argument"
+        },
+        "argumentPath": ["path", "cloudId"]
+      }
+    }
+  },
+  "catalogDigest": "dc0f25f01db652f478c2760cb673f1c0ceebd230605364229aecde1a2a34196d",
+  "configDigest": "23542ea5e9d621ef4adc58cf4740ef4bd4a36fc20a0786bd129cb487d782d6c3",
+  "provenanceDigest": "3686b228a7d5a35c5ea2a1ab1959196c624ae6b44a88a7646dda08e6065744ae",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [],
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "b98d01227e1a4dcc71b9940e1212f70f379351fcc2cf27fae9ca06e8045c6b19",
+  "authorityAfter": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [
+      {
+        "toolId": "jira.add_comment",
+        "method": "POST",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}/comment",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "issueIdOrKey",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.assign_issue",
+        "method": "PUT",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}/assignee",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "issueIdOrKey",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.create_issue",
+        "method": "POST",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/issue",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.edit_issue",
+        "method": "PUT",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "issueIdOrKey",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "notifyUsers",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.find_projects",
+        "method": "GET",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/project/search",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "query",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "startAt",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "maxResults",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.find_users",
+        "method": "GET",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/user/search",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "query",
+            "location": "query",
+            "required": true
+          },
+          {
+            "name": "maxResults",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.get_issue",
+        "method": "GET",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "issueIdOrKey",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "fields",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "expand",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.get_myself",
+        "method": "GET",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/myself",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.list_comments",
+        "method": "GET",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}/comment",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "issueIdOrKey",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "startAt",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "maxResults",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "orderBy",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.list_issue_type_fields",
+        "method": "GET",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/issue/createmeta/{projectIdOrKey}/issuetypes/{issueTypeId}",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "projectIdOrKey",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "issueTypeId",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.list_issue_types",
+        "method": "GET",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/issue/createmeta/{projectIdOrKey}/issuetypes",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "projectIdOrKey",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.list_transitions",
+        "method": "GET",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}/transitions",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "issueIdOrKey",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.search_issues",
+        "method": "GET",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/search/jql",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "jql",
+            "location": "query",
+            "required": true
+          },
+          {
+            "name": "fields",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "maxResults",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "nextPageToken",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "jira.transition_issue",
+        "method": "POST",
+        "origin": "https://api.atlassian.com",
+        "pathTemplate": "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}/transitions",
+        "parameters": [
+          {
+            "name": "cloudId",
+            "location": "path",
+            "required": true,
+            "fill": "connection-resource"
+          },
+          {
+            "name": "issueIdOrKey",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      }
+    ],
+    "authenticationKind": "api-key",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "atlassian-rest-v1",
+    "providerDefinitionDigest": null,
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "api-key",
+      "providerRegistrationId": "atlassian-rest-v1",
+      "fields": [
+        {
+          "key": "email",
+          "label": "Atlassian email",
+          "secret": false,
+          "minimumLength": 3,
+          "maximumLength": 320
+        },
+        {
+          "key": "token",
+          "label": "API token",
+          "secret": true,
+          "minimumLength": 8,
+          "maximumLength": 8192
+        },
+        {
+          "key": "domain",
+          "label": "Atlassian site",
+          "secret": false,
+          "minimumLength": 4,
+          "maximumLength": 300
+        }
+      ],
+      "delivery": [
+        {
+          "kind": "basic",
+          "headerName": "authorization",
+          "usernameField": "email",
+          "passwordField": "token"
+        }
+      ],
+      "verification": {
+        "kind": "https-json-resource",
+        "origin": "https://api.atlassian.com/",
+        "pathBeforeResource": "/ex/jira/",
+        "pathAfterResource": "/rest/api/3/myself",
+        "expectedStatus": 200,
+        "maximumResponseBytes": 65536,
+        "maximumJsonDepth": 8,
+        "maximumObjectKeys": 256
+      },
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Atlassian site"
+      },
+      "resources": {
+        "kind": "credential-origin",
+        "field": "domain",
+        "allowedHostSuffixes": ["atlassian.net"],
+        "lookup": {
+          "path": "/_edge/tenant_info",
+          "idPath": ["cloudId"],
+          "maximumResponseBytes": 4096,
+          "maximumJsonDepth": 4,
+          "maximumObjectKeys": 32
+        },
+        "binding": {
+          "appliesTo": {
+            "kind": "all-tools-with-argument"
+          },
+          "argumentPath": ["path", "cloudId"]
+        }
+      }
+    },
+    "tools": [
+      {
+        "id": "jira.add_comment",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "issueIdOrKey": {
+                  "type": "string",
+                  "maxLength": 255,
+                  "description": "Issue key (PROJ-123) or id."
+                }
+              },
+              "required": ["issueIdOrKey"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "body": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Atlassian Document Format, e.g. {\"type\":\"doc\",\"version\":1,\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Hello\"}]}]}."
+                }
+              },
+              "required": ["body"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.assign_issue",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "issueIdOrKey": {
+                  "type": "string",
+                  "maxLength": 255,
+                  "description": "Issue key (PROJ-123) or id."
+                }
+              },
+              "required": ["issueIdOrKey"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "accountId": {
+                  "type": ["string", "null"],
+                  "description": "Account id, or null to unassign."
+                }
+              },
+              "required": ["accountId"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.create_issue",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "fields": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Issue fields keyed by field id, e.g. project, issuetype, summary, description, assignee ({\"accountId\":...}), parent ({\"key\":...}), labels, duedate."
+                },
+                "update": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Optional field operations, e.g. {\"labels\":[{\"add\":\"triage\"}]}."
+                }
+              },
+              "required": ["fields"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.edit_issue",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "issueIdOrKey": {
+                  "type": "string",
+                  "maxLength": 255,
+                  "description": "Issue key (PROJ-123) or id."
+                }
+              },
+              "required": ["issueIdOrKey"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "notifyUsers": {
+                  "type": "boolean",
+                  "description": "Whether watchers are emailed; defaults to true."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "fields": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Field values to set, keyed by field id."
+                },
+                "update": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Field operations, e.g. {\"labels\":[{\"remove\":\"old\"}]}."
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.find_projects",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "description": "Text matched against project name and key.",
+                  "maxLength": 200
+                },
+                "startAt": {
+                  "type": "integer",
+                  "description": "Index of the first project.",
+                  "minimum": 0
+                },
+                "maxResults": {
+                  "type": "integer",
+                  "description": "Projects per page, 1 to 100.",
+                  "minimum": 1,
+                  "maximum": 100
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.find_users",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "query": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "description": "Name or email text."
+                },
+                "maxResults": {
+                  "type": "integer",
+                  "description": "Users to return, 1 to 50.",
+                  "minimum": 1,
+                  "maximum": 50
+                }
+              },
+              "required": ["query"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.get_issue",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "issueIdOrKey": {
+                  "type": "string",
+                  "maxLength": 255,
+                  "description": "Issue key (PROJ-123) or id."
+                }
+              },
+              "required": ["issueIdOrKey"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "fields": {
+                  "type": "string",
+                  "description": "Comma-separated fields to return; omit for the default set.",
+                  "maxLength": 2000
+                },
+                "expand": {
+                  "type": "string",
+                  "description": "Comma-separated expansions, e.g. `renderedFields,names,transitions`.",
+                  "maxLength": 500
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.get_myself",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.list_comments",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "issueIdOrKey": {
+                  "type": "string",
+                  "maxLength": 255,
+                  "description": "Issue key (PROJ-123) or id."
+                }
+              },
+              "required": ["issueIdOrKey"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "startAt": {
+                  "type": "integer",
+                  "description": "Index of the first comment.",
+                  "minimum": 0
+                },
+                "maxResults": {
+                  "type": "integer",
+                  "description": "Comments per page, 1 to 100.",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "orderBy": {
+                  "type": "string",
+                  "description": "`created` or `-created`.",
+                  "enum": ["created", "-created"]
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.list_issue_type_fields",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "projectIdOrKey": {
+                  "type": "string",
+                  "maxLength": 255,
+                  "description": "Project key (PROJ) or id."
+                },
+                "issueTypeId": {
+                  "type": "string",
+                  "maxLength": 64,
+                  "description": "Issue type id."
+                }
+              },
+              "required": ["projectIdOrKey", "issueTypeId"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.list_issue_types",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "projectIdOrKey": {
+                  "type": "string",
+                  "maxLength": 255,
+                  "description": "Project key (PROJ) or id."
+                }
+              },
+              "required": ["projectIdOrKey"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.list_transitions",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "issueIdOrKey": {
+                  "type": "string",
+                  "maxLength": 255,
+                  "description": "Issue key (PROJ-123) or id."
+                }
+              },
+              "required": ["issueIdOrKey"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.search_issues",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "jql": {
+                  "type": "string",
+                  "maxLength": 10000,
+                  "description": "A bounded JQL query. Queries without a project or other restriction may be rejected."
+                },
+                "fields": {
+                  "type": "string",
+                  "description": "Comma-separated fields to return, e.g. `summary,status,assignee,issuetype,parent,duedate`. Use `*all` for everything.",
+                  "maxLength": 2000
+                },
+                "maxResults": {
+                  "type": "integer",
+                  "description": "Issues per page, 1 to 100.",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                "nextPageToken": {
+                  "type": "string",
+                  "description": "Token from the previous page's response.",
+                  "maxLength": 4000
+                }
+              },
+              "required": ["jql"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "jira.transition_issue",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "issueIdOrKey": {
+                  "type": "string",
+                  "maxLength": 255,
+                  "description": "Issue key (PROJ-123) or id."
+                }
+              },
+              "required": ["issueIdOrKey"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "transition": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "description": "Transition id."
+                    }
+                  },
+                  "required": ["id"],
+                  "additionalProperties": false
+                },
+                "fields": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "description": "Fields the transition screen requires."
+                }
+              },
+              "required": ["transition"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["api.atlassian.com"],
+    "config": []
+  },
+  "authorityDigest": "22bce93bf04e8256c1162c9b7e2a5be3684901764ee872c932b25319473d3054",
+  "authorityDiffDigest": "04fc9c672af0df4ce8d125bf4a55322ac965f70b9bbb460234d4c460f364b5da",
+  "releaseDigest": "944c7d118b4e50885818d275ac3267281eccda4e5861f0aa313377f3f7e64d42",
+  "decision": "approved"
+}

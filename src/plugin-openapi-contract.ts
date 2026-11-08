@@ -52,6 +52,8 @@ export const PluginOpenApiParameter = Schema.Struct({
   required: Schema.Boolean,
   shape: Schema.optionalKey(Schema.Literals(["scalar", "array", "object"])),
   explode: Schema.optionalKey(Schema.Boolean),
+  // Filled from the connection's selected resource and hidden from the Bot's input schema.
+  fill: Schema.optionalKey(Schema.Literal("connection-resource")),
 });
 /** Reviewed primitive parameter or bounded form query collection. */
 export interface PluginOpenApiParameter extends Schema.Schema.Type<typeof PluginOpenApiParameter> {}
@@ -217,11 +219,11 @@ const schemaMatchesOpenApiBinding = (
     return false;
   }
   const properties = schema.properties;
+  // Parameters filled from the connection are never part of what the Bot supplies.
+  const supplied = binding.parameters.filter((parameter) => parameter.fill === undefined);
 
   const expected = new Set<string>(
-    binding.parameters.map((parameter) =>
-      parameter.location === "header" ? "headers" : parameter.location,
-    ),
+    supplied.map((parameter) => (parameter.location === "header" ? "headers" : parameter.location)),
   );
   if (binding.body !== "none") expected.add("body");
   if (
@@ -233,7 +235,7 @@ const schemaMatchesOpenApiBinding = (
   const rootRequired = schema.required;
   if (rootRequired !== undefined && !Array.isArray(rootRequired)) return false;
   for (const location of ["path", "query", "headers"] as const) {
-    const parameters = binding.parameters.filter(
+    const parameters = supplied.filter(
       (parameter) =>
         (parameter.location === "header" ? "headers" : parameter.location) === location,
     );
@@ -309,6 +311,27 @@ const schemaMatchesOpenApiBinding = (
 };
 
 /** Parses a compiled OpenAPI Plugin contract and checks catalog/binding identity before admission. */
+/** A filled parameter is a required path value the reviewed resource binding injects for this tool. */
+const fillsFromConnectionResource = (
+  authStrategy: PluginAuthStrategyDefinition,
+  toolId: PluginOpenApiBinding["toolId"],
+  parameter: PluginOpenApiParameter,
+): boolean => {
+  if (authStrategy.profile !== "api-key" || authStrategy.resources.kind === "none") return false;
+  const binding = authStrategy.resources.binding;
+
+  return (
+    parameter.location === "path" &&
+    parameter.required &&
+    (parameter.shape ?? "scalar") === "scalar" &&
+    binding.argumentPath.length === 2 &&
+    binding.argumentPath[0] === "path" &&
+    binding.argumentPath[1] === parameter.name &&
+    (binding.appliesTo.kind === "all-tools-with-argument" ||
+      binding.appliesTo.toolIds.includes(toolId))
+  );
+};
+
 export function parsePluginOpenApiContract(
   value: Schema.Json,
 ): Result.Result<PluginOpenApiContract, PluginOpenApiContractFailure> {
@@ -360,6 +383,12 @@ export function parsePluginOpenApiContract(
         return Result.fail(new PluginOpenApiContractFailure({ reason: "binding-invalid" }));
       }
       if (parameter.location === "path") pathNames.add(parameter.name);
+      if (
+        parameter.fill === "connection-resource" &&
+        !fillsFromConnectionResource(contract.authStrategy, binding.toolId, parameter)
+      ) {
+        return Result.fail(new PluginOpenApiContractFailure({ reason: "binding-invalid" }));
+      }
       if (
         (parameter.location === "header" &&
           [

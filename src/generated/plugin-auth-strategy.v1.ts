@@ -1,5 +1,5 @@
 // GENERATED from @supernala/domain auth contract v1.
-// Source SHA-256: 8b464e9ad96eae7fb0bd346c0ca33c0108d4c91fcddb5463b50eca78225e4a85
+// Source SHA-256: 8e317de4ed32b2aa27fcad29190b3f3f526390ae5d99564c1b53688d02a91824
 // Run `pnpm auth-contract:vendor <distribution-directory>`; do not edit.
 import { Schema } from "effect";
 import {
@@ -253,6 +253,28 @@ export const PluginResourceDeclaration = Schema.Union([
 /** Optional provider-neutral resource discovery and Owner selection declaration. */
 export type PluginResourceDeclaration = typeof PluginResourceDeclaration.Type;
 
+/** A fixed path on a reviewed origin: no traversal, query, fragment or encoded characters. */
+const ResourceUrlPath = Schema.String.pipe(
+  Schema.check(Schema.isLengthBetween(1, 256)),
+  Schema.check(Schema.isPattern(/^\/(?:[A-Za-z0-9_~-]+(?:\.[A-Za-z0-9_~-]+)*\/?)*$/u)),
+);
+
+/** Exact origin only, such as `https://api.example.com/`, so a path is appended explicitly. */
+const ResourceOrigin = BoundedHttpsUrl.pipe(
+  Schema.check(
+    Schema.makeFilter<string>((value) => new URL(value).pathname === "/" && !value.includes("?"), {
+      expected: "an HTTPS origin without a path",
+    }),
+  ),
+);
+
+/** Unauthenticated lookup that turns the entered site into the provider's stable resource id. */
+const CredentialOriginLookup = Schema.Struct({
+  path: ResourceUrlPath,
+  idPath: ProjectionPath,
+  ...ProjectionLimits,
+});
+
 const PluginApiCredentialResource = Schema.Union([
   PluginResourceDeclaration,
   Schema.Struct({
@@ -264,9 +286,15 @@ const PluginApiCredentialResource = Schema.Union([
         Schema.check(Schema.isPattern(/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/u)),
       ),
     ).pipe(Schema.check(Schema.isLengthBetween(1, 8)), Schema.check(Schema.isUnique())),
+    // Without a lookup the resource id is the entered origin; with one, the id the site reports.
+    lookup: Schema.optionalKey(CredentialOriginLookup),
     binding: PluginResourceBinding,
   }),
 ]);
+
+const VerificationStatus = Schema.Int.pipe(
+  Schema.check(Schema.isBetween({ minimum: 200, maximum: 299 })),
+);
 
 const OAuthAuthority = {
   providerRegistrationId: ProviderRegistrationId,
@@ -314,14 +342,24 @@ export const PluginAuthStrategyDefinition = Schema.Union([
       Schema.check(Schema.isLengthBetween(1, 8)),
     ),
     verification: Schema.optionalKey(
-      Schema.Struct({
-        kind: Schema.Literal("https-json"),
-        endpoint: BoundedHttpsUrl,
-        expectedStatus: Schema.Int.pipe(
-          Schema.check(Schema.isBetween({ minimum: 200, maximum: 299 })),
-        ),
-        ...ProjectionLimits,
-      }),
+      Schema.Union([
+        Schema.Struct({
+          kind: Schema.Literal("https-json"),
+          endpoint: BoundedHttpsUrl,
+          expectedStatus: VerificationStatus,
+          ...ProjectionLimits,
+        }),
+        // A gateway that addresses the selected resource in its path, such as
+        // `https://api.atlassian.com/ex/jira/{cloudId}/rest/api/3/myself`.
+        Schema.Struct({
+          kind: Schema.Literal("https-json-resource"),
+          origin: ResourceOrigin,
+          pathBeforeResource: ResourceUrlPath,
+          pathAfterResource: ResourceUrlPath,
+          expectedStatus: VerificationStatus,
+          ...ProjectionLimits,
+        }),
+      ]),
     ),
     identity: PluginIdentityDeclaration,
     resources: PluginApiCredentialResource,

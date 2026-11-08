@@ -21,7 +21,7 @@ describe("vendored OpenAPI application contract", () => {
     ).toEqual(readFileSync(new URL("plugin-openapi-contract.v1.schema.json", root)));
     expect(manifest).toMatchObject({
       contractVersion: 1,
-      comparatorSourceSha256: "150b63c27676d01e9c75c9d7a8985f38db15a9f20abfc205381827d09822b89c",
+      comparatorSourceSha256: "f9f2788d1ee8e50b53cb940f130f9127a87b2150df57f799cff71e9612ed8902",
       goldenArtifactSha256: "7f9fdcd184bab697c6da00cd177059e4a052ae3f126b5c8c3fb3a7ce1802bba4",
       goldenSourceSha256: "de6e3c42db3a5d5ad42590062d2e8ac980f1affa796331a62eefa33f161a645f",
       goldenCatalogSha256: "64a98955eac37466707955ee4de9afcb3e7515f424fe7f6469b1ac1dded6571f",

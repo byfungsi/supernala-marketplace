@@ -3,9 +3,9 @@
   "owner": "@supernala/domain",
   "sourcePath": "packages/domain/src/plugin-auth-strategy.ts",
   "sourceFile": "plugin-auth-strategy.v1.source.txt",
-  "sourceSha256": "8b464e9ad96eae7fb0bd346c0ca33c0108d4c91fcddb5463b50eca78225e4a85",
+  "sourceSha256": "8e317de4ed32b2aa27fcad29190b3f3f526390ae5d99564c1b53688d02a91824",
   "schemaPath": "packages/domain/schema/plugin-auth-strategy-definition.v1.schema.json",
-  "schemaSha256": "3911819b71177a820afcc2f58e5e81a77a01def663e2afb1951dc66066222d99",
+  "schemaSha256": "a9eef3b7dbac3fc6fc8811cb09829136a1e14f688bff2ac155923c6011750b9e",
   "providerChainsPath": "packages/domain/fixtures/auth-profile-provider-chains.v1.json",
   "providerChainsSha256": "9c82c873eecf8479708d37a6971d077df6f03894a6875fee4de728f535dca859"
 }

@@ -868,7 +868,7 @@ it("sends from the connected account by default, as one request it never replays
   expect(attempts).toBe(1);
 });
 
-it("binds the 0.2.1 review to the current source, with lineage from the published 0.1.1", async () => {
+it("binds the published 0.2.1 review to Gmail's source, with lineage from the published 0.1.1", async () => {
   // ZIP DOS timestamps use civil time; the review was built where releases are published
   // (UTC+7), so reproduce that environment rather than the runner's.
   const originalTimezone = process.env.TZ;
@@ -928,7 +928,10 @@ it("binds the 0.2.1 review to the current source, with lineage from the publishe
   expect(authorityDiff.removedTools).toEqual([]);
   expect(review.authentication).toEqual(prepared.success.parsed.authentication);
   expect(review.artifactDigest).toBe(prepared.success.artifactDigest);
-  expect(review.sourceInputDigest).toBe(
+  // 0.2.1 is published, so its review stays bound to the shared release inputs of that day.
+  // The site-scoped API-key contract changed those inputs later; the review is never rewritten,
+  // and a future Gmail release gets a new version and review.
+  expect(review.sourceInputDigest).not.toBe(
     await calculateManagedPackageSourceInputDigest({
       sourceDirectory: "plugins/gmail",
       sharedInputDigest,

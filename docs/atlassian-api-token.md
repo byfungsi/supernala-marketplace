@@ -1,3 +1,5 @@
+> **Superseded.** The application no longer offers this component: Atlassian's Rovo MCP server accepts API tokens only where an organization admin enabled it, so it never connected in production. Use [`atlassian-api`](./atlassian-api.md) (Jira REST through Atlassian's gateway).
+
 # Atlassian personal API-token connection
 
 The Atlassian API-token component is a second connection method in the Atlassian

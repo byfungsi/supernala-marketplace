@@ -1,0 +1,601 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Jira Cloud REST API (Supernala selection)",
+    "version": "3",
+    "description": "A reviewed subset of the Jira Cloud platform REST API v3, addressed through Atlassian's API gateway (https://api.atlassian.com/ex/jira/{cloudId}) as Atlassian documents for API tokens with scopes. Paths, parameters and request bodies follow https://developer.atlassian.com/cloud/jira/platform/rest/v3/."
+  },
+  "servers": [
+    {
+      "url": "https://api.atlassian.com"
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "Atlassian account email and API token with scopes."
+      }
+    },
+    "parameters": {
+      "cloudId": {
+        "name": "cloudId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "description": "The site's cloud id."
+        }
+      },
+      "issueIdOrKey": {
+        "name": "issueIdOrKey",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "maxLength": 255,
+          "description": "Issue key (PROJ-123) or id."
+        }
+      }
+    }
+  },
+  "paths": {
+    "/ex/jira/{cloudId}/rest/api/3/myself": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "summary": "Get the connected user",
+        "description": "Returns the Atlassian account the API token belongs to: accountId, displayName, emailAddress and timeZone.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ex/jira/{cloudId}/rest/api/3/search/jql": {
+      "get": {
+        "operationId": "searchIssuesWithJql",
+        "summary": "Search issues with JQL",
+        "description": "Finds issues with a JQL query, e.g. `project = PROJ AND statusCategory != Done ORDER BY updated DESC` or `assignee = currentUser()`. Ask for only the fields you need. Pass nextPageToken from the previous page to continue.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "name": "jql",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 10000,
+              "description": "A bounded JQL query. Queries without a project or other restriction may be rejected."
+            }
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated fields to return, e.g. `summary,status,assignee,issuetype,parent,duedate`. Use `*all` for everything.",
+              "maxLength": 2000
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Issues per page, 1 to 100.",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "nextPageToken",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Token from the previous page's response.",
+              "maxLength": 4000
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ex/jira/{cloudId}/rest/api/3/issue": {
+      "post": {
+        "operationId": "createIssue",
+        "summary": "Create an issue",
+        "description": "Creates an issue or subtask. `fields` needs at least project ({\"key\":\"PROJ\"}), issuetype ({\"name\":\"Task\"} or {\"id\":...}) and summary; description is Atlassian Document Format. Use the issue type fields tool to find required and custom fields.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fields": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Issue fields keyed by field id, e.g. project, issuetype, summary, description, assignee ({\"accountId\":...}), parent ({\"key\":...}), labels, duedate."
+                  },
+                  "update": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Optional field operations, e.g. {\"labels\":[{\"add\":\"triage\"}]}."
+                  }
+                },
+                "required": ["fields"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}": {
+      "get": {
+        "operationId": "getIssue",
+        "summary": "Get an issue",
+        "description": "Returns one issue by key (PROJ-123) or id.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "$ref": "#/components/parameters/issueIdOrKey"
+          },
+          {
+            "name": "fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated fields to return; omit for the default set.",
+              "maxLength": 2000
+            }
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Comma-separated expansions, e.g. `renderedFields,names,transitions`.",
+              "maxLength": 500
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "operationId": "editIssue",
+        "summary": "Edit an issue",
+        "description": "Updates fields of an issue. Set values with `fields` or apply operations with `update`. Change status with the transition tool instead.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "$ref": "#/components/parameters/issueIdOrKey"
+          },
+          {
+            "name": "notifyUsers",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Whether watchers are emailed; defaults to true."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fields": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Field values to set, keyed by field id."
+                  },
+                  "update": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Field operations, e.g. {\"labels\":[{\"remove\":\"old\"}]}."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}/comment": {
+      "get": {
+        "operationId": "getIssueComments",
+        "summary": "List issue comments",
+        "description": "Returns comments on an issue, oldest first.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "$ref": "#/components/parameters/issueIdOrKey"
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Index of the first comment.",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Comments per page, 1 to 100.",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "`created` or `-created`.",
+              "enum": ["created", "-created"]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "operationId": "addIssueComment",
+        "summary": "Comment on an issue",
+        "description": "Adds a comment. The body is Atlassian Document Format.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "$ref": "#/components/parameters/issueIdOrKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "body": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Atlassian Document Format, e.g. {\"type\":\"doc\",\"version\":1,\"content\":[{\"type\":\"paragraph\",\"content\":[{\"type\":\"text\",\"text\":\"Hello\"}]}]}."
+                  }
+                },
+                "required": ["body"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}/transitions": {
+      "get": {
+        "operationId": "getIssueTransitions",
+        "summary": "List status changes for an issue",
+        "description": "Returns the transitions the connected user can apply now, with their ids and target statuses.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "$ref": "#/components/parameters/issueIdOrKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "post": {
+        "operationId": "transitionIssue",
+        "summary": "Change an issue's status",
+        "description": "Applies a transition by id from the status changes tool. Some transitions require fields, e.g. a resolution.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "$ref": "#/components/parameters/issueIdOrKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "transition": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Transition id."
+                      }
+                    },
+                    "required": ["id"],
+                    "additionalProperties": false
+                  },
+                  "fields": {
+                    "type": "object",
+                    "additionalProperties": true,
+                    "description": "Fields the transition screen requires."
+                  }
+                },
+                "required": ["transition"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Transitioned"
+          }
+        }
+      }
+    },
+    "/ex/jira/{cloudId}/rest/api/3/issue/{issueIdOrKey}/assignee": {
+      "put": {
+        "operationId": "assignIssue",
+        "summary": "Assign an issue",
+        "description": "Assigns an issue to an accountId from the user search tool, or null to unassign.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "$ref": "#/components/parameters/issueIdOrKey"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "accountId": {
+                    "type": ["string", "null"],
+                    "description": "Account id, or null to unassign."
+                  }
+                },
+                "required": ["accountId"],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Assigned"
+          }
+        }
+      }
+    },
+    "/ex/jira/{cloudId}/rest/api/3/project/search": {
+      "get": {
+        "operationId": "searchProjects",
+        "summary": "Find projects",
+        "description": "Lists projects the connected user can see, filtered by name or key.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Text matched against project name and key.",
+              "maxLength": 200
+            }
+          },
+          {
+            "name": "startAt",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Index of the first project.",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Projects per page, 1 to 100.",
+              "minimum": 1,
+              "maximum": 100
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ex/jira/{cloudId}/rest/api/3/user/search": {
+      "get": {
+        "operationId": "findUsers",
+        "summary": "Find people",
+        "description": "Finds users by name or email to get their accountId for assigning or mentioning.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "description": "Name or email text."
+            }
+          },
+          {
+            "name": "maxResults",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "description": "Users to return, 1 to 50.",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ex/jira/{cloudId}/rest/api/3/issue/createmeta/{projectIdOrKey}/issuetypes": {
+      "get": {
+        "operationId": "getProjectIssueTypes",
+        "summary": "List a project's issue types",
+        "description": "Returns the issue types available when creating issues in a project.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "name": "projectIdOrKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "Project key (PROJ) or id."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/ex/jira/{cloudId}/rest/api/3/issue/createmeta/{projectIdOrKey}/issuetypes/{issueTypeId}": {
+      "get": {
+        "operationId": "getIssueTypeFields",
+        "summary": "List fields for an issue type",
+        "description": "Returns the fields, required flags and allowed values for creating an issue of one type in a project.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/cloudId"
+          },
+          {
+            "name": "projectIdOrKey",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 255,
+              "description": "Project key (PROJ) or id."
+            }
+          },
+          {
+            "name": "issueTypeId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "maxLength": 64,
+              "description": "Issue type id."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  }
+}
