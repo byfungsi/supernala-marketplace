@@ -950,3 +950,14 @@ it("binds the 0.2.0 review to the current source, with lineage from the publishe
     }),
   );
 });
+
+it("keeps the description Gmail was first published with", async () => {
+  // Publication requires the stored Plugin definition's description to equal each new version's,
+  // so a changed description fails staging in production. The app shows its own description.
+  const manifest = Schema.decodeUnknownSync(Schema.Struct({ description: Schema.String }))(
+    JSON.parse(await readFile("plugins/gmail/package-manifest.json", "utf8")),
+  );
+  expect(manifest.description).toBe(
+    "Narrow first-party Gmail message and draft search and reading tools",
+  );
+});
