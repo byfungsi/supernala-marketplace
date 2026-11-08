@@ -40,6 +40,9 @@ export const PluginOpenApiAuthoring = Schema.Struct({
     displayLabel: Schema.NonEmptyString,
     securityScheme: Schema.NonEmptyString,
   }),
+  // A reviewed API-key strategy for credentials one header cannot carry, such as an email,
+  // token and site sent as HTTP Basic with the site selected as the connection's resource.
+  authStrategy: Schema.optionalKey(PluginAuthStrategyDefinition),
   operations: Schema.Array(PluginOpenApiOperationSelection).pipe(
     Schema.check(Schema.isLengthBetween(1, 2_000)),
   ),
@@ -248,6 +251,82 @@ const selectSecurity = (
   return Result.succeed("connection");
 };
 
+type ResourceBinding = Extract<
+  PluginAuthStrategyDefinition,
+  { readonly profile: "api-key" }
+>["resources"] extends infer Resources
+  ? Resources extends { readonly binding: infer Binding }
+    ? Binding
+    : never
+  : never;
+
+const bindingAppliesTo = (binding: ResourceBinding | undefined, toolId: string): boolean =>
+  binding !== undefined &&
+  (binding.appliesTo.kind === "all-tools-with-argument" ||
+    binding.appliesTo.toolIds.some((id) => id === toolId));
+
+/** The resource binding injects exactly this path parameter for this tool. */
+const fillsFromResource = (
+  binding: ResourceBinding | undefined,
+  toolId: string,
+  location: string,
+  name: string,
+): boolean =>
+  bindingAppliesTo(binding, toolId) &&
+  location === "path" &&
+  binding?.argumentPath.length === 2 &&
+  binding.argumentPath[0] === "path" &&
+  binding.argumentPath[1] === name;
+
+/** Every delivery sends the credential raw in the header the apiKey scheme names. */
+const deliversRawHeader = (
+  delivery: Extract<PluginAuthStrategyDefinition, { readonly profile: "api-key" }>["delivery"],
+  name: Schema.Json | undefined,
+): boolean =>
+  isString(name) &&
+  delivery.every(
+    (entry) =>
+      entry.kind === "header" &&
+      entry.encoding === "raw" &&
+      entry.headerName.toLowerCase() === name.toLowerCase(),
+  );
+
+/**
+ * A declared strategy must be the API-key profile for this source's registration, keep the
+ * reviewed credential field secret, and deliver it the way the selected security scheme expects.
+ */
+const declaredAuthStrategy = (
+  declared: PluginAuthStrategyDefinition,
+  scheme: JsonObject,
+  authoring: PluginOpenApiAuthoring,
+): Result.Result<void, string> => {
+  if (
+    declared.profile !== "api-key" ||
+    declared.providerRegistrationId !== authoring.providerRegistrationId ||
+    !declared.fields.some((field) => field.key === authoring.credential.field && field.secret)
+  )
+    return failure("auth-definition-invalid");
+  const delivers =
+    scheme.type === "http" && scheme.scheme === "basic"
+      ? declared.delivery.every(
+          (delivery) =>
+            delivery.kind === "basic" &&
+            delivery.headerName.toLowerCase() === "authorization" &&
+            delivery.passwordField === authoring.credential.field,
+        )
+      : scheme.type === "http" && scheme.scheme === "bearer"
+        ? declared.delivery.every(
+            (delivery) =>
+              delivery.kind === "header" &&
+              delivery.encoding === "bearer" &&
+              delivery.headerName.toLowerCase() === "authorization",
+          )
+        : scheme.type === "apiKey" &&
+          scheme.in === "header" &&
+          deliversRawHeader(declared.delivery, scheme.name);
+  return delivers ? Result.succeed(undefined) : failure("security-scheme-unsupported");
+};
+
 /** Compile a bounded, selected OpenAPI 3.x JSON source to the app-owned immutable wire contract. */
 export async function compilePluginOpenApi(input: {
   readonly sourceText: string;
@@ -281,15 +360,21 @@ export async function compilePluginOpenApi(input: {
   const schemes = object(object(root.components ?? null)?.securitySchemes ?? null);
   const scheme = object(schemes?.[input.authoring.credential.securityScheme] ?? null);
   if (!isString(origin) || paths === null || scheme === null) return failure("source-unsupported");
+  const declared = input.authoring.authStrategy;
+  if (declared !== undefined) {
+    const declaredAuth = declaredAuthStrategy(declared, scheme, input.authoring);
+    if (Result.isFailure(declaredAuth)) return Result.fail(declaredAuth.failure);
+  }
   const headerName =
     scheme.type === "http" && scheme.scheme === "bearer" ? "Authorization" : scheme.name;
   const encoding = scheme.type === "http" && scheme.scheme === "bearer" ? "bearer" : "raw";
   if (
-    (encoding === "raw" && (scheme.type !== "apiKey" || scheme.in !== "header")) ||
-    !isString(headerName)
+    declared === undefined &&
+    ((encoding === "raw" && (scheme.type !== "apiKey" || scheme.in !== "header")) ||
+      !isString(headerName))
   )
     return failure("security-scheme-unsupported");
-  const auth = Schema.decodeUnknownResult(PluginAuthStrategyDefinition)({
+  const generated = Schema.decodeUnknownResult(PluginAuthStrategyDefinition)({
     schemaVersion: 1,
     profile: "api-key",
     providerRegistrationId: input.authoring.providerRegistrationId,
@@ -306,7 +391,12 @@ export async function compilePluginOpenApi(input: {
     identity: { kind: "opaque-connection", displayLabel: input.authoring.credential.displayLabel },
     resources: { kind: "none" },
   });
+  const auth = declared === undefined ? generated : Result.succeed(declared);
   if (Result.isFailure(auth)) return failure("auth-definition-invalid");
+  const resourceBinding =
+    auth.success.profile === "api-key" && auth.success.resources.kind !== "none"
+      ? auth.success.resources.binding
+      : undefined;
   const entries = new Map<
     string,
     { method: string; path: string; operation: JsonObject; pathItem: JsonObject }
@@ -359,6 +449,7 @@ export async function compilePluginOpenApi(input: {
     );
     if (Result.isFailure(security)) return Result.fail(security.failure);
     const parameters: Array<Schema.JsonObject> = [];
+    let filledCount = 0;
     const containers: Record<string, Record<string, Schema.Json>> = {};
     const required: Record<string, string[]> = {};
     const byKey = new Map<string, JsonObject>();
@@ -414,6 +505,12 @@ export async function compilePluginOpenApi(input: {
       if (shape !== "array" && shape !== "object" && parameter.explode !== undefined)
         return failure("parameters-unsupported");
       const requiredField = location === "path" || parameter.required === true;
+      if (fillsFromResource(resourceBinding, selected.toolId, location, name)) {
+        // The connection supplies it at call time; the Bot never sees or sends it.
+        parameters.push({ name, location, required: true, fill: "connection-resource" });
+        filledCount += 1;
+        continue;
+      }
       const container = location === "header" ? "headers" : location;
       containers[container] ??= {};
       required[container] ??= [];
@@ -428,6 +525,8 @@ export async function compilePluginOpenApi(input: {
           : {}),
       });
     }
+    if (bindingAppliesTo(resourceBinding, selected.toolId) && filledCount !== 1)
+      return failure("resource-binding-unmatched");
     const inputProperties: Record<string, Schema.Json> = {};
     const rootRequired: string[] = [];
     for (const location of ["path", "query", "headers"]) {

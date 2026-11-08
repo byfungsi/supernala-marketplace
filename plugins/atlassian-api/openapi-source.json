@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "pluginVersionId": "supernala-public:supernala:atlassian-api@1.0.0",
+  "catalogSnapshotId": "atlassian-api-catalog-v1",
+  "providerRegistrationId": "atlassian-rest-v1",
+  "credential": {
+    "field": "token",
+    "label": "API token",
+    "minimumLength": 8,
+    "maximumLength": 8192,
+    "displayLabel": "Atlassian site",
+    "securityScheme": "basicAuth"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "atlassian-rest-v1",
+    "fields": [
+      {
+        "key": "email",
+        "label": "Atlassian email",
+        "secret": false,
+        "minimumLength": 3,
+        "maximumLength": 320
+      },
+      {
+        "key": "token",
+        "label": "API token",
+        "secret": true,
+        "minimumLength": 8,
+        "maximumLength": 8192
+      },
+      {
+        "key": "domain",
+        "label": "Atlassian site",
+        "secret": false,
+        "minimumLength": 4,
+        "maximumLength": 300
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "basic",
+        "headerName": "authorization",
+        "usernameField": "email",
+        "passwordField": "token"
+      }
+    ],
+    "verification": {
+      "kind": "https-json-resource",
+      "origin": "https://api.atlassian.com/",
+      "pathBeforeResource": "/ex/jira/",
+      "pathAfterResource": "/rest/api/3/myself",
+      "expectedStatus": 200,
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 256
+    },
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Atlassian site"
+    },
+    "resources": {
+      "kind": "credential-origin",
+      "field": "domain",
+      "allowedHostSuffixes": ["atlassian.net"],
+      "lookup": {
+        "path": "/_edge/tenant_info",
+        "idPath": ["cloudId"],
+        "maximumResponseBytes": 4096,
+        "maximumJsonDepth": 4,
+        "maximumObjectKeys": 32
+      },
+      "binding": {
+        "appliesTo": {
+          "kind": "all-tools-with-argument"
+        },
+        "argumentPath": ["path", "cloudId"]
+      }
+    }
+  },
+  "operations": [
+    {
+      "operationId": "getCurrentUser",
+      "toolId": "jira.get_myself",
+      "title": "Get the connected Jira user",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "searchIssuesWithJql",
+      "toolId": "jira.search_issues",
+      "title": "Search Jira issues with JQL",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getIssue",
+      "toolId": "jira.get_issue",
+      "title": "Get a Jira issue",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getIssueComments",
+      "toolId": "jira.list_comments",
+      "title": "List Jira issue comments",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getIssueTransitions",
+      "toolId": "jira.list_transitions",
+      "title": "List status changes for a Jira issue",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "searchProjects",
+      "toolId": "jira.find_projects",
+      "title": "Find Jira projects",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "findUsers",
+      "toolId": "jira.find_users",
+      "title": "Find Jira people",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getProjectIssueTypes",
+      "toolId": "jira.list_issue_types",
+      "title": "List a Jira project's issue types",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getIssueTypeFields",
+      "toolId": "jira.list_issue_type_fields",
+      "title": "List fields for a Jira issue type",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "createIssue",
+      "toolId": "jira.create_issue",
+      "title": "Create a Jira issue",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "editIssue",
+      "toolId": "jira.edit_issue",
+      "title": "Edit a Jira issue",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "addIssueComment",
+      "toolId": "jira.add_comment",
+      "title": "Comment on a Jira issue",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "transitionIssue",
+      "toolId": "jira.transition_issue",
+      "title": "Change a Jira issue's status",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "assignIssue",
+      "toolId": "jira.assign_issue",
+      "title": "Assign a Jira issue",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    }
+  ],
+  "status": "reviewed-publishable",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "atlassian-api",
+  "version": "1.0.0",
+  "name": "Jira (API token)",
+  "description": "Jira Cloud REST through Atlassian's API gateway with an email, a Jira API token with scopes, and the site: search, read, create, edit, comment, assign and change status. No admin setting needed.",
+  "license": "LicenseRef-Provider-Service"
+}

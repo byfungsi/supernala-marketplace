@@ -333,3 +333,103 @@ describe("OpenAPI compiler and vendored application golden contract", () => {
     ).toMatchObject({ _tag: "Failure", failure: "openapi-artifact" });
   });
 });
+
+describe("OpenAPI apps whose site is selected at connection", () => {
+  const siteSource = (pathTemplate: string) =>
+    JSON.stringify({
+      openapi: "3.0.3",
+      info: { title: "Gateway", version: "1" },
+      servers: [{ url: "https://api.example.com" }],
+      security: [{ basicAuth: [] }],
+      components: { securitySchemes: { basicAuth: { type: "http", scheme: "basic" } } },
+      paths: {
+        [pathTemplate]: {
+          get: {
+            operationId: "getItem",
+            parameters: [
+              { name: "siteId", in: "path", required: true, schema: { type: "string" } },
+              { name: "id", in: "path", required: true, schema: { type: "string" } },
+            ],
+            responses: { "200": { description: "OK" } },
+          },
+        },
+      },
+    });
+  const siteAuthoring = (argumentPath: ReadonlyArray<string>) =>
+    Schema.decodeUnknownSync(PluginOpenApiAuthoring)({
+      schemaVersion: 1,
+      pluginVersionId: "gateway@1.0.0",
+      catalogSnapshotId: "gateway-catalog-v1",
+      providerRegistrationId: "gateway-v1",
+      credential: {
+        field: "token",
+        label: "API token",
+        minimumLength: 8,
+        maximumLength: 200,
+        displayLabel: "Site",
+        securityScheme: "basicAuth",
+      },
+      authStrategy: {
+        schemaVersion: 1,
+        profile: "api-key",
+        providerRegistrationId: "gateway-v1",
+        fields: [
+          { key: "email", label: "Email", secret: false, minimumLength: 3, maximumLength: 320 },
+          { key: "token", label: "API token", secret: true, minimumLength: 8, maximumLength: 200 },
+          { key: "site", label: "Site", secret: false, minimumLength: 4, maximumLength: 300 },
+        ],
+        delivery: [
+          {
+            kind: "basic",
+            headerName: "authorization",
+            usernameField: "email",
+            passwordField: "token",
+          },
+        ],
+        identity: { kind: "opaque-connection", displayLabel: "Site" },
+        resources: {
+          kind: "credential-origin",
+          field: "site",
+          allowedHostSuffixes: ["example.net"],
+          binding: { appliesTo: { kind: "all-tools-with-argument" }, argumentPath },
+        },
+      },
+      operations: [
+        {
+          operationId: "getItem",
+          toolId: "items.get",
+          title: "Get item",
+          classification: "read",
+          defaultPolicy: "allow",
+          maximumOutputBytes: 32_768,
+        },
+      ],
+    });
+
+  it("keeps the declared Basic auth and fills the site from the connection, hidden from Bots", async () => {
+    const compiled = await compilePluginOpenApi({
+      sourceText: siteSource("/sites/{siteId}/items/{id}"),
+      authoring: siteAuthoring(["path", "siteId"]),
+    });
+    if (Result.isFailure(compiled)) throw new Error(compiled.failure);
+    const { contract } = compiled.success;
+    expect(contract.authStrategy).toMatchObject({ delivery: [{ kind: "basic" }] });
+    expect(contract.bindings[0]?.parameters).toEqual([
+      { name: "siteId", location: "path", required: true, fill: "connection-resource" },
+      { name: "id", location: "path", required: true },
+    ]);
+    expect(contract.catalog.tools[0]?.inputSchema).toMatchObject({
+      properties: { path: { properties: { id: { type: "string" } }, required: ["id"] } },
+    });
+    expect(JSON.stringify(contract.catalog.tools[0]?.inputSchema)).not.toContain("siteId");
+  });
+
+  it("refuses a resource binding that names no parameter of a tool it covers", async () => {
+    expect(
+      await compilePluginOpenApi({
+        sourceText: siteSource("/sites/{siteId}/items/{id}"),
+        authoring: siteAuthoring(["path", "tenantId"]),
+      }),
+    ).toMatchObject({ failure: "openapi-resource-binding-unmatched" });
+  });
+});

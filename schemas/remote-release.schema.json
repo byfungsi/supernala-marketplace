@@ -2196,53 +2196,132 @@
               ]
             },
             "verification": {
-              "type": "object",
-              "properties": {
-                "kind": {
-                  "type": "string",
-                  "enum": ["https-json"]
-                },
-                "endpoint": {
-                  "type": "string",
-                  "allOf": [
-                    {
-                      "minLength": 1
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["https-json"]
                     },
-                    {
-                      "maxLength": 2048
+                    "endpoint": {
+                      "type": "string",
+                      "allOf": [
+                        {
+                          "minLength": 1
+                        },
+                        {
+                          "maxLength": 2048
+                        }
+                      ]
+                    },
+                    "expectedStatus": {
+                      "type": "integer",
+                      "minimum": 200,
+                      "maximum": 299
+                    },
+                    "maximumResponseBytes": {
+                      "type": "integer",
+                      "minimum": 1024,
+                      "maximum": 262144
+                    },
+                    "maximumJsonDepth": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16
+                    },
+                    "maximumObjectKeys": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2048
                     }
-                  ]
+                  },
+                  "required": [
+                    "kind",
+                    "endpoint",
+                    "expectedStatus",
+                    "maximumResponseBytes",
+                    "maximumJsonDepth",
+                    "maximumObjectKeys"
+                  ],
+                  "additionalProperties": true
                 },
-                "expectedStatus": {
-                  "type": "integer",
-                  "minimum": 200,
-                  "maximum": 299
-                },
-                "maximumResponseBytes": {
-                  "type": "integer",
-                  "minimum": 1024,
-                  "maximum": 262144
-                },
-                "maximumJsonDepth": {
-                  "type": "integer",
-                  "minimum": 1,
-                  "maximum": 16
-                },
-                "maximumObjectKeys": {
-                  "type": "integer",
-                  "minimum": 1,
-                  "maximum": 2048
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["https-json-resource"]
+                    },
+                    "origin": {
+                      "type": "string",
+                      "allOf": [
+                        {
+                          "minLength": 1
+                        },
+                        {
+                          "maxLength": 2048
+                        }
+                      ]
+                    },
+                    "pathBeforeResource": {
+                      "type": "string",
+                      "allOf": [
+                        {
+                          "minLength": 1
+                        },
+                        {
+                          "maxLength": 256
+                        }
+                      ],
+                      "pattern": "^\\/(?:[A-Za-z0-9_~-]+(?:\\.[A-Za-z0-9_~-]+)*\\/?)*$"
+                    },
+                    "pathAfterResource": {
+                      "type": "string",
+                      "allOf": [
+                        {
+                          "minLength": 1
+                        },
+                        {
+                          "maxLength": 256
+                        }
+                      ],
+                      "pattern": "^\\/(?:[A-Za-z0-9_~-]+(?:\\.[A-Za-z0-9_~-]+)*\\/?)*$"
+                    },
+                    "expectedStatus": {
+                      "type": "integer",
+                      "minimum": 200,
+                      "maximum": 299
+                    },
+                    "maximumResponseBytes": {
+                      "type": "integer",
+                      "minimum": 1024,
+                      "maximum": 262144
+                    },
+                    "maximumJsonDepth": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16
+                    },
+                    "maximumObjectKeys": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2048
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "origin",
+                    "pathBeforeResource",
+                    "pathAfterResource",
+                    "expectedStatus",
+                    "maximumResponseBytes",
+                    "maximumJsonDepth",
+                    "maximumObjectKeys"
+                  ],
+                  "additionalProperties": true
                 }
-              },
-              "required": [
-                "kind",
-                "endpoint",
-                "expectedStatus",
-                "maximumResponseBytes",
-                "maximumJsonDepth",
-                "maximumObjectKeys"
-              ],
-              "additionalProperties": true
+              ]
             },
             "identity": {
               "anyOf": [
@@ -3151,6 +3230,69 @@
                         }
                       ],
                       "uniqueItems": true
+                    },
+                    "lookup": {
+                      "type": "object",
+                      "properties": {
+                        "path": {
+                          "type": "string",
+                          "allOf": [
+                            {
+                              "minLength": 1
+                            },
+                            {
+                              "maxLength": 256
+                            }
+                          ],
+                          "pattern": "^\\/(?:[A-Za-z0-9_~-]+(?:\\.[A-Za-z0-9_~-]+)*\\/?)*$"
+                        },
+                        "idPath": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "allOf": [
+                              {
+                                "minLength": 1
+                              },
+                              {
+                                "maxLength": 128
+                              }
+                            ],
+                            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+                          },
+                          "allOf": [
+                            {
+                              "minItems": 1
+                            },
+                            {
+                              "maxItems": 8
+                            }
+                          ]
+                        },
+                        "maximumResponseBytes": {
+                          "type": "integer",
+                          "minimum": 1024,
+                          "maximum": 262144
+                        },
+                        "maximumJsonDepth": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 16
+                        },
+                        "maximumObjectKeys": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 2048
+                        }
+                      },
+                      "required": [
+                        "path",
+                        "idPath",
+                        "maximumResponseBytes",
+                        "maximumJsonDepth",
+                        "maximumObjectKeys"
+                      ],
+                      "additionalProperties": true
                     },
                     "binding": {
                       "type": "object",
