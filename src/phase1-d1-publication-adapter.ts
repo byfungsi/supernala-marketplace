@@ -23,6 +23,12 @@ import type {
   IncrementalReleaseCandidate,
 } from "./release-machine.js";
 import { PluginOpenApiPublication } from "./plugin-openapi-publication.js";
+import {
+  gmailEventCatalog,
+  gmailEventCatalogRetainedCondition,
+  isMonitorableGmailRelease,
+  registerGmailEventCatalogStatement,
+} from "./gmail-event-catalog.js";
 
 const failBatchGuard = (
   condition: string,
@@ -1463,6 +1469,18 @@ export class Phase1D1PublicationAdapter implements ApplicationPublicationAdapter
             tool.maximumOutputBytes,
           ],
         ),
+      );
+    }
+    if (isMonitorableGmailRelease(candidate)) {
+      const eventCatalog = {
+        pluginVersionId: version.id,
+        manifestDigest: runtime.manifestDigest,
+        catalog: await gmailEventCatalog(version.id),
+      };
+      const retained = gmailEventCatalogRetainedCondition(eventCatalog);
+      statements.push(
+        registerGmailEventCatalogStatement({ ...eventCatalog, reviewedAt: candidate.reviewedAt }),
+        failBatchGuard(retained.condition, retained.params),
       );
     }
     const result = await this.database.batch(statements);
