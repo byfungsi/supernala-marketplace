@@ -14,6 +14,7 @@ import {
 import type { D1BatchTransport, D1Statement } from "./cloudflare-adapters.js";
 import { D1ReleaseJournal } from "./d1-release-journal.js";
 import { Phase1D1PublicationAdapter } from "./phase1-d1-publication-adapter.js";
+import { gmailEventCatalog } from "./gmail-event-catalog.js";
 import { preparePluginPackage, validatePluginSource } from "./authoring-validation.js";
 import {
   canonicalPluginJson,
@@ -1139,6 +1140,9 @@ const applicationDatabase = async (): Promise<DatabaseSync> => {
     exactAuthStrategiesMigrationDigest,
   );
   database.exec(authStrategiesMigration.toString("utf8"));
+  database.exec(
+    await readFile("fixtures/sql/phase1-0148-plugin-version-event-catalogs.sql", "utf8"),
+  );
   return database;
 };
 
@@ -1389,6 +1393,24 @@ it("keeps the Gmail review stale and rehearses newly bound Workspace OAuth autho
   expect(await new Phase1D1PublicationAdapter(transport).readPublished(retryRelease)).toEqual(
     Result.succeed(true),
   );
+  const eventCatalog = await gmailEventCatalog(retryRelease.version.id);
+  expect(
+    database
+      .prepare(
+        `SELECT e.reviewed_manifest_digest = v.manifest_digest AS pinned_to_manifest,
+                e.catalog_digest, e.canonical_catalog_json
+         FROM plugin_version_event_catalogs e
+         JOIN plugin_versions v ON v.plugin_version_id = e.plugin_version_id
+         WHERE e.plugin_version_id = ?`,
+      )
+      .all(retryRelease.version.id),
+  ).toEqual([
+    {
+      pinned_to_manifest: 1,
+      catalog_digest: eventCatalog.digest,
+      canonical_catalog_json: eventCatalog.canonicalJson,
+    },
+  ]);
   expect(await journal.list()).toMatchObject([
     {
       status: "published",
