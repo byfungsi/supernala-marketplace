@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "pluginVersionId": "supernala-public:supernala:resend-api@1.0.0",
-  "catalogSnapshotId": "resend-api-catalog-v1",
+  "pluginVersionId": "supernala-public:supernala:resend-api@1.0.1",
+  "catalogSnapshotId": "resend-api-catalog-v2",
   "providerRegistrationId": "resend-api-credentials-v1",
   "credential": {
     "field": "api_key",
@@ -458,7 +458,24 @@
       "title": "Create a new contact",
       "classification": "write",
       "defaultPolicy": "allow",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 262144,
+      "inputSchemaCorrections": [
+        {
+          "pointer": "#/properties/body/properties/segments",
+          "schema": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id"],
+              "properties": {
+                "id": { "type": "string", "description": "The segment ID." }
+              }
+            },
+            "description": "Segments to add the contact to, each as an object with the segment ID."
+          },
+          "reason": "Resend's published spec declares segment ID strings, but the live API rejects them with HTTP 422 'Invalid input: expected object, received string' and accepts [{ id }]"
+        }
+      ]
     },
     {
       "operationId": "http:POST:/broadcasts",
@@ -489,7 +506,7 @@
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "resend-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Resend API",
   "description": "Resend REST API for email, contacts, domains, broadcasts, templates, webhooks, and account resources",
   "license": "LicenseRef-Provider-Service",
@@ -497,7 +514,7 @@
   "hostedSource": {
     "url": "https://resend.com/openapi.json",
     "sha256": "95bcbad452fed0381d6d35e24b6f370076a733fbeea2515026bca21113e62712",
-    "pluginVersionId": "supernala-public:supernala:resend-api@1.0.0",
-    "catalogSnapshotId": "resend-api-catalog-v1"
+    "pluginVersionId": "supernala-public:supernala:resend-api@1.0.1",
+    "catalogSnapshotId": "resend-api-catalog-v2"
   }
 }

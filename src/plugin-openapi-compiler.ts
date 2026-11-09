@@ -26,6 +26,17 @@ export const PluginOpenApiOperationSelection = Schema.Struct({
   classification: Schema.Literals(["read", "write", "destructive", "unknown"]),
   defaultPolicy: Schema.Literals(["allow", "require-approval", "block"]),
   maximumOutputBytes: Schema.Int,
+  // Reviewed replacements where the provider's published spec disagrees with its live API. Each
+  // pointer addresses an existing node of the compiled tool input schema, never the source bytes.
+  inputSchemaCorrections: Schema.optionalKey(
+    Schema.Array(
+      Schema.Struct({
+        pointer: Schema.NonEmptyString,
+        schema: Schema.Json,
+        reason: Schema.NonEmptyString,
+      }),
+    ).pipe(Schema.check(Schema.isLengthBetween(1, 32))),
+  ),
 });
 export const PluginOpenApiAuthoring = Schema.Struct({
   schemaVersion: Schema.Literal(1),
@@ -67,6 +78,33 @@ const pointer = (source: JsonObject, reference: string): Schema.Json | null => {
     value = parent[key] ?? null;
   }
   return value;
+};
+
+/** Replaces one existing node of a compiled input schema; the root itself is never replaced. */
+const replaceSchemaNode = (
+  schema: JsonObject,
+  reference: string,
+  replacement: JsonObject,
+): Result.Result<JsonObject, string> => {
+  if (!reference.startsWith("#/")) return failure("schema-correction-invalid");
+  const tokens = reference
+    .slice(2)
+    .split("/")
+    .map((token) => token.replaceAll("~1", "/").replaceAll("~0", "~"));
+  const corrected = structuredClone(schema) as Record<string, Schema.Json>;
+  let parent: Record<string, Schema.Json> = corrected;
+  for (const [index, key] of tokens.entries()) {
+    if (["__proto__", "constructor", "prototype"].includes(key) || !Object.hasOwn(parent, key))
+      return failure("schema-correction-invalid");
+    if (index === tokens.length - 1) {
+      parent[key] = replacement;
+      break;
+    }
+    const child = object(parent[key] ?? null);
+    if (child === null) return failure("schema-correction-invalid");
+    parent = child as Record<string, Schema.Json>;
+  }
+  return Result.succeed(corrected);
 };
 
 const resolveLocalReference = (
@@ -560,12 +598,19 @@ export async function compilePluginOpenApi(input: {
       inputProperties.body = schema.success;
       if (bodyRequired) rootRequired.push("body");
     }
-    const inputSchema = {
+    let inputSchema: JsonObject = {
       type: "object",
       properties: inputProperties,
       required: rootRequired,
       additionalProperties: false,
     };
+    for (const correction of selected.inputSchemaCorrections ?? []) {
+      const replacement = resolveInputSchema(correction.schema, root);
+      if (Result.isFailure(replacement)) return Result.fail(replacement.failure);
+      const corrected = replaceSchemaNode(inputSchema, correction.pointer, replacement.success);
+      if (Result.isFailure(corrected)) return Result.fail(corrected.failure);
+      inputSchema = corrected.success;
+    }
     tools.push({
       id: selected.toolId,
       mcpName,

@@ -73,7 +73,7 @@ it("binds Resend 1.0.3 to the consented send-only schema and canonical catalog d
   ).toMatchObject({
     publicationEligible: true,
     reason: expect.stringContaining(
-      "Owner reauthorized the exact independently reviewed resend-api@1.0.0 release",
+      "Owner approved resend-api@1.0.1 as the patch successor to published resend-api@1.0.0",
     ),
   });
   expect(

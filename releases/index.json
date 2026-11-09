@@ -30,7 +30,7 @@
       "sourceDirectory": "plugins/resend-api",
       "kind": "managed-openapi",
       "publicationEligible": true,
-      "reason": "Owner reauthorized the exact independently reviewed resend-api@1.0.0 release as the API-key component of the Resend app, alongside resend@1.0.3 MCP sign-in; trusted publication and live API-key acceptance are separate gates"
+      "reason": "Owner approved resend-api@1.0.1 as the patch successor to published resend-api@1.0.0, changing only the http.post.contacts segments input schema to the object form Resend's live API accepts; trusted publication and live API-key acceptance are separate gates"
     },
     {
       "sourceDirectory": "plugins/offline-fixture",
