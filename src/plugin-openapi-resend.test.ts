@@ -84,6 +84,26 @@ describe("Resend hosted OpenAPI source", () => {
       body: "none",
       parameters: [{ name: "email_id", location: "path", required: true }],
     });
+    const createContact = compiled.contract.catalog.tools.find(
+      (tool) => tool.id === "http.post.contacts",
+    );
+    expect(createContact?.inputSchema).toMatchObject({
+      properties: {
+        body: {
+          required: ["email"],
+          properties: {
+            email: { type: "string" },
+            segments: {
+              type: "array",
+              items: { type: "object", required: ["id"], properties: { id: { type: "string" } } },
+            },
+          },
+        },
+      },
+    });
+    expect(
+      JSON.parse(sourceText).components.schemas.CreateContactOptions.properties.segments,
+    ).toEqual(expect.objectContaining({ items: { type: "string" } }));
     const candidates = await discoverPluginOpenApiCandidates(sourceText, source);
     expect(candidates).toHaveLength(83);
     expect(candidates.filter((candidate) => candidate.reason === null)).toHaveLength(63);
@@ -91,6 +111,35 @@ describe("Resend hosted OpenAPI source", () => {
       candidates.find((candidate) => candidate.path === "/emails" && candidate.method === "POST")
         ?.operationId,
     ).toBe("http:POST:/emails");
+  });
+
+  it("rejects input schema corrections that miss a compiled node or leave the supported subset", async () => {
+    const loaded = await loadPluginOpenApiSource(sourcePath);
+    if (Result.isFailure(loaded)) throw new Error(loaded.failure);
+    const { source, sourceText } = loaded.success;
+    const createContact = source.operations.find(
+      (operation) => operation.operationId === "http:POST:/contacts",
+    )!;
+    const correct = (pointer: string, schema: Schema.Json) =>
+      compilePluginOpenApi({
+        sourceText,
+        authoring: {
+          ...source,
+          operations: [
+            { ...createContact, inputSchemaCorrections: [{ pointer, schema, reason: "test" }] },
+          ],
+        },
+      });
+    expect(await correct("#/properties/body/properties/missing", { type: "string" })).toMatchObject(
+      { _tag: "Failure", failure: "openapi-schema-correction-invalid" },
+    );
+    expect(await correct("properties/body", { type: "string" })).toMatchObject({
+      _tag: "Failure",
+      failure: "openapi-schema-correction-invalid",
+    });
+    expect(
+      await correct("#/properties/body/properties/segments", { $ref: "#/nowhere" }),
+    ).toMatchObject({ _tag: "Failure", failure: "openapi-reference-unsupported" });
   });
 
   it("preserves explicit IDs, fails on selected identity collision and overlapping unions", async () => {
