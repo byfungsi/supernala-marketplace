@@ -1,8 +1,13 @@
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { Result, Schema } from "effect";
 import { describe, expect, it } from "vitest";
 import { compilePluginOpenApi } from "./plugin-openapi-compiler.js";
 import { discoverPluginOpenApiCandidates } from "./plugin-openapi-discovery.js";
+import { buildPluginOpenApiReleaseBundle } from "./plugin-openapi-release-bundle.js";
 import { loadPluginOpenApiSource } from "./plugin-openapi-source.js";
+import { digestReleaseSharedInputs, ReleaseReview } from "./release-bundle.js";
 
 const sourcePath = new URL("../plugins/resend-api", import.meta.url).pathname;
 
@@ -111,6 +116,47 @@ describe("Resend hosted OpenAPI source", () => {
       candidates.find((candidate) => candidate.path === "/emails" && candidate.method === "POST")
         ?.operationId,
     ).toBe("http:POST:/emails");
+  });
+
+  it("binds the 1.0.1 review to published 1.0.0 authority, changing only the contact tool", async () => {
+    const readReview = async (version: string) =>
+      Schema.decodeUnknownSync(ReleaseReview)(
+        JSON.parse(
+          await readFile(
+            `releases/reviews/supernala-public__supernala__resend-api__${version}.json`,
+            "utf8",
+          ),
+        ),
+      );
+    const [previous, review] = await Promise.all([readReview("1.0.0"), readReview("1.0.1")]);
+    const index = JSON.parse(await readFile("releases/index.json", "utf8"));
+    const outputDirectory = await mkdtemp(path.join(os.tmpdir(), "resend-api-1.0.1-"));
+    try {
+      const built = await buildPluginOpenApiReleaseBundle({
+        sourceDirectory: sourcePath,
+        outputDirectory,
+        sharedInputDigest: await digestReleaseSharedInputs(index.sharedInputs),
+        mergeCommit: "0".repeat(40),
+        releaseOrdinal: 1,
+        review,
+        previousPublished: {
+          status: "published",
+          durableStateVerified: true,
+          identity: previous.identity,
+          releaseDigest: previous.releaseDigest,
+          authorityDigest: previous.authorityDigest,
+        },
+      });
+      expect(Result.isSuccess(built)).toBe(true);
+      const changed = review.authorityAfter.tools.filter(
+        (tool) =>
+          JSON.stringify(tool) !==
+          JSON.stringify(previous.authorityAfter.tools.find((before) => before.id === tool.id)),
+      );
+      expect(changed.map((tool) => tool.id)).toEqual(["http.post.contacts"]);
+    } finally {
+      await rm(outputDirectory, { recursive: true, force: true });
+    }
   });
 
   it("rejects input schema corrections that miss a compiled node or leave the supported subset", async () => {
