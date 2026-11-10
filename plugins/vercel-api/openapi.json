@@ -1,0 +1,2444 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Vercel REST API (Supernala selection)",
+    "version": "0.0.1",
+    "description": "A reviewed selection of Vercel's REST API (https://vercel.com/openapi.json): reads plus non-destructive deployment, domain, alias and environment-variable writes. Secret-revealing operations are excluded."
+  },
+  "servers": [
+    {
+      "url": "https://api.vercel.com"
+    }
+  ],
+  "security": [
+    {
+      "bearerToken": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Vercel access token"
+      }
+    }
+  },
+  "paths": {
+    "/v3/deployments/{idOrUrl}/events": {
+      "get": {
+        "description": "Get the build logs of a deployment by deployment ID and build ID. It can work as an infinite stream of logs or as a JSON endpoint depending on the input parameters.",
+        "operationId": "getDeploymentEvents",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Get deployment events",
+        "tags": ["deployments"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "idOrUrl",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier or hostname of the deployment.",
+            "schema": {
+              "type": "string",
+              "description": "The unique identifier or hostname of the deployment."
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "required": false,
+            "description": "Order of the returned events based on the timestamp.",
+            "schema": {
+              "type": "string",
+              "enum": ["backward", "forward"],
+              "description": "Order of the returned events based on the timestamp."
+            }
+          },
+          {
+            "name": "follow",
+            "in": "query",
+            "required": false,
+            "description": "When enabled, this endpoint will return live events as they happen.",
+            "schema": {
+              "type": "number",
+              "enum": [0, 1],
+              "description": "When enabled, this endpoint will return live events as they happen."
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of events to return. Provide `-1` to return all available logs.",
+            "schema": {
+              "type": "number",
+              "description": "Maximum number of events to return. Provide `-1` to return all available logs."
+            }
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "required": false,
+            "description": "Deployment build ID.",
+            "schema": {
+              "type": "string",
+              "description": "Deployment build ID."
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "Timestamp for when build logs should be pulled from.",
+            "schema": {
+              "type": "number",
+              "description": "Timestamp for when build logs should be pulled from."
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "Timestamp for when the build logs should be pulled up until.",
+            "schema": {
+              "type": "number",
+              "description": "Timestamp for when the build logs should be pulled up until."
+            }
+          },
+          {
+            "name": "statusCode",
+            "in": "query",
+            "required": false,
+            "description": "HTTP status code range to filter events by.",
+            "schema": {
+              "type": "number",
+              "description": "HTTP status code range to filter events by."
+            }
+          },
+          {
+            "name": "delimiter",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "enum": [0, 1]
+            }
+          },
+          {
+            "name": "builds",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "enum": [0, 1]
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v13/deployments/{idOrUrl}": {
+      "get": {
+        "description": "Retrieves information for a deployment either by supplying its ID (`id` property) or Hostname (`url` property). Additional details will be included when the authenticated user or team is an owner of the deployment.",
+        "operationId": "getDeployment",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Get a deployment by ID or URL",
+        "tags": ["deployments"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false,
+          "aliases": ["inspect", "get"]
+        },
+        "parameters": [
+          {
+            "name": "idOrUrl",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier or hostname of the deployment.",
+            "schema": {
+              "description": "The unique identifier or hostname of the deployment.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "withGitRepoInfo",
+            "in": "query",
+            "required": false,
+            "description": "When `true`, the response includes the `gitSource` object with the commit SHA, branch name, and connected repository metadata. Defaults to `false`.",
+            "schema": {
+              "description": "When `true`, the response includes the `gitSource` object with the commit SHA, branch name, and connected repository metadata. Defaults to `false`.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v13/deployments": {
+      "post": {
+        "description": "Creates a new deployment for the authenticated team or user. For non-git deployments, upload files first via the file upload API, then reference them here by SHA \u2014 or inline small files directly in the request body. To redeploy an existing deployment, provide its `deploymentId`; all settings are inherited unless explicitly overridden. The deployment begins building immediately and transitions through `QUEUED` \u2192 `INITIALIZING` \u2192 `BUILDING` before reaching `READY` or `ERROR`.",
+        "operationId": "createDeployment",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Create a new deployment",
+        "tags": ["deployments"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false
+        },
+        "parameters": [
+          {
+            "name": "forceNew",
+            "in": "query",
+            "description": "Forces a new deployment even if there is a previous similar deployment. Set to `1` to bypass deployment deduplication and always trigger a fresh build.",
+            "schema": {
+              "description": "Forces a new deployment even if there is a previous similar deployment. Set to `1` to bypass deployment deduplication and always trigger a fresh build.",
+              "enum": ["0", "1"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "skipAutoDetectionConfirmation",
+            "in": "query",
+            "description": "Set to `1` to skip framework auto-detection and proceed without confirmation. By default, if Vercel detects a framework that differs from the project setting, the API returns a `400` asking you to confirm. Use this to suppress that check in automated pipelines.",
+            "schema": {
+              "description": "Set to `1` to skip framework auto-detection and proceed without confirmation. By default, if Vercel detects a framework that differs from the project setting, the API returns a `400` asking you to confirm. Use this to suppress that check in automated pipelines.",
+              "enum": ["0", "1"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "buildMachine": {
+                    "description": "Selects a custom build machine for this deployment without changing project settings.",
+                    "enum": ["turbo"],
+                    "type": "string"
+                  },
+                  "customEnvironmentSlugOrId": {
+                    "description": "The slug or ID of a custom environment to deploy to, overriding the default target environment. When omitted, the deployment targets the environment inferred from the branch (production or preview).",
+                    "type": "string"
+                  },
+                  "deploymentId": {
+                    "description": "The ID of an existing deployment to redeploy. All project settings and environment variables are inherited from the original unless explicitly overridden in this request. The redeployment gets a new ID, URL, and build.",
+                    "type": "string"
+                  },
+                  "files": {
+                    "description": "The files to include in the deployment. Each entry is either an inlined file (with `data` and `encoding`) or a reference to a previously uploaded file (with `sha` and `size`). Required for non-git deployments. Cannot be used together with `gitSource`.",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "description": "The file content, it could be either a `base64` (useful for images, etc.) of the files or the plain content for source code",
+                          "type": "string"
+                        },
+                        "encoding": {
+                          "description": "The file content encoding, it could be either a base64 (useful for images, etc.) of the files or the plain text for source code.",
+                          "enum": ["base64", "utf-8"],
+                          "type": "string"
+                        },
+                        "file": {
+                          "description": "The file path relative to the project root",
+                          "type": "string"
+                        },
+                        "sha": {
+                          "description": "The file contents hashed with SHA1, used to check the integrity",
+                          "type": "string"
+                        },
+                        "size": {
+                          "description": "The file size in bytes",
+                          "type": "integer"
+                        }
+                      },
+                      "additionalProperties": true
+                    },
+                    "type": "array"
+                  },
+                  "gitMetadata": {
+                    "description": "Populates initial git metadata for different git providers.",
+                    "additionalProperties": false,
+                    "type": "object",
+                    "properties": {
+                      "remoteUrl": {
+                        "type": "string",
+                        "description": "The git repository's remote origin url"
+                      },
+                      "commitAuthorName": {
+                        "type": "string",
+                        "description": "The name of the author of the commit"
+                      },
+                      "commitAuthorEmail": {
+                        "type": "string",
+                        "description": "The email of the author of the commit"
+                      },
+                      "commitMessage": {
+                        "type": "string",
+                        "description": "The commit message"
+                      },
+                      "commitRef": {
+                        "type": "string",
+                        "description": "The branch on which the commit was made"
+                      },
+                      "commitSha": {
+                        "type": "string",
+                        "description": "The hash of the commit"
+                      },
+                      "dirty": {
+                        "type": "boolean",
+                        "description": "Whether or not there have been modifications to the working tree since the latest commit"
+                      },
+                      "ci": {
+                        "type": "boolean",
+                        "description": "True if process.env.CI was set when deploying"
+                      },
+                      "ciType": {
+                        "type": "string",
+                        "description": "The type of CI system used"
+                      },
+                      "ciGitProviderUsername": {
+                        "type": "string",
+                        "description": "The username used for the Git Provider (e.g. GitHub) if their CI (e.g. GitHub Actions) was used, if available"
+                      },
+                      "ciGitRepoVisibility": {
+                        "type": "string",
+                        "description": "The visibility of the Git repository if their CI (e.g. GitHub Actions) was used, if available"
+                      },
+                      "rootDirectory": {
+                        "type": "string",
+                        "description": "Path of the deployed directory relative to the detected git repository root. Empty string when deploying from the repository root."
+                      }
+                    }
+                  },
+                  "gitSource": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "enum": ["cursor-origin"],
+                        "type": "string"
+                      },
+                      "repoId": {
+                        "description": "The stable Origin repository ID. Read it from the `link.repoId` field returned by the project API.",
+                        "type": "string"
+                      },
+                      "sha": {
+                        "description": "The commit SHA to deploy. When omitted, Vercel resolves the latest commit on `ref`.",
+                        "type": "string"
+                      },
+                      "ref": {
+                        "description": "The branch or Git reference to deploy.",
+                        "type": "string"
+                      },
+                      "org": {
+                        "type": "string"
+                      },
+                      "repo": {
+                        "description": "The Origin repository name. Optional because Vercel resolves it from the linked project.",
+                        "type": "string"
+                      },
+                      "projectId": {
+                        "type": ["number", "string"]
+                      },
+                      "repoUuid": {
+                        "type": "string"
+                      },
+                      "workspaceUuid": {
+                        "type": "string"
+                      },
+                      "owner": {
+                        "description": "The Origin workspace slug. Optional because Vercel resolves it from the linked project.",
+                        "type": "string"
+                      },
+                      "slug": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": true,
+                    "description": "Defines the Git Repository source to be deployed. This property can not be used in combination with `files`."
+                  },
+                  "meta": {
+                    "additionalProperties": {
+                      "maxLength": 65536,
+                      "type": "string"
+                    },
+                    "description": "An object containing the deployment's metadata. Multiple key-value pairs can be attached to a deployment. For deployments created with a Cursor Origin `gitSource`, Vercel automatically adds `cursorOriginDeployment`, `cursorOriginCommitSha`, `cursorOriginCommitRef`, `cursorOriginCommitMessage`, `cursorOriginCommitAuthorName`, `cursorOriginCommitAuthorEmail` when available, `cursorOriginOwner`, `cursorOriginRepo`, `cursorOriginRepoId`, and `cursorOriginPrId` for pull request deployments.",
+                    "type": "object"
+                  },
+                  "monorepoManager": {
+                    "description": "The monorepo manager that is being used for this deployment. When `null` is used no monorepo manager is selected",
+                    "type": ["string", "null"]
+                  },
+                  "name": {
+                    "description": "A string with the project name used in the deployment URL",
+                    "type": "string"
+                  },
+                  "project": {
+                    "description": "The target project identifier in which the deployment will be created. When defined, this parameter overrides name",
+                    "type": "string"
+                  },
+                  "projectSettings": {
+                    "additionalProperties": false,
+                    "description": "Project settings that will be applied to the deployment. It is required for the first deployment of a project and will be saved for any following deployments",
+                    "properties": {
+                      "buildCommand": {
+                        "description": "The build command for this project. When `null` is used this value will be automatically detected",
+                        "maxLength": 256,
+                        "type": ["string", "null"]
+                      },
+                      "commandForIgnoringBuildStep": {
+                        "maxLength": 256,
+                        "type": ["string", "null"]
+                      },
+                      "devCommand": {
+                        "description": "The dev command for this project. When `null` is used this value will be automatically detected",
+                        "maxLength": 256,
+                        "type": ["string", "null"]
+                      },
+                      "framework": {
+                        "description": "The framework that is being used for this project. When `null` is used no framework is selected",
+                        "type": ["string", "null"],
+                        "enum": [
+                          null,
+                          "services",
+                          "container",
+                          "blitzjs",
+                          "nextjs",
+                          "gatsby",
+                          "remix",
+                          "react-router",
+                          "astro",
+                          "hexo",
+                          "eleventy",
+                          "docusaurus-2",
+                          "docusaurus",
+                          "preact",
+                          "solidstart-1",
+                          "solidstart",
+                          "dojo",
+                          "ember",
+                          "vue",
+                          "scully",
+                          "ionic-angular",
+                          "angular",
+                          "polymer",
+                          "svelte",
+                          "sveltekit",
+                          "sveltekit-1",
+                          "ionic-react",
+                          "create-react-app",
+                          "gridsome",
+                          "umijs",
+                          "sapper",
+                          "saber",
+                          "stencil",
+                          "nuxtjs",
+                          "redwoodjs",
+                          "hugo",
+                          "jekyll",
+                          "brunch",
+                          "middleman",
+                          "zola",
+                          "hydrogen",
+                          "vite",
+                          "tanstack-start",
+                          "tanstack-start-lovable",
+                          "vitepress",
+                          "vuepress",
+                          "parcel",
+                          "fastapi",
+                          "flask",
+                          "fasthtml",
+                          "django",
+                          "ash",
+                          "factory-eve",
+                          "eve",
+                          "sanity",
+                          "sanity-v2",
+                          "storybook",
+                          "nitro",
+                          "hono",
+                          "express",
+                          "h3",
+                          "koa",
+                          "nestjs",
+                          "elysia",
+                          "fastify",
+                          "xmcp",
+                          "python",
+                          "ruby",
+                          "rust",
+                          "axum",
+                          "actix-web",
+                          "bun",
+                          "node",
+                          "go",
+                          "mastra"
+                        ]
+                      },
+                      "installCommand": {
+                        "description": "The install command for this project. When `null` is used this value will be automatically detected",
+                        "maxLength": 256,
+                        "type": ["string", "null"]
+                      },
+                      "nodeVersion": {
+                        "description": "Override the Node.js version that should be used for this deployment",
+                        "enum": [
+                          "26.x",
+                          "24.x",
+                          "22.x",
+                          "20.x",
+                          "18.x",
+                          "16.x",
+                          "14.x",
+                          "12.x",
+                          "10.x",
+                          "8.10.x"
+                        ],
+                        "type": "string"
+                      },
+                      "outputDirectory": {
+                        "description": "The output directory of the project. When `null` is used this value will be automatically detected",
+                        "maxLength": 256,
+                        "type": ["string", "null"]
+                      },
+                      "rootDirectory": {
+                        "description": "The name of a directory or relative path to the source code of your project. When `null` is used it will default to the project root",
+                        "maxLength": 256,
+                        "type": ["string", "null"]
+                      },
+                      "serverlessFunctionRegion": {
+                        "description": "The region to deploy Serverless Functions in this project",
+                        "maxLength": 4,
+                        "type": ["string", "null"]
+                      },
+                      "skipGitConnectDuringLink": {
+                        "description": "Opts-out of the message prompting a CLI user to connect a Git repository in `vercel link`.",
+                        "type": "boolean"
+                      },
+                      "sourceFilesOutsideRootDirectory": {
+                        "description": "Indicates if there are source files outside of the root directory, typically used for monorepos",
+                        "type": "boolean"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "target": {
+                    "description": "Either not defined, `staging`, `production`, or a custom environment identifier. If `staging`, a staging alias in the format `<project>-<team>.vercel.app` will be assigned. If `production`, any aliases defined in `alias` will be assigned. If omitted, the target will be `preview`.",
+                    "type": "string"
+                  },
+                  "withLatestCommit": {
+                    "description": "When `true` and `deploymentId` is passed in, the sha from the previous deployment's `gitSource` is removed forcing the latest commit to be used.",
+                    "type": "boolean"
+                  }
+                },
+                "required": ["name"],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v12/deployments/{id}/cancel": {
+      "patch": {
+        "description": "Cancels a deployment that is currently in progress, stopping the build before it completes. Use this to recover quickly from accidental deploys, wrong-branch pushes, or builds with known errors \u2014 without waiting for them to finish. Returns 400 if the deployment is no longer cancelable (already `READY`, `ERROR`, or `CANCELED`). Returns the updated deployment object with `readyState: 'CANCELED'` on success.",
+        "operationId": "cancelDeployment",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Cancel a deployment",
+        "tags": ["deployments"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The unique identifier of the deployment.",
+            "schema": {
+              "type": "string",
+              "description": "The unique identifier of the deployment."
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v6/domains/{domain}/config": {
+      "get": {
+        "description": "Get a Domain's configuration.",
+        "operationId": "getDomainConfig",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Get a Domain's configuration",
+        "tags": ["domains"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "description": "The name of the domain.",
+            "schema": {
+              "description": "The name of the domain.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectIdOrName",
+            "in": "query",
+            "required": false,
+            "description": "The project id or name that will be associated with the domain. Use this when the domain is not yet associated with a project.",
+            "schema": {
+              "description": "The project id or name that will be associated with the domain. Use this when the domain is not yet associated with a project.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "strict",
+            "in": "query",
+            "required": false,
+            "description": "When true, the response will only include the nameservers assigned directly to the specified domain. When false and there are no nameservers assigned directly to the specified domain, the response will include the nameservers of the domain's parent zone.",
+            "schema": {
+              "enum": ["true", "false"],
+              "description": "When true, the response will only include the nameservers assigned directly to the specified domain. When false and there are no nameservers assigned directly to the specified domain, the response will include the nameservers of the domain's parent zone.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v5/domains": {
+      "get": {
+        "description": "Retrieves a list of domains registered for the authenticated user or team. By default it returns the last 20 domains if no limit is provided.",
+        "operationId": "getDomains",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "List all the domains",
+        "tags": ["domains"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false,
+          "aliases": ["ls", "list"]
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of domains to list from a request.",
+            "schema": {
+              "description": "Maximum number of domains to list from a request.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Get domains created after this JavaScript timestamp.",
+            "schema": {
+              "description": "Get domains created after this JavaScript timestamp.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "description": "Get domains created before this JavaScript timestamp.",
+            "schema": {
+              "description": "Get domains created before this JavaScript timestamp.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/deployments/{deploymentId}/runtime-logs": {
+      "get": {
+        "description": "Returns a stream of logs for a given deployment.",
+        "operationId": "getRuntimeLogs",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Get logs for a deployment",
+        "tags": ["logs"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "description": "The ID or name of the project containing the deployment.",
+            "schema": {
+              "type": "string",
+              "description": "The ID or name of the project containing the deployment."
+            }
+          },
+          {
+            "name": "deploymentId",
+            "in": "path",
+            "required": true,
+            "description": "The ID or hostname of the deployment.",
+            "schema": {
+              "type": "string",
+              "description": "The ID or hostname of the deployment."
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v10/projects": {
+      "get": {
+        "description": "Allows to retrieve the list of projects of the authenticated user or team. The list will be paginated and the provided query parameters allow filtering the returned projects.",
+        "operationId": "getProjects",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Retrieve a list of projects",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false,
+          "aliases": ["ls", "list"]
+        },
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Query only projects updated after the given timestamp or continuation token.",
+            "schema": {
+              "description": "Query only projects updated after the given timestamp or continuation token.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Query only projects updated after this JavaScript timestamp.",
+            "schema": {
+              "description": "Query only projects updated after this JavaScript timestamp.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "description": "Query only projects updated before this JavaScript timestamp.",
+            "schema": {
+              "description": "Query only projects updated before this JavaScript timestamp.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "gitForkProtection",
+            "in": "query",
+            "description": "Specifies whether PRs from Git forks should require a team member's authorization before it can be deployed",
+            "schema": {
+              "description": "Specifies whether PRs from Git forks should require a team member's authorization before it can be deployed",
+              "type": "string",
+              "enum": ["1", "0"]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Limit the number of projects returned",
+            "schema": {
+              "description": "Limit the number of projects returned",
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search projects by the name field",
+            "schema": {
+              "description": "Search projects by the name field",
+              "type": "string",
+              "maxLength": 100
+            }
+          },
+          {
+            "name": "repo",
+            "in": "query",
+            "description": "Filter results by repo. Also used for project count",
+            "schema": {
+              "description": "Filter results by repo. Also used for project count",
+              "type": "string"
+            }
+          },
+          {
+            "name": "repoId",
+            "in": "query",
+            "description": "Filter results by Repository ID.",
+            "schema": {
+              "description": "Filter results by Repository ID.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "repoUrl",
+            "in": "query",
+            "description": "Filter results by Repository URL.",
+            "schema": {
+              "description": "Filter results by Repository URL.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "excludeRepos",
+            "in": "query",
+            "description": "Filter results by excluding those projects that belong to a repo",
+            "schema": {
+              "description": "Filter results by excluding those projects that belong to a repo",
+              "type": "string"
+            }
+          },
+          {
+            "name": "edgeConfigId",
+            "in": "query",
+            "description": "Filter results by connected Global Config ID",
+            "schema": {
+              "description": "Filter results by connected Global Config ID",
+              "type": "string"
+            }
+          },
+          {
+            "name": "edgeConfigTokenId",
+            "in": "query",
+            "description": "Filter results by connected Global Config Token ID",
+            "schema": {
+              "description": "Filter results by connected Global Config Token ID",
+              "type": "string"
+            }
+          },
+          {
+            "name": "deprecated",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "elasticConcurrencyEnabled",
+            "in": "query",
+            "description": "Filter results by projects with elastic concurrency enabled",
+            "schema": {
+              "description": "Filter results by projects with elastic concurrency enabled",
+              "type": "string",
+              "enum": ["1", "0"]
+            }
+          },
+          {
+            "name": "staticIpsEnabled",
+            "in": "query",
+            "description": "Filter results by projects with Static IPs enabled",
+            "schema": {
+              "description": "Filter results by projects with Static IPs enabled",
+              "enum": ["0", "1"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "buildMachineTypes",
+            "in": "query",
+            "description": "Filter results by effective build machine types. Accepts comma-separated values. Use \\\"elastic\\\" for projects with elastic selection and \\\"default\\\" for projects without a build machine type set.",
+            "schema": {
+              "description": "Filter results by effective build machine types. Accepts comma-separated values. Use \\\"elastic\\\" for projects with elastic selection and \\\"default\\\" for projects without a build machine type set.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "buildQueueConfiguration",
+            "in": "query",
+            "description": "Filter results by build queue configuration. SKIP_NAMESPACE_QUEUE includes projects without a configuration set.",
+            "schema": {
+              "description": "Filter results by build queue configuration. SKIP_NAMESPACE_QUEUE includes projects without a configuration set.",
+              "type": "string",
+              "enum": ["SKIP_NAMESPACE_QUEUE", "WAIT_FOR_NAMESPACE_QUEUE"]
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v9/projects/{idOrName}": {
+      "get": {
+        "description": "Get the information for a specific project by passing either the project `id` or `name` in the URL.",
+        "operationId": "getProject",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Find a project by id or name",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false,
+          "aliases": ["inspect", "get"]
+        },
+        "parameters": [
+          {
+            "name": "idOrName",
+            "in": "path",
+            "required": true,
+            "description": "The unique project identifier or the project name",
+            "schema": {
+              "description": "The unique project identifier or the project name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v9/projects/{idOrName}/domains": {
+      "get": {
+        "description": "Retrieve the domains associated with a given project by passing either the project `id` or `name` in the URL.",
+        "operationId": "getProjectDomains",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Retrieve project domains by project by id or name",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "idOrName",
+            "in": "path",
+            "required": true,
+            "description": "The unique project identifier or the project name",
+            "schema": {
+              "type": "string",
+              "description": "The unique project identifier or the project name"
+            }
+          },
+          {
+            "name": "production",
+            "in": "query",
+            "required": false,
+            "description": "Filters only production domains when set to `true`.",
+            "schema": {
+              "description": "Filters only production domains when set to `true`.",
+              "enum": ["true", "false"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "target",
+            "in": "query",
+            "required": false,
+            "description": "Filters on the target of the domain. Can be either \"production\", \"preview\"",
+            "schema": {
+              "description": "Filters on the target of the domain. Can be either \"production\", \"preview\"",
+              "enum": ["production", "preview"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "customEnvironmentId",
+            "in": "query",
+            "required": false,
+            "description": "The unique custom environment identifier within the project",
+            "schema": {
+              "description": "The unique custom environment identifier within the project",
+              "type": "string"
+            }
+          },
+          {
+            "name": "gitBranch",
+            "in": "query",
+            "required": false,
+            "description": "Filters domains based on specific branch.",
+            "schema": {
+              "description": "Filters domains based on specific branch.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirects",
+            "in": "query",
+            "required": false,
+            "description": "Excludes redirect project domains when \"false\". Includes redirect project domains when \"true\" (default).",
+            "schema": {
+              "description": "Excludes redirect project domains when \"false\". Includes redirect project domains when \"true\" (default).",
+              "enum": ["true", "false"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "redirect",
+            "in": "query",
+            "required": false,
+            "description": "Filters domains based on their redirect target.",
+            "schema": {
+              "description": "Filters domains based on their redirect target.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "verified",
+            "in": "query",
+            "required": false,
+            "description": "Filters domains based on their verification status.",
+            "schema": {
+              "description": "Filters domains based on their verification status.",
+              "enum": ["true", "false"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of domains to list from a request (max 100).",
+            "schema": {
+              "description": "Maximum number of domains to list from a request (max 100).",
+              "type": "number"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "Get domains created after this JavaScript timestamp.",
+            "schema": {
+              "description": "Get domains created after this JavaScript timestamp.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "Get domains created before this JavaScript timestamp.",
+            "schema": {
+              "description": "Get domains created before this JavaScript timestamp.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "description": "Domains sort order by createdAt",
+            "schema": {
+              "description": "Domains sort order by createdAt",
+              "enum": ["ASC", "DESC"],
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v9/projects/{idOrName}/domains/{domain}": {
+      "get": {
+        "description": "Get project domain by project id/name and domain name.",
+        "operationId": "getProjectDomain",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Get a project domain",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "idOrName",
+            "in": "path",
+            "required": true,
+            "description": "The unique project identifier or the project name",
+            "schema": {
+              "description": "The unique project identifier or the project name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "description": "The project domain name",
+            "schema": {
+              "description": "The project domain name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v10/projects/{idOrName}/domains": {
+      "post": {
+        "description": "Add a domain to the project by passing its domain name and by specifying the project by either passing the project `id` or `name` in the URL. If the domain is not yet verified to be used on this project, the request will return `verified = false`, and the domain will need to be verified according to the `verification` challenge via `POST /projects/:idOrName/domains/:domain/verify`. If the domain already exists on the project, the request will fail with a `400` status code.",
+        "operationId": "addProjectDomain",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Add a domain to a project",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "idOrName",
+            "in": "path",
+            "required": true,
+            "description": "The unique project identifier or the project name",
+            "schema": {
+              "description": "The unique project identifier or the project name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "name": {
+                    "description": "The project domain name",
+                    "type": "string"
+                  },
+                  "gitBranch": {
+                    "description": "Git branch to link the project domain",
+                    "maxLength": 250,
+                    "type": ["string", "null"]
+                  },
+                  "customEnvironmentId": {
+                    "description": "The unique custom environment identifier within the project",
+                    "type": "string"
+                  },
+                  "redirect": {
+                    "description": "Target destination domain for redirect",
+                    "type": ["string", "null"]
+                  },
+                  "redirectStatusCode": {
+                    "description": "Status code for domain redirect",
+                    "type": ["integer", "null"],
+                    "enum": [null, 301, 302, 307, 308]
+                  }
+                },
+                "required": ["name"],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v9/projects/{idOrName}/domains/{domain}/verify": {
+      "post": {
+        "description": "Attempts to verify a project domain with `verified = false` by checking the correctness of the project domain's `verification` challenge.",
+        "operationId": "verifyProjectDomain",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Verify project domain",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "idOrName",
+            "in": "path",
+            "required": true,
+            "description": "The unique project identifier or the project name",
+            "schema": {
+              "description": "The unique project identifier or the project name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "domain",
+            "in": "path",
+            "required": true,
+            "description": "The domain name you want to verify",
+            "schema": {
+              "description": "The domain name you want to verify",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v10/projects/{idOrName}/env": {
+      "get": {
+        "description": "Retrieve the environment variables for a given project by passing either the project `id` or `name` in the URL.",
+        "operationId": "filterProjectEnvs",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Retrieve the environment variables of a project by id or name",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false,
+          "aliases": ["ls", "list"]
+        },
+        "parameters": [
+          {
+            "name": "idOrName",
+            "in": "path",
+            "required": true,
+            "description": "The unique project identifier or the project name",
+            "schema": {
+              "description": "The unique project identifier or the project name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "gitBranch",
+            "in": "query",
+            "required": false,
+            "description": "If defined, the git branch of the environment variable to filter the results (must have target=preview)",
+            "schema": {
+              "description": "If defined, the git branch of the environment variable to filter the results (must have target=preview)",
+              "type": "string",
+              "maxLength": 250
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "description": "The source that is calling the endpoint.",
+            "schema": {
+              "description": "The source that is calling the endpoint.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "customEnvironmentId",
+            "in": "query",
+            "required": false,
+            "description": "The unique custom environment identifier within the project",
+            "schema": {
+              "type": "string",
+              "description": "The unique custom environment identifier within the project"
+            }
+          },
+          {
+            "name": "customEnvironmentSlug",
+            "in": "query",
+            "required": false,
+            "description": "The custom environment slug (name) within the project",
+            "schema": {
+              "type": "string",
+              "description": "The custom environment slug (name) within the project"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "x-speakeasy-test": false
+      },
+      "post": {
+        "description": "Create one or more environment variables for a project by passing its `key`, `value`, `type` and `target` and by specifying the project by either passing the project `id` or `name` in the URL. If you include `upsert=true` as a query parameter, a new environment variable will not be created if it already exists but, the existing variable's value will be updated.",
+        "operationId": "createProjectEnv",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Create one or more environment variables",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false
+        },
+        "parameters": [
+          {
+            "name": "idOrName",
+            "in": "path",
+            "required": true,
+            "description": "The unique project identifier or the project name",
+            "schema": {
+              "description": "The unique project identifier or the project name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "upsert",
+            "in": "query",
+            "required": false,
+            "description": "Allow override of environment variable if it already exists",
+            "schema": {
+              "description": "Allow override of environment variable if it already exists",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": ["object", "array", "string", "number", "integer", "boolean", "null"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v9/projects/{idOrName}/env/{id}": {
+      "patch": {
+        "description": "Edit a specific environment variable for a given project by passing the environment variable identifier and either passing the project `id` or `name` in the URL.",
+        "operationId": "editProjectEnv",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Edit an environment variable",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false
+        },
+        "parameters": [
+          {
+            "name": "idOrName",
+            "in": "path",
+            "required": true,
+            "description": "The unique project identifier or the project name",
+            "schema": {
+              "description": "The unique project identifier or the project name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The unique environment variable identifier",
+            "schema": {
+              "description": "The unique environment variable identifier",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "key": {
+                    "description": "The name of the environment variable",
+                    "type": "string"
+                  },
+                  "target": {
+                    "description": "The target environment of the environment variable",
+                    "type": "array",
+                    "items": {
+                      "enum": ["production", "preview", "development"],
+                      "type": "string"
+                    }
+                  },
+                  "gitBranch": {
+                    "description": "If defined, the git branch of the environment variable (must have target=preview)",
+                    "type": ["string", "null"],
+                    "maxLength": 250
+                  },
+                  "type": {
+                    "description": "The type of environment variable",
+                    "type": "string",
+                    "enum": ["system", "encrypted", "plain", "sensitive"]
+                  },
+                  "value": {
+                    "description": "The value of the environment variable",
+                    "type": "string"
+                  },
+                  "customEnvironmentIds": {
+                    "type": "array",
+                    "description": "The custom environments that the environment variable should be synced to",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "comment": {
+                    "type": "string",
+                    "description": "A comment to add context on what this env var is for",
+                    "maxLength": 500
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-speakeasy-test": false
+      }
+    },
+    "/v1/projects/{projectId}/rollback/{deploymentId}": {
+      "post": {
+        "description": "Allows users to rollback to a deployment.",
+        "operationId": "requestRollback",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Point production traffic to a previous production deployment by ID",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "deploymentId",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the deployment to rollback *to*",
+            "schema": {
+              "type": "string",
+              "description": "The ID of the deployment to rollback *to*"
+            }
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "required": false,
+            "description": "The reason for the rollback",
+            "schema": {
+              "type": "string",
+              "description": "The reason for the rollback"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v10/projects/{projectId}/promote/{deploymentId}": {
+      "post": {
+        "description": "Allows users to promote a deployment to production. Note: This does NOT rebuild the deployment. If you need that, then call create-deployments endpoint.",
+        "operationId": "requestPromote",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Point production traffic to a given deployment",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "deploymentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v1/projects/{projectId}/promote/aliases": {
+      "get": {
+        "description": "Get a list of aliases related to the last promote request with their mapping status",
+        "operationId": "listPromoteAliases",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Gets a list of aliases with status for the current promote",
+        "tags": ["projects"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Maximum number of aliases to list from a request (max 100).",
+            "schema": {
+              "description": "Maximum number of aliases to list from a request (max 100).",
+              "type": "number",
+              "maximum": 100
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "Get aliases created after this epoch timestamp.",
+            "schema": {
+              "description": "Get aliases created after this epoch timestamp.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "required": false,
+            "description": "Get aliases created before this epoch timestamp.",
+            "schema": {
+              "description": "Get aliases created before this epoch timestamp.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "failedOnly",
+            "in": "query",
+            "required": false,
+            "description": "Filter results down to aliases that failed to map to the requested deployment",
+            "schema": {
+              "description": "Filter results down to aliases that failed to map to the requested deployment",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v2/teams/{teamId}": {
+      "get": {
+        "description": "Get information for the Team specified by the `teamId` parameter.",
+        "operationId": "getTeam",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Get a Team",
+        "tags": ["teams"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false,
+          "aliases": ["get"]
+        },
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "path",
+            "required": true,
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v2/teams": {
+      "get": {
+        "description": "Get a paginated list of all the Teams the authenticated User is a member of.",
+        "operationId": "getTeams",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "List all teams",
+        "tags": ["teams"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false,
+          "aliases": ["list"]
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of Teams which may be returned.",
+            "schema": {
+              "description": "Maximum number of Teams which may be returned.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Timestamp (in milliseconds) to only include Teams created since then.",
+            "schema": {
+              "description": "Timestamp (in milliseconds) to only include Teams created since then.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "description": "Timestamp (in milliseconds) to only include Teams created until then.",
+            "schema": {
+              "description": "Timestamp (in milliseconds) to only include Teams created until then.",
+              "type": "number"
+            }
+          }
+        ]
+      }
+    },
+    "/v2/user": {
+      "get": {
+        "description": "Retrieves information related to the currently authenticated User.",
+        "operationId": "getAuthUser",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Get the User",
+        "tags": ["user"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false
+        },
+        "parameters": [],
+        "x-speakeasy-test": false
+      }
+    },
+    "/v2/deployments/{id}/aliases": {
+      "get": {
+        "description": "Retrieves all Aliases for the Deployment with the given ID. The authenticated user or team must own the deployment.",
+        "operationId": "listDeploymentAliases",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "List Deployment Aliases",
+        "tags": ["aliases"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false,
+          "aliases": ["for-deployment"]
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The ID of the deployment the aliases should be listed for",
+            "schema": {
+              "description": "The ID of the deployment the aliases should be listed for",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      },
+      "post": {
+        "description": "Creates a new alias for the deployment resolved from the given deployment or alias ID or URL. The authenticated user or team must own this deployment. If the desired alias is already assigned to another deployment, then it will be removed from the old deployment and assigned to the new one.",
+        "operationId": "assignAlias",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "Assign an Alias",
+        "tags": ["aliases"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "The deployment or alias ID or URL to assign from",
+            "schema": {
+              "type": "string",
+              "description": "The deployment or alias ID or URL to assign from"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "alias": {
+                    "description": "The alias we want to assign to the deployment defined in the URL",
+                    "type": "string"
+                  },
+                  "redirect": {
+                    "description": "The redirect property will take precedence over the deployment id from the URL and consists of a hostname (like test.com) to which the alias should redirect using status code 307",
+                    "type": ["string", "null"]
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v4/aliases": {
+      "get": {
+        "description": "Retrieves a list of aliases for the authenticated User or Team. When `domain` is provided, only aliases for that domain will be returned. When `projectId` is provided, it will only return the given project aliases.",
+        "operationId": "listAliases",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "List aliases",
+        "tags": ["aliases"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false,
+          "aliases": ["list"]
+        },
+        "parameters": [
+          {
+            "name": "domain",
+            "in": "query",
+            "description": "Get only aliases of the given domain name",
+            "schema": {
+              "type": "string",
+              "description": "Get only aliases of the given domain name"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Get only aliases created after the provided timestamp",
+            "schema": {
+              "description": "Get only aliases created after the provided timestamp",
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of aliases to list from a request",
+            "schema": {
+              "description": "Maximum number of aliases to list from a request",
+              "type": "number"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "description": "Filter aliases from the given `projectId`",
+            "schema": {
+              "description": "Filter aliases from the given `projectId`",
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Get aliases created after this JavaScript timestamp",
+            "schema": {
+              "description": "Get aliases created after this JavaScript timestamp",
+              "type": "number"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "description": "Get aliases created before this JavaScript timestamp",
+            "schema": {
+              "description": "Get aliases created before this JavaScript timestamp",
+              "type": "number"
+            }
+          },
+          {
+            "name": "rollbackDeploymentId",
+            "in": "query",
+            "description": "Get aliases that would be rolled back for the given deployment",
+            "schema": {
+              "description": "Get aliases that would be rolled back for the given deployment",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/v7/deployments": {
+      "get": {
+        "description": "List deployments under the authenticated user or team. If a deployment hasn't finished uploading (is incomplete), the `url` property will have a value of `null`.",
+        "operationId": "getDeployments",
+        "security": [
+          {
+            "bearerToken": []
+          }
+        ],
+        "summary": "List deployments",
+        "tags": ["deployments"],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "x-vercel-cli": {
+          "supportedSubcommands": true,
+          "supportedProduction": false,
+          "aliases": ["ls", "list"]
+        },
+        "parameters": [
+          {
+            "name": "app",
+            "in": "query",
+            "description": "Name of the deployment.",
+            "schema": {
+              "description": "Name of the deployment.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "description": "Gets the deployment created after this Date timestamp. (default: current time)",
+            "schema": {
+              "description": "Gets the deployment created after this Date timestamp. (default: current time)",
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum number of deployments to list from a request.",
+            "schema": {
+              "description": "Maximum number of deployments to list from a request.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "description": "Filter deployments from the given ID or name.",
+            "schema": {
+              "description": "Filter deployments from the given ID or name.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "projectIds",
+            "in": "query",
+            "description": "Filter deployments from the given project IDs. Cannot be used when projectId is specified.",
+            "schema": {
+              "description": "Filter deployments from the given project IDs. Cannot be used when projectId is specified.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 20
+            }
+          },
+          {
+            "name": "target",
+            "in": "query",
+            "description": "Filter deployments based on the environment.",
+            "schema": {
+              "description": "Filter deployments based on the environment.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "description": "Gets the deployment created before this Date timestamp. (default: current time)",
+            "schema": {
+              "description": "Gets the deployment created before this Date timestamp. (default: current time)",
+              "type": "number"
+            }
+          },
+          {
+            "name": "users",
+            "in": "query",
+            "description": "Filter out deployments based on users who have created the deployment.",
+            "schema": {
+              "description": "Filter out deployments based on users who have created the deployment.",
+              "type": "string"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "Get Deployments created after this JavaScript timestamp.",
+            "schema": {
+              "description": "Get Deployments created after this JavaScript timestamp.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "until",
+            "in": "query",
+            "description": "Get Deployments created before this JavaScript timestamp.",
+            "schema": {
+              "description": "Get Deployments created before this JavaScript timestamp.",
+              "type": "number"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "Filter deployments based on their state (`BUILDING`, `ERROR`, `INITIALIZING`, `QUEUED`, `READY`, `CANCELED`, `BLOCKED`)",
+            "schema": {
+              "description": "Filter deployments based on their state (`BUILDING`, `ERROR`, `INITIALIZING`, `QUEUED`, `READY`, `CANCELED`, `BLOCKED`)",
+              "type": "string"
+            }
+          },
+          {
+            "name": "rollbackCandidate",
+            "in": "query",
+            "description": "Filter deployments based on their rollback candidacy",
+            "schema": {
+              "description": "Filter deployments based on their rollback candidacy",
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "branch",
+            "in": "query",
+            "description": "Filter deployments based on the branch name",
+            "schema": {
+              "description": "Filter deployments based on the branch name",
+              "type": "string"
+            }
+          },
+          {
+            "name": "sha",
+            "in": "query",
+            "description": "Filter deployments based on the SHA",
+            "schema": {
+              "description": "Filter deployments based on the SHA",
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "in": "query",
+            "description": "The Team identifier to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "description": "The Team slug to perform the request on behalf of.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
