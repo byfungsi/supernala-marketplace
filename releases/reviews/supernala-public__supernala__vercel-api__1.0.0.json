@@ -1,0 +1,2778 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "vercel-api",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "vercel-api-1.0.0-rest-access-token-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794281909677,
+  "sourceInputDigest": "a4a36bbd03e8b1baf622787606067e53a3460c08d221cc04cb033be3a148ebae",
+  "artifactDigest": "0882f9e8806135aa99aa7418c9d3689daa00a71fbc5b61bc3e1e282e06e59e47",
+  "authentication": {
+    "kind": "none"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "vercel-api-v1",
+    "fields": [
+      {
+        "key": "token",
+        "label": "Vercel access token",
+        "secret": true,
+        "minimumLength": 8,
+        "maximumLength": 512
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "header",
+        "field": "token",
+        "headerName": "Authorization",
+        "encoding": "bearer"
+      }
+    ],
+    "verification": {
+      "kind": "https-json",
+      "endpoint": "https://api.vercel.com/v2/user",
+      "expectedStatus": 200,
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 12,
+      "maximumObjectKeys": 1024
+    },
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Vercel"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "catalogDigest": "4474f0f9c82345657b01960bef2a6f145fee301f965a2a02c7a5a45bda6e5e8b",
+  "configDigest": "23542ea5e9d621ef4adc58cf4740ef4bd4a36fc20a0786bd129cb487d782d6c3",
+  "provenanceDigest": "a6bdb1065fb7fecfce675738ccd68206f8299b1b7e98023e6961af6af79d981a",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [],
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "b98d01227e1a4dcc71b9940e1212f70f379351fcc2cf27fae9ca06e8045c6b19",
+  "authorityAfter": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [
+      {
+        "toolId": "vercel.add_project_domain",
+        "method": "POST",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v10/projects/{idOrName}/domains",
+        "parameters": [
+          {
+            "name": "idOrName",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.assign_alias",
+        "method": "POST",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v2/deployments/{id}/aliases",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.cancel_deployment",
+        "method": "PATCH",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v12/deployments/{id}/cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.create_deployment",
+        "method": "POST",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v13/deployments",
+        "parameters": [
+          {
+            "name": "forceNew",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "skipAutoDetectionConfirmation",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.create_project_env",
+        "method": "POST",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v10/projects/{idOrName}/env",
+        "parameters": [
+          {
+            "name": "idOrName",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "upsert",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.edit_project_env",
+        "method": "PATCH",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v9/projects/{idOrName}/env/{id}",
+        "parameters": [
+          {
+            "name": "idOrName",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.get_deployment",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v13/deployments/{idOrUrl}",
+        "parameters": [
+          {
+            "name": "idOrUrl",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "withGitRepoInfo",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.get_deployment_events",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v3/deployments/{idOrUrl}/events",
+        "parameters": [
+          {
+            "name": "idOrUrl",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "direction",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "follow",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "name",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "since",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "until",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "statusCode",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "delimiter",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "builds",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.get_domain_config",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v6/domains/{domain}/config",
+        "parameters": [
+          {
+            "name": "domain",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "projectIdOrName",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "strict",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.get_project",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v9/projects/{idOrName}",
+        "parameters": [
+          {
+            "name": "idOrName",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.get_project_domain",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v9/projects/{idOrName}/domains/{domain}",
+        "parameters": [
+          {
+            "name": "idOrName",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "domain",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.get_runtime_logs",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v1/projects/{projectId}/deployments/{deploymentId}/runtime-logs",
+        "parameters": [
+          {
+            "name": "projectId",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "deploymentId",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.get_team",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v2/teams/{teamId}",
+        "parameters": [
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.get_user",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v2/user",
+        "parameters": [],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.list_aliases",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v4/aliases",
+        "parameters": [
+          {
+            "name": "domain",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "from",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "projectId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "since",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "until",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "rollbackDeploymentId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.list_deployment_aliases",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v2/deployments/{id}/aliases",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.list_deployments",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v7/deployments",
+        "parameters": [
+          {
+            "name": "app",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "from",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "projectId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "projectIds",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": true
+          },
+          {
+            "name": "target",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "to",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "users",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "since",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "until",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "state",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "rollbackCandidate",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "branch",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "sha",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.list_domains",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v5/domains",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "since",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "until",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.list_project_domains",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v9/projects/{idOrName}/domains",
+        "parameters": [
+          {
+            "name": "idOrName",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "production",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "target",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "customEnvironmentId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "gitBranch",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "redirects",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "redirect",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "verified",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "since",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "until",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "order",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.list_project_env",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v10/projects/{idOrName}/env",
+        "parameters": [
+          {
+            "name": "idOrName",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "gitBranch",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "source",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "customEnvironmentId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "customEnvironmentSlug",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.list_projects",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v10/projects",
+        "parameters": [
+          {
+            "name": "from",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "since",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "until",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "gitForkProtection",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "search",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "repo",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "repoId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "repoUrl",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "excludeRepos",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "edgeConfigId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "edgeConfigTokenId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "deprecated",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "elasticConcurrencyEnabled",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "staticIpsEnabled",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "buildMachineTypes",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "buildQueueConfiguration",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.list_promote_aliases",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v1/projects/{projectId}/promote/aliases",
+        "parameters": [
+          {
+            "name": "projectId",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "since",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "until",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "failedOnly",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.list_teams",
+        "method": "GET",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v2/teams",
+        "parameters": [
+          {
+            "name": "limit",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "since",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "until",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.promote_deployment",
+        "method": "POST",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v10/projects/{projectId}/promote/{deploymentId}",
+        "parameters": [
+          {
+            "name": "projectId",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "deploymentId",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.rollback_deployment",
+        "method": "POST",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v1/projects/{projectId}/rollback/{deploymentId}",
+        "parameters": [
+          {
+            "name": "projectId",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "deploymentId",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "description",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "vercel.verify_project_domain",
+        "method": "POST",
+        "origin": "https://api.vercel.com",
+        "pathTemplate": "/v9/projects/{idOrName}/domains/{domain}/verify",
+        "parameters": [
+          {
+            "name": "idOrName",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "domain",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "teamId",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      }
+    ],
+    "authenticationKind": "api-key",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "vercel-api-v1",
+    "providerDefinitionDigest": null,
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "api-key",
+      "providerRegistrationId": "vercel-api-v1",
+      "fields": [
+        {
+          "key": "token",
+          "label": "Vercel access token",
+          "secret": true,
+          "minimumLength": 8,
+          "maximumLength": 512
+        }
+      ],
+      "delivery": [
+        {
+          "kind": "header",
+          "field": "token",
+          "headerName": "Authorization",
+          "encoding": "bearer"
+        }
+      ],
+      "verification": {
+        "kind": "https-json",
+        "endpoint": "https://api.vercel.com/v2/user",
+        "expectedStatus": 200,
+        "maximumResponseBytes": 65536,
+        "maximumJsonDepth": 12,
+        "maximumObjectKeys": 1024
+      },
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Vercel"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "vercel.add_project_domain",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "idOrName": {
+                  "description": "The unique project identifier or the project name",
+                  "type": "string"
+                }
+              },
+              "required": ["idOrName"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "body": {
+              "properties": {
+                "name": {
+                  "description": "The project domain name",
+                  "type": "string"
+                },
+                "gitBranch": {
+                  "description": "Git branch to link the project domain",
+                  "maxLength": 250,
+                  "type": ["string", "null"]
+                },
+                "customEnvironmentId": {
+                  "description": "The unique custom environment identifier within the project",
+                  "type": "string"
+                },
+                "redirect": {
+                  "description": "Target destination domain for redirect",
+                  "type": ["string", "null"]
+                },
+                "redirectStatusCode": {
+                  "description": "Status code for domain redirect",
+                  "type": ["integer", "null"],
+                  "enum": [null, 301, 302, 307, 308]
+                }
+              },
+              "required": ["name"],
+              "type": "object"
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.assign_alias",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The deployment or alias ID or URL to assign from"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "body": {
+              "properties": {
+                "alias": {
+                  "description": "The alias we want to assign to the deployment defined in the URL",
+                  "type": "string"
+                },
+                "redirect": {
+                  "description": "The redirect property will take precedence over the deployment id from the URL and consists of a hostname (like test.com) to which the alias should redirect using status code 307",
+                  "type": ["string", "null"]
+                }
+              },
+              "type": "object"
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.cancel_deployment",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "The unique identifier of the deployment."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.create_deployment",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "forceNew": {
+                  "description": "Forces a new deployment even if there is a previous similar deployment. Set to `1` to bypass deployment deduplication and always trigger a fresh build.",
+                  "enum": ["0", "1"],
+                  "type": "string"
+                },
+                "skipAutoDetectionConfirmation": {
+                  "description": "Set to `1` to skip framework auto-detection and proceed without confirmation. By default, if Vercel detects a framework that differs from the project setting, the API returns a `400` asking you to confirm. Use this to suppress that check in automated pipelines.",
+                  "enum": ["0", "1"],
+                  "type": "string"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "body": {
+              "additionalProperties": false,
+              "properties": {
+                "buildMachine": {
+                  "description": "Selects a custom build machine for this deployment without changing project settings.",
+                  "enum": ["turbo"],
+                  "type": "string"
+                },
+                "customEnvironmentSlugOrId": {
+                  "description": "The slug or ID of a custom environment to deploy to, overriding the default target environment. When omitted, the deployment targets the environment inferred from the branch (production or preview).",
+                  "type": "string"
+                },
+                "deploymentId": {
+                  "description": "The ID of an existing deployment to redeploy. All project settings and environment variables are inherited from the original unless explicitly overridden in this request. The redeployment gets a new ID, URL, and build.",
+                  "type": "string"
+                },
+                "files": {
+                  "description": "The files to include in the deployment. Each entry is either an inlined file (with `data` and `encoding`) or a reference to a previously uploaded file (with `sha` and `size`). Required for non-git deployments. Cannot be used together with `gitSource`.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "data": {
+                        "description": "The file content, it could be either a `base64` (useful for images, etc.) of the files or the plain content for source code",
+                        "type": "string"
+                      },
+                      "encoding": {
+                        "description": "The file content encoding, it could be either a base64 (useful for images, etc.) of the files or the plain text for source code.",
+                        "enum": ["base64", "utf-8"],
+                        "type": "string"
+                      },
+                      "file": {
+                        "description": "The file path relative to the project root",
+                        "type": "string"
+                      },
+                      "sha": {
+                        "description": "The file contents hashed with SHA1, used to check the integrity",
+                        "type": "string"
+                      },
+                      "size": {
+                        "description": "The file size in bytes",
+                        "type": "integer"
+                      }
+                    },
+                    "additionalProperties": true
+                  },
+                  "type": "array"
+                },
+                "gitMetadata": {
+                  "description": "Populates initial git metadata for different git providers.",
+                  "additionalProperties": false,
+                  "type": "object",
+                  "properties": {
+                    "remoteUrl": {
+                      "type": "string",
+                      "description": "The git repository's remote origin url"
+                    },
+                    "commitAuthorName": {
+                      "type": "string",
+                      "description": "The name of the author of the commit"
+                    },
+                    "commitAuthorEmail": {
+                      "type": "string",
+                      "description": "The email of the author of the commit"
+                    },
+                    "commitMessage": {
+                      "type": "string",
+                      "description": "The commit message"
+                    },
+                    "commitRef": {
+                      "type": "string",
+                      "description": "The branch on which the commit was made"
+                    },
+                    "commitSha": {
+                      "type": "string",
+                      "description": "The hash of the commit"
+                    },
+                    "dirty": {
+                      "type": "boolean",
+                      "description": "Whether or not there have been modifications to the working tree since the latest commit"
+                    },
+                    "ci": {
+                      "type": "boolean",
+                      "description": "True if process.env.CI was set when deploying"
+                    },
+                    "ciType": {
+                      "type": "string",
+                      "description": "The type of CI system used"
+                    },
+                    "ciGitProviderUsername": {
+                      "type": "string",
+                      "description": "The username used for the Git Provider (e.g. GitHub) if their CI (e.g. GitHub Actions) was used, if available"
+                    },
+                    "ciGitRepoVisibility": {
+                      "type": "string",
+                      "description": "The visibility of the Git repository if their CI (e.g. GitHub Actions) was used, if available"
+                    },
+                    "rootDirectory": {
+                      "type": "string",
+                      "description": "Path of the deployed directory relative to the detected git repository root. Empty string when deploying from the repository root."
+                    }
+                  }
+                },
+                "gitSource": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "enum": ["cursor-origin"],
+                      "type": "string"
+                    },
+                    "repoId": {
+                      "description": "The stable Origin repository ID. Read it from the `link.repoId` field returned by the project API.",
+                      "type": "string"
+                    },
+                    "sha": {
+                      "description": "The commit SHA to deploy. When omitted, Vercel resolves the latest commit on `ref`.",
+                      "type": "string"
+                    },
+                    "ref": {
+                      "description": "The branch or Git reference to deploy.",
+                      "type": "string"
+                    },
+                    "org": {
+                      "type": "string"
+                    },
+                    "repo": {
+                      "description": "The Origin repository name. Optional because Vercel resolves it from the linked project.",
+                      "type": "string"
+                    },
+                    "projectId": {
+                      "type": ["number", "string"]
+                    },
+                    "repoUuid": {
+                      "type": "string"
+                    },
+                    "workspaceUuid": {
+                      "type": "string"
+                    },
+                    "owner": {
+                      "description": "The Origin workspace slug. Optional because Vercel resolves it from the linked project.",
+                      "type": "string"
+                    },
+                    "slug": {
+                      "type": "string"
+                    }
+                  },
+                  "additionalProperties": true,
+                  "description": "Defines the Git Repository source to be deployed. This property can not be used in combination with `files`."
+                },
+                "meta": {
+                  "additionalProperties": {
+                    "maxLength": 65536,
+                    "type": "string"
+                  },
+                  "description": "An object containing the deployment's metadata. Multiple key-value pairs can be attached to a deployment. For deployments created with a Cursor Origin `gitSource`, Vercel automatically adds `cursorOriginDeployment`, `cursorOriginCommitSha`, `cursorOriginCommitRef`, `cursorOriginCommitMessage`, `cursorOriginCommitAuthorName`, `cursorOriginCommitAuthorEmail` when available, `cursorOriginOwner`, `cursorOriginRepo`, `cursorOriginRepoId`, and `cursorOriginPrId` for pull request deployments.",
+                  "type": "object"
+                },
+                "monorepoManager": {
+                  "description": "The monorepo manager that is being used for this deployment. When `null` is used no monorepo manager is selected",
+                  "type": ["string", "null"]
+                },
+                "name": {
+                  "description": "A string with the project name used in the deployment URL",
+                  "type": "string"
+                },
+                "project": {
+                  "description": "The target project identifier in which the deployment will be created. When defined, this parameter overrides name",
+                  "type": "string"
+                },
+                "projectSettings": {
+                  "additionalProperties": false,
+                  "description": "Project settings that will be applied to the deployment. It is required for the first deployment of a project and will be saved for any following deployments",
+                  "properties": {
+                    "buildCommand": {
+                      "description": "The build command for this project. When `null` is used this value will be automatically detected",
+                      "maxLength": 256,
+                      "type": ["string", "null"]
+                    },
+                    "commandForIgnoringBuildStep": {
+                      "maxLength": 256,
+                      "type": ["string", "null"]
+                    },
+                    "devCommand": {
+                      "description": "The dev command for this project. When `null` is used this value will be automatically detected",
+                      "maxLength": 256,
+                      "type": ["string", "null"]
+                    },
+                    "framework": {
+                      "description": "The framework that is being used for this project. When `null` is used no framework is selected",
+                      "type": ["string", "null"],
+                      "enum": [
+                        null,
+                        "services",
+                        "container",
+                        "blitzjs",
+                        "nextjs",
+                        "gatsby",
+                        "remix",
+                        "react-router",
+                        "astro",
+                        "hexo",
+                        "eleventy",
+                        "docusaurus-2",
+                        "docusaurus",
+                        "preact",
+                        "solidstart-1",
+                        "solidstart",
+                        "dojo",
+                        "ember",
+                        "vue",
+                        "scully",
+                        "ionic-angular",
+                        "angular",
+                        "polymer",
+                        "svelte",
+                        "sveltekit",
+                        "sveltekit-1",
+                        "ionic-react",
+                        "create-react-app",
+                        "gridsome",
+                        "umijs",
+                        "sapper",
+                        "saber",
+                        "stencil",
+                        "nuxtjs",
+                        "redwoodjs",
+                        "hugo",
+                        "jekyll",
+                        "brunch",
+                        "middleman",
+                        "zola",
+                        "hydrogen",
+                        "vite",
+                        "tanstack-start",
+                        "tanstack-start-lovable",
+                        "vitepress",
+                        "vuepress",
+                        "parcel",
+                        "fastapi",
+                        "flask",
+                        "fasthtml",
+                        "django",
+                        "ash",
+                        "factory-eve",
+                        "eve",
+                        "sanity",
+                        "sanity-v2",
+                        "storybook",
+                        "nitro",
+                        "hono",
+                        "express",
+                        "h3",
+                        "koa",
+                        "nestjs",
+                        "elysia",
+                        "fastify",
+                        "xmcp",
+                        "python",
+                        "ruby",
+                        "rust",
+                        "axum",
+                        "actix-web",
+                        "bun",
+                        "node",
+                        "go",
+                        "mastra"
+                      ]
+                    },
+                    "installCommand": {
+                      "description": "The install command for this project. When `null` is used this value will be automatically detected",
+                      "maxLength": 256,
+                      "type": ["string", "null"]
+                    },
+                    "nodeVersion": {
+                      "description": "Override the Node.js version that should be used for this deployment",
+                      "enum": [
+                        "26.x",
+                        "24.x",
+                        "22.x",
+                        "20.x",
+                        "18.x",
+                        "16.x",
+                        "14.x",
+                        "12.x",
+                        "10.x",
+                        "8.10.x"
+                      ],
+                      "type": "string"
+                    },
+                    "outputDirectory": {
+                      "description": "The output directory of the project. When `null` is used this value will be automatically detected",
+                      "maxLength": 256,
+                      "type": ["string", "null"]
+                    },
+                    "rootDirectory": {
+                      "description": "The name of a directory or relative path to the source code of your project. When `null` is used it will default to the project root",
+                      "maxLength": 256,
+                      "type": ["string", "null"]
+                    },
+                    "serverlessFunctionRegion": {
+                      "description": "The region to deploy Serverless Functions in this project",
+                      "maxLength": 4,
+                      "type": ["string", "null"]
+                    },
+                    "skipGitConnectDuringLink": {
+                      "description": "Opts-out of the message prompting a CLI user to connect a Git repository in `vercel link`.",
+                      "type": "boolean"
+                    },
+                    "sourceFilesOutsideRootDirectory": {
+                      "description": "Indicates if there are source files outside of the root directory, typically used for monorepos",
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
+                },
+                "target": {
+                  "description": "Either not defined, `staging`, `production`, or a custom environment identifier. If `staging`, a staging alias in the format `<project>-<team>.vercel.app` will be assigned. If `production`, any aliases defined in `alias` will be assigned. If omitted, the target will be `preview`.",
+                  "type": "string"
+                },
+                "withLatestCommit": {
+                  "description": "When `true` and `deploymentId` is passed in, the sha from the previous deployment's `gitSource` is removed forcing the latest commit to be used.",
+                  "type": "boolean"
+                }
+              },
+              "required": ["name"],
+              "type": "object"
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.create_project_env",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "idOrName": {
+                  "description": "The unique project identifier or the project name",
+                  "type": "string"
+                }
+              },
+              "required": ["idOrName"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "upsert": {
+                  "description": "Allow override of environment variable if it already exists",
+                  "type": "string"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": ["object", "array", "string", "number", "integer", "boolean", "null"]
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.edit_project_env",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "idOrName": {
+                  "description": "The unique project identifier or the project name",
+                  "type": "string"
+                },
+                "id": {
+                  "description": "The unique environment variable identifier",
+                  "type": "string"
+                }
+              },
+              "required": ["idOrName", "id"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "description": "The name of the environment variable",
+                  "type": "string"
+                },
+                "target": {
+                  "description": "The target environment of the environment variable",
+                  "type": "array",
+                  "items": {
+                    "enum": ["production", "preview", "development"],
+                    "type": "string"
+                  }
+                },
+                "gitBranch": {
+                  "description": "If defined, the git branch of the environment variable (must have target=preview)",
+                  "type": ["string", "null"],
+                  "maxLength": 250
+                },
+                "type": {
+                  "description": "The type of environment variable",
+                  "type": "string",
+                  "enum": ["system", "encrypted", "plain", "sensitive"]
+                },
+                "value": {
+                  "description": "The value of the environment variable",
+                  "type": "string"
+                },
+                "customEnvironmentIds": {
+                  "type": "array",
+                  "description": "The custom environments that the environment variable should be synced to",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "comment": {
+                  "type": "string",
+                  "description": "A comment to add context on what this env var is for",
+                  "maxLength": 500
+                }
+              }
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.get_deployment",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "idOrUrl": {
+                  "description": "The unique identifier or hostname of the deployment.",
+                  "type": "string"
+                }
+              },
+              "required": ["idOrUrl"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "withGitRepoInfo": {
+                  "description": "When `true`, the response includes the `gitSource` object with the commit SHA, branch name, and connected repository metadata. Defaults to `false`.",
+                  "type": "string"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.get_deployment_events",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "idOrUrl": {
+                  "type": "string",
+                  "description": "The unique identifier or hostname of the deployment."
+                }
+              },
+              "required": ["idOrUrl"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "direction": {
+                  "type": "string",
+                  "enum": ["backward", "forward"],
+                  "description": "Order of the returned events based on the timestamp."
+                },
+                "follow": {
+                  "type": "number",
+                  "enum": [0, 1],
+                  "description": "When enabled, this endpoint will return live events as they happen."
+                },
+                "limit": {
+                  "type": "number",
+                  "description": "Maximum number of events to return. Provide `-1` to return all available logs."
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Deployment build ID."
+                },
+                "since": {
+                  "type": "number",
+                  "description": "Timestamp for when build logs should be pulled from."
+                },
+                "until": {
+                  "type": "number",
+                  "description": "Timestamp for when the build logs should be pulled up until."
+                },
+                "statusCode": {
+                  "type": "number",
+                  "description": "HTTP status code range to filter events by."
+                },
+                "delimiter": {
+                  "type": "number",
+                  "enum": [0, 1]
+                },
+                "builds": {
+                  "type": "number",
+                  "enum": [0, 1]
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.get_domain_config",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "domain": {
+                  "description": "The name of the domain.",
+                  "type": "string"
+                }
+              },
+              "required": ["domain"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "projectIdOrName": {
+                  "description": "The project id or name that will be associated with the domain. Use this when the domain is not yet associated with a project.",
+                  "type": "string"
+                },
+                "strict": {
+                  "enum": ["true", "false"],
+                  "description": "When true, the response will only include the nameservers assigned directly to the specified domain. When false and there are no nameservers assigned directly to the specified domain, the response will include the nameservers of the domain's parent zone.",
+                  "type": "string"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.get_project",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "idOrName": {
+                  "description": "The unique project identifier or the project name",
+                  "type": "string"
+                }
+              },
+              "required": ["idOrName"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.get_project_domain",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "idOrName": {
+                  "description": "The unique project identifier or the project name",
+                  "type": "string"
+                },
+                "domain": {
+                  "description": "The project domain name",
+                  "type": "string"
+                }
+              },
+              "required": ["idOrName", "domain"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.get_runtime_logs",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "projectId": {
+                  "type": "string",
+                  "description": "The ID or name of the project containing the deployment."
+                },
+                "deploymentId": {
+                  "type": "string",
+                  "description": "The ID or hostname of the deployment."
+                }
+              },
+              "required": ["projectId", "deploymentId"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.get_team",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                }
+              },
+              "required": ["teamId"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.get_user",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {},
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.list_aliases",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "domain": {
+                  "type": "string",
+                  "description": "Get only aliases of the given domain name"
+                },
+                "from": {
+                  "description": "Get only aliases created after the provided timestamp",
+                  "type": "number"
+                },
+                "limit": {
+                  "description": "Maximum number of aliases to list from a request",
+                  "type": "number"
+                },
+                "projectId": {
+                  "description": "Filter aliases from the given `projectId`",
+                  "type": "string"
+                },
+                "since": {
+                  "description": "Get aliases created after this JavaScript timestamp",
+                  "type": "number"
+                },
+                "until": {
+                  "description": "Get aliases created before this JavaScript timestamp",
+                  "type": "number"
+                },
+                "rollbackDeploymentId": {
+                  "description": "Get aliases that would be rolled back for the given deployment",
+                  "type": "string"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.list_deployment_aliases",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "The ID of the deployment the aliases should be listed for",
+                  "type": "string"
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.list_deployments",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "app": {
+                  "description": "Name of the deployment.",
+                  "type": "string"
+                },
+                "from": {
+                  "description": "Gets the deployment created after this Date timestamp. (default: current time)",
+                  "type": "number"
+                },
+                "limit": {
+                  "description": "Maximum number of deployments to list from a request.",
+                  "type": "number"
+                },
+                "projectId": {
+                  "description": "Filter deployments from the given ID or name.",
+                  "type": "string"
+                },
+                "projectIds": {
+                  "description": "Filter deployments from the given project IDs. Cannot be used when projectId is specified.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1,
+                  "maxItems": 20
+                },
+                "target": {
+                  "description": "Filter deployments based on the environment.",
+                  "type": "string"
+                },
+                "to": {
+                  "description": "Gets the deployment created before this Date timestamp. (default: current time)",
+                  "type": "number"
+                },
+                "users": {
+                  "description": "Filter out deployments based on users who have created the deployment.",
+                  "type": "string"
+                },
+                "since": {
+                  "description": "Get Deployments created after this JavaScript timestamp.",
+                  "type": "number"
+                },
+                "until": {
+                  "description": "Get Deployments created before this JavaScript timestamp.",
+                  "type": "number"
+                },
+                "state": {
+                  "description": "Filter deployments based on their state (`BUILDING`, `ERROR`, `INITIALIZING`, `QUEUED`, `READY`, `CANCELED`, `BLOCKED`)",
+                  "type": "string"
+                },
+                "rollbackCandidate": {
+                  "description": "Filter deployments based on their rollback candidacy",
+                  "type": "boolean"
+                },
+                "branch": {
+                  "description": "Filter deployments based on the branch name",
+                  "type": "string"
+                },
+                "sha": {
+                  "description": "Filter deployments based on the SHA",
+                  "type": "string"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.list_domains",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "description": "Maximum number of domains to list from a request.",
+                  "type": "number"
+                },
+                "since": {
+                  "description": "Get domains created after this JavaScript timestamp.",
+                  "type": "number"
+                },
+                "until": {
+                  "description": "Get domains created before this JavaScript timestamp.",
+                  "type": "number"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.list_project_domains",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "idOrName": {
+                  "type": "string",
+                  "description": "The unique project identifier or the project name"
+                }
+              },
+              "required": ["idOrName"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "production": {
+                  "description": "Filters only production domains when set to `true`.",
+                  "enum": ["true", "false"],
+                  "type": "string"
+                },
+                "target": {
+                  "description": "Filters on the target of the domain. Can be either \"production\", \"preview\"",
+                  "enum": ["production", "preview"],
+                  "type": "string"
+                },
+                "customEnvironmentId": {
+                  "description": "The unique custom environment identifier within the project",
+                  "type": "string"
+                },
+                "gitBranch": {
+                  "description": "Filters domains based on specific branch.",
+                  "type": "string"
+                },
+                "redirects": {
+                  "description": "Excludes redirect project domains when \"false\". Includes redirect project domains when \"true\" (default).",
+                  "enum": ["true", "false"],
+                  "type": "string"
+                },
+                "redirect": {
+                  "description": "Filters domains based on their redirect target.",
+                  "type": "string"
+                },
+                "verified": {
+                  "description": "Filters domains based on their verification status.",
+                  "enum": ["true", "false"],
+                  "type": "string"
+                },
+                "limit": {
+                  "description": "Maximum number of domains to list from a request (max 100).",
+                  "type": "number"
+                },
+                "since": {
+                  "description": "Get domains created after this JavaScript timestamp.",
+                  "type": "number"
+                },
+                "until": {
+                  "description": "Get domains created before this JavaScript timestamp.",
+                  "type": "number"
+                },
+                "order": {
+                  "description": "Domains sort order by createdAt",
+                  "enum": ["ASC", "DESC"],
+                  "type": "string"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.list_project_env",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "idOrName": {
+                  "description": "The unique project identifier or the project name",
+                  "type": "string"
+                }
+              },
+              "required": ["idOrName"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "gitBranch": {
+                  "description": "If defined, the git branch of the environment variable to filter the results (must have target=preview)",
+                  "type": "string",
+                  "maxLength": 250
+                },
+                "source": {
+                  "description": "The source that is calling the endpoint.",
+                  "type": "string"
+                },
+                "customEnvironmentId": {
+                  "type": "string",
+                  "description": "The unique custom environment identifier within the project"
+                },
+                "customEnvironmentSlug": {
+                  "type": "string",
+                  "description": "The custom environment slug (name) within the project"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.list_projects",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "description": "Query only projects updated after the given timestamp or continuation token.",
+                  "type": "string"
+                },
+                "since": {
+                  "description": "Query only projects updated after this JavaScript timestamp.",
+                  "type": "number"
+                },
+                "until": {
+                  "description": "Query only projects updated before this JavaScript timestamp.",
+                  "type": "number"
+                },
+                "gitForkProtection": {
+                  "description": "Specifies whether PRs from Git forks should require a team member's authorization before it can be deployed",
+                  "type": "string",
+                  "enum": ["1", "0"]
+                },
+                "limit": {
+                  "description": "Limit the number of projects returned",
+                  "type": "string"
+                },
+                "search": {
+                  "description": "Search projects by the name field",
+                  "type": "string",
+                  "maxLength": 100
+                },
+                "repo": {
+                  "description": "Filter results by repo. Also used for project count",
+                  "type": "string"
+                },
+                "repoId": {
+                  "description": "Filter results by Repository ID.",
+                  "type": "string"
+                },
+                "repoUrl": {
+                  "description": "Filter results by Repository URL.",
+                  "type": "string"
+                },
+                "excludeRepos": {
+                  "description": "Filter results by excluding those projects that belong to a repo",
+                  "type": "string"
+                },
+                "edgeConfigId": {
+                  "description": "Filter results by connected Global Config ID",
+                  "type": "string"
+                },
+                "edgeConfigTokenId": {
+                  "description": "Filter results by connected Global Config Token ID",
+                  "type": "string"
+                },
+                "deprecated": {
+                  "type": "boolean"
+                },
+                "elasticConcurrencyEnabled": {
+                  "description": "Filter results by projects with elastic concurrency enabled",
+                  "type": "string",
+                  "enum": ["1", "0"]
+                },
+                "staticIpsEnabled": {
+                  "description": "Filter results by projects with Static IPs enabled",
+                  "enum": ["0", "1"],
+                  "type": "string"
+                },
+                "buildMachineTypes": {
+                  "description": "Filter results by effective build machine types. Accepts comma-separated values. Use \\\"elastic\\\" for projects with elastic selection and \\\"default\\\" for projects without a build machine type set.",
+                  "type": "string"
+                },
+                "buildQueueConfiguration": {
+                  "description": "Filter results by build queue configuration. SKIP_NAMESPACE_QUEUE includes projects without a configuration set.",
+                  "type": "string",
+                  "enum": ["SKIP_NAMESPACE_QUEUE", "WAIT_FOR_NAMESPACE_QUEUE"]
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.list_promote_aliases",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "projectId": {
+                  "type": "string"
+                }
+              },
+              "required": ["projectId"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "description": "Maximum number of aliases to list from a request (max 100).",
+                  "type": "number",
+                  "maximum": 100
+                },
+                "since": {
+                  "description": "Get aliases created after this epoch timestamp.",
+                  "type": "number"
+                },
+                "until": {
+                  "description": "Get aliases created before this epoch timestamp.",
+                  "type": "number"
+                },
+                "failedOnly": {
+                  "description": "Filter results down to aliases that failed to map to the requested deployment",
+                  "type": "boolean"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.list_teams",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "limit": {
+                  "description": "Maximum number of Teams which may be returned.",
+                  "type": "number"
+                },
+                "since": {
+                  "description": "Timestamp (in milliseconds) to only include Teams created since then.",
+                  "type": "number"
+                },
+                "until": {
+                  "description": "Timestamp (in milliseconds) to only include Teams created until then.",
+                  "type": "number"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.promote_deployment",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "projectId": {
+                  "type": "string"
+                },
+                "deploymentId": {
+                  "type": "string"
+                }
+              },
+              "required": ["projectId", "deploymentId"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.rollback_deployment",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "projectId": {
+                  "type": "string"
+                },
+                "deploymentId": {
+                  "type": "string",
+                  "description": "The ID of the deployment to rollback *to*"
+                }
+              },
+              "required": ["projectId", "deploymentId"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "description": {
+                  "type": "string",
+                  "description": "The reason for the rollback"
+                },
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "vercel.verify_project_domain",
+        "classification": "write",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "idOrName": {
+                  "description": "The unique project identifier or the project name",
+                  "type": "string"
+                },
+                "domain": {
+                  "description": "The domain name you want to verify",
+                  "type": "string"
+                }
+              },
+              "required": ["idOrName", "domain"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "teamId": {
+                  "type": "string"
+                },
+                "slug": {
+                  "type": "string"
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["api.vercel.com"],
+    "config": []
+  },
+  "authorityDigest": "0e73a7074eab883721fc2711c9cf3d891f6ea218af263d63a635b4b3459d9781",
+  "authorityDiffDigest": "b2db17c90125520bb90a1e243aa8ad38adbf287f49391fb7b5fda289e5363eb7",
+  "releaseDigest": "b68a1e069d5668f6705a5412b0d2042244d19882437e5cb79721056ca5d56e75",
+  "decision": "approved"
+}

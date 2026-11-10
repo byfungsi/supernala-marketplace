@@ -1,0 +1,269 @@
+{
+  "schemaVersion": 1,
+  "pluginVersionId": "supernala-public:supernala:vercel-api@1.0.0",
+  "catalogSnapshotId": "vercel-api-catalog-v1",
+  "providerRegistrationId": "vercel-api-v1",
+  "credential": {
+    "field": "token",
+    "label": "Vercel access token",
+    "minimumLength": 8,
+    "maximumLength": 512,
+    "displayLabel": "Vercel",
+    "securityScheme": "bearerToken"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "vercel-api-v1",
+    "fields": [
+      {
+        "key": "token",
+        "label": "Vercel access token",
+        "secret": true,
+        "minimumLength": 8,
+        "maximumLength": 512
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "header",
+        "field": "token",
+        "headerName": "Authorization",
+        "encoding": "bearer"
+      }
+    ],
+    "verification": {
+      "kind": "https-json",
+      "endpoint": "https://api.vercel.com/v2/user",
+      "expectedStatus": 200,
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 12,
+      "maximumObjectKeys": 1024
+    },
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Vercel"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "operations": [
+    {
+      "operationId": "getAuthUser",
+      "toolId": "vercel.get_user",
+      "title": "Get the connected Vercel user",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getTeams",
+      "toolId": "vercel.list_teams",
+      "title": "List Vercel teams",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getTeam",
+      "toolId": "vercel.get_team",
+      "title": "Get a Vercel team",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getProjects",
+      "toolId": "vercel.list_projects",
+      "title": "List Vercel projects",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getProject",
+      "toolId": "vercel.get_project",
+      "title": "Get a Vercel project",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getDeployments",
+      "toolId": "vercel.list_deployments",
+      "title": "List Vercel deployments",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getDeployment",
+      "toolId": "vercel.get_deployment",
+      "title": "Get a Vercel deployment",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getDeploymentEvents",
+      "toolId": "vercel.get_deployment_events",
+      "title": "Get a deployment's build events",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getRuntimeLogs",
+      "toolId": "vercel.get_runtime_logs",
+      "title": "Get a deployment's runtime logs",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "listDeploymentAliases",
+      "toolId": "vercel.list_deployment_aliases",
+      "title": "List a deployment's aliases",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "listAliases",
+      "toolId": "vercel.list_aliases",
+      "title": "List Vercel aliases",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getProjectDomains",
+      "toolId": "vercel.list_project_domains",
+      "title": "List a project's domains",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getProjectDomain",
+      "toolId": "vercel.get_project_domain",
+      "title": "Get a project domain",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getDomainConfig",
+      "toolId": "vercel.get_domain_config",
+      "title": "Check a domain's DNS configuration",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "getDomains",
+      "toolId": "vercel.list_domains",
+      "title": "List Vercel domains",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "filterProjectEnvs",
+      "toolId": "vercel.list_project_env",
+      "title": "List a project's environment variables (secrets stay encrypted)",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "listPromoteAliases",
+      "toolId": "vercel.list_promote_aliases",
+      "title": "List aliases waiting on a promotion",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "createDeployment",
+      "toolId": "vercel.create_deployment",
+      "title": "Create or redeploy a Vercel deployment",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "cancelDeployment",
+      "toolId": "vercel.cancel_deployment",
+      "title": "Cancel a Vercel deployment",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "requestPromote",
+      "toolId": "vercel.promote_deployment",
+      "title": "Promote a deployment to production",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "requestRollback",
+      "toolId": "vercel.rollback_deployment",
+      "title": "Roll production back to a deployment",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "addProjectDomain",
+      "toolId": "vercel.add_project_domain",
+      "title": "Add a domain to a project",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "verifyProjectDomain",
+      "toolId": "vercel.verify_project_domain",
+      "title": "Verify a project domain",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "assignAlias",
+      "toolId": "vercel.assign_alias",
+      "title": "Assign an alias to a deployment",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "createProjectEnv",
+      "toolId": "vercel.create_project_env",
+      "title": "Create a project environment variable",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "editProjectEnv",
+      "toolId": "vercel.edit_project_env",
+      "title": "Edit a project environment variable",
+      "classification": "write",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    }
+  ],
+  "status": "reviewed-publishable",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "vercel-api",
+  "version": "1.0.0",
+  "name": "Vercel (access token)",
+  "description": "Vercel REST API with your access token: teams, projects, deployments, build events, runtime logs, domains, aliases and environment variables (names only); deploy, cancel, promote, roll back, add and verify domains, assign aliases and set environment variables.",
+  "license": "LicenseRef-Provider-Service"
+}
