@@ -1,6 +1,6 @@
 ---
 plugin: supernala-public:supernala:jev-openrouter
-revision: 1
+revision: 2
 ---
 
 # Set up Jev with an OpenRouter API key
@@ -20,7 +20,7 @@ OpenRouter charges your account for each call (Jev input tokens are about $0.04 
 2. Paste the key and click **Save API key**. Supernala checks it with OpenRouter before saving. The key is encrypted; Bots never see it.
 3. Under **Bot access**, choose which Bots can ask Jev and click **Save changes**.
 
-To use it in a workflow, add a **Jev** node and pick this connection. Choose `typesafe/jev-latest` to follow new releases, or `typesafe/jev-1.14` to stay on that version.
+To use it in a workflow, add a **Jev** node and pick this connection. Use the model `typesafe/jev-1.14`; OpenRouter does not accept the `typesafe/jev-latest` alias.
 
 ## If something goes wrong
 

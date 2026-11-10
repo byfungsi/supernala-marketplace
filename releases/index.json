@@ -90,7 +90,7 @@
       "sourceDirectory": "plugins/jev-openrouter",
       "kind": "managed-openapi",
       "publicationEligible": true,
-      "reason": "Owner authorized Jev through OpenRouter's Decisions API with the Owner's own OpenRouter API key (2026-11-08): the same Ask Jev tool at openrouter.ai/api/alpha/decisions with typesafe/jev-latest or typesafe/jev-1.14; the key is checked at /api/v1/key. Requires the credential-free provider registration openrouter-decisions-v1. Independent review waived, not passed; live key acceptance is pending."
+      "reason": "Owner authorized Jev through OpenRouter's Decisions API with the Owner's own OpenRouter API key (2026-11-08): the same Ask Jev tool at openrouter.ai/api/alpha/decisions with typesafe/jev-1.14 (1.0.1 dropped the typesafe/jev-latest alias, which OpenRouter rejects with HTTP 400); the key is checked at /api/v1/key. Requires the credential-free provider registration openrouter-decisions-v1. Independent review waived, not passed; live key acceptance is pending."
     },
     {
       "sourceDirectory": "plugins/atlassian-api",
