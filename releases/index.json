@@ -69,6 +69,12 @@
       "reason": "Published 1.0.x is kept for history. Atlassian's Rovo MCP server accepts API tokens only where an organization admin enabled it, so this never connected in production; atlassian-api calls Jira REST through Atlassian's gateway instead and the application no longer offers this component"
     },
     {
+      "sourceDirectory": "plugins/remotes/vercel.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Owner authorized Sign in with Vercel through mcp.vercel.com (2026-11-10): Client ID Metadata Document client at supernala.com/.well-known/oauth-client/vercel.json, openid scope, 246 tools from an Owner-consented tools/list capture; reads and writes allow, 8 deletes/purchases/irreversible changes ask first. Requires the application's Vercel client document. Independent review waived, not passed; live sign-in and invocation acceptance are pending."
+    },
+    {
       "sourceDirectory": "plugins/vercel-api",
       "kind": "managed-openapi",
       "publicationEligible": true,

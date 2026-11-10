@@ -14,9 +14,11 @@ Reads (allow): connected user, teams, projects, deployments, build events, runti
 
 Writes (allow, at the Owner's request): create or redeploy a deployment, cancel, promote, roll back, add and verify a project domain, assign an alias, create and edit a project environment variable.
 
-## Not yet
+## Sign in with Vercel (`vercel`)
 
-Vercel's hosted MCP server (`mcp.vercel.com`) accepts clients identified by a Client ID Metadata Document without review. A sign-in component needs its tool catalog captured once from a signed-in session.
+`plugins/remotes/vercel.json` is the sign-in component, through Vercel's hosted MCP server `https://mcp.vercel.com`. Vercel accepts clients identified by a Client ID Metadata Document without review; ours is `https://supernala.com/.well-known/oauth-client/vercel.json`, published by the application. It requests the `openid` scope (what Vercel grants) with PKCE as a public client; Vercel issues refresh tokens and revokes at `/api/login/oauth/token/revoke`.
+
+The catalog is an Owner-consented `tools/list` capture (246 tools, exact input schemas, 2026-11-10). Vercel marks nearly every change destructive, so tools are classified by effect: 147 read-only tools are reads; deletes, key revocation, DNS replacement, project-transfer acceptance and domain purchase or transfer (8) are destructive and ask first; the other 91 are writes that default to allow at the Owner's request. The catalog is a reviewed subset: tools Vercel adds later stay hidden until a new version reviews them.
 
 ## Release prerequisites
 
