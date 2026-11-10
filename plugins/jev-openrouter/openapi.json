@@ -38,8 +38,8 @@
                 "properties": {
                   "model": {
                     "type": "string",
-                    "enum": ["typesafe/jev-latest", "typesafe/jev-1.14"],
-                    "description": "Jev model; `typesafe/jev-latest` follows the newest release."
+                    "enum": ["typesafe/jev-1.14"],
+                    "description": "Jev model. OpenRouter serves the pinned `typesafe/jev-1.14`; it rejects the `typesafe/jev-latest` alias with HTTP 400."
                   },
                   "state": {
                     "type": ["string", "object", "array"],

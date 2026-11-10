@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "pluginVersionId": "supernala-public:supernala:jev-openrouter@1.0.0",
-  "catalogSnapshotId": "jev-openrouter-catalog-v1",
+  "pluginVersionId": "supernala-public:supernala:jev-openrouter@1.0.1",
+  "catalogSnapshotId": "jev-openrouter-catalog-v2",
   "providerRegistrationId": "openrouter-decisions-v1",
   "credential": {
     "field": "api_key",
@@ -62,7 +62,7 @@
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "jev-openrouter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Jev (OpenRouter)",
   "description": "TypeSafe's Jev decision model through OpenRouter's Decisions API with your OpenRouter API key: classify, score and yes/no decisions with calibrated probabilities.",
   "license": "LicenseRef-Provider-Service"
