@@ -169,6 +169,12 @@
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
       "reason": "Owner-authorized authenticated tools/list capture with 73-tool reviewed-subset authority excluding social account-connect tools; requires app support for the exact slash-origin issuer. Live consent, workspace identity, privacy review, and production acceptance remain pending."
+    },
+    {
+      "sourceDirectory": "plugins/remotes/tebar.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Owner-authorized authenticated tools/list capture with 33-tool reviewed-subset authority excluding ChatGPT, UI-card, and local-terminal upload tools. Live consent, account identity, privacy review, and production acceptance remain pending."
     }
   ]
 }
