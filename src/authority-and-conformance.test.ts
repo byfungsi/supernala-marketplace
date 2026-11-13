@@ -166,6 +166,7 @@ describe("authority and protocol gates", () => {
       ["canva", true],
       ["buffer", true],
       ["repliz", true],
+      ["tebar", true],
       ["gmail", false],
       ["resend", true],
     ] as const) {
@@ -343,6 +344,79 @@ describe("authority and protocol gates", () => {
       classification: "destructive",
       defaultPolicy: "require-approval",
     });
+    expect(decoded.success.catalog.digest).toBe(
+      await digestPluginBytes(
+        new TextEncoder().encode(
+          canonicalPluginJson({
+            schemaVersion: decoded.success.catalog.schemaVersion,
+            tools: decoded.success.catalog.tools,
+          }),
+        ),
+      ),
+    );
+    expect(
+      Result.isSuccess(validateManagedRemotePluginRelease(decoded.success, "publication")),
+    ).toBe(true);
+  });
+
+  it("keeps Tebar bound to its read-write OAuth authority and reviewed catalog without client-only upload tools", async () => {
+    const value: unknown = JSON.parse(await readFile("plugins/remotes/tebar.json", "utf8"));
+    const decoded = validateManagedRemotePluginRelease(value, "authoring");
+    expect(Result.isSuccess(decoded)).toBe(true);
+    if (Result.isFailure(decoded)) return;
+
+    expect(decoded.success.endpoint).toBe("https://api.tebar.app/mcp");
+    expect(decoded.success.scopes).toEqual(["read", "write"]);
+    expect(decoded.success.authStrategy).toMatchObject({
+      profile: "mcp-oauth",
+      providerRegistrationId: "tebar-oauth-v1",
+      requestedScopes: ["read", "write"],
+      clientRegistration: {
+        kind: "dynamic",
+        authorizationServerMetadataUrl:
+          "https://api.tebar.app/.well-known/oauth-authorization-server",
+      },
+      resourceMetadataUrl: "https://api.tebar.app/.well-known/oauth-protected-resource/mcp",
+      identity: { kind: "opaque-connection" },
+    });
+    expect(decoded.success.oauthProviderDefinition).toMatchObject({
+      issuer: "https://api.tebar.app",
+      authorizationEndpoint: "https://api.tebar.app/oauth/authorize",
+      tokenEndpoint: "https://api.tebar.app/oauth/token",
+      tokenEndpointAuthMethod: "none",
+      authorizationResponseIssuer: "required",
+      scopes: ["read", "write"],
+      revocation: { kind: "none" },
+    });
+    if (decoded.success.oauthProviderDefinition === undefined) return;
+    expect(decoded.success.providerDefinitionDigest).toBe(
+      await digestPluginOAuthProviderDefinition(decoded.success.oauthProviderDefinition),
+    );
+    const tools = decoded.success.catalog.tools;
+    expect(tools).toHaveLength(33);
+    expect(
+      tools.filter((tool) =>
+        [
+          "save_chat_files",
+          "open_media_upload",
+          "create_upload_ticket",
+          "create_upload_link",
+        ].includes(tool.mcpName),
+      ),
+    ).toEqual([]);
+    expect(
+      tools.every((tool) =>
+        tool.classification === "read"
+          ? tool.defaultPolicy === "allow"
+          : tool.defaultPolicy === "require-approval",
+      ),
+    ).toBe(true);
+    for (const mcpName of ["create_post", "send_dm", "cancel_scheduled_post"]) {
+      expect(tools.find((tool) => tool.mcpName === mcpName)).toMatchObject({
+        classification: "destructive",
+        defaultPolicy: "require-approval",
+      });
+    }
     expect(decoded.success.catalog.digest).toBe(
       await digestPluginBytes(
         new TextEncoder().encode(

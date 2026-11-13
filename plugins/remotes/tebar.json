@@ -1,0 +1,2035 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-publishable",
+  "id": "supernala-public:supernala:tebar@1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "tebar",
+  "version": "1.0.0",
+  "name": "Tebar",
+  "description": "Tebar hosted MCP integration for publishing and scheduling social posts, media, ideas, comments, insights, Instagram DMs, and automations",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "tebar-mcp-v1",
+    "providerRegistrationId": "tebar-oauth-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://api.tebar.app/mcp",
+  "oauthRegistrationMode": "dynamic",
+  "providerDefinitionDigest": "8b8390eb9504f66a2adbfaba066ea4acbc40c6fc9e544bf4895a91b478d45bd5",
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "tebar-oauth-v1",
+    "providerDefinitionDigest": "8b8390eb9504f66a2adbfaba066ea4acbc40c6fc9e544bf4895a91b478d45bd5",
+    "requestedScopes": ["read", "write"],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://api.tebar.app/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://api.tebar.app/.well-known/oauth-protected-resource/mcp",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Tebar connection (account identity pending)"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "oauthProviderDefinition": {
+    "schemaVersion": 1,
+    "protocol": "oauth2-authorization-code",
+    "issuer": "https://api.tebar.app",
+    "provider": "tebar-mcp",
+    "resourceIdentity": "https://api.tebar.app/mcp",
+    "authorizationEndpoint": "https://api.tebar.app/oauth/authorize",
+    "tokenEndpoint": "https://api.tebar.app/oauth/token",
+    "tokenEndpointAuthMethod": "none",
+    "authorizationResponseIssuer": "required",
+    "pkce": {
+      "method": "S256"
+    },
+    "authorizationParameters": [],
+    "scopes": ["read", "write"],
+    "account": {
+      "kind": "declaration-managed"
+    },
+    "tokens": {
+      "accessTokenType": "bearer",
+      "expiresIn": {
+        "required": true,
+        "minimumSeconds": 1,
+        "maximumSeconds": 86400
+      },
+      "grantedScopes": {
+        "whenPresent": "exact-match",
+        "whenOmitted": "requested-scopes"
+      },
+      "initialRefreshToken": "required",
+      "refreshResponseToken": "retain-current-if-omitted"
+    },
+    "refresh": {
+      "kind": "standard-form-post",
+      "invalidGrant": "reauthorization-required",
+      "ambiguousOutcome": "fail-closed-no-replay"
+    },
+    "revocation": {
+      "kind": "none"
+    }
+  },
+  "scopes": ["read", "write"],
+  "catalog": {
+    "id": "tebar-tools-list-20261113",
+    "schemaVersion": 1,
+    "digest": "14f62adcbc6ac71f674b2091f0a80bf75bf7994e54ff8bb1e21e545ed9f5fd26",
+    "tools": [
+      {
+        "id": "tebar.list_accounts",
+        "mcpName": "list_accounts",
+        "title": "List connected accounts",
+        "description": "List the social media accounts connected to Tebar, with the ids needed by create_post.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.get_platform_rules",
+        "mcpName": "get_platform_rules",
+        "title": "Platform rules",
+        "description": "Caption length, media formats and daily limits for each supported platform.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.get_publishing_limits",
+        "mcpName": "get_publishing_limits",
+        "title": "Publishing quota",
+        "description": "How many posts the account has published in the last 24 hours, and the limit.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["account_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.get_tiktok_creator_info",
+        "mcpName": "get_tiktok_creator_info",
+        "title": "TikTok posting settings",
+        "description": "Before posting to a TikTok account: its nickname, the privacy options it may use, whether comments, Duet and Stitch can be allowed, the longest video, and whether it can post right now. For a business account (video_public_only) nothing needs asking: videos are public and interactions allowed. Otherwise ask the user which privacy option; never pick it yourself.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["account_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.list_tiktok_music",
+        "mcpName": "list_tiktok_music",
+        "title": "TikTok music",
+        "description": "Popular pre-cleared tracks (TikTok Commercial Music Library) for a TikTok video or photo post on a business account (video_public_only): pass the chosen id as tiktok.music.id in create_post; for a video also volume and original_volume 0-100 (default 50 each), for photos the id alone. To find a track the user names, pass q (title or artist): TikTok offers no full music search, so q matches the popular lists of every genre; use period 90d for the widest choice. If nothing matches, the track is not available through the API: offer similar popular tracks, or post_mode draft so they pick it in the TikTok app. Without q, filter by genre and period (1d, 7d, 30d, 90d) and country (ISO code, default ID). Suggest a few to the user with their preview link and let them choose. Not for drafts.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "genre": {
+              "default": "ALL",
+              "type": "string",
+              "enum": [
+                "ALL",
+                "POP",
+                "HIP_HOP/RAP",
+                "ELECTRONIC",
+                "R&B/SOUL",
+                "ROCK",
+                "METAL",
+                "BLUES",
+                "ALTERNATIVE/INDIE",
+                "JAZZ",
+                "CLASSICAL",
+                "COUNTRY",
+                "FOLK",
+                "LATIN",
+                "REGGAE",
+                "EASY_LISTENING",
+                "NEW_AGE",
+                "WORLD_MUSIC",
+                "CHILDHOOD"
+              ]
+            },
+            "period": {
+              "default": "7d",
+              "type": "string",
+              "enum": ["1d", "7d", "30d", "90d"]
+            },
+            "country": {
+              "type": "string",
+              "pattern": "^[A-Za-z]{2}$"
+            },
+            "q": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          "required": ["account_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.list_posts",
+        "mcpName": "list_posts",
+        "title": "List posts",
+        "description": "List posts, newest first, with their full text and links. With account_id (from list_accounts) on Threads, Instagram or TikTok: every post on that account, including those made in the platform app, with its latest numbers. Without account_id, with a status, or on other platforms: posts made through Tebar with the version and status per account. Pass account_id whenever the user names an account or a platform (\"my Threads posts\").",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "scheduled",
+                "publishing",
+                "published",
+                "partial",
+                "failed",
+                "canceled"
+              ]
+            },
+            "limit": {
+              "default": 10,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.get_post",
+        "mcpName": "get_post",
+        "title": "Get post",
+        "description": "Get one post. A Tebar post id (uuid): its full text and the version per account, media with alt text, platform options (thread parts, poll, topic tag, link card, title) and its status or error on each account; use it to check if publishing finished. A platform post id from list_posts with account_id (a post made in the app): its full text, media, latest numbers and, on Threads, the rest of its thread (the author's follow-up parts), read from Threads now.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "account_id": {
+              "description": "Required with a platform post id: the account the post is on.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["post_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.list_comments",
+        "mcpName": "list_comments",
+        "title": "List comments",
+        "description": "List comments (Instagram) and replies (Threads) on the user's posts, newest first. Defaults to comments not yet replied to. Set refresh to fetch the latest from the platforms first.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "status": {
+              "default": "unreplied",
+              "type": "string",
+              "enum": ["unreplied", "replied", "ignored", "all"]
+            },
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "post_id": {
+              "description": "A Tebar post id",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "type": "string"
+            },
+            "refresh": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.get_account_insights",
+        "mcpName": "get_account_insights",
+        "title": "Account insights",
+        "description": "Daily metrics of a connected account (views, likes, replies or comments, reach on Instagram, ...) and its follower count over the last N days, compared with the N days before.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "days": {
+              "default": 30,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365
+            }
+          },
+          "required": ["account_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.get_post_insights",
+        "mcpName": "get_post_insights",
+        "title": "Post insights",
+        "description": "Lifetime metrics (views, likes, replies or comments, shares, ...) of a post published through Tebar, per account.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["post_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.get_post_performance",
+        "mcpName": "get_post_performance",
+        "title": "Post performance",
+        "description": "The posts of one account in the last N days (at most 200, newest first, text cut to 200 characters) with their lifetime metrics, engagement rate and how many times the account's usual each one did (\"3.2x usual views\": its views over the median of the 10 posts before it), to find which posts did best: rank by that multiple rather than by raw views. Where Tebar reads the platform's own post list (Threads, Instagram, TikTok, YouTube) this includes posts not made through Tebar. To read posts with their full text, use list_posts with account_id.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "days": {
+              "default": 30,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365
+            }
+          },
+          "required": ["account_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.get_best_times",
+        "mcpName": "get_best_times",
+        "title": "Best times to post",
+        "description": "When one account's own posts of the last 90 days did best, in 2-hour blocks and by weekday of tz (Asia/Jakarta by default): each block's score is the median of its posts' \"x usual views\" (1.0 is the account's usual), only with 5 posts or more there and 10 scored posts on the account. TikTok adds when the followers are active. Gives up to 3 recommended blocks. Use it when asked what time to post or upload; it is a correlation from the account's own posts, so say how many posts it rests on.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "tz": {
+              "description": "IANA time zone, e.g. Asia/Jakarta",
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          "required": ["account_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.list_ideas",
+        "mcpName": "list_ideas",
+        "title": "List ideas",
+        "description": "The user's content ideas on their Tebar ideas board, last changed first, with full text, column and how many posts were made from each. Optionally one column (by name) or a text search.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "column": {
+              "description": "A column name, e.g. \"Siap\"",
+              "type": "string",
+              "maxLength": 50
+            },
+            "search": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.list_media",
+        "mcpName": "list_media",
+        "title": "List media library",
+        "description": "Photos and videos in the user's Tebar media library (uploaded in the dashboard or with the upload card), newest first, with the ids to pass as media_ids to create_post. original_name finds a file by its name, e.g. to skip uploading one that is already there.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["image", "video"]
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "original_name": {
+              "description": "The exact file name (without folders), as list_media shows it",
+              "type": "string",
+              "maxLength": 1000
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.upload_media_from_url",
+        "mcpName": "upload_media_from_url",
+        "title": "Upload media from URL",
+        "description": "Download a public image (JPEG/PNG, max 8 MB) or video (MP4/MOV, max 300 MB) into Tebar and return its media id, to pass as media_ids to create_post or update_scheduled_post. Only needed to reuse a file or set alt text; create_post also accepts media_urls directly. Formats and limits: get_platform_rules.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "alt_text": {
+              "description": "Accessibility description",
+              "type": "string",
+              "maxLength": 1000
+            },
+            "keep": {
+              "description": "Keep it in the media library for later. Only when the user asks: one-off uploads are removed 30 days after their posts finish (7 days if unused).",
+              "type": "boolean"
+            }
+          },
+          "required": ["url"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.get_contact",
+        "mcpName": "get_contact",
+        "title": "Check a follower",
+        "description": "Whether a person follows the Instagram account and the account follows them, with their name, username, follower count and verified badge, read from Instagram now (kept 10 minutes; refresh: true reads again). platform_id is the person's Instagram id for this account, as get_conversation and list_conversations show it. Instagram tells only about people who messaged the account (or tapped an ice breaker or its menu); people who only commented cannot be checked.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "An Instagram account from list_accounts"
+            },
+            "platform_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "refresh": {
+              "description": "Read from Instagram now instead of the answer kept up to 10 minutes, e.g. right after the person says they followed. Counts toward the 300 reads an hour per account.",
+              "type": "boolean"
+            }
+          },
+          "required": ["account_id", "platform_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.list_conversations",
+        "mcpName": "list_conversations",
+        "title": "List DM conversations",
+        "description": "List the Instagram DM conversations of the user's accounts, newest first. Defaults to open ones (waiting for a reply).",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "status": {
+              "default": "open",
+              "type": "string",
+              "enum": ["open", "done", "all"]
+            },
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "query": {
+              "description": "Part of the customer's username or name",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "type": "string"
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.get_conversation",
+        "mcpName": "get_conversation",
+        "title": "Read a DM conversation",
+        "description": "One conversation with its latest messages (oldest first) and how long is left to reply. Does not mark it read.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "conversation_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "required": ["conversation_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.list_automations",
+        "mcpName": "list_automations",
+        "title": "List automations",
+        "description": "List the automations (Instagram comment-to-DM and DM replies, Threads public comment replies): what triggers them, what they send, whether they are on, and what they have done.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.reply_to_comment",
+        "mcpName": "reply_to_comment",
+        "title": "Reply to a comment",
+        "description": "Post a public reply to a comment from list_comments, as the account owner.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "comment_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2200
+            }
+          },
+          "required": ["comment_id", "text"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.hide_comment",
+        "mcpName": "hide_comment",
+        "title": "Hide or unhide a comment",
+        "description": "Hide a comment from the public (or unhide it with hidden=false).",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "comment_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "hidden": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "required": ["comment_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.like_comment",
+        "mcpName": "like_comment",
+        "title": "Like or unlike a comment",
+        "description": "Like a comment as the account (or take the like back with liked=false). Facebook Pages and TikTok business accounts only: comments with can_like.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "comment_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "liked": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "required": ["comment_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.set_comment_status",
+        "mcpName": "set_comment_status",
+        "title": "Mark comment",
+        "description": "Mark a comment as replied, ignored, or unreplied in the Tebar inbox (no change on the platform).",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "comment_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["unreplied", "replied", "ignored"]
+            }
+          },
+          "required": ["comment_id", "status"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.create_post",
+        "mcpName": "create_post",
+        "title": "Publish or schedule a post",
+        "description": "Publish a post now, or schedule it with scheduled_at, to one or more connected accounts. Publishing is asynchronous: the result is usually \"publishing\"; call get_post a few seconds later for the link.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_ids": {
+              "minItems": 1,
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "description": "Ids from list_accounts"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 5000
+            },
+            "media_urls": {
+              "description": "Public image or video URLs; Tebar downloads them. One video = a reel on Instagram; 2+ items make a carousel.",
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "media_ids": {
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "files": {
+              "description": "ChatGPT only: images or videos from this conversation, the ones the user attached or pasted and the ones ChatGPT generated. Pass the file reference and ChatGPT hands the file over. Other clients: leave this out.",
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "download_url": {
+                    "type": "string"
+                  },
+                  "file_id": {
+                    "type": "string"
+                  },
+                  "mime_type": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string"
+                  }
+                },
+                "required": ["download_url", "file_id"]
+              }
+            },
+            "media_alt_texts": {
+              "description": "Alt text per media item, in order (media_ids first, then media_urls, then files). Instagram uses it for images only.",
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            },
+            "versions": {
+              "description": "A different text and/or media for some accounts (e.g. a Threads poll as text only, while Instagram gets a photo). Fields left out use the post's text / media.",
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "text": {
+                    "type": "string",
+                    "maxLength": 5000
+                  },
+                  "media_urls": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "media_ids": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  }
+                },
+                "required": ["account_id"]
+              }
+            },
+            "threads": {
+              "description": "Options for Threads accounts: thread (follow-up parts posted as replies; each a string, or {text?, media_ids? or media_url?} with at most one image or video, text ≤500 chars), poll {options: 2-4 × ≤25 chars}, topic_tag, link_attachment (URL card), text_attachment {text ≤10000, link_url?}, reply_control. poll, link_attachment and text_attachment need a post without media. When the user asks for a thread (a \"utas\", posts that continue each other) or the text is over 500 characters, put the first part in text and the rest in thread, split at sentences. is_made_with_ai: true adds the Threads AI info label to the post (the first one of a thread).",
+              "type": "object",
+              "properties": {
+                "topic_tag": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 50
+                },
+                "reply_control": {
+                  "type": "string",
+                  "enum": [
+                    "everyone",
+                    "accounts_you_follow",
+                    "mentioned_only",
+                    "parent_post_author_only",
+                    "followers_only"
+                  ]
+                },
+                "link_attachment": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "poll": {
+                  "type": "object",
+                  "properties": {
+                    "options": {
+                      "minItems": 2,
+                      "maxItems": 4,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 25
+                      }
+                    }
+                  },
+                  "required": ["options"]
+                },
+                "text_attachment": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 10000
+                    },
+                    "link_url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": ["text"]
+                },
+                "thread": {
+                  "minItems": 1,
+                  "maxItems": 10,
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "media_ids": {
+                            "maxItems": 1,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            }
+                          },
+                          "media_url": {
+                            "description": "A public image or video URL for this part",
+                            "type": "string",
+                            "format": "uri"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "is_made_with_ai": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "instagram": {
+              "description": "Options for Instagram accounts: format \"story\" (exactly one image or video, no caption; video 3-60 s); for a reel (one video): share_to_feed, cover_media_id (an uploaded image) or thumb_offset_ms, trial \"manual\" or \"auto\" (a trial reel shown to non-followers first, shared to followers by the owner in the app or by Instagram when it performs well; the account must be eligible); collaborators: up to 3 Instagram usernames invited as co-authors of a photo, reel or carousel (Collab post, not stories; each accepts in the Instagram app); first_comment (up to 2200 chars, 30 hashtags; not stories); is_ai_generated: true adds the Instagram AI info label (only when the post is made: it cannot be added after).",
+              "type": "object",
+              "properties": {
+                "format": {
+                  "type": "string",
+                  "enum": ["feed", "story"]
+                },
+                "share_to_feed": {
+                  "type": "boolean"
+                },
+                "cover_media_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "thumb_offset_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "trial": {
+                  "description": "Reels only (a post with one video): publish as a trial reel, shown only to non-followers at first. manual: the owner shares it to followers later in the Instagram app; auto: Instagram shares it to followers if it performs well. The account must be eligible (Instagram decides): otherwise the target fails with trial_reel_unavailable.",
+                  "type": "string",
+                  "enum": ["manual", "auto"]
+                },
+                "collaborators": {
+                  "description": "Collab post: 1-3 Instagram usernames (with or without @, stored lower case without it) invited as co-authors of a photo, reel or carousel; not stories. Each accepts the invite in the Instagram app. Not the account itself, no repeats. A username Instagram cannot invite fails the target with collaborator_invalid.",
+                  "minItems": 1,
+                  "maxItems": 3,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "first_comment": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2200,
+                  "description": "First comment: posted by the account on its own post right after it is published (up to 2200 characters). The post stays published when the comment fails; targets[].first_comment says how it went."
+                },
+                "is_ai_generated": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "facebook": {
+              "description": "Options for Facebook Page accounts: link (a URL card, text posts only); video_as \"reel\" (vertical, 3-90 s) or \"video\" (regular Page video) for a post with one video, default reel when it fits; first_comment (up to 8000 chars). A Facebook video is posted on its own.",
+              "type": "object",
+              "properties": {
+                "link": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "video_as": {
+                  "type": "string",
+                  "enum": ["reel", "video"]
+                },
+                "first_comment": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8000,
+                  "description": "First comment: posted by the account on its own post right after it is published (up to 8000 characters). The post stays published when the comment fails; targets[].first_comment says how it went."
+                }
+              },
+              "additionalProperties": false
+            },
+            "tiktok": {
+              "description": "Required for TikTok accounts. One video, or 1-35 photos (no mix). post_mode \"direct\" (default): when get_tiktok_creator_info says video_public_only (a business account), leave privacy_level out (videos are always public, photos default to PUBLIC_TO_EVERYONE) and allow_comment, allow_duet, allow_stitch default to true; otherwise privacy_level is required, picked by the user (never choose it yourself), and the allow_* fields default false: set true only if the user asks. post_mode \"draft\" sends it to their TikTok inbox to finish in the app. commercial {your_brand, branded_content} when the post promotes their business or a third party (branded content cannot be SELF_ONLY). Videos: video_cover_timestamp_ms picks the cover frame; on a business account cover_media_id (an uploaded JPG/PNG/WebP, 360-1920 px) sets an image cover instead. photo_title and auto_add_music: photos only. music {id, volume?, original_volume?, start_ms?}: posts made directly from a business account, id from list_tiktok_music; videos take the volumes (0-100, default 50 each) and start_ms (where the track starts), photos take id only and not with auto_add_music. To give each photo post its own track, pick a different id per post; auto_add_music lets TikTok choose and may repeat the same track. first_comment (up to 150 chars): business accounts, direct public posts with comments allowed. is_aigc: true marks AI-generated content (videos posted directly: TikTok has no such label for photo posts, and drafts drop it).",
+              "type": "object",
+              "properties": {
+                "post_mode": {
+                  "type": "string",
+                  "enum": ["direct", "draft"]
+                },
+                "privacy_level": {
+                  "type": "string",
+                  "enum": [
+                    "PUBLIC_TO_EVERYONE",
+                    "MUTUAL_FOLLOW_FRIENDS",
+                    "FOLLOWER_OF_CREATOR",
+                    "SELF_ONLY"
+                  ]
+                },
+                "allow_comment": {
+                  "type": "boolean"
+                },
+                "allow_duet": {
+                  "type": "boolean"
+                },
+                "allow_stitch": {
+                  "type": "boolean"
+                },
+                "video_cover_timestamp_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "cover_media_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "commercial": {
+                  "type": "object",
+                  "properties": {
+                    "your_brand": {
+                      "type": "boolean"
+                    },
+                    "branded_content": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["your_brand", "branded_content"],
+                  "additionalProperties": false
+                },
+                "is_aigc": {
+                  "type": "boolean"
+                },
+                "photo_title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 90
+                },
+                "auto_add_music": {
+                  "type": "boolean"
+                },
+                "music": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^\\d{1,30}$"
+                    },
+                    "volume": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "original_volume": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "start_ms": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 3600000
+                    }
+                  },
+                  "required": ["id"],
+                  "additionalProperties": false
+                },
+                "first_comment": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 150,
+                  "description": "First comment: posted by the account on its own post right after it is published (up to 150 characters). The post stays published when the comment fails; targets[].first_comment says how it went."
+                }
+              },
+              "additionalProperties": false
+            },
+            "linkedin": {
+              "description": "Options for LinkedIn profiles: visibility \"PUBLIC\" (default) or \"CONNECTIONS\"; document { title } posts the images as one PDF document LinkedIn shows as a swipeable carousel, one image a page in order (images only, 100 MB in all). Text up to 3000 chars, one image, 2-20 images, or one MP4 video (3 s - 30 min) on its own. LinkedIn comments and statistics are not available.",
+              "type": "object",
+              "properties": {
+                "visibility": {
+                  "type": "string",
+                  "enum": ["PUBLIC", "CONNECTIONS"]
+                },
+                "link": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "document": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    }
+                  },
+                  "required": ["title"],
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            "youtube": {
+              "description": "Options for YouTube channels (required when posting to one): title (1-100 chars, no < or >), made_for_kids (required: ask the user, never assume), privacy public/unlisted/private (default public), tags, category_id, contains_synthetic_media (realistic AI or altered content), notify_subscribers, cover_media_id (a JPG or PNG from the media library as the custom thumbnail; not for Shorts; needs a channel verified for custom thumbnails, otherwise the video keeps the automatic one). The post text is the description (up to 5000 bytes, no < or >). Exactly one video; vertical or square videos up to 3 minutes become Shorts.",
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "privacy": {
+                  "type": "string",
+                  "enum": ["public", "unlisted", "private"]
+                },
+                "made_for_kids": {
+                  "type": "boolean"
+                },
+                "tags": {
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "category_id": {
+                  "type": "string",
+                  "pattern": "^\\d{1,3}$"
+                },
+                "contains_synthetic_media": {
+                  "type": "boolean"
+                },
+                "notify_subscribers": {
+                  "type": "boolean"
+                },
+                "cover_media_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "required": ["title", "made_for_kids"],
+              "additionalProperties": false
+            },
+            "x": {
+              "description": "Options for X accounts: made_with_ai: true adds the \"Made with AI\" label (posts with photos or a video only).",
+              "type": "object",
+              "properties": {
+                "made_with_ai": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "telegram": {
+              "description": "Options for Telegram channels and groups: silent (subscribers get no sound), protect_content (cannot be forwarded or saved), no_link_preview (text posts only). Text up to 4096 characters alone, 1024 beside media; up to 10 photos and videos as an album; videos up to 50 MB. Plain text: no formatting. Telegram has no comments or statistics here.",
+              "type": "object",
+              "properties": {
+                "silent": {
+                  "type": "boolean"
+                },
+                "protect_content": {
+                  "type": "boolean"
+                },
+                "no_link_preview": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "discord": {
+              "description": "Options for Discord channels: silent (members get no push notification, only the unread badge), no_link_preview (no embed for links). Text up to 2000 characters, Discord markdown shows as formatting; up to 10 photos and videos, each up to 20 MB. Mentions (@everyone, @here, users, roles) are sent without notifying anyone. Discord has no comments or statistics here.",
+              "type": "object",
+              "properties": {
+                "silent": {
+                  "type": "boolean"
+                },
+                "no_link_preview": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "pinterest": {
+              "description": "Options for Pinterest accounts: board_id (required: the id, in digits, of one of the boards list_accounts shows under the account, not its name; ask the user which board when there are several), title (up to 100 chars), link (where the Pin leads). The post text is the description (up to 800 chars). Exactly one photo; video Pins are not available yet. No comments or statistics.",
+              "type": "object",
+              "properties": {
+                "board_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "link": {
+                  "type": "string",
+                  "maxLength": 2048,
+                  "format": "uri"
+                },
+                "cover_media_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "additionalProperties": false
+            },
+            "scheduled_at": {
+              "description": "Omit to publish now. ISO 8601 with offset.",
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            },
+            "idea_id": {
+              "description": "The idea (from list_ideas) this post is made from, so the board shows it was used. The idea stays on the board.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["account_ids"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.update_scheduled_post",
+        "mcpName": "update_scheduled_post",
+        "title": "Edit scheduled post",
+        "description": "Change the text, media, time or Instagram options of a post that is still scheduled, or of a failed one: its failed accounts are then sent again (now, or at scheduled_at). On a partly published post only the failed accounts change, and they go out now. Omitted fields stay the same. Setting scheduled_at to now or the past publishes it immediately.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 5000
+            },
+            "media_urls": {
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "media_ids": {
+              "description": "Replaces the images/videos. Pass [] to remove them.",
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "scheduled_at": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            },
+            "instagram": {
+              "description": "Replaces the Instagram accounts' options as a whole (same fields as create_post's instagram; {} clears them). E.g. a post that failed with collaborator_invalid: send the collaborators without the wrong username, or {} to post without a Collab.",
+              "type": "object",
+              "properties": {
+                "format": {
+                  "type": "string",
+                  "enum": ["feed", "story"]
+                },
+                "share_to_feed": {
+                  "type": "boolean"
+                },
+                "cover_media_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "thumb_offset_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "trial": {
+                  "description": "Reels only (a post with one video): publish as a trial reel, shown only to non-followers at first. manual: the owner shares it to followers later in the Instagram app; auto: Instagram shares it to followers if it performs well. The account must be eligible (Instagram decides): otherwise the target fails with trial_reel_unavailable.",
+                  "type": "string",
+                  "enum": ["manual", "auto"]
+                },
+                "collaborators": {
+                  "description": "Collab post: 1-3 Instagram usernames (with or without @, stored lower case without it) invited as co-authors of a photo, reel or carousel; not stories. Each accepts the invite in the Instagram app. Not the account itself, no repeats. A username Instagram cannot invite fails the target with collaborator_invalid.",
+                  "minItems": 1,
+                  "maxItems": 3,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "first_comment": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2200,
+                  "description": "First comment: posted by the account on its own post right after it is published (up to 2200 characters). The post stays published when the comment fails; targets[].first_comment says how it went."
+                },
+                "is_ai_generated": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["post_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.cancel_scheduled_post",
+        "mcpName": "cancel_scheduled_post",
+        "title": "Cancel scheduled post",
+        "description": "Cancel a post that is scheduled and not yet published.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["post_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.retry_post",
+        "mcpName": "retry_post",
+        "title": "Retry failed post",
+        "description": "Retry publishing to the accounts where a post failed.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["post_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.create_idea",
+        "mcpName": "create_idea",
+        "title": "Save an idea",
+        "description": "Save a content idea on the ideas board, at the top of a column (the first one by default), with optional media. Use it when the user wants to note an idea for later instead of posting now.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "text": {
+              "default": "",
+              "type": "string",
+              "maxLength": 5000
+            },
+            "media_ids": {
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "media_urls": {
+              "description": "Public image or video URLs, downloaded into the media library and attached.",
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "column": {
+              "description": "A column name; omit for the first",
+              "type": "string",
+              "maxLength": 50
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.update_idea",
+        "mcpName": "update_idea",
+        "title": "Edit an idea",
+        "description": "Change the text or media of an idea, or move it to another column (to its top). Omitted fields stay the same. text replaces the old text; media_ids replaces the media list; media_urls adds files after the current media (or after media_ids).",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "idea_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 5000
+            },
+            "media_ids": {
+              "description": "The whole new media list, in order ([] removes all)",
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "media_urls": {
+              "description": "Public image or video URLs, downloaded and added to the media",
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "column": {
+              "description": "Move to this column (by name)",
+              "type": "string",
+              "maxLength": 50
+            }
+          },
+          "required": ["idea_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.send_dm",
+        "mcpName": "send_dm",
+        "title": "Send a DM",
+        "description": "Reply in a DM conversation, as the account. Only within 24 hours of the customer's last message. Only send what the user asked for. Queued: get_conversation shows when it is sent.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "conversation_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "media_ids": {
+              "description": "From list_media",
+              "minItems": 1,
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "buttons": {
+              "description": "Buttons under the text (text up to 640 characters): web_url opens a link, postback sends its payload back when tapped. Not with quick_replies.",
+              "minItems": 1,
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "web_url"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 20
+                      },
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      }
+                    },
+                    "required": ["type", "title", "url"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "postback"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 20
+                      },
+                      "payload": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      }
+                    },
+                    "required": ["type", "title", "payload"]
+                  }
+                ]
+              }
+            },
+            "quick_replies": {
+              "description": "Choices the customer taps to answer (shown on phones only); the tapped one comes back with its payload. Not with buttons.",
+              "minItems": 1,
+              "maxItems": 13,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "payload": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["title", "payload"]
+              }
+            },
+            "cards": {
+              "description": "A carousel (Instagram generic template), sent after the media and text as its own message, shown on phones only: each card a title (80 characters) and at least one of subtitle (80), media_id (JPG/PNG from list_media) or image_url (public https), default_action { url } and 1-3 buttons (web_url or postback). Not with buttons or quick_replies.",
+              "minItems": 1,
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subtitle": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "media_id": {
+                    "description": "A JPG or PNG image of the media library.",
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "image_url": {
+                    "description": "A public https JPG or PNG image; Instagram downloads it.",
+                    "type": "string",
+                    "maxLength": 2000,
+                    "format": "uri"
+                  },
+                  "default_action": {
+                    "description": "The page opened when the card is tapped.",
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      }
+                    },
+                    "required": ["url"],
+                    "additionalProperties": false
+                  },
+                  "buttons": {
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "web_url"
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 20
+                            },
+                            "url": {
+                              "type": "string",
+                              "format": "uri"
+                            }
+                          },
+                          "required": ["type", "title", "url"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "postback"
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 20
+                            },
+                            "payload": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 1000
+                            }
+                          },
+                          "required": ["type", "title", "payload"]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": ["title"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["conversation_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.set_conversation_status",
+        "mcpName": "set_conversation_status",
+        "title": "Mark a DM conversation",
+        "description": "Mark a conversation done (handled) or open again, and optionally read, in Tebar only (nothing changes on Instagram).",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "conversation_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["open", "done"]
+            },
+            "read": {
+              "type": "boolean",
+              "const": true
+            }
+          },
+          "required": ["conversation_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.create_automation",
+        "mcpName": "create_automation",
+        "title": "Create an automation",
+        "description": "Threads, Facebook Page and TikTok accounts: kind comment_reply only, a public reply under matching comments, no DMs: 3-5 public_replies up to 500 characters (TikTok 150), one picked at random, never the last one used; timing natural or relaxed (fast is refused); once per person per post; at most 30 an hour per account; no dm_text, buttons, follow_gate or react. Instagram accounts answer by DM: text (links fine) with up to 3 link buttons. comment_to_dm: a comment (keyword or anything) on the account's posts gets an optional public reply and one DM. dm_keyword: a DM with a keyword. story_reply: a reply to the account's story. story_mention: a mention in someone's story. default_reply: a DM nothing else answered, once per person per cooldown_hours. comment_reply works on Instagram too, as on Threads. DM kinds answer within 24 hours and can react first. follow_gate asks to follow first; only followers get dm_text. Only messages after it is on are answered.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "An Instagram, Threads, Facebook or TikTok account from list_accounts"
+            },
+            "kind": {
+              "default": "comment_to_dm",
+              "description": "Threads, Facebook and TikTok accounts: comment_reply; Instagram: any",
+              "type": "string",
+              "enum": [
+                "comment_to_dm",
+                "comment_reply",
+                "dm_keyword",
+                "story_reply",
+                "story_mention",
+                "default_reply"
+              ]
+            },
+            "keywords": {
+              "default": [],
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "match": {
+              "default": "contains",
+              "description": "contains: the keyword as a word in the comment or DM; any: every one (not for dm_keyword)",
+              "type": "string",
+              "enum": ["contains", "exact", "any"]
+            },
+            "scope": {
+              "default": "any",
+              "description": "comment_to_dm and comment_reply. any: every post; post: platform_post_ids; next: the next post published",
+              "type": "string",
+              "enum": ["any", "post", "next"]
+            },
+            "platform_post_ids": {
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "dm_text": {
+              "description": "Every kind but comment_reply",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "public_replies": {
+              "description": "Shown under the comment, one picked at random: comment_to_dm up to 3 (optional), comment_reply 3-5 (required)",
+              "maxItems": 5,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2200
+              }
+            },
+            "buttons": {
+              "minItems": 1,
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                },
+                "required": ["title", "url"]
+              }
+            },
+            "track_clicks": {
+              "type": "boolean",
+              "description": "Count who opens the link buttons (through tbr.ink, a link per person; default true). false sends the URLs as they are."
+            },
+            "follow_gate": {
+              "type": "object",
+              "properties": {
+                "ask_text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 640,
+                  "description": "Asks to follow; sent with the button"
+                },
+                "button_title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20,
+                  "description": "e.g. \"Sudah follow\""
+                },
+                "retry_text": {
+                  "description": "Sent with the button again to someone who tapped but does not follow yet",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 640
+                }
+              },
+              "required": ["ask_text", "button_title"],
+              "description": "Ask to follow first; the DM goes only to people Instagram says follow the account"
+            },
+            "react": {
+              "default": false,
+              "description": "DM kinds: a heart on the message first",
+              "type": "boolean"
+            },
+            "cooldown_hours": {
+              "default": 24,
+              "description": "default_reply: at most one reply per person in this many hours",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 168
+            },
+            "timing": {
+              "default": "natural",
+              "type": "string",
+              "enum": ["fast", "natural", "relaxed"],
+              "description": "How long it waits, so replies do not read as a bot: fast 5-30 s and the DM right after; natural 30 s-2 min, the DM 20-60 s after the public reply; relaxed 2-8 min, the DM 1-3 min after"
+            },
+            "once_per_person": {
+              "description": "Answer each person once; default true for comment_to_dm, false otherwise",
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "enabled": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "required": ["account_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "tebar.update_automation",
+        "mcpName": "update_automation",
+        "title": "Change an automation",
+        "description": "Turn an automation on or off, or change its keywords, DM, buttons, follow gate, public replies, heart, cooldown or timing. Fields left out stay as they are; buttons [] removes them, follow_gate null turns the gate off.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "automation_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "keywords": {
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "match": {
+              "type": "string",
+              "enum": ["contains", "exact", "any"]
+            },
+            "dm_text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "public_replies": {
+              "maxItems": 5,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2200
+              }
+            },
+            "buttons": {
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                },
+                "required": ["title", "url"]
+              }
+            },
+            "track_clicks": {
+              "type": "boolean",
+              "description": "Count who opens the link buttons (through tbr.ink, a link per person; default true). false sends the URLs as they are."
+            },
+            "follow_gate": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "ask_text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 640,
+                      "description": "Asks to follow; sent with the button"
+                    },
+                    "button_title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 20,
+                      "description": "e.g. \"Sudah follow\""
+                    },
+                    "retry_text": {
+                      "description": "Sent with the button again to someone who tapped but does not follow yet",
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 640
+                    }
+                  },
+                  "required": ["ask_text", "button_title"],
+                  "description": "Ask to follow first; the DM goes only to people Instagram says follow the account"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "react": {
+              "type": "boolean"
+            },
+            "cooldown_hours": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 168
+            },
+            "timing": {
+              "type": "string",
+              "enum": ["fast", "natural", "relaxed"],
+              "description": "How long it waits, so replies do not read as a bot: fast 5-30 s and the DM right after; natural 30 s-2 min, the DM 20-60 s after the public reply; relaxed 2-8 min, the DM 1-3 min after"
+            }
+          },
+          "required": ["automation_id"]
+        },
+        "maximumOutputBytes": 1048576
+      }
+    ]
+  },
+  "config": {
+    "revision": 1,
+    "fields": []
+  },
+  "allowedHosts": ["api.tebar.app"],
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://docs.tebar.app/claude",
+    "https://docs.tebar.app/tools",
+    "https://api.tebar.app/.well-known/oauth-protected-resource/mcp",
+    "https://api.tebar.app/.well-known/oauth-authorization-server"
+  ],
+  "verificationNotes": "Owner-authorized capture on 2026-11-13 used one authenticated Tebar OAuth session (read and write access) to read the provider tools/list catalog (37 tools, one page, server tebar 0.1.0, protocol 2025-06-18). The 33 admitted tools are a reviewed subset covering accounts, platform rules, posts, scheduling, media, ideas, comments, insights, Instagram DMs and automations (18 read, 7 write, 8 destructive). Classifications follow the provider readOnlyHint/destructiveHint annotations; every write and destructive tool requires approval. Excluded: save_chat_files (ChatGPT file parameters), open_media_upload and create_upload_ticket (provider UI card resources), and create_upload_link (curl upload of a file on the agent's own computer). The create_automation description is condensed to the 1,000-character limit; its schema is unchanged. Tebar metadata documents Streamable HTTP, dynamic client registration, PKCE S256, read and write scopes, and authorization-code plus refresh grants; it advertises no revocation endpoint. The authorization response carried iss. Token responses carried scope \"read write\", a 3,600-second access lifetime and a rotated refresh token; reusing the previous refresh token returned invalid_grant. The consent page lets the Owner grant read only; that grant does not match the requested scopes and fails closed. Inbox and automation tools depend on the connected account plan. No stable user identity tool exists, so the account remains an opaque connection. Live Store consent, privacy review, and production acceptance remain pending."
+}
