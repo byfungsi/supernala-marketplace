@@ -1,0 +1,1892 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "tebar",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "tebar-1.0.0-hosted-mcp-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794553706311,
+  "artifactDigest": null,
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "a550e0c82f40e481406e144770a99999c39c2bad7676e314f0f58c4eb8109d03",
+  "decision": "approved",
+  "sourceInputDigest": "e8be91c444ba5693f2963d3e6a9f9a335b09e2d99611062a0fe8d7190ed142d5",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "tebar-oauth-v1",
+    "providerDefinitionDigest": "8b8390eb9504f66a2adbfaba066ea4acbc40c6fc9e544bf4895a91b478d45bd5",
+    "requestedScopes": ["read", "write"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "tebar-oauth-v1",
+    "providerDefinitionDigest": "8b8390eb9504f66a2adbfaba066ea4acbc40c6fc9e544bf4895a91b478d45bd5",
+    "requestedScopes": ["read", "write"],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://api.tebar.app/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://api.tebar.app/.well-known/oauth-protected-resource/mcp",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Tebar connection (account identity pending)"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "catalogDigest": "14f62adcbc6ac71f674b2091f0a80bf75bf7994e54ff8bb1e21e545ed9f5fd26",
+  "configDigest": "e6ebf9c4674f06e5a34f3a0619d9caa13b618515eeff5f54267e104bd6400221",
+  "provenanceDigest": "175cf169861326db33c9d212a5b8d6203c1abbf8ff86d49a698315f3155e2590",
+  "authorityAfter": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["read", "write"],
+    "endpoint": "https://api.tebar.app/mcp",
+    "endpointRegistrationId": "tebar-mcp-v1",
+    "providerRegistrationId": "tebar-oauth-v1",
+    "providerDefinitionDigest": "8b8390eb9504f66a2adbfaba066ea4acbc40c6fc9e544bf4895a91b478d45bd5",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "tebar-oauth-v1",
+      "providerDefinitionDigest": "8b8390eb9504f66a2adbfaba066ea4acbc40c6fc9e544bf4895a91b478d45bd5",
+      "requestedScopes": ["read", "write"],
+      "clientRegistration": {
+        "kind": "dynamic",
+        "authorizationServerMetadataUrl": "https://api.tebar.app/.well-known/oauth-authorization-server"
+      },
+      "resourceMetadataUrl": "https://api.tebar.app/.well-known/oauth-protected-resource/mcp",
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Tebar connection (account identity pending)"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "tebar.list_accounts",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "id": "tebar.get_platform_rules",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        }
+      },
+      {
+        "id": "tebar.get_publishing_limits",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["account_id"]
+        }
+      },
+      {
+        "id": "tebar.get_tiktok_creator_info",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["account_id"]
+        }
+      },
+      {
+        "id": "tebar.list_tiktok_music",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "genre": {
+              "default": "ALL",
+              "type": "string",
+              "enum": [
+                "ALL",
+                "POP",
+                "HIP_HOP/RAP",
+                "ELECTRONIC",
+                "R&B/SOUL",
+                "ROCK",
+                "METAL",
+                "BLUES",
+                "ALTERNATIVE/INDIE",
+                "JAZZ",
+                "CLASSICAL",
+                "COUNTRY",
+                "FOLK",
+                "LATIN",
+                "REGGAE",
+                "EASY_LISTENING",
+                "NEW_AGE",
+                "WORLD_MUSIC",
+                "CHILDHOOD"
+              ]
+            },
+            "period": {
+              "default": "7d",
+              "type": "string",
+              "enum": ["1d", "7d", "30d", "90d"]
+            },
+            "country": {
+              "type": "string",
+              "pattern": "^[A-Za-z]{2}$"
+            },
+            "q": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          "required": ["account_id"]
+        }
+      },
+      {
+        "id": "tebar.list_posts",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "draft",
+                "scheduled",
+                "publishing",
+                "published",
+                "partial",
+                "failed",
+                "canceled"
+              ]
+            },
+            "limit": {
+              "default": 10,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 200
+            }
+          }
+        }
+      },
+      {
+        "id": "tebar.get_post",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "account_id": {
+              "description": "Required with a platform post id: the account the post is on.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["post_id"]
+        }
+      },
+      {
+        "id": "tebar.list_comments",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "status": {
+              "default": "unreplied",
+              "type": "string",
+              "enum": ["unreplied", "replied", "ignored", "all"]
+            },
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "post_id": {
+              "description": "A Tebar post id",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "type": "string"
+            },
+            "refresh": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        }
+      },
+      {
+        "id": "tebar.get_account_insights",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "days": {
+              "default": 30,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365
+            }
+          },
+          "required": ["account_id"]
+        }
+      },
+      {
+        "id": "tebar.get_post_insights",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["post_id"]
+        }
+      },
+      {
+        "id": "tebar.get_post_performance",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "days": {
+              "default": 30,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 365
+            }
+          },
+          "required": ["account_id"]
+        }
+      },
+      {
+        "id": "tebar.get_best_times",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "tz": {
+              "description": "IANA time zone, e.g. Asia/Jakarta",
+              "type": "string",
+              "maxLength": 64
+            }
+          },
+          "required": ["account_id"]
+        }
+      },
+      {
+        "id": "tebar.list_ideas",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "column": {
+              "description": "A column name, e.g. \"Siap\"",
+              "type": "string",
+              "maxLength": 50
+            },
+            "search": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        }
+      },
+      {
+        "id": "tebar.list_media",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["image", "video"]
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "type": "string",
+              "maxLength": 200
+            },
+            "original_name": {
+              "description": "The exact file name (without folders), as list_media shows it",
+              "type": "string",
+              "maxLength": 1000
+            }
+          }
+        }
+      },
+      {
+        "id": "tebar.upload_media_from_url",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "url": {
+              "type": "string",
+              "format": "uri"
+            },
+            "alt_text": {
+              "description": "Accessibility description",
+              "type": "string",
+              "maxLength": 1000
+            },
+            "keep": {
+              "description": "Keep it in the media library for later. Only when the user asks: one-off uploads are removed 30 days after their posts finish (7 days if unused).",
+              "type": "boolean"
+            }
+          },
+          "required": ["url"]
+        }
+      },
+      {
+        "id": "tebar.get_contact",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "An Instagram account from list_accounts"
+            },
+            "platform_id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "refresh": {
+              "description": "Read from Instagram now instead of the answer kept up to 10 minutes, e.g. right after the person says they followed. Counts toward the 300 reads an hour per account.",
+              "type": "boolean"
+            }
+          },
+          "required": ["account_id", "platform_id"]
+        }
+      },
+      {
+        "id": "tebar.list_conversations",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "status": {
+              "default": "open",
+              "type": "string",
+              "enum": ["open", "done", "all"]
+            },
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "query": {
+              "description": "Part of the customer's username or name",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "cursor": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "id": "tebar.get_conversation",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "conversation_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "limit": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          },
+          "required": ["conversation_id"]
+        }
+      },
+      {
+        "id": "tebar.list_automations",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        }
+      },
+      {
+        "id": "tebar.reply_to_comment",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "comment_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2200
+            }
+          },
+          "required": ["comment_id", "text"]
+        }
+      },
+      {
+        "id": "tebar.hide_comment",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "comment_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "hidden": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "required": ["comment_id"]
+        }
+      },
+      {
+        "id": "tebar.like_comment",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "comment_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "liked": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "required": ["comment_id"]
+        }
+      },
+      {
+        "id": "tebar.set_comment_status",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "comment_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["unreplied", "replied", "ignored"]
+            }
+          },
+          "required": ["comment_id", "status"]
+        }
+      },
+      {
+        "id": "tebar.create_post",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_ids": {
+              "minItems": 1,
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "description": "Ids from list_accounts"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 5000
+            },
+            "media_urls": {
+              "description": "Public image or video URLs; Tebar downloads them. One video = a reel on Instagram; 2+ items make a carousel.",
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "media_ids": {
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "files": {
+              "description": "ChatGPT only: images or videos from this conversation, the ones the user attached or pasted and the ones ChatGPT generated. Pass the file reference and ChatGPT hands the file over. Other clients: leave this out.",
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "download_url": {
+                    "type": "string"
+                  },
+                  "file_id": {
+                    "type": "string"
+                  },
+                  "mime_type": {
+                    "type": "string"
+                  },
+                  "file_name": {
+                    "type": "string"
+                  }
+                },
+                "required": ["download_url", "file_id"]
+              }
+            },
+            "media_alt_texts": {
+              "description": "Alt text per media item, in order (media_ids first, then media_urls, then files). Instagram uses it for images only.",
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 1000
+              }
+            },
+            "versions": {
+              "description": "A different text and/or media for some accounts (e.g. a Threads poll as text only, while Instagram gets a photo). Fields left out use the post's text / media.",
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "account_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "text": {
+                    "type": "string",
+                    "maxLength": 5000
+                  },
+                  "media_urls": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "media_ids": {
+                    "maxItems": 20,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    }
+                  }
+                },
+                "required": ["account_id"]
+              }
+            },
+            "threads": {
+              "description": "Options for Threads accounts: thread (follow-up parts posted as replies; each a string, or {text?, media_ids? or media_url?} with at most one image or video, text ≤500 chars), poll {options: 2-4 × ≤25 chars}, topic_tag, link_attachment (URL card), text_attachment {text ≤10000, link_url?}, reply_control. poll, link_attachment and text_attachment need a post without media. When the user asks for a thread (a \"utas\", posts that continue each other) or the text is over 500 characters, put the first part in text and the rest in thread, split at sentences. is_made_with_ai: true adds the Threads AI info label to the post (the first one of a thread).",
+              "type": "object",
+              "properties": {
+                "topic_tag": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 50
+                },
+                "reply_control": {
+                  "type": "string",
+                  "enum": [
+                    "everyone",
+                    "accounts_you_follow",
+                    "mentioned_only",
+                    "parent_post_author_only",
+                    "followers_only"
+                  ]
+                },
+                "link_attachment": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "poll": {
+                  "type": "object",
+                  "properties": {
+                    "options": {
+                      "minItems": 2,
+                      "maxItems": 4,
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 25
+                      }
+                    }
+                  },
+                  "required": ["options"]
+                },
+                "text_attachment": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 10000
+                    },
+                    "link_url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": ["text"]
+                },
+                "thread": {
+                  "minItems": 1,
+                  "maxItems": 10,
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "text": {
+                            "type": "string"
+                          },
+                          "media_ids": {
+                            "maxItems": 1,
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            }
+                          },
+                          "media_url": {
+                            "description": "A public image or video URL for this part",
+                            "type": "string",
+                            "format": "uri"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "is_made_with_ai": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "instagram": {
+              "description": "Options for Instagram accounts: format \"story\" (exactly one image or video, no caption; video 3-60 s); for a reel (one video): share_to_feed, cover_media_id (an uploaded image) or thumb_offset_ms, trial \"manual\" or \"auto\" (a trial reel shown to non-followers first, shared to followers by the owner in the app or by Instagram when it performs well; the account must be eligible); collaborators: up to 3 Instagram usernames invited as co-authors of a photo, reel or carousel (Collab post, not stories; each accepts in the Instagram app); first_comment (up to 2200 chars, 30 hashtags; not stories); is_ai_generated: true adds the Instagram AI info label (only when the post is made: it cannot be added after).",
+              "type": "object",
+              "properties": {
+                "format": {
+                  "type": "string",
+                  "enum": ["feed", "story"]
+                },
+                "share_to_feed": {
+                  "type": "boolean"
+                },
+                "cover_media_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "thumb_offset_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "trial": {
+                  "description": "Reels only (a post with one video): publish as a trial reel, shown only to non-followers at first. manual: the owner shares it to followers later in the Instagram app; auto: Instagram shares it to followers if it performs well. The account must be eligible (Instagram decides): otherwise the target fails with trial_reel_unavailable.",
+                  "type": "string",
+                  "enum": ["manual", "auto"]
+                },
+                "collaborators": {
+                  "description": "Collab post: 1-3 Instagram usernames (with or without @, stored lower case without it) invited as co-authors of a photo, reel or carousel; not stories. Each accepts the invite in the Instagram app. Not the account itself, no repeats. A username Instagram cannot invite fails the target with collaborator_invalid.",
+                  "minItems": 1,
+                  "maxItems": 3,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "first_comment": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2200,
+                  "description": "First comment: posted by the account on its own post right after it is published (up to 2200 characters). The post stays published when the comment fails; targets[].first_comment says how it went."
+                },
+                "is_ai_generated": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "facebook": {
+              "description": "Options for Facebook Page accounts: link (a URL card, text posts only); video_as \"reel\" (vertical, 3-90 s) or \"video\" (regular Page video) for a post with one video, default reel when it fits; first_comment (up to 8000 chars). A Facebook video is posted on its own.",
+              "type": "object",
+              "properties": {
+                "link": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "video_as": {
+                  "type": "string",
+                  "enum": ["reel", "video"]
+                },
+                "first_comment": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8000,
+                  "description": "First comment: posted by the account on its own post right after it is published (up to 8000 characters). The post stays published when the comment fails; targets[].first_comment says how it went."
+                }
+              },
+              "additionalProperties": false
+            },
+            "tiktok": {
+              "description": "Required for TikTok accounts. One video, or 1-35 photos (no mix). post_mode \"direct\" (default): when get_tiktok_creator_info says video_public_only (a business account), leave privacy_level out (videos are always public, photos default to PUBLIC_TO_EVERYONE) and allow_comment, allow_duet, allow_stitch default to true; otherwise privacy_level is required, picked by the user (never choose it yourself), and the allow_* fields default false: set true only if the user asks. post_mode \"draft\" sends it to their TikTok inbox to finish in the app. commercial {your_brand, branded_content} when the post promotes their business or a third party (branded content cannot be SELF_ONLY). Videos: video_cover_timestamp_ms picks the cover frame; on a business account cover_media_id (an uploaded JPG/PNG/WebP, 360-1920 px) sets an image cover instead. photo_title and auto_add_music: photos only. music {id, volume?, original_volume?, start_ms?}: posts made directly from a business account, id from list_tiktok_music; videos take the volumes (0-100, default 50 each) and start_ms (where the track starts), photos take id only and not with auto_add_music. To give each photo post its own track, pick a different id per post; auto_add_music lets TikTok choose and may repeat the same track. first_comment (up to 150 chars): business accounts, direct public posts with comments allowed. is_aigc: true marks AI-generated content (videos posted directly: TikTok has no such label for photo posts, and drafts drop it).",
+              "type": "object",
+              "properties": {
+                "post_mode": {
+                  "type": "string",
+                  "enum": ["direct", "draft"]
+                },
+                "privacy_level": {
+                  "type": "string",
+                  "enum": [
+                    "PUBLIC_TO_EVERYONE",
+                    "MUTUAL_FOLLOW_FRIENDS",
+                    "FOLLOWER_OF_CREATOR",
+                    "SELF_ONLY"
+                  ]
+                },
+                "allow_comment": {
+                  "type": "boolean"
+                },
+                "allow_duet": {
+                  "type": "boolean"
+                },
+                "allow_stitch": {
+                  "type": "boolean"
+                },
+                "video_cover_timestamp_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "cover_media_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "commercial": {
+                  "type": "object",
+                  "properties": {
+                    "your_brand": {
+                      "type": "boolean"
+                    },
+                    "branded_content": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": ["your_brand", "branded_content"],
+                  "additionalProperties": false
+                },
+                "is_aigc": {
+                  "type": "boolean"
+                },
+                "photo_title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 90
+                },
+                "auto_add_music": {
+                  "type": "boolean"
+                },
+                "music": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "pattern": "^\\d{1,30}$"
+                    },
+                    "volume": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "original_volume": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "start_ms": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 3600000
+                    }
+                  },
+                  "required": ["id"],
+                  "additionalProperties": false
+                },
+                "first_comment": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 150,
+                  "description": "First comment: posted by the account on its own post right after it is published (up to 150 characters). The post stays published when the comment fails; targets[].first_comment says how it went."
+                }
+              },
+              "additionalProperties": false
+            },
+            "linkedin": {
+              "description": "Options for LinkedIn profiles: visibility \"PUBLIC\" (default) or \"CONNECTIONS\"; document { title } posts the images as one PDF document LinkedIn shows as a swipeable carousel, one image a page in order (images only, 100 MB in all). Text up to 3000 chars, one image, 2-20 images, or one MP4 video (3 s - 30 min) on its own. LinkedIn comments and statistics are not available.",
+              "type": "object",
+              "properties": {
+                "visibility": {
+                  "type": "string",
+                  "enum": ["PUBLIC", "CONNECTIONS"]
+                },
+                "link": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "document": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    }
+                  },
+                  "required": ["title"],
+                  "additionalProperties": false
+                }
+              },
+              "additionalProperties": false
+            },
+            "youtube": {
+              "description": "Options for YouTube channels (required when posting to one): title (1-100 chars, no < or >), made_for_kids (required: ask the user, never assume), privacy public/unlisted/private (default public), tags, category_id, contains_synthetic_media (realistic AI or altered content), notify_subscribers, cover_media_id (a JPG or PNG from the media library as the custom thumbnail; not for Shorts; needs a channel verified for custom thumbnails, otherwise the video keeps the automatic one). The post text is the description (up to 5000 bytes, no < or >). Exactly one video; vertical or square videos up to 3 minutes become Shorts.",
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "privacy": {
+                  "type": "string",
+                  "enum": ["public", "unlisted", "private"]
+                },
+                "made_for_kids": {
+                  "type": "boolean"
+                },
+                "tags": {
+                  "maxItems": 100,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 500
+                  }
+                },
+                "category_id": {
+                  "type": "string",
+                  "pattern": "^\\d{1,3}$"
+                },
+                "contains_synthetic_media": {
+                  "type": "boolean"
+                },
+                "notify_subscribers": {
+                  "type": "boolean"
+                },
+                "cover_media_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "required": ["title", "made_for_kids"],
+              "additionalProperties": false
+            },
+            "x": {
+              "description": "Options for X accounts: made_with_ai: true adds the \"Made with AI\" label (posts with photos or a video only).",
+              "type": "object",
+              "properties": {
+                "made_with_ai": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "telegram": {
+              "description": "Options for Telegram channels and groups: silent (subscribers get no sound), protect_content (cannot be forwarded or saved), no_link_preview (text posts only). Text up to 4096 characters alone, 1024 beside media; up to 10 photos and videos as an album; videos up to 50 MB. Plain text: no formatting. Telegram has no comments or statistics here.",
+              "type": "object",
+              "properties": {
+                "silent": {
+                  "type": "boolean"
+                },
+                "protect_content": {
+                  "type": "boolean"
+                },
+                "no_link_preview": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "discord": {
+              "description": "Options for Discord channels: silent (members get no push notification, only the unread badge), no_link_preview (no embed for links). Text up to 2000 characters, Discord markdown shows as formatting; up to 10 photos and videos, each up to 20 MB. Mentions (@everyone, @here, users, roles) are sent without notifying anyone. Discord has no comments or statistics here.",
+              "type": "object",
+              "properties": {
+                "silent": {
+                  "type": "boolean"
+                },
+                "no_link_preview": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            },
+            "pinterest": {
+              "description": "Options for Pinterest accounts: board_id (required: the id, in digits, of one of the boards list_accounts shows under the account, not its name; ask the user which board when there are several), title (up to 100 chars), link (where the Pin leads). The post text is the description (up to 800 chars). Exactly one photo; video Pins are not available yet. No comments or statistics.",
+              "type": "object",
+              "properties": {
+                "board_id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64
+                },
+                "title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 100
+                },
+                "link": {
+                  "type": "string",
+                  "maxLength": 2048,
+                  "format": "uri"
+                },
+                "cover_media_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "additionalProperties": false
+            },
+            "scheduled_at": {
+              "description": "Omit to publish now. ISO 8601 with offset.",
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            },
+            "idea_id": {
+              "description": "The idea (from list_ideas) this post is made from, so the board shows it was used. The idea stays on the board.",
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["account_ids"]
+        }
+      },
+      {
+        "id": "tebar.update_scheduled_post",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 5000
+            },
+            "media_urls": {
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "media_ids": {
+              "description": "Replaces the images/videos. Pass [] to remove them.",
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "scheduled_at": {
+              "type": "string",
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+            },
+            "instagram": {
+              "description": "Replaces the Instagram accounts' options as a whole (same fields as create_post's instagram; {} clears them). E.g. a post that failed with collaborator_invalid: send the collaborators without the wrong username, or {} to post without a Collab.",
+              "type": "object",
+              "properties": {
+                "format": {
+                  "type": "string",
+                  "enum": ["feed", "story"]
+                },
+                "share_to_feed": {
+                  "type": "boolean"
+                },
+                "cover_media_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "thumb_offset_ms": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "trial": {
+                  "description": "Reels only (a post with one video): publish as a trial reel, shown only to non-followers at first. manual: the owner shares it to followers later in the Instagram app; auto: Instagram shares it to followers if it performs well. The account must be eligible (Instagram decides): otherwise the target fails with trial_reel_unavailable.",
+                  "type": "string",
+                  "enum": ["manual", "auto"]
+                },
+                "collaborators": {
+                  "description": "Collab post: 1-3 Instagram usernames (with or without @, stored lower case without it) invited as co-authors of a photo, reel or carousel; not stories. Each accepts the invite in the Instagram app. Not the account itself, no repeats. A username Instagram cannot invite fails the target with collaborator_invalid.",
+                  "minItems": 1,
+                  "maxItems": 3,
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "first_comment": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 2200,
+                  "description": "First comment: posted by the account on its own post right after it is published (up to 2200 characters). The post stays published when the comment fails; targets[].first_comment says how it went."
+                },
+                "is_ai_generated": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["post_id"]
+        }
+      },
+      {
+        "id": "tebar.cancel_scheduled_post",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["post_id"]
+        }
+      },
+      {
+        "id": "tebar.retry_post",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "post_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "required": ["post_id"]
+        }
+      },
+      {
+        "id": "tebar.create_idea",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "text": {
+              "default": "",
+              "type": "string",
+              "maxLength": 5000
+            },
+            "media_ids": {
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "media_urls": {
+              "description": "Public image or video URLs, downloaded into the media library and attached.",
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "column": {
+              "description": "A column name; omit for the first",
+              "type": "string",
+              "maxLength": 50
+            }
+          }
+        }
+      },
+      {
+        "id": "tebar.update_idea",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "idea_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "text": {
+              "type": "string",
+              "maxLength": 5000
+            },
+            "media_ids": {
+              "description": "The whole new media list, in order ([] removes all)",
+              "maxItems": 20,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "media_urls": {
+              "description": "Public image or video URLs, downloaded and added to the media",
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "column": {
+              "description": "Move to this column (by name)",
+              "type": "string",
+              "maxLength": 50
+            }
+          },
+          "required": ["idea_id"]
+        }
+      },
+      {
+        "id": "tebar.send_dm",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "conversation_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "media_ids": {
+              "description": "From list_media",
+              "minItems": 1,
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              }
+            },
+            "buttons": {
+              "description": "Buttons under the text (text up to 640 characters): web_url opens a link, postback sends its payload back when tapped. Not with quick_replies.",
+              "minItems": 1,
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "web_url"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 20
+                      },
+                      "url": {
+                        "type": "string",
+                        "format": "uri"
+                      }
+                    },
+                    "required": ["type", "title", "url"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "const": "postback"
+                      },
+                      "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 20
+                      },
+                      "payload": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 1000
+                      }
+                    },
+                    "required": ["type", "title", "payload"]
+                  }
+                ]
+              }
+            },
+            "quick_replies": {
+              "description": "Choices the customer taps to answer (shown on phones only); the tapped one comes back with its payload. Not with buttons.",
+              "minItems": 1,
+              "maxItems": 13,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "payload": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 1000
+                  }
+                },
+                "required": ["title", "payload"]
+              }
+            },
+            "cards": {
+              "description": "A carousel (Instagram generic template), sent after the media and text as its own message, shown on phones only: each card a title (80 characters) and at least one of subtitle (80), media_id (JPG/PNG from list_media) or image_url (public https), default_action { url } and 1-3 buttons (web_url or postback). Not with buttons or quick_replies.",
+              "minItems": 1,
+              "maxItems": 10,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "subtitle": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "media_id": {
+                    "description": "A JPG or PNG image of the media library.",
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "image_url": {
+                    "description": "A public https JPG or PNG image; Instagram downloads it.",
+                    "type": "string",
+                    "maxLength": 2000,
+                    "format": "uri"
+                  },
+                  "default_action": {
+                    "description": "The page opened when the card is tapped.",
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "type": "string",
+                        "maxLength": 2000,
+                        "format": "uri"
+                      }
+                    },
+                    "required": ["url"],
+                    "additionalProperties": false
+                  },
+                  "buttons": {
+                    "minItems": 1,
+                    "maxItems": 3,
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "web_url"
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 20
+                            },
+                            "url": {
+                              "type": "string",
+                              "format": "uri"
+                            }
+                          },
+                          "required": ["type", "title", "url"]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "type": {
+                              "type": "string",
+                              "const": "postback"
+                            },
+                            "title": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 20
+                            },
+                            "payload": {
+                              "type": "string",
+                              "minLength": 1,
+                              "maxLength": 1000
+                            }
+                          },
+                          "required": ["type", "title", "payload"]
+                        }
+                      ]
+                    }
+                  }
+                },
+                "required": ["title"],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": ["conversation_id"]
+        }
+      },
+      {
+        "id": "tebar.set_conversation_status",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "conversation_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "status": {
+              "type": "string",
+              "enum": ["open", "done"]
+            },
+            "read": {
+              "type": "boolean",
+              "const": true
+            }
+          },
+          "required": ["conversation_id"]
+        }
+      },
+      {
+        "id": "tebar.create_automation",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "description": "An Instagram, Threads, Facebook or TikTok account from list_accounts"
+            },
+            "kind": {
+              "default": "comment_to_dm",
+              "description": "Threads, Facebook and TikTok accounts: comment_reply; Instagram: any",
+              "type": "string",
+              "enum": [
+                "comment_to_dm",
+                "comment_reply",
+                "dm_keyword",
+                "story_reply",
+                "story_mention",
+                "default_reply"
+              ]
+            },
+            "keywords": {
+              "default": [],
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "match": {
+              "default": "contains",
+              "description": "contains: the keyword as a word in the comment or DM; any: every one (not for dm_keyword)",
+              "type": "string",
+              "enum": ["contains", "exact", "any"]
+            },
+            "scope": {
+              "default": "any",
+              "description": "comment_to_dm and comment_reply. any: every post; post: platform_post_ids; next: the next post published",
+              "type": "string",
+              "enum": ["any", "post", "next"]
+            },
+            "platform_post_ids": {
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "dm_text": {
+              "description": "Every kind but comment_reply",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "public_replies": {
+              "description": "Shown under the comment, one picked at random: comment_to_dm up to 3 (optional), comment_reply 3-5 (required)",
+              "maxItems": 5,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2200
+              }
+            },
+            "buttons": {
+              "minItems": 1,
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                },
+                "required": ["title", "url"]
+              }
+            },
+            "track_clicks": {
+              "type": "boolean",
+              "description": "Count who opens the link buttons (through tbr.ink, a link per person; default true). false sends the URLs as they are."
+            },
+            "follow_gate": {
+              "type": "object",
+              "properties": {
+                "ask_text": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 640,
+                  "description": "Asks to follow; sent with the button"
+                },
+                "button_title": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20,
+                  "description": "e.g. \"Sudah follow\""
+                },
+                "retry_text": {
+                  "description": "Sent with the button again to someone who tapped but does not follow yet",
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 640
+                }
+              },
+              "required": ["ask_text", "button_title"],
+              "description": "Ask to follow first; the DM goes only to people Instagram says follow the account"
+            },
+            "react": {
+              "default": false,
+              "description": "DM kinds: a heart on the message first",
+              "type": "boolean"
+            },
+            "cooldown_hours": {
+              "default": 24,
+              "description": "default_reply: at most one reply per person in this many hours",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 168
+            },
+            "timing": {
+              "default": "natural",
+              "type": "string",
+              "enum": ["fast", "natural", "relaxed"],
+              "description": "How long it waits, so replies do not read as a bot: fast 5-30 s and the DM right after; natural 30 s-2 min, the DM 20-60 s after the public reply; relaxed 2-8 min, the DM 1-3 min after"
+            },
+            "once_per_person": {
+              "description": "Answer each person once; default true for comment_to_dm, false otherwise",
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "enabled": {
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "required": ["account_id"]
+        }
+      },
+      {
+        "id": "tebar.update_automation",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "$schema": "https://json-schema.org/draft/2020-12/schema",
+          "properties": {
+            "automation_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "keywords": {
+              "maxItems": 50,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            },
+            "match": {
+              "type": "string",
+              "enum": ["contains", "exact", "any"]
+            },
+            "dm_text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "public_replies": {
+              "maxItems": 5,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 2200
+              }
+            },
+            "buttons": {
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20
+                  },
+                  "url": {
+                    "type": "string",
+                    "format": "uri"
+                  }
+                },
+                "required": ["title", "url"]
+              }
+            },
+            "track_clicks": {
+              "type": "boolean",
+              "description": "Count who opens the link buttons (through tbr.ink, a link per person; default true). false sends the URLs as they are."
+            },
+            "follow_gate": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "ask_text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 640,
+                      "description": "Asks to follow; sent with the button"
+                    },
+                    "button_title": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 20,
+                      "description": "e.g. \"Sudah follow\""
+                    },
+                    "retry_text": {
+                      "description": "Sent with the button again to someone who tapped but does not follow yet",
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 640
+                    }
+                  },
+                  "required": ["ask_text", "button_title"],
+                  "description": "Ask to follow first; the DM goes only to people Instagram says follow the account"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "react": {
+              "type": "boolean"
+            },
+            "cooldown_hours": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 168
+            },
+            "timing": {
+              "type": "string",
+              "enum": ["fast", "natural", "relaxed"],
+              "description": "How long it waits, so replies do not read as a bot: fast 5-30 s and the DM right after; natural 30 s-2 min, the DM 20-60 s after the public reply; relaxed 2-8 min, the DM 1-3 min after"
+            }
+          },
+          "required": ["automation_id"]
+        }
+      }
+    ],
+    "allowedHosts": ["api.tebar.app"],
+    "config": []
+  },
+  "authorityDigest": "e068e78f419d40b7320ca09ab5d94a8e4c12e71689cf85c14df91f1d6067e032",
+  "authorityDiffDigest": "329a6088ead990930bbfc4196ceb0c712859dc3473bc98996c4b0816cd1bb0e2",
+  "releaseDigest": "cd77d2456a60f999687b7d59c5227dc673cdb5cba341e6f9c6d147c70d226914"
+}
