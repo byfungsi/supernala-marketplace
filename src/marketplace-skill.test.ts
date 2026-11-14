@@ -224,10 +224,13 @@ describe("curated catalog", () => {
     const skills = Result.getOrThrow(await loadCuratedSkills(repositoryRoot));
     expect(skills.length).toBeGreaterThan(0);
     for (const { release } of skills) {
-      expect(release.manifest.source._tag).toBe("github");
-      if (release.manifest.source._tag === "github") {
-        expect(release.manifest.source.commit).toMatch(/^[0-9a-f]{40}$/u);
+      // Supernala-authored Skills have no upstream to pin and carry Supernala's own terms.
+      if (release.manifest.source._tag === "supernala") {
+        expect(release.manifest.license).toBe("LicenseRef-Supernala");
+        expect(release.manifest.attribution).toContain("Supernala");
+        continue;
       }
+      expect(release.manifest.source.commit).toMatch(/^[0-9a-f]{40}$/u);
       const paths = release.files.map((file) => file.path);
       // Every copy carries its license notice.
       expect(paths.some((filePath) => /^LICENSE(?:\.txt)?$/u.test(filePath))).toBe(true);
