@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "google-docs",
+  "publisher": "supernala",
+  "version": "1.0.0",
+  "name": "Google Docs",
+  "description": "Google Docs search, reading as text, creation, appending and text replacement",
+  "license": "MIT",
+  "licenseEvidence": {
+    "kind": "spdx-mit-full-text",
+    "license": {
+      "path": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    "notice": {
+      "path": "NOTICE",
+      "sha256": "924a85517b81f0b0c8d5c9df6f62fe81616e318c6fe31270593f7f3943ebe1d0"
+    }
+  },
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "catalog": {
+    "path": "catalog.json",
+    "sha256": "7fb95282d82d6d99f7b319eae1d9ff6db3cb2f7ead5fd80eeeaa06df8975c693"
+  },
+  "config": {
+    "path": "config.json",
+    "sha256": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334"
+  },
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-docs-rest-v1",
+    "providerDefinitionDigest": "17e7fbccc490f7f469893f87db673f5733a0fa41e6973b28e55988c7f5c48809",
+    "requestedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/documents",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "openid"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "network": {
+    "allowedHosts": ["docs.googleapis.com", "www.googleapis.com"]
+  },
+  "limits": {
+    "expandedBytes": 1048576,
+    "files": 20
+  },
+  "provenance": "provenance.json"
+}

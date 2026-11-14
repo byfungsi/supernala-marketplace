@@ -1,0 +1,24 @@
+{
+  "providerRegistration": "google-docs-rest-v1",
+  "providerDefinition": {
+    "path": "oauth-provider.json",
+    "canonicalSha256": "17e7fbccc490f7f469893f87db673f5733a0fa41e6973b28e55988c7f5c48809"
+  },
+  "providerMetadata": {
+    "provider": "google",
+    "resourceIdentity": "docs.googleapis.com",
+    "registrationMode": "workspace-oauth-app",
+    "source": "platform",
+    "approvedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/documents",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "openid"
+    ]
+  },
+  "workspaceOAuthApp": {
+    "ownership": "workspace-owner",
+    "credentialFields": ["clientId", "clientSecret"],
+    "storage": "encrypted-plugin-vault"
+  }
+}

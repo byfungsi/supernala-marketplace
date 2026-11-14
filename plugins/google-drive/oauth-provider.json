@@ -1,0 +1,69 @@
+{
+  "account": {
+    "authorization": "bearer",
+    "displayLabelPath": ["email"],
+    "endpoint": "https://openidconnect.googleapis.com/v1/userinfo",
+    "kind": "https-json",
+    "maximumDisplayLabelLength": 160,
+    "maximumJsonDepth": 4,
+    "maximumObjectKeys": 16,
+    "maximumResponseBytes": 16384,
+    "maximumSubjectLength": 300,
+    "subjectPath": ["sub"],
+    "subjectStability": "stable"
+  },
+  "authorizationEndpoint": "https://accounts.google.com/o/oauth2/v2/auth",
+  "authorizationParameters": [
+    {
+      "name": "access_type",
+      "value": "offline"
+    },
+    {
+      "name": "prompt",
+      "value": "consent"
+    }
+  ],
+  "authorizationResponseIssuer": "required",
+  "issuer": "https://accounts.google.com",
+  "pkce": {
+    "method": "S256"
+  },
+  "protocol": "oauth2-authorization-code",
+  "provider": "google",
+  "refresh": {
+    "ambiguousOutcome": "fail-closed-no-replay",
+    "invalidGrant": "reauthorization-required",
+    "kind": "standard-form-post"
+  },
+  "resourceIdentity": "drive.googleapis.com",
+  "revocation": {
+    "clientAuthentication": "token-only",
+    "endpoint": "https://oauth2.googleapis.com/revoke",
+    "kind": "standard-form-post",
+    "outcome": "best-effort-observed",
+    "token": "refresh-token"
+  },
+  "schemaVersion": 1,
+  "scopes": [
+    "email",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive.readonly",
+    "openid"
+  ],
+  "tokenEndpoint": "https://oauth2.googleapis.com/token",
+  "tokenEndpointAuthMethod": "client_secret_post",
+  "tokens": {
+    "accessTokenType": "bearer",
+    "expiresIn": {
+      "maximumSeconds": 86400,
+      "minimumSeconds": 1,
+      "required": true
+    },
+    "grantedScopes": {
+      "whenOmitted": "requested-scopes",
+      "whenPresent": "exact-match"
+    },
+    "initialRefreshToken": "required",
+    "refreshResponseToken": "retain-current-if-omitted"
+  }
+}

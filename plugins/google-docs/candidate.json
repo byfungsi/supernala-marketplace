@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "status": "owner-authorized-publication-ready",
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-docs-rest-v1",
+    "providerDefinitionDigest": "17e7fbccc490f7f469893f87db673f5733a0fa41e6973b28e55988c7f5c48809",
+    "requestedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/documents",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "openid"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "network": {
+    "allowedHosts": ["docs.googleapis.com", "www.googleapis.com"]
+  },
+  "license": "MIT",
+  "blockingReason": "Post-publication live acceptance with a connected Google account remains pending; the Owner authorized publication"
+}

@@ -1,0 +1,23 @@
+{
+  "source": {
+    "type": "first-party",
+    "path": "plugins/google-sheets/source/server.mjs",
+    "upstream": null
+  },
+  "build": {
+    "recipe": "plugins/google-sheets/build-recipe.json",
+    "runtimeDependencies": [],
+    "networkDuringBuild": false
+  },
+  "license": {
+    "spdx": "MIT",
+    "status": "approved-first-party-source",
+    "file": "plugins/google-sheets/LICENSE",
+    "notice": "plugins/google-sheets/NOTICE",
+    "copyright": "Copyright (c) 2026 Supernala contributors"
+  },
+  "publication": {
+    "eligible": true,
+    "reason": "Owner-authorized for publication; live acceptance with a connected Google account follows publication"
+  }
+}
