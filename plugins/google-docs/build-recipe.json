@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "source": "plugins/google-docs/source/server.mjs",
+  "output": "plugins/google-docs/dist/server.mjs",
+  "manifest": "plugins/google-docs/package-manifest.json",
+  "runtime": "node-22.x",
+  "runtimeDependencies": [],
+  "networkDuringBuild": false,
+  "lifecycleScripts": false,
+  "deterministicCopy": true,
+  "license": "MIT",
+  "licenseFile": "plugins/google-docs/LICENSE",
+  "noticeFile": "plugins/google-docs/NOTICE",
+  "preservedThirdPartyNotices": [],
+  "packageFiles": [
+    {
+      "source": "plugins/google-docs/package-manifest.json",
+      "destination": "plugin.json",
+      "sha256": "ffec79590aa2e8003382e61a94e15d46f52dd17150f2d7ff201b2ac019906d9b"
+    },
+    {
+      "source": "plugins/google-docs/catalog.json",
+      "destination": "catalog.json",
+      "sha256": "7fb95282d82d6d99f7b319eae1d9ff6db3cb2f7ead5fd80eeeaa06df8975c693"
+    },
+    {
+      "source": "plugins/google-docs/config.json",
+      "destination": "config.json",
+      "sha256": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334"
+    },
+    {
+      "source": "plugins/google-docs/provenance.json",
+      "destination": "provenance.json",
+      "sha256": "b58c31466f5d5025a538d636a0ed282d0ab605291fa41475fa914f4c35c54e84"
+    },
+    {
+      "source": "plugins/google-docs/source/server.mjs",
+      "destination": "dist/server.mjs",
+      "sha256": "8253a474d8ba58653122735f1d4a7c51f51f6f952bae1fbf89699d64883303e5"
+    },
+    {
+      "source": "plugins/google-docs/LICENSE",
+      "destination": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    {
+      "source": "plugins/google-docs/NOTICE",
+      "destination": "NOTICE",
+      "sha256": "924a85517b81f0b0c8d5c9df6f62fe81616e318c6fe31270593f7f3943ebe1d0"
+    }
+  ]
+}

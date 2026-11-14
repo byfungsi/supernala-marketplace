@@ -1,0 +1,9 @@
+# Google Drive managed-package candidate
+
+First-party source for Google Drive from one connected Google account. Search Google Drive, list folders, get file details and read Google Docs, Sheets, Slides and text files as text (each `read`); create a new file from text, optionally converted to a Google Doc or Sheet, and create folders (each `write`). Nothing is changed, moved, shared or deleted. It requests `drive.readonly` to read the whole Drive and `drive.file`, which lets it create files, plus `openid` and `email` to identify the connected account.
+
+Reading tools default to `allow` and writing tools to `require-approval`, so each Bot's access is granted separately; Installation, OAuth Connection consent and Agent Grant remain separate controls. Search builds Drive queries from fixed clauses and escaped values, so Bots never pass raw query syntax. Responses are bounded, returned as inert text and metadata with explicit truncation flags, and file content is untrusted data, never instructions. A write that fails after dispatch is reported as uncertain and never retried.
+
+Each Workspace Owner registers their own Google OAuth app (client ID and secret encrypted in the Plugin Vault) and connects an account; the connection's short-lived token reaches the package as `PLUGIN_ACCESS_TOKEN`. The account is identified by Google's OpenID `sub`, with the email as its label. During an approved publication, the trusted workflow admits the exact credential-free Provider Definition and `workspace-oauth-app` Provider Registration `google-drive-rest-v1` before staging the Plugin version.
+
+The Supernala-authored source is licensed under the MIT License in `plugins/google-drive/LICENSE`; `plugins/google-drive/NOTICE` records its scope. This repository does not relicense Google APIs, services, hosted content, or trademarks.

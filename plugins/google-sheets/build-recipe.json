@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "source": "plugins/google-sheets/source/server.mjs",
+  "output": "plugins/google-sheets/dist/server.mjs",
+  "manifest": "plugins/google-sheets/package-manifest.json",
+  "runtime": "node-22.x",
+  "runtimeDependencies": [],
+  "networkDuringBuild": false,
+  "lifecycleScripts": false,
+  "deterministicCopy": true,
+  "license": "MIT",
+  "licenseFile": "plugins/google-sheets/LICENSE",
+  "noticeFile": "plugins/google-sheets/NOTICE",
+  "preservedThirdPartyNotices": [],
+  "packageFiles": [
+    {
+      "source": "plugins/google-sheets/package-manifest.json",
+      "destination": "plugin.json",
+      "sha256": "b2709ffe46cc6398396ba027f626b97843d80b4b0646d067aab51a58cebe308f"
+    },
+    {
+      "source": "plugins/google-sheets/catalog.json",
+      "destination": "catalog.json",
+      "sha256": "99a710b31ab9f989828bd69a4729574e0ac0c256bb14f9b31b4027cd6ea52bbc"
+    },
+    {
+      "source": "plugins/google-sheets/config.json",
+      "destination": "config.json",
+      "sha256": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334"
+    },
+    {
+      "source": "plugins/google-sheets/provenance.json",
+      "destination": "provenance.json",
+      "sha256": "ac0736c4a22e2876142f2e11dd31d7c0b32bd99acc153b1c5c2a97af7defa4ac"
+    },
+    {
+      "source": "plugins/google-sheets/source/server.mjs",
+      "destination": "dist/server.mjs",
+      "sha256": "f7f2cc11da4b3ca338769d78f2a31321a5dc3c15f27075034503e5cdc1ecefea"
+    },
+    {
+      "source": "plugins/google-sheets/LICENSE",
+      "destination": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    {
+      "source": "plugins/google-sheets/NOTICE",
+      "destination": "NOTICE",
+      "sha256": "d008a760beb3336ebd0b30cf993895afa2ea2a26e5d50771b6879ff51ea271d8"
+    }
+  ]
+}

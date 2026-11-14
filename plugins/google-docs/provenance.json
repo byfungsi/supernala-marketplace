@@ -1,0 +1,23 @@
+{
+  "source": {
+    "type": "first-party",
+    "path": "plugins/google-docs/source/server.mjs",
+    "upstream": null
+  },
+  "build": {
+    "recipe": "plugins/google-docs/build-recipe.json",
+    "runtimeDependencies": [],
+    "networkDuringBuild": false
+  },
+  "license": {
+    "spdx": "MIT",
+    "status": "approved-first-party-source",
+    "file": "plugins/google-docs/LICENSE",
+    "notice": "plugins/google-docs/NOTICE",
+    "copyright": "Copyright (c) 2026 Supernala contributors"
+  },
+  "publication": {
+    "eligible": true,
+    "reason": "Owner-authorized for publication; live acceptance with a connected Google account follows publication"
+  }
+}

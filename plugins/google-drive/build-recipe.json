@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "source": "plugins/google-drive/source/server.mjs",
+  "output": "plugins/google-drive/dist/server.mjs",
+  "manifest": "plugins/google-drive/package-manifest.json",
+  "runtime": "node-22.x",
+  "runtimeDependencies": [],
+  "networkDuringBuild": false,
+  "lifecycleScripts": false,
+  "deterministicCopy": true,
+  "license": "MIT",
+  "licenseFile": "plugins/google-drive/LICENSE",
+  "noticeFile": "plugins/google-drive/NOTICE",
+  "preservedThirdPartyNotices": [],
+  "packageFiles": [
+    {
+      "source": "plugins/google-drive/package-manifest.json",
+      "destination": "plugin.json",
+      "sha256": "2200fae4c9fbf113b38772445b334d02a368a9cf68c7ab04d24771d6a8652165"
+    },
+    {
+      "source": "plugins/google-drive/catalog.json",
+      "destination": "catalog.json",
+      "sha256": "005f1525cf7599db172f388ab99e5fff5f4d245f0e802df4f6012a85303a4a4a"
+    },
+    {
+      "source": "plugins/google-drive/config.json",
+      "destination": "config.json",
+      "sha256": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334"
+    },
+    {
+      "source": "plugins/google-drive/provenance.json",
+      "destination": "provenance.json",
+      "sha256": "6e8618dd3cf93f136dfc96e9b0346aaae89a155fb59bb836b24e084891bbd598"
+    },
+    {
+      "source": "plugins/google-drive/source/server.mjs",
+      "destination": "dist/server.mjs",
+      "sha256": "b58efa936bdf0020b0a3f2522a292eccf6b8aff93a58408477d35e9714b0a322"
+    },
+    {
+      "source": "plugins/google-drive/LICENSE",
+      "destination": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    {
+      "source": "plugins/google-drive/NOTICE",
+      "destination": "NOTICE",
+      "sha256": "b08ea494fccd6ac647d9a340ef21f4c3226f487db223455d34dd9750db052109"
+    }
+  ]
+}

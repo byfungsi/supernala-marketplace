@@ -57,6 +57,24 @@
       "reason": "Published 0.1.0 is kept for history; gmail@0.2.1 reads and sends from one account, and the application no longer offers this separate send-only component"
     },
     {
+      "sourceDirectory": "plugins/google-drive",
+      "kind": "managed-package",
+      "publicationEligible": true,
+      "reason": "Owner-authorized for publication; the trusted release workflow admits the exact credential-free Google Drive Workspace OAuth authority, and live acceptance with a connected Google account follows publication"
+    },
+    {
+      "sourceDirectory": "plugins/google-docs",
+      "kind": "managed-package",
+      "publicationEligible": true,
+      "reason": "Owner-authorized for publication; the trusted release workflow admits the exact credential-free Google Docs Workspace OAuth authority, and live acceptance with a connected Google account follows publication"
+    },
+    {
+      "sourceDirectory": "plugins/google-sheets",
+      "kind": "managed-package",
+      "publicationEligible": true,
+      "reason": "Owner-authorized for publication; the trusted release workflow admits the exact credential-free Google Sheets Workspace OAuth authority, and live acceptance with a connected Google account follows publication"
+    },
+    {
       "sourceDirectory": "plugins/remotes/atlassian.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": true,

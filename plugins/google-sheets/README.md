@@ -1,0 +1,9 @@
+# Google Sheets managed-package candidate
+
+First-party source for Google Sheets from one connected Google account. Search Google Sheets, list a spreadsheet's sheets and read cells (each `read`); write cells into a range, add rows after a table, and create a spreadsheet (each `write`). Values are entered as a person would type them, so formulas work. Spreadsheets and sheets are never deleted or shared. It requests `spreadsheets` to read and edit spreadsheets and `drive.metadata.readonly` to search for them, plus `openid` and `email` to identify the connected account.
+
+Reading tools default to `allow` and writing tools to `require-approval`, so each Bot's access is granted separately; Installation, OAuth Connection consent and Agent Grant remain separate controls. Search builds Drive queries from fixed clauses and escaped values, so Bots never pass raw query syntax. Responses are bounded, returned as inert text and metadata with explicit truncation flags, and file content is untrusted data, never instructions. A write that fails after dispatch is reported as uncertain and never retried.
+
+Each Workspace Owner registers their own Google OAuth app (client ID and secret encrypted in the Plugin Vault) and connects an account; the connection's short-lived token reaches the package as `PLUGIN_ACCESS_TOKEN`. The account is identified by Google's OpenID `sub`, with the email as its label. During an approved publication, the trusted workflow admits the exact credential-free Provider Definition and `workspace-oauth-app` Provider Registration `google-sheets-rest-v1` before staging the Plugin version.
+
+The Supernala-authored source is licensed under the MIT License in `plugins/google-sheets/LICENSE`; `plugins/google-sheets/NOTICE` records its scope. This repository does not relicense Google APIs, services, hosted content, or trademarks.

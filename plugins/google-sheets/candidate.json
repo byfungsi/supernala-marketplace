@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "status": "owner-authorized-publication-ready",
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-sheets-rest-v1",
+    "providerDefinitionDigest": "f6c2edd3166ad6f16a5360f2e425440e9ebfbeb6fe3157db4b9bef8d8f1da69f",
+    "requestedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "https://www.googleapis.com/auth/spreadsheets",
+      "openid"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "network": {
+    "allowedHosts": ["sheets.googleapis.com", "www.googleapis.com"]
+  },
+  "license": "MIT",
+  "blockingReason": "Post-publication live acceptance with a connected Google account remains pending; the Owner authorized publication"
+}

@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "google-drive",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "google-drive-1.0.0-first-publication-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794666235577,
+  "sourceInputDigest": "57b03066123c3ac7434d49eefee53c51555c50e7178cc4871e6aab0c69c5e0aa",
+  "artifactDigest": "c9b6a156c45325f89e87338080e095bbd2efb1b90aaac01bfb99e21a8db82313",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-drive-rest-v1",
+    "providerDefinitionDigest": "90963e7172b047d4471db3d621ea9e9550c39adc1dd806fbd0e5a94c7b12dd4a",
+    "requestedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/drive.readonly",
+      "openid"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "005f1525cf7599db172f388ab99e5fff5f4d245f0e802df4f6012a85303a4a4a",
+  "configDigest": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
+  "provenanceDigest": "22d6d9a9159169f9cd9b4da3babe05afca44e058dfdee39fa45d45da1fd1ebf6",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "d1b5571f6c94cd5bbc0842b690ce808d45733d4349a8bc058b02ae1872eb4350",
+  "authorityAfter": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "oauth",
+    "requestedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/drive.readonly",
+      "openid"
+    ],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "google-drive-rest-v1",
+    "providerDefinitionDigest": "90963e7172b047d4471db3d621ea9e9550c39adc1dd806fbd0e5a94c7b12dd4a",
+    "tools": [
+      {
+        "id": "google-drive.search_files",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "modifiedAfter": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z)?$"
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "pageToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "kind": {
+              "type": "string",
+              "enum": ["document", "spreadsheet", "presentation", "folder", "pdf", "image"]
+            },
+            "folderId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-drive.list_folder",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "folderId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "pageToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-drive.get_file",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fileId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": ["fileId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-drive.read_file",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "fileId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": ["fileId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-drive.create_text_file",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "content": {
+              "type": "string",
+              "maxLength": 100000
+            },
+            "format": {
+              "type": "string",
+              "enum": ["text", "markdown", "csv", "json"]
+            },
+            "convertTo": {
+              "type": "string",
+              "enum": ["document", "spreadsheet"]
+            },
+            "folderId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": ["name", "content"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-drive.create_folder",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "parentId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": ["name"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["www.googleapis.com"],
+    "config": []
+  },
+  "authorityDigest": "5be0718a9d369010be029a2e0bd8987f8bce0f22a18883509ea6f406c537ef95",
+  "authorityDiffDigest": "5a8bc1506b5b4f814423723c03b5c960cc6f0b61ae9c4ad4b0da22b5970f8b2b",
+  "releaseDigest": "c7907dd58ef98006203fd2be8217a4b7a1d47c26055b4398dd98d41afd7a6744",
+  "decision": "approved"
+}

@@ -1,0 +1,190 @@
+{
+  "id": "google-drive-catalog-v1",
+  "schemaVersion": 1,
+  "tools": [
+    {
+      "id": "google-drive.search_files",
+      "mcpName": "search_files",
+      "title": "Search files",
+      "description": "Search Google Drive by words in the content, words in the name, type, folder or last change; returns file details, not contents",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "modifiedAfter": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z)?$"
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "pageToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "kind": {
+            "type": "string",
+            "enum": ["document", "spreadsheet", "presentation", "folder", "pdf", "image"]
+          },
+          "folderId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "google-drive.list_folder",
+      "mcpName": "list_folder",
+      "title": "List a folder",
+      "description": "List what one Google Drive folder contains, folders first; My Drive when no folder is given",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "folderId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "pageToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "google-drive.get_file",
+      "mcpName": "get_file",
+      "title": "Get file details",
+      "description": "Get one Google Drive file's details by id or link: name, type, owners, size, dates and link",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": ["fileId"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "google-drive.read_file",
+      "mcpName": "read_file",
+      "title": "Read a file as text",
+      "description": "Read one Google Drive file as text: Google Docs and Slides as plain text, Google Sheets as CSV of the first sheet, and text files as they are; other files report that they cannot be read as text",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": ["fileId"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "google-drive.create_text_file",
+      "mcpName": "create_text_file",
+      "title": "Create a file from text",
+      "description": "Create one new file in Google Drive from text, optionally converted to a Google Doc (plain text or Markdown) or a Google Sheet (CSV); never changes existing files",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "content": {
+            "type": "string",
+            "maxLength": 100000
+          },
+          "format": {
+            "type": "string",
+            "enum": ["text", "markdown", "csv", "json"]
+          },
+          "convertTo": {
+            "type": "string",
+            "enum": ["document", "spreadsheet"]
+          },
+          "folderId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": ["name", "content"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "google-drive.create_folder",
+      "mcpName": "create_folder",
+      "title": "Create a folder",
+      "description": "Create one new folder in Google Drive, inside another folder or in My Drive",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "parentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": ["name"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    }
+  ]
+}

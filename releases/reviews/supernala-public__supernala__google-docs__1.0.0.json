@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "google-docs",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "google-docs-1.0.0-first-publication-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794666235594,
+  "sourceInputDigest": "4cdb520c1e181a9bd7ba99cba290b11ebff7967bc205091e5a426812dce67175",
+  "artifactDigest": "d13ca3f9ec0a4521280aa8977fe64838cb794313f6bc45a77f711b09962d0d90",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-docs-rest-v1",
+    "providerDefinitionDigest": "17e7fbccc490f7f469893f87db673f5733a0fa41e6973b28e55988c7f5c48809",
+    "requestedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/documents",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "openid"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "7fb95282d82d6d99f7b319eae1d9ff6db3cb2f7ead5fd80eeeaa06df8975c693",
+  "configDigest": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
+  "provenanceDigest": "a484c21f9670f9aa98ca1b72c0ee6ee085db4cb7bed130277d7473b36708dc62",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "d1b5571f6c94cd5bbc0842b690ce808d45733d4349a8bc058b02ae1872eb4350",
+  "authorityAfter": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "oauth",
+    "requestedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/documents",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "openid"
+    ],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "google-docs-rest-v1",
+    "providerDefinitionDigest": "17e7fbccc490f7f469893f87db673f5733a0fa41e6973b28e55988c7f5c48809",
+    "tools": [
+      {
+        "id": "google-docs.search_documents",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "modifiedAfter": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z)?$"
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "pageToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-docs.get_document",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": ["documentId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-docs.create_document",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100000
+            }
+          },
+          "required": ["title"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-docs.append_text",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100000
+            }
+          },
+          "required": ["documentId", "text"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-docs.replace_text",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "documentId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "find": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1000
+            },
+            "replaceWith": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "matchCase": {
+              "type": "boolean"
+            }
+          },
+          "required": ["documentId", "find", "replaceWith"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["docs.googleapis.com", "www.googleapis.com"],
+    "config": []
+  },
+  "authorityDigest": "9c92ff244e4a55e568049cf37c64a76c6c44f93775ea3ddee1cf885e991c33fe",
+  "authorityDiffDigest": "1084d47dbaececc608c3e85c2ff279698f86017853b4e62f7ea6ac0fd893e142",
+  "releaseDigest": "aebea5230dc5cc6d336eb6694a53eca73bd66077256d48601e724287493f3362",
+  "decision": "approved"
+}

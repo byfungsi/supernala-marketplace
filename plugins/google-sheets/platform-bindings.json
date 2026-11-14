@@ -1,0 +1,24 @@
+{
+  "providerRegistration": "google-sheets-rest-v1",
+  "providerDefinition": {
+    "path": "oauth-provider.json",
+    "canonicalSha256": "f6c2edd3166ad6f16a5360f2e425440e9ebfbeb6fe3157db4b9bef8d8f1da69f"
+  },
+  "providerMetadata": {
+    "provider": "google",
+    "resourceIdentity": "sheets.googleapis.com",
+    "registrationMode": "workspace-oauth-app",
+    "source": "platform",
+    "approvedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "https://www.googleapis.com/auth/spreadsheets",
+      "openid"
+    ]
+  },
+  "workspaceOAuthApp": {
+    "ownership": "workspace-owner",
+    "credentialFields": ["clientId", "clientSecret"],
+    "storage": "encrypted-plugin-vault"
+  }
+}

@@ -1,0 +1,151 @@
+{
+  "id": "google-docs-catalog-v1",
+  "schemaVersion": 1,
+  "tools": [
+    {
+      "id": "google-docs.search_documents",
+      "mcpName": "search_documents",
+      "title": "Search documents",
+      "description": "Search Google Docs by words in the content or the title, or by last change; returns document details, not contents",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "modifiedAfter": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z)?$"
+          },
+          "pageSize": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          },
+          "pageToken": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "google-docs.get_document",
+      "mcpName": "get_document",
+      "title": "Read a document",
+      "description": "Read one Google Doc by id or link as text, with headings marked by # and lists by -, and tables as rows",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          }
+        },
+        "required": ["documentId"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "google-docs.create_document",
+      "mcpName": "create_document",
+      "title": "Create a document",
+      "description": "Create one new Google Doc with a title and, optionally, starting text",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100000
+          }
+        },
+        "required": ["title"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "google-docs.append_text",
+      "mcpName": "append_text",
+      "title": "Add text at the end",
+      "description": "Add text at the end of one Google Doc; begin the text with a new line to start a new paragraph",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100000
+          }
+        },
+        "required": ["documentId", "text"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    },
+    {
+      "id": "google-docs.replace_text",
+      "mcpName": "replace_text",
+      "title": "Replace text",
+      "description": "Replace every occurrence of exact text in one Google Doc and report how many changed; an empty replacement removes the text",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "documentId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048
+          },
+          "find": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "replaceWith": {
+            "type": "string",
+            "maxLength": 10000
+          },
+          "matchCase": {
+            "type": "boolean"
+          }
+        },
+        "required": ["documentId", "find", "replaceWith"],
+        "additionalProperties": false
+      },
+      "maximumOutputBytes": 262144
+    }
+  ]
+}

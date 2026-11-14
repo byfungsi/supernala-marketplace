@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "google-sheets",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "google-sheets-1.0.0-first-publication-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794666235601,
+  "sourceInputDigest": "2fa16c1402075c5fc2b52df992b26a1bfed32a9934f4680b967f2be003bdf5cb",
+  "artifactDigest": "aecc563d493786ed13f16dca811ce85ef073bbfaced8bfa7eb0cde88d24ad32a",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-sheets-rest-v1",
+    "providerDefinitionDigest": "f6c2edd3166ad6f16a5360f2e425440e9ebfbeb6fe3157db4b9bef8d8f1da69f",
+    "requestedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "https://www.googleapis.com/auth/spreadsheets",
+      "openid"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "catalogDigest": "99a710b31ab9f989828bd69a4729574e0ac0c256bb14f9b31b4027cd6ea52bbc",
+  "configDigest": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
+  "provenanceDigest": "aa04bccaf3cc96e1348f881ca28e997dbcc8bb1a8ffc57df496879cf5d31ccd0",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "d1b5571f6c94cd5bbc0842b690ce808d45733d4349a8bc058b02ae1872eb4350",
+  "authorityAfter": {
+    "runtimeKind": "managed-package",
+    "authenticationKind": "oauth",
+    "requestedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "https://www.googleapis.com/auth/spreadsheets",
+      "openid"
+    ],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "google-sheets-rest-v1",
+    "providerDefinitionDigest": "f6c2edd3166ad6f16a5360f2e425440e9ebfbeb6fe3157db4b9bef8d8f1da69f",
+    "tools": [
+      {
+        "id": "google-sheets.search_spreadsheets",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "modifiedAfter": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z)?$"
+            },
+            "pageSize": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "pageToken": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-sheets.get_spreadsheet",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "spreadsheetId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            }
+          },
+          "required": ["spreadsheetId"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-sheets.read_range",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "spreadsheetId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "range": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "values": {
+              "type": "string",
+              "enum": ["displayed", "raw", "formulas"]
+            }
+          },
+          "required": ["spreadsheetId", "range"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-sheets.update_range",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "spreadsheetId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "range": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rows": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1000,
+              "items": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "string",
+                  "maxLength": 50000
+                }
+              }
+            }
+          },
+          "required": ["spreadsheetId", "range", "rows"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-sheets.append_rows",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "spreadsheetId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            "range": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "rows": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 1000,
+              "items": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "string",
+                  "maxLength": 50000
+                }
+              }
+            }
+          },
+          "required": ["spreadsheetId", "range", "rows"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "google-sheets.create_spreadsheet",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 255
+            },
+            "sheetTitles": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 20,
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              }
+            }
+          },
+          "required": ["title"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["sheets.googleapis.com", "www.googleapis.com"],
+    "config": []
+  },
+  "authorityDigest": "ada7a27b4c2c5e656bb6c0d342732973fb368364b2644867ba7e51bf3daed9d6",
+  "authorityDiffDigest": "9855cd710db3ff2d691925071daf19d8ff2f11b2307fa0846f9004c1eee6a42a",
+  "releaseDigest": "46df060010873024f10b5c17b6a02761db2b6af619698bc20f53b01817dd5ffc",
+  "decision": "approved"
+}

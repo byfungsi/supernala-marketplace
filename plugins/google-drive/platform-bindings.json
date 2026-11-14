@@ -1,0 +1,24 @@
+{
+  "providerRegistration": "google-drive-rest-v1",
+  "providerDefinition": {
+    "path": "oauth-provider.json",
+    "canonicalSha256": "90963e7172b047d4471db3d621ea9e9550c39adc1dd806fbd0e5a94c7b12dd4a"
+  },
+  "providerMetadata": {
+    "provider": "google",
+    "resourceIdentity": "drive.googleapis.com",
+    "registrationMode": "workspace-oauth-app",
+    "source": "platform",
+    "approvedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/drive.readonly",
+      "openid"
+    ]
+  },
+  "workspaceOAuthApp": {
+    "ownership": "workspace-owner",
+    "credentialFields": ["clientId", "clientSecret"],
+    "storage": "encrypted-plugin-vault"
+  }
+}

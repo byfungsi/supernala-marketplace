@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "id": "google-sheets",
+  "publisher": "supernala",
+  "version": "1.0.0",
+  "name": "Google Sheets",
+  "description": "Google Sheets search, cell reading, range updates, row appending and creation",
+  "license": "MIT",
+  "licenseEvidence": {
+    "kind": "spdx-mit-full-text",
+    "license": {
+      "path": "LICENSE",
+      "sha256": "21be23755fcecf50aec5729fe4a36db0e6600175e276716b55a61da91ac07091"
+    },
+    "notice": {
+      "path": "NOTICE",
+      "sha256": "d008a760beb3336ebd0b30cf993895afa2ea2a26e5d50771b6879ff51ea271d8"
+    }
+  },
+  "runtime": {
+    "kind": "managed-package",
+    "type": "node",
+    "node": "22.x",
+    "entrypoint": "dist/server.mjs"
+  },
+  "catalog": {
+    "path": "catalog.json",
+    "sha256": "99a710b31ab9f989828bd69a4729574e0ac0c256bb14f9b31b4027cd6ea52bbc"
+  },
+  "config": {
+    "path": "config.json",
+    "sha256": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334"
+  },
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "google-sheets-rest-v1",
+    "providerDefinitionDigest": "f6c2edd3166ad6f16a5360f2e425440e9ebfbeb6fe3157db4b9bef8d8f1da69f",
+    "requestedScopes": [
+      "email",
+      "https://www.googleapis.com/auth/drive.metadata.readonly",
+      "https://www.googleapis.com/auth/spreadsheets",
+      "openid"
+    ],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "network": {
+    "allowedHosts": ["sheets.googleapis.com", "www.googleapis.com"]
+  },
+  "limits": {
+    "expandedBytes": 1048576,
+    "files": 20
+  },
+  "provenance": "provenance.json"
+}
