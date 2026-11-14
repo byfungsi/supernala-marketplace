@@ -88,14 +88,7 @@
             },
             "kind": {
               "type": "string",
-              "enum": [
-                "document",
-                "spreadsheet",
-                "presentation",
-                "folder",
-                "pdf",
-                "image"
-              ]
+              "enum": ["document", "spreadsheet", "presentation", "folder", "pdf", "image"]
             },
             "folderId": {
               "type": "string",
@@ -145,9 +138,7 @@
               "maxLength": 2048
             }
           },
-          "required": [
-            "fileId"
-          ],
+          "required": ["fileId"],
           "additionalProperties": false
         }
       },
@@ -164,9 +155,7 @@
               "maxLength": 2048
             }
           },
-          "required": [
-            "fileId"
-          ],
+          "required": ["fileId"],
           "additionalProperties": false
         }
       },
@@ -188,19 +177,11 @@
             },
             "format": {
               "type": "string",
-              "enum": [
-                "text",
-                "markdown",
-                "csv",
-                "json"
-              ]
+              "enum": ["text", "markdown", "csv", "json"]
             },
             "convertTo": {
               "type": "string",
-              "enum": [
-                "document",
-                "spreadsheet"
-              ]
+              "enum": ["document", "spreadsheet"]
             },
             "folderId": {
               "type": "string",
@@ -208,10 +189,7 @@
               "maxLength": 2048
             }
           },
-          "required": [
-            "name",
-            "content"
-          ],
+          "required": ["name", "content"],
           "additionalProperties": false
         }
       },
@@ -233,16 +211,12 @@
               "maxLength": 2048
             }
           },
-          "required": [
-            "name"
-          ],
+          "required": ["name"],
           "additionalProperties": false
         }
       }
     ],
-    "allowedHosts": [
-      "www.googleapis.com"
-    ],
+    "allowedHosts": ["www.googleapis.com"],
     "config": []
   },
   "authorityDigest": "5be0718a9d369010be029a2e0bd8987f8bce0f22a18883509ea6f406c537ef95",

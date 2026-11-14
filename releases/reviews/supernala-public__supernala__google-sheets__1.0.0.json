@@ -103,9 +103,7 @@
               "maxLength": 2048
             }
           },
-          "required": [
-            "spreadsheetId"
-          ],
+          "required": ["spreadsheetId"],
           "additionalProperties": false
         }
       },
@@ -128,17 +126,10 @@
             },
             "values": {
               "type": "string",
-              "enum": [
-                "displayed",
-                "raw",
-                "formulas"
-              ]
+              "enum": ["displayed", "raw", "formulas"]
             }
           },
-          "required": [
-            "spreadsheetId",
-            "range"
-          ],
+          "required": ["spreadsheetId", "range"],
           "additionalProperties": false
         }
       },
@@ -173,11 +164,7 @@
               }
             }
           },
-          "required": [
-            "spreadsheetId",
-            "range",
-            "rows"
-          ],
+          "required": ["spreadsheetId", "range", "rows"],
           "additionalProperties": false
         }
       },
@@ -212,11 +199,7 @@
               }
             }
           },
-          "required": [
-            "spreadsheetId",
-            "range",
-            "rows"
-          ],
+          "required": ["spreadsheetId", "range", "rows"],
           "additionalProperties": false
         }
       },
@@ -243,17 +226,12 @@
               }
             }
           },
-          "required": [
-            "title"
-          ],
+          "required": ["title"],
           "additionalProperties": false
         }
       }
     ],
-    "allowedHosts": [
-      "sheets.googleapis.com",
-      "www.googleapis.com"
-    ],
+    "allowedHosts": ["sheets.googleapis.com", "www.googleapis.com"],
     "config": []
   },
   "authorityDigest": "ada7a27b4c2c5e656bb6c0d342732973fb368364b2644867ba7e51bf3daed9d6",

@@ -103,9 +103,7 @@
               "maxLength": 2048
             }
           },
-          "required": [
-            "documentId"
-          ],
+          "required": ["documentId"],
           "additionalProperties": false
         }
       },
@@ -127,9 +125,7 @@
               "maxLength": 100000
             }
           },
-          "required": [
-            "title"
-          ],
+          "required": ["title"],
           "additionalProperties": false
         }
       },
@@ -151,10 +147,7 @@
               "maxLength": 100000
             }
           },
-          "required": [
-            "documentId",
-            "text"
-          ],
+          "required": ["documentId", "text"],
           "additionalProperties": false
         }
       },
@@ -183,19 +176,12 @@
               "type": "boolean"
             }
           },
-          "required": [
-            "documentId",
-            "find",
-            "replaceWith"
-          ],
+          "required": ["documentId", "find", "replaceWith"],
           "additionalProperties": false
         }
       }
     ],
-    "allowedHosts": [
-      "docs.googleapis.com",
-      "www.googleapis.com"
-    ],
+    "allowedHosts": ["docs.googleapis.com", "www.googleapis.com"],
     "config": []
   },
   "authorityDigest": "9c92ff244e4a55e568049cf37c64a76c6c44f93775ea3ddee1cf885e991c33fe",
