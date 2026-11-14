@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "marketplaceId": "supernala-public",
+  "publisher": {
+    "namespace": "supernala",
+    "name": "Supernala"
+  },
+  "slug": "meta-ads",
+  "version": "1.0.0",
+  "name": "Meta Ads playbook",
+  "shortDescription": "How Bots run Meta ads safely: budgets in the right units, paused-first campaigns, approval before going live, and Meta's own rules for each tool.",
+  "longDescription": "Comes with the Meta Ads app: every Bot with access to Meta Ads gets this Skill automatically. It covers reporting, the campaign \u2192 ad set \u2192 creative \u2192 ad workflow, draft mode, and the money rules that keep a Bot from spending what the Owner did not approve.",
+  "categories": ["Marketing"],
+  "featuredRank": null,
+  "license": "LicenseRef-Supernala",
+  "attribution": "Written by Supernala from Meta's Ads MCP server tool guidance and documentation.",
+  "source": {
+    "_tag": "supernala"
+  },
+  "addedFiles": []
+}

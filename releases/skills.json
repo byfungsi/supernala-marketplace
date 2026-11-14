@@ -60,6 +60,11 @@
       "id": "vercel/react-view-transitions",
       "publicationEligible": true,
       "reason": "Owner approved publication on 2026-11-05. MIT verified at the pinned upstream commit; exact files reviewed in this repository."
+    },
+    {
+      "id": "supernala/meta-ads",
+      "publicationEligible": true,
+      "reason": "Owner approved on 2026-11-15 as the companion Skill of the curated Meta Ads app; Supernala-authored from Meta's Ads MCP tool guidance, reviewed in this repository."
     }
   ]
 }
