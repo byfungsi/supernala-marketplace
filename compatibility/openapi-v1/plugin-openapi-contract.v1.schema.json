@@ -4,11 +4,15 @@
   "properties": {
     "schemaVersion": {
       "type": "number",
-      "enum": [1]
+      "enum": [
+        1
+      ]
     },
     "runtimeKind": {
       "type": "string",
-      "enum": ["managed-openapi"]
+      "enum": [
+        "managed-openapi"
+      ]
     },
     "pluginVersionId": {
       "type": "string",
@@ -31,7 +35,9 @@
         },
         "schemaVersion": {
           "type": "number",
-          "enum": [1]
+          "enum": [
+            1
+          ]
         },
         "digest": {
           "type": "string",
@@ -91,11 +97,20 @@
               },
               "classification": {
                 "type": "string",
-                "enum": ["read", "write", "destructive", "unknown"]
+                "enum": [
+                  "read",
+                  "write",
+                  "destructive",
+                  "unknown"
+                ]
               },
               "defaultPolicy": {
                 "type": "string",
-                "enum": ["allow", "require-approval", "block"]
+                "enum": [
+                  "allow",
+                  "require-approval",
+                  "block"
+                ]
               },
               "inputSchema": {
                 "type": "object"
@@ -121,7 +136,12 @@
           "maxItems": 2000
         }
       },
-      "required": ["id", "schemaVersion", "digest", "tools"],
+      "required": [
+        "id",
+        "schemaVersion",
+        "digest",
+        "tools"
+      ],
       "additionalProperties": false
     },
     "authStrategy": {
@@ -131,11 +151,15 @@
           "properties": {
             "schemaVersion": {
               "type": "number",
-              "enum": [1]
+              "enum": [
+                1
+              ]
             },
             "profile": {
               "type": "string",
-              "enum": ["workspace-oauth"]
+              "enum": [
+                "workspace-oauth"
+              ]
             },
             "providerRegistrationId": {
               "type": "string",
@@ -176,7 +200,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["opaque-connection"]
+                      "enum": [
+                        "opaque-connection"
+                      ]
                     },
                     "displayLabel": {
                       "type": "string",
@@ -191,7 +217,10 @@
                       ]
                     }
                   },
-                  "required": ["kind", "displayLabel"],
+                  "required": [
+                    "kind",
+                    "displayLabel"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -199,7 +228,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["token-response"]
+                      "enum": [
+                        "token-response"
+                      ]
                     },
                     "subjectPath": {
                       "type": "array",
@@ -282,7 +313,9 @@
                       ]
                     }
                   },
-                  "required": ["kind"],
+                  "required": [
+                    "kind"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -290,7 +323,10 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["https-json", "oidc-userinfo"]
+                      "enum": [
+                        "https-json",
+                        "oidc-userinfo"
+                      ]
                     },
                     "endpoint": {
                       "type": "string",
@@ -305,7 +341,9 @@
                     },
                     "authorization": {
                       "type": "string",
-                      "enum": ["bearer"]
+                      "enum": [
+                        "bearer"
+                      ]
                     },
                     "subjectPath": {
                       "type": "array",
@@ -389,7 +427,10 @@
                     },
                     "subjectStability": {
                       "type": "string",
-                      "enum": ["stable", "mutable"]
+                      "enum": [
+                        "stable",
+                        "mutable"
+                      ]
                     },
                     "maximumResponseBytes": {
                       "type": "integer",
@@ -424,7 +465,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["mcp-tool"]
+                      "enum": [
+                        "mcp-tool"
+                      ]
                     },
                     "operation": {
                       "type": "object",
@@ -465,7 +508,12 @@
                           "maximum": 19
                         }
                       },
-                      "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
+                      "required": [
+                        "endpoint",
+                        "toolName",
+                        "input",
+                        "maximumOutputBytes"
+                      ],
                       "additionalProperties": false
                     },
                     "subjectPath": {
@@ -550,7 +598,10 @@
                     },
                     "subjectStability": {
                       "type": "string",
-                      "enum": ["stable", "mutable"]
+                      "enum": [
+                        "stable",
+                        "mutable"
+                      ]
                     },
                     "maximumResponseBytes": {
                       "type": "integer",
@@ -588,10 +639,14 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["none"]
+                      "enum": [
+                        "none"
+                      ]
                     }
                   },
-                  "required": ["kind"],
+                  "required": [
+                    "kind"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -599,7 +654,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["https-json"]
+                      "enum": [
+                        "https-json"
+                      ]
                     },
                     "endpoint": {
                       "type": "string",
@@ -614,7 +671,9 @@
                     },
                     "authorization": {
                       "type": "string",
-                      "enum": ["bearer"]
+                      "enum": [
+                        "bearer"
+                      ]
                     },
                     "resourcesPath": {
                       "type": "array",
@@ -687,7 +746,10 @@
                     },
                     "selection": {
                       "type": "string",
-                      "enum": ["exactly-one", "owner-select"]
+                      "enum": [
+                        "exactly-one",
+                        "owner-select"
+                      ]
                     },
                     "binding": {
                       "type": "object",
@@ -699,10 +761,14 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["all-tools-with-argument"]
+                                  "enum": [
+                                    "all-tools-with-argument"
+                                  ]
                                 }
                               },
-                              "required": ["kind"],
+                              "required": [
+                                "kind"
+                              ],
                               "additionalProperties": false
                             },
                             {
@@ -710,7 +776,9 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["tool-list"]
+                                  "enum": [
+                                    "tool-list"
+                                  ]
                                 },
                                 "toolIds": {
                                   "type": "array",
@@ -737,7 +805,10 @@
                                   "uniqueItems": true
                                 }
                               },
-                              "required": ["kind", "toolIds"],
+                              "required": [
+                                "kind",
+                                "toolIds"
+                              ],
                               "additionalProperties": false
                             }
                           ]
@@ -766,7 +837,10 @@
                           ]
                         }
                       },
-                      "required": ["appliesTo", "argumentPath"],
+                      "required": [
+                        "appliesTo",
+                        "argumentPath"
+                      ],
                       "additionalProperties": false
                     },
                     "maximumResponseBytes": {
@@ -804,7 +878,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["mcp-tool"]
+                      "enum": [
+                        "mcp-tool"
+                      ]
                     },
                     "operation": {
                       "type": "object",
@@ -845,7 +921,12 @@
                           "maximum": 19
                         }
                       },
-                      "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
+                      "required": [
+                        "endpoint",
+                        "toolName",
+                        "input",
+                        "maximumOutputBytes"
+                      ],
                       "additionalProperties": false
                     },
                     "resourcesPath": {
@@ -919,7 +1000,10 @@
                     },
                     "selection": {
                       "type": "string",
-                      "enum": ["exactly-one", "owner-select"]
+                      "enum": [
+                        "exactly-one",
+                        "owner-select"
+                      ]
                     },
                     "binding": {
                       "type": "object",
@@ -931,10 +1015,14 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["all-tools-with-argument"]
+                                  "enum": [
+                                    "all-tools-with-argument"
+                                  ]
                                 }
                               },
-                              "required": ["kind"],
+                              "required": [
+                                "kind"
+                              ],
                               "additionalProperties": false
                             },
                             {
@@ -942,7 +1030,9 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["tool-list"]
+                                  "enum": [
+                                    "tool-list"
+                                  ]
                                 },
                                 "toolIds": {
                                   "type": "array",
@@ -969,7 +1059,10 @@
                                   "uniqueItems": true
                                 }
                               },
-                              "required": ["kind", "toolIds"],
+                              "required": [
+                                "kind",
+                                "toolIds"
+                              ],
                               "additionalProperties": false
                             }
                           ]
@@ -998,7 +1091,10 @@
                           ]
                         }
                       },
-                      "required": ["appliesTo", "argumentPath"],
+                      "required": [
+                        "appliesTo",
+                        "argumentPath"
+                      ],
                       "additionalProperties": false
                     },
                     "maximumResponseBytes": {
@@ -1049,11 +1145,15 @@
           "properties": {
             "schemaVersion": {
               "type": "number",
-              "enum": [1]
+              "enum": [
+                1
+              ]
             },
             "profile": {
               "type": "string",
-              "enum": ["mcp-oauth"]
+              "enum": [
+                "mcp-oauth"
+              ]
             },
             "providerRegistrationId": {
               "type": "string",
@@ -1094,10 +1194,14 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["pre-registered"]
+                      "enum": [
+                        "pre-registered"
+                      ]
                     }
                   },
-                  "required": ["kind"],
+                  "required": [
+                    "kind"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -1105,7 +1209,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["cimd"]
+                      "enum": [
+                        "cimd"
+                      ]
                     },
                     "clientIdMetadataDocumentUrl": {
                       "type": "string",
@@ -1119,7 +1225,10 @@
                       ]
                     }
                   },
-                  "required": ["kind", "clientIdMetadataDocumentUrl"],
+                  "required": [
+                    "kind",
+                    "clientIdMetadataDocumentUrl"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -1127,7 +1236,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["dynamic"]
+                      "enum": [
+                        "dynamic"
+                      ]
                     },
                     "authorizationServerMetadataUrl": {
                       "type": "string",
@@ -1141,7 +1252,10 @@
                       ]
                     }
                   },
-                  "required": ["kind", "authorizationServerMetadataUrl"],
+                  "required": [
+                    "kind",
+                    "authorizationServerMetadataUrl"
+                  ],
                   "additionalProperties": false
                 }
               ]
@@ -1164,7 +1278,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["opaque-connection"]
+                      "enum": [
+                        "opaque-connection"
+                      ]
                     },
                     "displayLabel": {
                       "type": "string",
@@ -1179,7 +1295,10 @@
                       ]
                     }
                   },
-                  "required": ["kind", "displayLabel"],
+                  "required": [
+                    "kind",
+                    "displayLabel"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -1187,7 +1306,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["token-response"]
+                      "enum": [
+                        "token-response"
+                      ]
                     },
                     "subjectPath": {
                       "type": "array",
@@ -1270,7 +1391,9 @@
                       ]
                     }
                   },
-                  "required": ["kind"],
+                  "required": [
+                    "kind"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -1278,7 +1401,10 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["https-json", "oidc-userinfo"]
+                      "enum": [
+                        "https-json",
+                        "oidc-userinfo"
+                      ]
                     },
                     "endpoint": {
                       "type": "string",
@@ -1293,7 +1419,9 @@
                     },
                     "authorization": {
                       "type": "string",
-                      "enum": ["bearer"]
+                      "enum": [
+                        "bearer"
+                      ]
                     },
                     "subjectPath": {
                       "type": "array",
@@ -1377,7 +1505,10 @@
                     },
                     "subjectStability": {
                       "type": "string",
-                      "enum": ["stable", "mutable"]
+                      "enum": [
+                        "stable",
+                        "mutable"
+                      ]
                     },
                     "maximumResponseBytes": {
                       "type": "integer",
@@ -1412,7 +1543,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["mcp-tool"]
+                      "enum": [
+                        "mcp-tool"
+                      ]
                     },
                     "operation": {
                       "type": "object",
@@ -1453,7 +1586,12 @@
                           "maximum": 19
                         }
                       },
-                      "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
+                      "required": [
+                        "endpoint",
+                        "toolName",
+                        "input",
+                        "maximumOutputBytes"
+                      ],
                       "additionalProperties": false
                     },
                     "subjectPath": {
@@ -1538,7 +1676,10 @@
                     },
                     "subjectStability": {
                       "type": "string",
-                      "enum": ["stable", "mutable"]
+                      "enum": [
+                        "stable",
+                        "mutable"
+                      ]
                     },
                     "maximumResponseBytes": {
                       "type": "integer",
@@ -1576,10 +1717,14 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["none"]
+                      "enum": [
+                        "none"
+                      ]
                     }
                   },
-                  "required": ["kind"],
+                  "required": [
+                    "kind"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -1587,7 +1732,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["https-json"]
+                      "enum": [
+                        "https-json"
+                      ]
                     },
                     "endpoint": {
                       "type": "string",
@@ -1602,7 +1749,9 @@
                     },
                     "authorization": {
                       "type": "string",
-                      "enum": ["bearer"]
+                      "enum": [
+                        "bearer"
+                      ]
                     },
                     "resourcesPath": {
                       "type": "array",
@@ -1675,7 +1824,10 @@
                     },
                     "selection": {
                       "type": "string",
-                      "enum": ["exactly-one", "owner-select"]
+                      "enum": [
+                        "exactly-one",
+                        "owner-select"
+                      ]
                     },
                     "binding": {
                       "type": "object",
@@ -1687,10 +1839,14 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["all-tools-with-argument"]
+                                  "enum": [
+                                    "all-tools-with-argument"
+                                  ]
                                 }
                               },
-                              "required": ["kind"],
+                              "required": [
+                                "kind"
+                              ],
                               "additionalProperties": false
                             },
                             {
@@ -1698,7 +1854,9 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["tool-list"]
+                                  "enum": [
+                                    "tool-list"
+                                  ]
                                 },
                                 "toolIds": {
                                   "type": "array",
@@ -1725,7 +1883,10 @@
                                   "uniqueItems": true
                                 }
                               },
-                              "required": ["kind", "toolIds"],
+                              "required": [
+                                "kind",
+                                "toolIds"
+                              ],
                               "additionalProperties": false
                             }
                           ]
@@ -1754,7 +1915,10 @@
                           ]
                         }
                       },
-                      "required": ["appliesTo", "argumentPath"],
+                      "required": [
+                        "appliesTo",
+                        "argumentPath"
+                      ],
                       "additionalProperties": false
                     },
                     "maximumResponseBytes": {
@@ -1792,7 +1956,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["mcp-tool"]
+                      "enum": [
+                        "mcp-tool"
+                      ]
                     },
                     "operation": {
                       "type": "object",
@@ -1833,7 +1999,12 @@
                           "maximum": 19
                         }
                       },
-                      "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
+                      "required": [
+                        "endpoint",
+                        "toolName",
+                        "input",
+                        "maximumOutputBytes"
+                      ],
                       "additionalProperties": false
                     },
                     "resourcesPath": {
@@ -1907,7 +2078,10 @@
                     },
                     "selection": {
                       "type": "string",
-                      "enum": ["exactly-one", "owner-select"]
+                      "enum": [
+                        "exactly-one",
+                        "owner-select"
+                      ]
                     },
                     "binding": {
                       "type": "object",
@@ -1919,10 +2093,14 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["all-tools-with-argument"]
+                                  "enum": [
+                                    "all-tools-with-argument"
+                                  ]
                                 }
                               },
-                              "required": ["kind"],
+                              "required": [
+                                "kind"
+                              ],
                               "additionalProperties": false
                             },
                             {
@@ -1930,7 +2108,9 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["tool-list"]
+                                  "enum": [
+                                    "tool-list"
+                                  ]
                                 },
                                 "toolIds": {
                                   "type": "array",
@@ -1957,7 +2137,10 @@
                                   "uniqueItems": true
                                 }
                               },
-                              "required": ["kind", "toolIds"],
+                              "required": [
+                                "kind",
+                                "toolIds"
+                              ],
                               "additionalProperties": false
                             }
                           ]
@@ -1986,7 +2169,10 @@
                           ]
                         }
                       },
-                      "required": ["appliesTo", "argumentPath"],
+                      "required": [
+                        "appliesTo",
+                        "argumentPath"
+                      ],
                       "additionalProperties": false
                     },
                     "maximumResponseBytes": {
@@ -2038,11 +2224,15 @@
           "properties": {
             "schemaVersion": {
               "type": "number",
-              "enum": [1]
+              "enum": [
+                1
+              ]
             },
             "profile": {
               "type": "string",
-              "enum": ["api-key"]
+              "enum": [
+                "api-key"
+              ]
             },
             "providerRegistrationId": {
               "type": "string",
@@ -2091,7 +2281,13 @@
                     "maximum": 8192
                   }
                 },
-                "required": ["key", "label", "secret", "minimumLength", "maximumLength"],
+                "required": [
+                  "key",
+                  "label",
+                  "secret",
+                  "minimumLength",
+                  "maximumLength"
+                ],
                 "additionalProperties": false
               },
               "allOf": [
@@ -2113,11 +2309,15 @@
                     "properties": {
                       "kind": {
                         "type": "string",
-                        "enum": ["basic"]
+                        "enum": [
+                          "basic"
+                        ]
                       },
                       "headerName": {
                         "type": "string",
-                        "enum": ["authorization"]
+                        "enum": [
+                          "authorization"
+                        ]
                       },
                       "usernameField": {
                         "type": "string",
@@ -2144,7 +2344,12 @@
                         "pattern": "^[a-z][a-z0-9_.-]*$"
                       }
                     },
-                    "required": ["kind", "headerName", "usernameField", "passwordField"],
+                    "required": [
+                      "kind",
+                      "headerName",
+                      "usernameField",
+                      "passwordField"
+                    ],
                     "additionalProperties": false
                   },
                   {
@@ -2152,7 +2357,9 @@
                     "properties": {
                       "kind": {
                         "type": "string",
-                        "enum": ["header"]
+                        "enum": [
+                          "header"
+                        ]
                       },
                       "field": {
                         "type": "string",
@@ -2180,10 +2387,18 @@
                       },
                       "encoding": {
                         "type": "string",
-                        "enum": ["raw", "bearer"]
+                        "enum": [
+                          "raw",
+                          "bearer"
+                        ]
                       }
                     },
-                    "required": ["kind", "field", "headerName", "encoding"],
+                    "required": [
+                      "kind",
+                      "field",
+                      "headerName",
+                      "encoding"
+                    ],
                     "additionalProperties": false
                   }
                 ]
@@ -2204,7 +2419,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["https-json"]
+                      "enum": [
+                        "https-json"
+                      ]
                     },
                     "endpoint": {
                       "type": "string",
@@ -2253,7 +2470,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["https-json-resource"]
+                      "enum": [
+                        "https-json-resource"
+                      ]
                     },
                     "origin": {
                       "type": "string",
@@ -2322,6 +2541,58 @@
                     "maximumObjectKeys"
                   ],
                   "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "https-json-site"
+                      ]
+                    },
+                    "path": {
+                      "type": "string",
+                      "allOf": [
+                        {
+                          "minLength": 1
+                        },
+                        {
+                          "maxLength": 256
+                        }
+                      ],
+                      "pattern": "^\\/(?:[A-Za-z0-9_~-]+(?:\\.[A-Za-z0-9_~-]+)*\\/?)*$"
+                    },
+                    "expectedStatus": {
+                      "type": "integer",
+                      "minimum": 200,
+                      "maximum": 299
+                    },
+                    "maximumResponseBytes": {
+                      "type": "integer",
+                      "minimum": 1024,
+                      "maximum": 262144
+                    },
+                    "maximumJsonDepth": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16
+                    },
+                    "maximumObjectKeys": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2048
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "path",
+                    "expectedStatus",
+                    "maximumResponseBytes",
+                    "maximumJsonDepth",
+                    "maximumObjectKeys"
+                  ],
+                  "additionalProperties": false
                 }
               ]
             },
@@ -2332,7 +2603,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["opaque-connection"]
+                      "enum": [
+                        "opaque-connection"
+                      ]
                     },
                     "displayLabel": {
                       "type": "string",
@@ -2347,7 +2620,10 @@
                       ]
                     }
                   },
-                  "required": ["kind", "displayLabel"],
+                  "required": [
+                    "kind",
+                    "displayLabel"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -2355,7 +2631,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["token-response"]
+                      "enum": [
+                        "token-response"
+                      ]
                     },
                     "subjectPath": {
                       "type": "array",
@@ -2438,7 +2716,9 @@
                       ]
                     }
                   },
-                  "required": ["kind"],
+                  "required": [
+                    "kind"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -2446,7 +2726,10 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["https-json", "oidc-userinfo"]
+                      "enum": [
+                        "https-json",
+                        "oidc-userinfo"
+                      ]
                     },
                     "endpoint": {
                       "type": "string",
@@ -2461,7 +2744,9 @@
                     },
                     "authorization": {
                       "type": "string",
-                      "enum": ["bearer"]
+                      "enum": [
+                        "bearer"
+                      ]
                     },
                     "subjectPath": {
                       "type": "array",
@@ -2545,7 +2830,10 @@
                     },
                     "subjectStability": {
                       "type": "string",
-                      "enum": ["stable", "mutable"]
+                      "enum": [
+                        "stable",
+                        "mutable"
+                      ]
                     },
                     "maximumResponseBytes": {
                       "type": "integer",
@@ -2580,7 +2868,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["mcp-tool"]
+                      "enum": [
+                        "mcp-tool"
+                      ]
                     },
                     "operation": {
                       "type": "object",
@@ -2621,7 +2911,12 @@
                           "maximum": 19
                         }
                       },
-                      "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
+                      "required": [
+                        "endpoint",
+                        "toolName",
+                        "input",
+                        "maximumOutputBytes"
+                      ],
                       "additionalProperties": false
                     },
                     "subjectPath": {
@@ -2706,7 +3001,10 @@
                     },
                     "subjectStability": {
                       "type": "string",
-                      "enum": ["stable", "mutable"]
+                      "enum": [
+                        "stable",
+                        "mutable"
+                      ]
                     },
                     "maximumResponseBytes": {
                       "type": "integer",
@@ -2746,10 +3044,14 @@
                       "properties": {
                         "kind": {
                           "type": "string",
-                          "enum": ["none"]
+                          "enum": [
+                            "none"
+                          ]
                         }
                       },
-                      "required": ["kind"],
+                      "required": [
+                        "kind"
+                      ],
                       "additionalProperties": false
                     },
                     {
@@ -2757,7 +3059,9 @@
                       "properties": {
                         "kind": {
                           "type": "string",
-                          "enum": ["https-json"]
+                          "enum": [
+                            "https-json"
+                          ]
                         },
                         "endpoint": {
                           "type": "string",
@@ -2772,7 +3076,9 @@
                         },
                         "authorization": {
                           "type": "string",
-                          "enum": ["bearer"]
+                          "enum": [
+                            "bearer"
+                          ]
                         },
                         "resourcesPath": {
                           "type": "array",
@@ -2845,7 +3151,10 @@
                         },
                         "selection": {
                           "type": "string",
-                          "enum": ["exactly-one", "owner-select"]
+                          "enum": [
+                            "exactly-one",
+                            "owner-select"
+                          ]
                         },
                         "binding": {
                           "type": "object",
@@ -2857,10 +3166,14 @@
                                   "properties": {
                                     "kind": {
                                       "type": "string",
-                                      "enum": ["all-tools-with-argument"]
+                                      "enum": [
+                                        "all-tools-with-argument"
+                                      ]
                                     }
                                   },
-                                  "required": ["kind"],
+                                  "required": [
+                                    "kind"
+                                  ],
                                   "additionalProperties": false
                                 },
                                 {
@@ -2868,7 +3181,9 @@
                                   "properties": {
                                     "kind": {
                                       "type": "string",
-                                      "enum": ["tool-list"]
+                                      "enum": [
+                                        "tool-list"
+                                      ]
                                     },
                                     "toolIds": {
                                       "type": "array",
@@ -2895,7 +3210,10 @@
                                       "uniqueItems": true
                                     }
                                   },
-                                  "required": ["kind", "toolIds"],
+                                  "required": [
+                                    "kind",
+                                    "toolIds"
+                                  ],
                                   "additionalProperties": false
                                 }
                               ]
@@ -2924,7 +3242,10 @@
                               ]
                             }
                           },
-                          "required": ["appliesTo", "argumentPath"],
+                          "required": [
+                            "appliesTo",
+                            "argumentPath"
+                          ],
                           "additionalProperties": false
                         },
                         "maximumResponseBytes": {
@@ -2962,7 +3283,9 @@
                       "properties": {
                         "kind": {
                           "type": "string",
-                          "enum": ["mcp-tool"]
+                          "enum": [
+                            "mcp-tool"
+                          ]
                         },
                         "operation": {
                           "type": "object",
@@ -3003,7 +3326,12 @@
                               "maximum": 19
                             }
                           },
-                          "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
+                          "required": [
+                            "endpoint",
+                            "toolName",
+                            "input",
+                            "maximumOutputBytes"
+                          ],
                           "additionalProperties": false
                         },
                         "resourcesPath": {
@@ -3077,7 +3405,10 @@
                         },
                         "selection": {
                           "type": "string",
-                          "enum": ["exactly-one", "owner-select"]
+                          "enum": [
+                            "exactly-one",
+                            "owner-select"
+                          ]
                         },
                         "binding": {
                           "type": "object",
@@ -3089,10 +3420,14 @@
                                   "properties": {
                                     "kind": {
                                       "type": "string",
-                                      "enum": ["all-tools-with-argument"]
+                                      "enum": [
+                                        "all-tools-with-argument"
+                                      ]
                                     }
                                   },
-                                  "required": ["kind"],
+                                  "required": [
+                                    "kind"
+                                  ],
                                   "additionalProperties": false
                                 },
                                 {
@@ -3100,7 +3435,9 @@
                                   "properties": {
                                     "kind": {
                                       "type": "string",
-                                      "enum": ["tool-list"]
+                                      "enum": [
+                                        "tool-list"
+                                      ]
                                     },
                                     "toolIds": {
                                       "type": "array",
@@ -3127,7 +3464,10 @@
                                       "uniqueItems": true
                                     }
                                   },
-                                  "required": ["kind", "toolIds"],
+                                  "required": [
+                                    "kind",
+                                    "toolIds"
+                                  ],
                                   "additionalProperties": false
                                 }
                               ]
@@ -3156,7 +3496,10 @@
                               ]
                             }
                           },
-                          "required": ["appliesTo", "argumentPath"],
+                          "required": [
+                            "appliesTo",
+                            "argumentPath"
+                          ],
                           "additionalProperties": false
                         },
                         "maximumResponseBytes": {
@@ -3195,7 +3538,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["credential-origin"]
+                      "enum": [
+                        "credential-origin"
+                      ]
                     },
                     "field": {
                       "type": "string",
@@ -3306,10 +3651,14 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["all-tools-with-argument"]
+                                  "enum": [
+                                    "all-tools-with-argument"
+                                  ]
                                 }
                               },
-                              "required": ["kind"],
+                              "required": [
+                                "kind"
+                              ],
                               "additionalProperties": false
                             },
                             {
@@ -3317,7 +3666,9 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["tool-list"]
+                                  "enum": [
+                                    "tool-list"
+                                  ]
                                 },
                                 "toolIds": {
                                   "type": "array",
@@ -3344,7 +3695,10 @@
                                   "uniqueItems": true
                                 }
                               },
-                              "required": ["kind", "toolIds"],
+                              "required": [
+                                "kind",
+                                "toolIds"
+                              ],
                               "additionalProperties": false
                             }
                           ]
@@ -3373,11 +3727,47 @@
                           ]
                         }
                       },
-                      "required": ["appliesTo", "argumentPath"],
+                      "required": [
+                        "appliesTo",
+                        "argumentPath"
+                      ],
                       "additionalProperties": false
                     }
                   },
-                  "required": ["kind", "field", "allowedHostSuffixes", "binding"],
+                  "required": [
+                    "kind",
+                    "field",
+                    "allowedHostSuffixes",
+                    "binding"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "credential-site"
+                      ]
+                    },
+                    "field": {
+                      "type": "string",
+                      "allOf": [
+                        {
+                          "minLength": 1
+                        },
+                        {
+                          "maxLength": 64
+                        }
+                      ],
+                      "pattern": "^[a-z][a-z0-9_.-]*$"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "field"
+                  ],
                   "additionalProperties": false
                 }
               ]
@@ -3399,11 +3789,15 @@
           "properties": {
             "schemaVersion": {
               "type": "number",
-              "enum": [1]
+              "enum": [
+                1
+              ]
             },
             "profile": {
               "type": "string",
-              "enum": ["device-oauth"]
+              "enum": [
+                "device-oauth"
+              ]
             },
             "providerRegistrationId": {
               "type": "string",
@@ -3444,10 +3838,14 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["platform-pre-registered"]
+                      "enum": [
+                        "platform-pre-registered"
+                      ]
                     }
                   },
-                  "required": ["kind"],
+                  "required": [
+                    "kind"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -3455,10 +3853,14 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["workspace-oauth-app"]
+                      "enum": [
+                        "workspace-oauth-app"
+                      ]
                     }
                   },
-                  "required": ["kind"],
+                  "required": [
+                    "kind"
+                  ],
                   "additionalProperties": false
                 }
               ]
@@ -3487,29 +3889,49 @@
             },
             "tokenEndpointAuthMethod": {
               "type": "string",
-              "enum": ["client_secret_post", "client_secret_basic", "none"]
+              "enum": [
+                "client_secret_post",
+                "client_secret_basic",
+                "none"
+              ]
             },
             "tokens": {
               "type": "object",
               "properties": {
                 "accessTokenType": {
                   "type": "string",
-                  "enum": ["bearer"]
+                  "enum": [
+                    "bearer"
+                  ]
                 },
                 "expiresIn": {
                   "type": "string",
-                  "enum": ["required", "optional"]
+                  "enum": [
+                    "required",
+                    "optional"
+                  ]
                 },
                 "refreshToken": {
                   "type": "string",
-                  "enum": ["required", "optional"]
+                  "enum": [
+                    "required",
+                    "optional"
+                  ]
                 },
                 "grantedScopes": {
                   "type": "string",
-                  "enum": ["exact-match", "requested-scopes-if-omitted"]
+                  "enum": [
+                    "exact-match",
+                    "requested-scopes-if-omitted"
+                  ]
                 }
               },
-              "required": ["accessTokenType", "expiresIn", "refreshToken", "grantedScopes"],
+              "required": [
+                "accessTokenType",
+                "expiresIn",
+                "refreshToken",
+                "grantedScopes"
+              ],
               "additionalProperties": false
             },
             "polling": {
@@ -3545,7 +3967,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["opaque-connection"]
+                      "enum": [
+                        "opaque-connection"
+                      ]
                     },
                     "displayLabel": {
                       "type": "string",
@@ -3560,7 +3984,10 @@
                       ]
                     }
                   },
-                  "required": ["kind", "displayLabel"],
+                  "required": [
+                    "kind",
+                    "displayLabel"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -3568,7 +3995,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["token-response"]
+                      "enum": [
+                        "token-response"
+                      ]
                     },
                     "subjectPath": {
                       "type": "array",
@@ -3651,7 +4080,9 @@
                       ]
                     }
                   },
-                  "required": ["kind"],
+                  "required": [
+                    "kind"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -3659,7 +4090,10 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["https-json", "oidc-userinfo"]
+                      "enum": [
+                        "https-json",
+                        "oidc-userinfo"
+                      ]
                     },
                     "endpoint": {
                       "type": "string",
@@ -3674,7 +4108,9 @@
                     },
                     "authorization": {
                       "type": "string",
-                      "enum": ["bearer"]
+                      "enum": [
+                        "bearer"
+                      ]
                     },
                     "subjectPath": {
                       "type": "array",
@@ -3758,7 +4194,10 @@
                     },
                     "subjectStability": {
                       "type": "string",
-                      "enum": ["stable", "mutable"]
+                      "enum": [
+                        "stable",
+                        "mutable"
+                      ]
                     },
                     "maximumResponseBytes": {
                       "type": "integer",
@@ -3793,7 +4232,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["mcp-tool"]
+                      "enum": [
+                        "mcp-tool"
+                      ]
                     },
                     "operation": {
                       "type": "object",
@@ -3834,7 +4275,12 @@
                           "maximum": 19
                         }
                       },
-                      "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
+                      "required": [
+                        "endpoint",
+                        "toolName",
+                        "input",
+                        "maximumOutputBytes"
+                      ],
                       "additionalProperties": false
                     },
                     "subjectPath": {
@@ -3919,7 +4365,10 @@
                     },
                     "subjectStability": {
                       "type": "string",
-                      "enum": ["stable", "mutable"]
+                      "enum": [
+                        "stable",
+                        "mutable"
+                      ]
                     },
                     "maximumResponseBytes": {
                       "type": "integer",
@@ -3957,10 +4406,14 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["none"]
+                      "enum": [
+                        "none"
+                      ]
                     }
                   },
-                  "required": ["kind"],
+                  "required": [
+                    "kind"
+                  ],
                   "additionalProperties": false
                 },
                 {
@@ -3968,7 +4421,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["https-json"]
+                      "enum": [
+                        "https-json"
+                      ]
                     },
                     "endpoint": {
                       "type": "string",
@@ -3983,7 +4438,9 @@
                     },
                     "authorization": {
                       "type": "string",
-                      "enum": ["bearer"]
+                      "enum": [
+                        "bearer"
+                      ]
                     },
                     "resourcesPath": {
                       "type": "array",
@@ -4056,7 +4513,10 @@
                     },
                     "selection": {
                       "type": "string",
-                      "enum": ["exactly-one", "owner-select"]
+                      "enum": [
+                        "exactly-one",
+                        "owner-select"
+                      ]
                     },
                     "binding": {
                       "type": "object",
@@ -4068,10 +4528,14 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["all-tools-with-argument"]
+                                  "enum": [
+                                    "all-tools-with-argument"
+                                  ]
                                 }
                               },
-                              "required": ["kind"],
+                              "required": [
+                                "kind"
+                              ],
                               "additionalProperties": false
                             },
                             {
@@ -4079,7 +4543,9 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["tool-list"]
+                                  "enum": [
+                                    "tool-list"
+                                  ]
                                 },
                                 "toolIds": {
                                   "type": "array",
@@ -4106,7 +4572,10 @@
                                   "uniqueItems": true
                                 }
                               },
-                              "required": ["kind", "toolIds"],
+                              "required": [
+                                "kind",
+                                "toolIds"
+                              ],
                               "additionalProperties": false
                             }
                           ]
@@ -4135,7 +4604,10 @@
                           ]
                         }
                       },
-                      "required": ["appliesTo", "argumentPath"],
+                      "required": [
+                        "appliesTo",
+                        "argumentPath"
+                      ],
                       "additionalProperties": false
                     },
                     "maximumResponseBytes": {
@@ -4173,7 +4645,9 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "enum": ["mcp-tool"]
+                      "enum": [
+                        "mcp-tool"
+                      ]
                     },
                     "operation": {
                       "type": "object",
@@ -4214,7 +4688,12 @@
                           "maximum": 19
                         }
                       },
-                      "required": ["endpoint", "toolName", "input", "maximumOutputBytes"],
+                      "required": [
+                        "endpoint",
+                        "toolName",
+                        "input",
+                        "maximumOutputBytes"
+                      ],
                       "additionalProperties": false
                     },
                     "resourcesPath": {
@@ -4288,7 +4767,10 @@
                     },
                     "selection": {
                       "type": "string",
-                      "enum": ["exactly-one", "owner-select"]
+                      "enum": [
+                        "exactly-one",
+                        "owner-select"
+                      ]
                     },
                     "binding": {
                       "type": "object",
@@ -4300,10 +4782,14 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["all-tools-with-argument"]
+                                  "enum": [
+                                    "all-tools-with-argument"
+                                  ]
                                 }
                               },
-                              "required": ["kind"],
+                              "required": [
+                                "kind"
+                              ],
                               "additionalProperties": false
                             },
                             {
@@ -4311,7 +4797,9 @@
                               "properties": {
                                 "kind": {
                                   "type": "string",
-                                  "enum": ["tool-list"]
+                                  "enum": [
+                                    "tool-list"
+                                  ]
                                 },
                                 "toolIds": {
                                   "type": "array",
@@ -4338,7 +4826,10 @@
                                   "uniqueItems": true
                                 }
                               },
-                              "required": ["kind", "toolIds"],
+                              "required": [
+                                "kind",
+                                "toolIds"
+                              ],
                               "additionalProperties": false
                             }
                           ]
@@ -4367,7 +4858,10 @@
                           ]
                         }
                       },
-                      "required": ["appliesTo", "argumentPath"],
+                      "required": [
+                        "appliesTo",
+                        "argumentPath"
+                      ],
                       "additionalProperties": false
                     },
                     "maximumResponseBytes": {
@@ -4440,16 +4934,32 @@
           },
           "method": {
             "type": "string",
-            "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+            "enum": [
+              "GET",
+              "POST",
+              "PUT",
+              "PATCH",
+              "DELETE"
+            ]
           },
           "origin": {
-            "type": "string",
-            "allOf": [
+            "anyOf": [
               {
-                "minLength": 1
+                "type": "string",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 2048
+                  }
+                ]
               },
               {
-                "maxLength": 2048
+                "type": "string",
+                "enum": [
+                  "connection-site"
+                ]
               }
             ]
           },
@@ -4476,38 +4986,58 @@
                 },
                 "location": {
                   "type": "string",
-                  "enum": ["path", "query", "header"]
+                  "enum": [
+                    "path",
+                    "query",
+                    "header"
+                  ]
                 },
                 "required": {
                   "type": "boolean"
                 },
                 "shape": {
                   "type": "string",
-                  "enum": ["scalar", "array", "object"]
+                  "enum": [
+                    "scalar",
+                    "array",
+                    "object"
+                  ]
                 },
                 "explode": {
                   "type": "boolean"
                 },
                 "fill": {
                   "type": "string",
-                  "enum": ["connection-resource"]
+                  "enum": [
+                    "connection-resource"
+                  ]
                 }
               },
-              "required": ["name", "location", "required"],
+              "required": [
+                "name",
+                "location",
+                "required"
+              ],
               "additionalProperties": false
             },
             "maxItems": 100
           },
           "body": {
             "type": "string",
-            "enum": ["none", "application/json"]
+            "enum": [
+              "none",
+              "application/json"
+            ]
           },
           "bodyRequired": {
             "type": "boolean"
           },
           "authentication": {
             "type": "string",
-            "enum": ["none", "connection"]
+            "enum": [
+              "none",
+              "connection"
+            ]
           }
         },
         "required": [

@@ -1,0 +1,276 @@
+{
+  "schemaVersion": 1,
+  "pluginVersionId": "supernala-public:supernala:wordpress-self-hosted@1.0.0",
+  "catalogSnapshotId": "wordpress-self-hosted-catalog-v1",
+  "providerRegistrationId": "wordpress-site-v1",
+  "credential": {
+    "field": "password",
+    "label": "Application password",
+    "minimumLength": 16,
+    "maximumLength": 200,
+    "displayLabel": "WordPress site",
+    "securityScheme": "basicAuth"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "wordpress-site-v1",
+    "fields": [
+      {
+        "key": "site",
+        "label": "Site address",
+        "secret": false,
+        "minimumLength": 4,
+        "maximumLength": 300
+      },
+      {
+        "key": "username",
+        "label": "WordPress username",
+        "secret": false,
+        "minimumLength": 1,
+        "maximumLength": 200
+      },
+      {
+        "key": "password",
+        "label": "Application password",
+        "secret": true,
+        "minimumLength": 16,
+        "maximumLength": 200
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "basic",
+        "headerName": "authorization",
+        "usernameField": "username",
+        "passwordField": "password"
+      }
+    ],
+    "verification": {
+      "kind": "https-json-site",
+      "path": "/wp-json/wp/v2/users/me",
+      "expectedStatus": 200,
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 256
+    },
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "WordPress site"
+    },
+    "resources": {
+      "kind": "credential-site",
+      "field": "site"
+    }
+  },
+  "operations": [
+    {
+      "operationId": "getCurrentUser",
+      "toolId": "wordpress.get_current_user",
+      "title": "Get the connected WordPress user",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 65536
+    },
+    {
+      "operationId": "getSettings",
+      "toolId": "wordpress.get_settings",
+      "title": "Get site settings",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 65536
+    },
+    {
+      "operationId": "searchSite",
+      "toolId": "wordpress.search",
+      "title": "Search the site",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "listPosts",
+      "toolId": "wordpress.list_posts",
+      "title": "List posts",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "getPost",
+      "toolId": "wordpress.get_post",
+      "title": "Get a post",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "createPost",
+      "toolId": "wordpress.create_post",
+      "title": "Create a post",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "updatePost",
+      "toolId": "wordpress.update_post",
+      "title": "Update a post",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "trashPost",
+      "toolId": "wordpress.trash_post",
+      "title": "Move a post to the trash",
+      "classification": "destructive",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "listPages",
+      "toolId": "wordpress.list_pages",
+      "title": "List pages",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "getPage",
+      "toolId": "wordpress.get_page",
+      "title": "Get a page",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "createPage",
+      "toolId": "wordpress.create_page",
+      "title": "Create a page",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "updatePage",
+      "toolId": "wordpress.update_page",
+      "title": "Update a page",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "trashPage",
+      "toolId": "wordpress.trash_page",
+      "title": "Move a page to the trash",
+      "classification": "destructive",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "listCategories",
+      "toolId": "wordpress.list_categories",
+      "title": "List categories",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "listTags",
+      "toolId": "wordpress.list_tags",
+      "title": "List tags",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "createCategory",
+      "toolId": "wordpress.create_category",
+      "title": "Create a category",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 65536
+    },
+    {
+      "operationId": "createTag",
+      "toolId": "wordpress.create_tag",
+      "title": "Create a tag",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 65536
+    },
+    {
+      "operationId": "listComments",
+      "toolId": "wordpress.list_comments",
+      "title": "List comments",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "createComment",
+      "toolId": "wordpress.reply_to_comment",
+      "title": "Post a comment or reply",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 65536
+    },
+    {
+      "operationId": "moderateComment",
+      "toolId": "wordpress.moderate_comment",
+      "title": "Moderate a comment",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 65536
+    },
+    {
+      "operationId": "trashComment",
+      "toolId": "wordpress.trash_comment",
+      "title": "Move a comment to the trash",
+      "classification": "destructive",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 65536
+    },
+    {
+      "operationId": "listMedia",
+      "toolId": "wordpress.list_media",
+      "title": "List media",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 1048576
+    },
+    {
+      "operationId": "getMedia",
+      "toolId": "wordpress.get_media",
+      "title": "Get a media item",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "updateMedia",
+      "toolId": "wordpress.update_media_details",
+      "title": "Edit media details",
+      "classification": "write",
+      "defaultPolicy": "require-approval",
+      "maximumOutputBytes": 262144
+    },
+    {
+      "operationId": "listUsers",
+      "toolId": "wordpress.list_users",
+      "title": "List users",
+      "classification": "read",
+      "defaultPolicy": "allow",
+      "maximumOutputBytes": 262144
+    }
+  ],
+  "status": "reviewed-publishable",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "wordpress-self-hosted",
+  "version": "1.0.0",
+  "name": "WordPress Self-Hosted",
+  "description": "Your own WordPress site through its REST API, with a username and an application password: write and publish posts and pages, manage categories, tags, comments and media details.",
+  "license": "LicenseRef-Provider-Service"
+}

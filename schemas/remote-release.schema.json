@@ -2320,6 +2320,56 @@
                     "maximumObjectKeys"
                   ],
                   "additionalProperties": true
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["https-json-site"]
+                    },
+                    "path": {
+                      "type": "string",
+                      "allOf": [
+                        {
+                          "minLength": 1
+                        },
+                        {
+                          "maxLength": 256
+                        }
+                      ],
+                      "pattern": "^\\/(?:[A-Za-z0-9_~-]+(?:\\.[A-Za-z0-9_~-]+)*\\/?)*$"
+                    },
+                    "expectedStatus": {
+                      "type": "integer",
+                      "minimum": 200,
+                      "maximum": 299
+                    },
+                    "maximumResponseBytes": {
+                      "type": "integer",
+                      "minimum": 1024,
+                      "maximum": 262144
+                    },
+                    "maximumJsonDepth": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 16
+                    },
+                    "maximumObjectKeys": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 2048
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "path",
+                    "expectedStatus",
+                    "maximumResponseBytes",
+                    "maximumJsonDepth",
+                    "maximumObjectKeys"
+                  ],
+                  "additionalProperties": true
                 }
               ]
             },
@@ -3376,6 +3426,29 @@
                     }
                   },
                   "required": ["kind", "field", "allowedHostSuffixes", "binding"],
+                  "additionalProperties": true
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": ["credential-site"]
+                    },
+                    "field": {
+                      "type": "string",
+                      "allOf": [
+                        {
+                          "minLength": 1
+                        },
+                        {
+                          "maxLength": 64
+                        }
+                      ],
+                      "pattern": "^[a-z][a-z0-9_.-]*$"
+                    }
+                  },
+                  "required": ["kind", "field"],
                   "additionalProperties": true
                 }
               ]

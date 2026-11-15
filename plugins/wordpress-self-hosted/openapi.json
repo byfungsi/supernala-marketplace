@@ -1,0 +1,1811 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "WordPress REST API (Supernala selection)",
+    "version": "2",
+    "description": "A reviewed subset of the WordPress core REST API (wp/v2) on the Owner's own site, signed in with a username and an application password over HTTPS. Paths, parameters and bodies follow https://developer.wordpress.org/rest-api/reference/."
+  },
+  "servers": [
+    {
+      "url": "https://{site}",
+      "description": "The Owner's WordPress site, entered at setup.",
+      "variables": {
+        "site": {
+          "default": "example.com"
+        }
+      }
+    }
+  ],
+  "security": [
+    {
+      "basicAuth": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "basicAuth": {
+        "type": "http",
+        "scheme": "basic",
+        "description": "WordPress username and application password."
+      }
+    }
+  },
+  "paths": {
+    "/wp-json/wp/v2/users/me": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "summary": "Get the connected WordPress user",
+        "description": "Returns the user this connection signs in as: ID, name, and with `context=edit` their roles and capabilities. Use it to learn what the Bot may do on this site.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "context",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["view", "edit"],
+              "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      }
+    },
+    "/wp-json/wp/v2/settings": {
+      "get": {
+        "operationId": "getSettings",
+        "summary": "Get site settings",
+        "description": "Returns the site title, tagline, time zone, date format, default category and posts per page. Needs an Administrator; other roles get 403, which is expected.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      }
+    },
+    "/wp-json/wp/v2/search": {
+      "get": {
+        "operationId": "searchSite",
+        "summary": "Search the site",
+        "description": "Searches published posts, pages and terms by words and returns each match's ID, title, URL, type and subtype. Use the ID with the matching get tool for details.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Words to search for."
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["post", "term", "post-format"],
+              "description": "What to search."
+            }
+          },
+          {
+            "name": "subtype",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 100,
+              "description": "Narrow by subtype, such as `post`, `page`, `category` or `post_tag`."
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "description": "Result page, from 1."
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Results per page, 1 to 100 (WordPress default 10)."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      }
+    },
+    "/wp-json/wp/v2/posts": {
+      "get": {
+        "operationId": "listPosts",
+        "summary": "List posts",
+        "description": "Lists posts, newest first by default. Without `status` only published posts are returned; pass `status` (for example `draft`) to see others. Use `_fields` such as `id,title,status,date,link` to keep the list small.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Words to search for."
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["publish", "future", "draft", "pending", "private", "trash"]
+              },
+              "minItems": 1,
+              "maxItems": 6,
+              "description": "Statuses to include. Drafts, pending, scheduled (`future`) and private items need edit rights."
+            },
+            "explode": false,
+            "style": "form"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "description": "Result page, from 1."
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Results per page, 1 to 100 (WordPress default 10)."
+            }
+          },
+          {
+            "name": "orderby",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["date", "modified", "title", "id", "relevance", "slug"],
+              "description": "Sort field."
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "description": "Sort direction."
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 40,
+              "description": "Only items published after this ISO 8601 date."
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 40,
+              "description": "Only items published before this ISO 8601 date."
+            }
+          },
+          {
+            "name": "author",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 1,
+              "maxItems": 100,
+              "description": "Only items by these user IDs."
+            },
+            "explode": false,
+            "style": "form"
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "description": "Only the item with this slug."
+            }
+          },
+          {
+            "name": "categories",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 1,
+              "maxItems": 100,
+              "description": "Only posts in these category IDs."
+            },
+            "explode": false,
+            "style": "form"
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 1,
+              "maxItems": 100,
+              "description": "Only posts with these tag IDs."
+            },
+            "explode": false,
+            "style": "form"
+          },
+          {
+            "name": "context",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["view", "edit"],
+              "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createPost",
+        "summary": "Create a post",
+        "description": "Creates a post. It is a draft unless `status` says otherwise; create as `draft` and show the Owner the link before publishing. Returns the new post with its ID and link.",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "description": "The post title, as plain text."
+                  },
+                  "content": {
+                    "type": "string",
+                    "maxLength": 500000,
+                    "description": "The post body as HTML or WordPress block markup, such as `<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->`."
+                  },
+                  "excerpt": {
+                    "type": "string",
+                    "maxLength": 5000,
+                    "description": "Short summary shown in lists and feeds."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["draft", "publish", "future", "pending", "private"],
+                    "description": "`draft` keeps it private to editors; `publish` makes it public now; `future` schedules it for `date`; `pending` asks an editor to review; `private` is visible to logged-in editors only."
+                  },
+                  "date": {
+                    "type": "string",
+                    "maxLength": 40,
+                    "description": "Publish date in the site's time zone, `YYYY-MM-DDTHH:MM:SS`. Needed with status `future`."
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "URL slug, such as `summer-menu`."
+                  },
+                  "author": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "User ID of the author; defaults to the connected user."
+                  },
+                  "featured_media": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Media ID of the featured image, from the media library; 0 removes it."
+                  },
+                  "comment_status": {
+                    "type": "string",
+                    "enum": ["open", "closed"],
+                    "description": "Whether readers may comment."
+                  },
+                  "password": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Protects the item with this password; empty string removes it."
+                  },
+                  "categories": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "maxItems": 100,
+                    "description": "Category IDs; replaces the current list."
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "maxItems": 100,
+                    "description": "Tag IDs; replaces the current list."
+                  },
+                  "sticky": {
+                    "type": "boolean",
+                    "description": "Pin the post to the top of the blog."
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "standard",
+                      "aside",
+                      "chat",
+                      "gallery",
+                      "link",
+                      "image",
+                      "quote",
+                      "status",
+                      "video",
+                      "audio"
+                    ],
+                    "description": "Post format, where the theme supports it."
+                  }
+                },
+                "additionalProperties": false,
+                "required": ["title"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wp-json/wp/v2/posts/{id}": {
+      "get": {
+        "operationId": "getPost",
+        "summary": "Get a post",
+        "description": "Returns one post by ID. Use `context=edit` to get the raw title and content for editing, including drafts.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The post ID."
+            }
+          },
+          {
+            "name": "context",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["view", "edit"],
+              "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "updatePost",
+        "summary": "Update a post",
+        "description": "Changes only the fields you send on one post, such as its title, content or status. Setting `status` to `publish` makes it public. Read it first with `context=edit` so you edit the current text.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The post ID."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "description": "The post title, as plain text."
+                  },
+                  "content": {
+                    "type": "string",
+                    "maxLength": 500000,
+                    "description": "The post body as HTML or WordPress block markup, such as `<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->`."
+                  },
+                  "excerpt": {
+                    "type": "string",
+                    "maxLength": 5000,
+                    "description": "Short summary shown in lists and feeds."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["draft", "publish", "future", "pending", "private"],
+                    "description": "`draft` keeps it private to editors; `publish` makes it public now; `future` schedules it for `date`; `pending` asks an editor to review; `private` is visible to logged-in editors only."
+                  },
+                  "date": {
+                    "type": "string",
+                    "maxLength": 40,
+                    "description": "Publish date in the site's time zone, `YYYY-MM-DDTHH:MM:SS`. Needed with status `future`."
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "URL slug, such as `summer-menu`."
+                  },
+                  "author": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "User ID of the author; defaults to the connected user."
+                  },
+                  "featured_media": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Media ID of the featured image, from the media library; 0 removes it."
+                  },
+                  "comment_status": {
+                    "type": "string",
+                    "enum": ["open", "closed"],
+                    "description": "Whether readers may comment."
+                  },
+                  "password": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Protects the item with this password; empty string removes it."
+                  },
+                  "categories": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "maxItems": 100,
+                    "description": "Category IDs; replaces the current list."
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "maxItems": 100,
+                    "description": "Tag IDs; replaces the current list."
+                  },
+                  "sticky": {
+                    "type": "boolean",
+                    "description": "Pin the post to the top of the blog."
+                  },
+                  "format": {
+                    "type": "string",
+                    "enum": [
+                      "standard",
+                      "aside",
+                      "chat",
+                      "gallery",
+                      "link",
+                      "image",
+                      "quote",
+                      "status",
+                      "video",
+                      "audio"
+                    ],
+                    "description": "Post format, where the theme supports it."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "trashPost",
+        "summary": "Move a post to the trash",
+        "description": "Moves one post to the trash. WordPress keeps trashed items for 30 days by default and an editor can restore them; nothing is deleted permanently.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The post ID."
+            }
+          }
+        ]
+      }
+    },
+    "/wp-json/wp/v2/pages": {
+      "get": {
+        "operationId": "listPages",
+        "summary": "List pages",
+        "description": "Lists pages, newest first by default. Without `status` only published pages are returned; pass `status` (for example `draft`) to see others. Use `_fields` such as `id,title,status,date,link` to keep the list small.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Words to search for."
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["publish", "future", "draft", "pending", "private", "trash"]
+              },
+              "minItems": 1,
+              "maxItems": 6,
+              "description": "Statuses to include. Drafts, pending, scheduled (`future`) and private items need edit rights."
+            },
+            "explode": false,
+            "style": "form"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "description": "Result page, from 1."
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Results per page, 1 to 100 (WordPress default 10)."
+            }
+          },
+          {
+            "name": "orderby",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["date", "modified", "title", "id", "relevance", "slug", "menu_order"],
+              "description": "Sort field."
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "description": "Sort direction."
+            }
+          },
+          {
+            "name": "after",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 40,
+              "description": "Only items published after this ISO 8601 date."
+            }
+          },
+          {
+            "name": "before",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 40,
+              "description": "Only items published before this ISO 8601 date."
+            }
+          },
+          {
+            "name": "author",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 1,
+              "maxItems": 100,
+              "description": "Only items by these user IDs."
+            },
+            "explode": false,
+            "style": "form"
+          },
+          {
+            "name": "slug",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 200,
+              "description": "Only the item with this slug."
+            }
+          },
+          {
+            "name": "parent",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 1,
+              "maxItems": 100,
+              "description": "Only children of these page IDs."
+            },
+            "explode": false,
+            "style": "form"
+          },
+          {
+            "name": "context",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["view", "edit"],
+              "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createPage",
+        "summary": "Create a page",
+        "description": "Creates a page. It is a draft unless `status` says otherwise; create as `draft` and show the Owner the link before publishing. Returns the new page with its ID and link.",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "description": "The page title, as plain text."
+                  },
+                  "content": {
+                    "type": "string",
+                    "maxLength": 500000,
+                    "description": "The page body as HTML or WordPress block markup, such as `<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->`."
+                  },
+                  "excerpt": {
+                    "type": "string",
+                    "maxLength": 5000,
+                    "description": "Short summary shown in lists and feeds."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["draft", "publish", "future", "pending", "private"],
+                    "description": "`draft` keeps it private to editors; `publish` makes it public now; `future` schedules it for `date`; `pending` asks an editor to review; `private` is visible to logged-in editors only."
+                  },
+                  "date": {
+                    "type": "string",
+                    "maxLength": 40,
+                    "description": "Publish date in the site's time zone, `YYYY-MM-DDTHH:MM:SS`. Needed with status `future`."
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "URL slug, such as `summer-menu`."
+                  },
+                  "author": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "User ID of the author; defaults to the connected user."
+                  },
+                  "featured_media": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Media ID of the featured image, from the media library; 0 removes it."
+                  },
+                  "comment_status": {
+                    "type": "string",
+                    "enum": ["open", "closed"],
+                    "description": "Whether readers may comment."
+                  },
+                  "password": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Protects the item with this password; empty string removes it."
+                  },
+                  "parent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Parent page ID; 0 for a top-level page."
+                  },
+                  "menu_order": {
+                    "type": "integer",
+                    "minimum": -100000,
+                    "maximum": 100000,
+                    "description": "Order among sibling pages."
+                  }
+                },
+                "additionalProperties": false,
+                "required": ["title"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wp-json/wp/v2/pages/{id}": {
+      "get": {
+        "operationId": "getPage",
+        "summary": "Get a page",
+        "description": "Returns one page by ID. Use `context=edit` to get the raw title and content for editing, including drafts.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The page ID."
+            }
+          },
+          {
+            "name": "context",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["view", "edit"],
+              "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "updatePage",
+        "summary": "Update a page",
+        "description": "Changes only the fields you send on one page, such as its title, content or status. Setting `status` to `publish` makes it public. Read it first with `context=edit` so you edit the current text.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The page ID."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "description": "The page title, as plain text."
+                  },
+                  "content": {
+                    "type": "string",
+                    "maxLength": 500000,
+                    "description": "The page body as HTML or WordPress block markup, such as `<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->`."
+                  },
+                  "excerpt": {
+                    "type": "string",
+                    "maxLength": 5000,
+                    "description": "Short summary shown in lists and feeds."
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": ["draft", "publish", "future", "pending", "private"],
+                    "description": "`draft` keeps it private to editors; `publish` makes it public now; `future` schedules it for `date`; `pending` asks an editor to review; `private` is visible to logged-in editors only."
+                  },
+                  "date": {
+                    "type": "string",
+                    "maxLength": 40,
+                    "description": "Publish date in the site's time zone, `YYYY-MM-DDTHH:MM:SS`. Needed with status `future`."
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "URL slug, such as `summer-menu`."
+                  },
+                  "author": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "User ID of the author; defaults to the connected user."
+                  },
+                  "featured_media": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Media ID of the featured image, from the media library; 0 removes it."
+                  },
+                  "comment_status": {
+                    "type": "string",
+                    "enum": ["open", "closed"],
+                    "description": "Whether readers may comment."
+                  },
+                  "password": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "Protects the item with this password; empty string removes it."
+                  },
+                  "parent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Parent page ID; 0 for a top-level page."
+                  },
+                  "menu_order": {
+                    "type": "integer",
+                    "minimum": -100000,
+                    "maximum": 100000,
+                    "description": "Order among sibling pages."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "trashPage",
+        "summary": "Move a page to the trash",
+        "description": "Moves one page to the trash. WordPress keeps trashed items for 30 days by default and an editor can restore them; nothing is deleted permanently.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The page ID."
+            }
+          }
+        ]
+      }
+    },
+    "/wp-json/wp/v2/categories": {
+      "get": {
+        "operationId": "listCategories",
+        "summary": "List categories",
+        "description": "Lists post categories with their IDs, names, slugs, parents and post counts. Use the IDs in `categories` when creating or updating posts.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Words to search for."
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "description": "Result page, from 1."
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Results per page, 1 to 100 (WordPress default 10)."
+            }
+          },
+          {
+            "name": "hide_empty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Leave out categories without posts."
+            }
+          },
+          {
+            "name": "parent",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Only children of this category ID; 0 for top level."
+            }
+          },
+          {
+            "name": "orderby",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["id", "name", "slug", "count"],
+              "description": "Sort field."
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "description": "Sort direction."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createCategory",
+        "summary": "Create a category",
+        "description": "Creates a post category. Check `list_categories` first so you do not add a duplicate; WordPress refuses a name that already exists at the same level.",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "The category name."
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "URL slug; derived from the name when omitted."
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 5000,
+                    "description": "What the category is about."
+                  },
+                  "parent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Parent category ID; 0 for top level."
+                  }
+                },
+                "required": ["name"],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wp-json/wp/v2/tags": {
+      "get": {
+        "operationId": "listTags",
+        "summary": "List tags",
+        "description": "Lists post tags with their IDs, names, slugs and post counts. Use the IDs in `tags` when creating or updating posts.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Words to search for."
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "description": "Result page, from 1."
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Results per page, 1 to 100 (WordPress default 10)."
+            }
+          },
+          {
+            "name": "hide_empty",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Leave out tags without posts."
+            }
+          },
+          {
+            "name": "orderby",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["id", "name", "slug", "count"],
+              "description": "Sort field."
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "description": "Sort direction."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createTag",
+        "summary": "Create a tag",
+        "description": "Creates a post tag. Check `list_tags` first; WordPress refuses a tag name that already exists.",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200,
+                    "description": "The tag name."
+                  },
+                  "slug": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "description": "URL slug; derived from the name when omitted."
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 5000,
+                    "description": "What the tag is about."
+                  }
+                },
+                "required": ["name"],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wp-json/wp/v2/comments": {
+      "get": {
+        "operationId": "listComments",
+        "summary": "List comments",
+        "description": "Lists comments, newest first. Without `status` only approved comments are returned; `hold` lists comments awaiting moderation and needs moderation rights.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "post",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 1,
+              "maxItems": 100,
+              "description": "Only comments on these post or page IDs."
+            },
+            "explode": false,
+            "style": "form"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["approve", "hold", "spam", "trash"],
+              "description": "Moderation status."
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Words to search for."
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "description": "Result page, from 1."
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Results per page, 1 to 100 (WordPress default 10)."
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "description": "Sort direction."
+            }
+          },
+          {
+            "name": "context",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["view", "edit"],
+              "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "createComment",
+        "summary": "Post a comment or reply",
+        "description": "Posts a comment as the connected user on a post or page, or a reply when `parent` is a comment ID. It is public at once when the user may moderate.",
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "post": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "The post or page ID."
+                  },
+                  "parent": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "description": "Comment ID to reply to; 0 for a top-level comment."
+                  },
+                  "content": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20000,
+                    "description": "The comment text."
+                  }
+                },
+                "required": ["post", "content"],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wp-json/wp/v2/comments/{id}": {
+      "post": {
+        "operationId": "moderateComment",
+        "summary": "Moderate a comment",
+        "description": "Approves, holds or marks one comment as spam, or edits its text. Needs moderation rights.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The comment ID."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["approved", "hold", "spam"],
+                    "description": "`approved` shows it, `hold` hides it pending review, `spam` marks it as spam."
+                  },
+                  "content": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 20000,
+                    "description": "Replacement comment text."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "trashComment",
+        "summary": "Move a comment to the trash",
+        "description": "Moves one comment to the trash, where a moderator can restore it. Nothing is deleted permanently.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The comment ID."
+            }
+          }
+        ]
+      }
+    },
+    "/wp-json/wp/v2/media": {
+      "get": {
+        "operationId": "listMedia",
+        "summary": "List media",
+        "description": "Lists items in the media library with their IDs, titles, alt text, type and URLs. Use an image's ID as `featured_media`, or its URL in content. Uploading new files is not available here.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Words to search for."
+            }
+          },
+          {
+            "name": "media_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["image", "video", "text", "application", "audio"],
+              "description": "Only this kind of file."
+            }
+          },
+          {
+            "name": "parent",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 1,
+              "maxItems": 100,
+              "description": "Only media attached to these post or page IDs."
+            },
+            "explode": false,
+            "style": "form"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "description": "Result page, from 1."
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Results per page, 1 to 100 (WordPress default 10)."
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["asc", "desc"],
+              "description": "Sort direction."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      }
+    },
+    "/wp-json/wp/v2/media/{id}": {
+      "get": {
+        "operationId": "getMedia",
+        "summary": "Get a media item",
+        "description": "Returns one media item by ID with its URLs, sizes, alt text and caption.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The media ID."
+            }
+          },
+          {
+            "name": "context",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["view", "edit"],
+              "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+            }
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      },
+      "post": {
+        "operationId": "updateMedia",
+        "summary": "Edit media details",
+        "description": "Changes a media item's title, alt text, caption or description. The file itself is not changed.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "The media ID."
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "description": "Media title."
+                  },
+                  "alt_text": {
+                    "type": "string",
+                    "maxLength": 2000,
+                    "description": "Alternative text read by screen readers; describe the image."
+                  },
+                  "caption": {
+                    "type": "string",
+                    "maxLength": 5000,
+                    "description": "Caption shown with the image."
+                  },
+                  "description": {
+                    "type": "string",
+                    "maxLength": 10000,
+                    "description": "Longer description on the attachment page."
+                  }
+                },
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/wp-json/wp/v2/users": {
+      "get": {
+        "operationId": "listUsers",
+        "summary": "List users",
+        "description": "Lists users who have published content, with their IDs and names, to choose an `author`. Listing everyone, with roles, needs an Administrator.",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Words to search for."
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100000,
+              "description": "Result page, from 1."
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "description": "Results per page, 1 to 100 (WordPress default 10)."
+            }
+          },
+          {
+            "name": "roles",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 60
+              },
+              "minItems": 1,
+              "maxItems": 10,
+              "description": "Only users with these roles (Administrator only)."
+            },
+            "explode": false,
+            "style": "form"
+          },
+          {
+            "name": "_fields",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "maxLength": 1000,
+              "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+            }
+          }
+        ]
+      }
+    }
+  }
+}

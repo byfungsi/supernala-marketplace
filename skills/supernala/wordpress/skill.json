@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "marketplaceId": "supernala-public",
+  "publisher": {
+    "namespace": "supernala",
+    "name": "Supernala"
+  },
+  "slug": "wordpress",
+  "version": "1.0.0",
+  "name": "WordPress publishing playbook",
+  "shortDescription": "How Bots write and publish on WordPress safely: drafts first, edit the current text, publish only with approval, and never remove anything for good.",
+  "longDescription": "Comes with the WordPress Self-Hosted and WordPress.com apps: every Bot with access to either gets this Skill automatically. It covers good WordPress content and block markup, categories, tags and images, scheduling, WordPress.com's search, describe and execute flow with its confirmation rule, and what common errors mean.",
+  "categories": ["Marketing"],
+  "featuredRank": null,
+  "license": "LicenseRef-Supernala",
+  "attribution": "Written by Supernala from the WordPress REST API reference and WordPress.com MCP documentation.",
+  "source": {
+    "_tag": "supernala"
+  },
+  "addedFiles": []
+}

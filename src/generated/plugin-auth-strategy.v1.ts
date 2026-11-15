@@ -1,5 +1,5 @@
 // GENERATED from @supernala/domain auth contract v1.
-// Source SHA-256: 8e317de4ed32b2aa27fcad29190b3f3f526390ae5d99564c1b53688d02a91824
+// Source SHA-256: 9000cc09bbb60d78e767ed19ff35174cdc71ea23df0e866de3cd28b1e4877998
 // Run `pnpm auth-contract:vendor <distribution-directory>`; do not edit.
 import { Schema } from "effect";
 import {
@@ -290,6 +290,12 @@ const PluginApiCredentialResource = Schema.Union([
     lookup: Schema.optionalKey(CredentialOriginLookup),
     binding: PluginResourceBinding,
   }),
+  // Any public HTTPS site the Owner enters, such as a self-hosted WordPress. The resource id is
+  // the site's base URL and every tool of a `connection-site` OpenAPI contract calls that site.
+  Schema.Struct({
+    kind: Schema.Literal("credential-site"),
+    field: PluginCredentialField.fields.key,
+  }),
 ]);
 
 const VerificationStatus = Schema.Int.pipe(
@@ -359,11 +365,36 @@ export const PluginAuthStrategyDefinition = Schema.Union([
           expectedStatus: VerificationStatus,
           ...ProjectionLimits,
         }),
+        // A path on the Owner's own site (`credential-site`), such as `/wp-json/wp/v2/users/me`.
+        Schema.Struct({
+          kind: Schema.Literal("https-json-site"),
+          path: ResourceUrlPath,
+          expectedStatus: VerificationStatus,
+          ...ProjectionLimits,
+        }),
       ]),
     ),
     identity: PluginIdentityDeclaration,
     resources: PluginApiCredentialResource,
-  }),
+  }).pipe(
+    Schema.check(
+      Schema.makeFilter(
+        (definition) =>
+          (definition.verification?.kind === "https-json-site") ===
+            (definition.resources.kind === "credential-site") &&
+          (definition.resources.kind !== "credential-site" ||
+            definition.fields.some(
+              (field) =>
+                definition.resources.kind === "credential-site" &&
+                field.key === definition.resources.field &&
+                !field.secret,
+            )),
+        {
+          expected: "a site connection verified on the entered site, with a non-secret site field",
+        },
+      ),
+    ),
+  ),
   Schema.Struct({
     schemaVersion: Schema.Literal(1),
     profile: Schema.Literal("device-oauth"),
@@ -458,6 +489,10 @@ export const PluginSetupSubmission = Schema.Union([
   Schema.Struct({
     _tag: Schema.Literal("CredentialsSubmitted"),
     values: Schema.Record(Schema.String, Schema.String),
+    /** Owner-chosen name that tells this account apart from others in the same app. */
+    accountName: Schema.optionalKey(
+      Schema.Trimmed.pipe(Schema.check(Schema.isLengthBetween(1, 160))),
+    ),
     replacementConnectionId: Schema.optionalKey(PluginConnectionId),
     expectedConnectionRevision: Schema.optionalKey(
       Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(1))),

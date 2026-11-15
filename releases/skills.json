@@ -65,6 +65,11 @@
       "id": "supernala/meta-ads",
       "publicationEligible": true,
       "reason": "Owner approved on 2026-11-15 as the companion Skill of the curated Meta Ads app; Supernala-authored from Meta's Ads MCP tool guidance, reviewed in this repository."
+    },
+    {
+      "id": "supernala/wordpress",
+      "publicationEligible": true,
+      "reason": "Owner approved on 2026-11-15 as the companion Skill of the curated WordPress Self-Hosted and WordPress.com apps; Supernala-authored from the WordPress REST API reference and WordPress.com MCP documentation, reviewed in this repository."
     }
   ]
 }
