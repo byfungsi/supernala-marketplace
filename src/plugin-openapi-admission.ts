@@ -101,7 +101,11 @@ export async function admitMarketplaceOpenApiCandidate(
   if (provenance.sourceDigest !== contract.success.sourceDigest)
     return Result.fail("openapi-provenance");
   const expectedHosts = [
-    ...new Set(contract.success.bindings.map((binding) => new URL(binding.origin).hostname)),
+    ...new Set(
+      contract.success.bindings.flatMap((binding) =>
+        binding.origin === "connection-site" ? [] : [new URL(binding.origin).hostname],
+      ),
+    ),
   ].toSorted();
   if (
     canonicalPluginOpenApiJson([...hosts].toSorted()) !== canonicalPluginOpenApiJson(expectedHosts)

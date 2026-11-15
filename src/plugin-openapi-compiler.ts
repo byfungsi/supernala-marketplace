@@ -431,8 +431,15 @@ export async function compilePluginOpenApi(input: {
   });
   const auth = declared === undefined ? generated : Result.succeed(declared);
   if (Result.isFailure(auth)) return failure("auth-definition-invalid");
+  // A site connection's server is the OpenAPI variable `https://{site}`: the site the Owner enters.
+  const siteConnection =
+    auth.success.profile === "api-key" && auth.success.resources.kind === "credential-site";
+  if (siteConnection !== (origin === "https://{site}")) return failure("source-unsupported");
+  const bindingOrigin = siteConnection ? "connection-site" : origin;
   const resourceBinding =
-    auth.success.profile === "api-key" && auth.success.resources.kind !== "none"
+    auth.success.profile === "api-key" &&
+    auth.success.resources.kind !== "none" &&
+    auth.success.resources.kind !== "credential-site"
       ? auth.success.resources.binding
       : undefined;
   const entries = new Map<
@@ -626,7 +633,7 @@ export async function compilePluginOpenApi(input: {
     bindings.push({
       toolId: selected.toolId,
       method: entry.method,
-      origin,
+      origin: bindingOrigin,
       pathTemplate: entry.path,
       parameters,
       body,

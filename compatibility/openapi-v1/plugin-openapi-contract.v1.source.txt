@@ -54,11 +54,76 @@ export const PluginOpenApiParameter = Schema.Struct({
 /** Reviewed primitive parameter or bounded form query collection. */
 export interface PluginOpenApiParameter extends Schema.Schema.Type<typeof PluginOpenApiParameter> {}
 
+const SITE_HOSTNAME = /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/u
+const SITE_PATH_SEGMENT = /^[A-Za-z0-9_~-]+(?:\.[A-Za-z0-9_~-]+)*$/u
+// Supernala's own hosts are never a connection site, so a credential is never sent back to us.
+const RESERVED_SITE_SUFFIXES = ["supernala.com", "workers.dev", "localhost", "internal", "local"]
+
+/**
+ * Parses the site an Owner typed for a `credential-site` connection, such as `example.com`,
+ * `https://example.com/` or `https://example.com/blog`, into its HTTPS base URL without a trailing
+ * slash. Only public DNS names on the default port pass: no IP address, credentials, query,
+ * fragment, dot segment or reserved host.
+ */
+export function parsePluginConnectionSite(entered: string): string | undefined {
+  const trimmed = entered.trim()
+  // URL parsing would quietly collapse `/../` or decode `%2e`, so refuse them as typed.
+  if (
+    trimmed.length === 0 ||
+    trimmed.length > 300 ||
+    /[\s\\%]/u.test(trimmed) ||
+    /\/\.{1,2}(?:\/|$)/u.test(trimmed)
+  ) {
+    return undefined
+  }
+  if (/^[a-z][a-z0-9+.-]*:/iu.test(trimmed) && !/^https:\/\//iu.test(trimmed)) return undefined
+  let url: URL
+  try {
+    url = new URL(/^https:\/\//iu.test(trimmed) ? trimmed : `https://${trimmed}`)
+  } catch {
+    return undefined
+  }
+  const segments = url.pathname.split("/").filter((segment) => segment !== "")
+  if (
+    url.protocol !== "https:" ||
+    url.username !== "" ||
+    url.password !== "" ||
+    url.port !== "" ||
+    url.search !== "" ||
+    url.hash !== "" ||
+    trimmed.includes("?") ||
+    trimmed.includes("#") ||
+    !SITE_HOSTNAME.test(url.hostname) ||
+    url.hostname.length > 253 ||
+    RESERVED_SITE_SUFFIXES.some(
+      (suffix) => url.hostname === suffix || url.hostname.endsWith(`.${suffix}`),
+    ) ||
+    segments.length > 8 ||
+    segments.some((segment) => !SITE_PATH_SEGMENT.test(segment))
+  ) {
+    return undefined
+  }
+  const site = `${url.origin}${segments.length === 0 ? "" : `/${segments.join("/")}`}`
+
+  return site.length <= 300 ? site : undefined
+}
+
+/**
+ * Where a tool sends its request: a fixed reviewed origin, or `connection-site`, the site the Owner
+ * entered for a `credential-site` connection (such as a self-hosted WordPress).
+ */
+export const PluginOpenApiBindingOrigin = Schema.Union([
+  PluginOpenApiOrigin,
+  Schema.Literal("connection-site"),
+])
+/** Where a tool sends its request. */
+export type PluginOpenApiBindingOrigin = typeof PluginOpenApiBindingOrigin.Type
+
 /** Immutable wire instructions for one published OpenAPI tool. */
 export const PluginOpenApiBinding = Schema.Struct({
   toolId: PluginToolId,
   method: Schema.Literals(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-  origin: PluginOpenApiOrigin,
+  origin: PluginOpenApiBindingOrigin,
   pathTemplate: Schema.String.pipe(
     Schema.check(Schema.isLengthBetween(1, 2_048)),
     Schema.check(Schema.isPattern(/^\/(?!\/)[A-Za-z0-9_./{}~-]*$/u)),
@@ -310,7 +375,13 @@ const fillsFromConnectionResource = (
   toolId: PluginOpenApiBinding["toolId"],
   parameter: PluginOpenApiParameter,
 ): boolean => {
-  if (authStrategy.profile !== "api-key" || authStrategy.resources.kind === "none") return false
+  if (
+    authStrategy.profile !== "api-key" ||
+    authStrategy.resources.kind === "none" ||
+    authStrategy.resources.kind === "credential-site"
+  ) {
+    return false
+  }
   const binding = authStrategy.resources.binding
 
   return (
@@ -349,6 +420,17 @@ export function parsePluginOpenApiContract(
     [...tools].some((toolId) => !bindings.has(toolId))
   ) {
     return Result.fail(new PluginOpenApiContractFailure({ reason: "catalog-mismatch" }))
+  }
+  // A site connection calls only the entered site, and only a site connection may.
+  const siteConnection = contract.authStrategy.resources.kind === "credential-site"
+  if (
+    contract.bindings.some(
+      (binding) =>
+        (binding.origin === "connection-site") !== siteConnection ||
+        (siteConnection && binding.authentication !== "connection"),
+    )
+  ) {
+    return Result.fail(new PluginOpenApiContractFailure({ reason: "binding-invalid" }))
   }
 
   for (const binding of contract.bindings) {

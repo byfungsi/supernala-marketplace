@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-publishable",
+  "id": "supernala-public:supernala:wordpress-com@1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "wordpress-com",
+  "version": "1.0.0",
+  "name": "WordPress.com",
+  "description": "WordPress.com through its official MCP server: write and publish posts and pages, manage media, comments, design and settings on your WordPress.com sites and Jetpack-connected sites",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "wordpress-com-mcp-v1",
+    "providerRegistrationId": "wordpress-com-oauth-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://public-api.wordpress.com/wpcom/v2/mcp/v1",
+  "oauthRegistrationMode": "dynamic",
+  "providerDefinitionDigest": "da7098ce0cce722876b9b32ece825db6c6f441ea62936717b274ac204ed44424",
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "wordpress-com-oauth-v1",
+    "providerDefinitionDigest": "da7098ce0cce722876b9b32ece825db6c6f441ea62936717b274ac204ed44424",
+    "requestedScopes": ["auth"],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://public-api.wordpress.com/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://public-api.wordpress.com/.well-known/oauth-protected-resource/wpcom/v2/mcp/v1",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "WordPress.com account"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "oauthProviderDefinition": {
+    "schemaVersion": 1,
+    "protocol": "oauth2-authorization-code",
+    "issuer": "https://public-api.wordpress.com",
+    "provider": "wordpress-com-mcp",
+    "resourceIdentity": "https://public-api.wordpress.com/wpcom/v2/mcp/v1",
+    "authorizationEndpoint": "https://public-api.wordpress.com/oauth2-1/authorize",
+    "tokenEndpoint": "https://public-api.wordpress.com/oauth2-1/token",
+    "tokenEndpointAuthMethod": "none",
+    "authorizationResponseIssuer": "not-supported",
+    "pkce": {
+      "method": "S256"
+    },
+    "authorizationParameters": [],
+    "scopes": ["auth"],
+    "account": {
+      "kind": "declaration-managed"
+    },
+    "tokens": {
+      "accessTokenType": "bearer",
+      "expiresIn": {
+        "required": true,
+        "minimumSeconds": 1,
+        "maximumSeconds": 86400
+      },
+      "grantedScopes": {
+        "whenPresent": "exact-match",
+        "whenOmitted": "requested-scopes"
+      },
+      "initialRefreshToken": "required",
+      "refreshResponseToken": "retain-current-if-omitted"
+    },
+    "refresh": {
+      "kind": "standard-form-post",
+      "invalidGrant": "reauthorization-required",
+      "ambiguousOutcome": "fail-closed-no-replay"
+    },
+    "revocation": {
+      "kind": "standard-form-post",
+      "endpoint": "https://public-api.wordpress.com/oauth2-1/revoke",
+      "token": "refresh-token",
+      "clientAuthentication": "registration-method",
+      "outcome": "best-effort-observed"
+    }
+  },
+  "scopes": ["auth"],
+  "catalog": {
+    "id": "wordpress-com-tools-list-20261115",
+    "schemaVersion": 1,
+    "digest": "de17878f9ea4576e9af37288cdc2ae5a2b0d7be782c58dc78c593dc26c767657",
+    "tools": [
+      {
+        "id": "wpcom.search",
+        "mcpName": "search",
+        "title": "Find WordPress.com abilities",
+        "description": "Finds WordPress.com abilities (operations) for your account and sites: new sites; posts, pages, drafts, publishing, block sections, custom post types, categories and terms; media upload, image generation and the media library; comments and moderation; themes, templates, menus, navigation and global styles; settings, visibility, plugins, invitations, traffic and activity; domains, DNS, SSL, plans and checkout links; account, notifications and subscriptions; Jetpack backups, monitoring, scans and newsletters. A wpcom_site also includes remote: abilities from that connected site. It searches ability descriptions, not site content. An empty query returns a category overview. readonly=true returns read-only abilities, which run without confirmation; the default readonly=false returns abilities that change something. detailed=true returns input schemas for up to five. Abilities turned off in MCP settings are listed under disabled_matches.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Case-insensitive words matched against ability names, labels, categories, descriptions, and keywords, such as \"site create\", \"pages\", \"templates\", or \"DNS\". Exact names and labels rank first; partial results identify unmatched terms. An empty string returns all matching names and labels grouped by category, with counts, for the selected site and readonly filter; this overview has no schemas or pagination. Maximum 500 UTF-8 bytes."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25,
+              "description": "Maximum abilities returned for a nonempty query: 1 to 25 when detailed=false (default 10), or 1 to 5 when detailed=true (default 5). Does not limit the empty-query category overview."
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Number of matching abilities to skip for a nonempty query, starting at 0. Results include total and has_more for pagination. Does not apply to the empty-query category overview."
+            },
+            "detailed": {
+              "type": "boolean",
+              "default": false,
+              "description": "For a nonempty query, false returns names, labels, short descriptions, categories, and confirmation requirements. True returns complete descriptions, input schemas, instructions, and annotations, with at most five results. Empty queries always return the category overview."
+            },
+            "readonly": {
+              "type": "boolean",
+              "default": false,
+              "description": "Selects one approval classification, including for an empty query. True returns abilities explicitly marked read-only, plus read/write abilities whose readonly_actions run without approval. False (the default) returns abilities requiring approval, including mixed read/write abilities and those without a read-only annotation. False does not mean all abilities; there is no unfiltered value. Results include other_readonly_matches when the other value has matches."
+            },
+            "include_output_schema": {
+              "type": "boolean",
+              "default": false,
+              "description": "Adds each ability's declared output_schema to detailed results, describing its result fields and types. True requires detailed=true. Empty-query overviews contain no schemas."
+            },
+            "wpcom_site": {
+              "type": "string",
+              "description": "Existing target site: a site ID encoded as a string, a domain, or a full site URL. Site IDs and URLs are returned by wpcom/user-sites. Sets the site context for discovery or execution and is required for remote: abilities. Without a site, discovery covers only WordPress.com-defined abilities; account operations and creation of a new website need no existing site. Any site selector also present in the ability input must identify the same site."
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "wpcom.describe",
+        "mcpName": "describe",
+        "title": "Describe WordPress.com abilities",
+        "description": "Explains the inputs, effects, and results of one to five exact abilities discovered through search, such as creating a website, publishing a post, changing a theme, or inspecting site statistics. Returns each ability's complete description, input schema with required and optional fields, instructions, annotations, and approval requirements; declared output schemas are optional. Results follow request order and share one target site. Remote: contracts come from that site. This reads contracts without running the abilities. An unavailable name fails the entire request.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "names": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 5,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "One to five unique name values returned by search, including the full namespace, for example \"wpcom-mcp/create-site\" or \"wpcom/user-sites\". These are ability names, not labels or search terms. Names beginning with \"remote:\" require the wpcom_site where they were discovered. All names in this request share that site context."
+            },
+            "include_output_schema": {
+              "type": "boolean",
+              "default": false,
+              "description": "Adds the declared output_schema for each ability, describing its result fields and types. False (the default) still includes the full input schema and approval requirements."
+            },
+            "wpcom_site": {
+              "type": "string",
+              "description": "Existing target site: a site ID encoded as a string, a domain, or a full site URL. Site IDs and URLs are returned by wpcom/user-sites. Sets the site context for discovery or execution and is required for remote: abilities. Without a site, discovery covers only WordPress.com-defined abilities; account operations and creation of a new website need no existing site. Any site selector also present in the ability input must identify the same site."
+            }
+          },
+          "required": ["names"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "wpcom.docs",
+        "mcpName": "docs",
+        "title": "Read WordPress.com guides",
+        "description": "Provides guides for selecting a site, getting started, connecting Jetpack, creating a website, creating or editing content, and updating account preferences, plus skills: step-by-step procedures for specific tasks, listed as skill/<slug>. Empty arguments return topic IDs, kinds, titles and summaries. Selected topics return complete documents with tool usage notes, in request order. This curated library does not list every available capability or search site content.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 6,
+              "uniqueItems": true,
+              "description": "Guide IDs or skill/<slug> IDs from the topic index. Omitting topics returns the index; an empty array is invalid."
+            }
+          },
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "wpcom.execute",
+        "mcpName": "execute",
+        "title": "Run a WordPress.com ability",
+        "description": "Runs one discovered ability, from creating a new website or publishing content to changing site design, managing an account, or reading site data. The exact name and input schema come from search with detailed=true or describe. WordPress.com abilities return their own result structure; remote: abilities return the site's result inside data. Permissions and site access are checked at execution. Explicitly read-only abilities run without approval. Other abilities require approval unless describe reports that the user's approval bypass applies: the user's answer in an MCP confirmation form when the client supports one, otherwise user_confirmed. A confirmation form is bound to the requested action, input, and target; declined or cancelled approval leaves the operation unexecuted. In Supernala, the Owner's approval of this call is that confirmation: set user_confirmed true only on a change the Owner approved here or asked for in exactly these words.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Exact name returned by search or describe, including its namespace, for example \"wpcom-mcp/create-site\". A \"remote:\" prefix identifies an ability on the specified connected site. Display labels and legacy facade operation names are not accepted."
+            },
+            "input": {
+              "description": "JSON value matching the selected ability's input_schema. WordPress.com-defined abilities require an object, including {} when there are no input fields. For example, new-site creation accepts {\"spec\":{\"title\":\"Harbor Oven\"}}. Remote abilities may accept an object, array, scalar, or null as declared by their schema; an ability with no input takes null. Ability-specific fields belong here; summary and user_confirmed are separate outer properties."
+            },
+            "summary": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Optional explanation of the intended action, named target, and consequence, shown in the confirmation form and included in the Approval required error, for example \"Create a WordPress.com website titled Harbor Oven in Coming Soon mode.\" At most 500 characters of plain text on one line, without markup. This caller-provided text is not server-verified and does not itself authorize execution."
+            },
+            "user_confirmed": {
+              "type": "boolean",
+              "description": "Set true only after the user accepted this exact change, either by asking for it exactly or by approving what you showed them, including any content you wrote for it."
+            },
+            "wpcom_site": {
+              "type": "string",
+              "description": "Existing target site: a site ID encoded as a string, a domain, or a full site URL. Site IDs and URLs are returned by wpcom/user-sites. Sets the site context for discovery or execution and is required for remote: abilities. Without a site, discovery covers only WordPress.com-defined abilities; account operations and creation of a new website need no existing site. Any site selector also present in the ability input must identify the same site."
+            }
+          },
+          "required": ["name", "input"],
+          "additionalProperties": false
+        },
+        "maximumOutputBytes": 1048576
+      }
+    ]
+  },
+  "config": {
+    "revision": 1,
+    "fields": []
+  },
+  "allowedHosts": ["public-api.wordpress.com"],
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://developer.wordpress.com/docs/mcp/",
+    "https://developer.wordpress.com/docs/mcp/connect-custom-mcp-client/",
+    "https://developer.wordpress.com/docs/mcp/tools-reference/",
+    "https://public-api.wordpress.com/.well-known/oauth-authorization-server",
+    "https://public-api.wordpress.com/.well-known/oauth-protected-resource/wpcom/v2/mcp/v1"
+  ],
+  "verificationNotes": "Owner-authorized capture on 2026-11-15 with the Owner's WordPress.com account (MCP access turned on in Account > AI and MCP; read and write enabled). Dynamic client registration at /oauth2-1/register needed no account or approval and returned a public client (token_endpoint_auth_method none). Authorization code with PKCE S256 and scope auth; the redirect carried code and state but no iss. With the resource parameter the consent page names the MCP settings it uses. Token responses carried scope auth, a 3,600-second access lifetime and a refresh token that rotates on every refresh; revoking the refresh token at /oauth2-1/revoke made it invalid_grant. userinfo returns only a numeric sub, so the account stays an opaque connection. tools/list returned four tools in one page (server WordPress.com MCP Server 0.2.0, protocol 2025-06-18, contract tool-search), identical with and without the resource parameter: search, describe and docs are read-only; execute runs any ability, so it is destructive and requires approval. WordPress.com itself runs read-only abilities without confirmation and refuses other abilities unless the call carries user_confirmed; execute's description adds that a Supernala approval is that confirmation. The search description is condensed to the 1,000-character limit; every schema is unchanged. Verified live: execute wpcom/user-sites returned the Owner's sites, and search readonly=true listed 109 read-only abilities. WordPress.com MCP is included on paid plans; free sites have access until 2026-11-30."
+}

@@ -1,0 +1,2286 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "wordpress-self-hosted",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "wordpress-self-hosted-1.0.0-first-publication-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794734357961,
+  "sourceInputDigest": "1865924a328d1a6813157c169fddcd2949774c7a7406cef7c4d2ee9312d9fa99",
+  "artifactDigest": "61fdf3352f15f790ecfcaabd935a64e8c9a3477a69c71a18d7a7cc9a3212ea13",
+  "authentication": {
+    "kind": "none"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "api-key",
+    "providerRegistrationId": "wordpress-site-v1",
+    "fields": [
+      {
+        "key": "site",
+        "label": "Site address",
+        "secret": false,
+        "minimumLength": 4,
+        "maximumLength": 300
+      },
+      {
+        "key": "username",
+        "label": "WordPress username",
+        "secret": false,
+        "minimumLength": 1,
+        "maximumLength": 200
+      },
+      {
+        "key": "password",
+        "label": "Application password",
+        "secret": true,
+        "minimumLength": 16,
+        "maximumLength": 200
+      }
+    ],
+    "delivery": [
+      {
+        "kind": "basic",
+        "headerName": "authorization",
+        "usernameField": "username",
+        "passwordField": "password"
+      }
+    ],
+    "verification": {
+      "kind": "https-json-site",
+      "path": "/wp-json/wp/v2/users/me",
+      "expectedStatus": 200,
+      "maximumResponseBytes": 65536,
+      "maximumJsonDepth": 8,
+      "maximumObjectKeys": 256
+    },
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "WordPress site"
+    },
+    "resources": {
+      "kind": "credential-site",
+      "field": "site"
+    }
+  },
+  "catalogDigest": "760e0513c2bb2e590c8d602ae8c5f7d53deaf632de61cd73f26beaba99085da8",
+  "configDigest": "23542ea5e9d621ef4adc58cf4740ef4bd4a36fc20a0786bd129cb487d782d6c3",
+  "provenanceDigest": "e370b14f41e0a9ec9cadb3329a85b5bbd07ec14637bf483aa2043d37d10e4d7c",
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [],
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "b98d01227e1a4dcc71b9940e1212f70f379351fcc2cf27fae9ca06e8045c6b19",
+  "authorityAfter": {
+    "runtimeKind": "managed-openapi",
+    "openApiBindings": [
+      {
+        "toolId": "wordpress.create_category",
+        "method": "POST",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/categories",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.create_page",
+        "method": "POST",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/pages",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.create_post",
+        "method": "POST",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/posts",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.create_tag",
+        "method": "POST",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/tags",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.get_current_user",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/users/me",
+        "parameters": [
+          {
+            "name": "context",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.get_media",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/media/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "context",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.get_page",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/pages/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "context",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.get_post",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/posts/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          },
+          {
+            "name": "context",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.get_settings",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/settings",
+        "parameters": [
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.list_categories",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/categories",
+        "parameters": [
+          {
+            "name": "search",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "per_page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "hide_empty",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "parent",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "orderby",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "order",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.list_comments",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/comments",
+        "parameters": [
+          {
+            "name": "post",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": false
+          },
+          {
+            "name": "status",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "search",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "per_page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "order",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "context",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.list_media",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/media",
+        "parameters": [
+          {
+            "name": "search",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "media_type",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "parent",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": false
+          },
+          {
+            "name": "page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "per_page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "order",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.list_pages",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/pages",
+        "parameters": [
+          {
+            "name": "search",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "status",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": false
+          },
+          {
+            "name": "page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "per_page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "orderby",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "order",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "author",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "parent",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": false
+          },
+          {
+            "name": "context",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.list_posts",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/posts",
+        "parameters": [
+          {
+            "name": "search",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "status",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": false
+          },
+          {
+            "name": "page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "per_page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "orderby",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "order",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "after",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "before",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "author",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": false
+          },
+          {
+            "name": "slug",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "categories",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": false
+          },
+          {
+            "name": "tags",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": false
+          },
+          {
+            "name": "context",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.list_tags",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/tags",
+        "parameters": [
+          {
+            "name": "search",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "per_page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "hide_empty",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "orderby",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "order",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.list_users",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/users",
+        "parameters": [
+          {
+            "name": "search",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "per_page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "roles",
+            "location": "query",
+            "required": false,
+            "shape": "array",
+            "explode": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.moderate_comment",
+        "method": "POST",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/comments/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.reply_to_comment",
+        "method": "POST",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/comments",
+        "parameters": [],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.search",
+        "method": "GET",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/search",
+        "parameters": [
+          {
+            "name": "search",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "type",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "subtype",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "per_page",
+            "location": "query",
+            "required": false
+          },
+          {
+            "name": "_fields",
+            "location": "query",
+            "required": false
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.trash_comment",
+        "method": "DELETE",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/comments/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.trash_page",
+        "method": "DELETE",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/pages/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.trash_post",
+        "method": "DELETE",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/posts/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "none",
+        "bodyRequired": false,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.update_media_details",
+        "method": "POST",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/media/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.update_page",
+        "method": "POST",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/pages/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      },
+      {
+        "toolId": "wordpress.update_post",
+        "method": "POST",
+        "origin": "connection-site",
+        "pathTemplate": "/wp-json/wp/v2/posts/{id}",
+        "parameters": [
+          {
+            "name": "id",
+            "location": "path",
+            "required": true
+          }
+        ],
+        "body": "application/json",
+        "bodyRequired": true,
+        "authentication": "connection"
+      }
+    ],
+    "authenticationKind": "api-key",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": "wordpress-site-v1",
+    "providerDefinitionDigest": null,
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "api-key",
+      "providerRegistrationId": "wordpress-site-v1",
+      "fields": [
+        {
+          "key": "site",
+          "label": "Site address",
+          "secret": false,
+          "minimumLength": 4,
+          "maximumLength": 300
+        },
+        {
+          "key": "username",
+          "label": "WordPress username",
+          "secret": false,
+          "minimumLength": 1,
+          "maximumLength": 200
+        },
+        {
+          "key": "password",
+          "label": "Application password",
+          "secret": true,
+          "minimumLength": 16,
+          "maximumLength": 200
+        }
+      ],
+      "delivery": [
+        {
+          "kind": "basic",
+          "headerName": "authorization",
+          "usernameField": "username",
+          "passwordField": "password"
+        }
+      ],
+      "verification": {
+        "kind": "https-json-site",
+        "path": "/wp-json/wp/v2/users/me",
+        "expectedStatus": 200,
+        "maximumResponseBytes": 65536,
+        "maximumJsonDepth": 8,
+        "maximumObjectKeys": 256
+      },
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "WordPress site"
+      },
+      "resources": {
+        "kind": "credential-site",
+        "field": "site"
+      }
+    },
+    "tools": [
+      {
+        "id": "wordpress.create_category",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "description": "The category name."
+                },
+                "slug": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "URL slug; derived from the name when omitted."
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 5000,
+                  "description": "What the category is about."
+                },
+                "parent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Parent category ID; 0 for top level."
+                }
+              },
+              "required": ["name"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.create_page",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "The page title, as plain text."
+                },
+                "content": {
+                  "type": "string",
+                  "maxLength": 500000,
+                  "description": "The page body as HTML or WordPress block markup, such as `<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->`."
+                },
+                "excerpt": {
+                  "type": "string",
+                  "maxLength": 5000,
+                  "description": "Short summary shown in lists and feeds."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["draft", "publish", "future", "pending", "private"],
+                  "description": "`draft` keeps it private to editors; `publish` makes it public now; `future` schedules it for `date`; `pending` asks an editor to review; `private` is visible to logged-in editors only."
+                },
+                "date": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "description": "Publish date in the site's time zone, `YYYY-MM-DDTHH:MM:SS`. Needed with status `future`."
+                },
+                "slug": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "URL slug, such as `summer-menu`."
+                },
+                "author": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "User ID of the author; defaults to the connected user."
+                },
+                "featured_media": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Media ID of the featured image, from the media library; 0 removes it."
+                },
+                "comment_status": {
+                  "type": "string",
+                  "enum": ["open", "closed"],
+                  "description": "Whether readers may comment."
+                },
+                "password": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "Protects the item with this password; empty string removes it."
+                },
+                "parent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Parent page ID; 0 for a top-level page."
+                },
+                "menu_order": {
+                  "type": "integer",
+                  "minimum": -100000,
+                  "maximum": 100000,
+                  "description": "Order among sibling pages."
+                }
+              },
+              "additionalProperties": false,
+              "required": ["title"]
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.create_post",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "The post title, as plain text."
+                },
+                "content": {
+                  "type": "string",
+                  "maxLength": 500000,
+                  "description": "The post body as HTML or WordPress block markup, such as `<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->`."
+                },
+                "excerpt": {
+                  "type": "string",
+                  "maxLength": 5000,
+                  "description": "Short summary shown in lists and feeds."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["draft", "publish", "future", "pending", "private"],
+                  "description": "`draft` keeps it private to editors; `publish` makes it public now; `future` schedules it for `date`; `pending` asks an editor to review; `private` is visible to logged-in editors only."
+                },
+                "date": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "description": "Publish date in the site's time zone, `YYYY-MM-DDTHH:MM:SS`. Needed with status `future`."
+                },
+                "slug": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "URL slug, such as `summer-menu`."
+                },
+                "author": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "User ID of the author; defaults to the connected user."
+                },
+                "featured_media": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Media ID of the featured image, from the media library; 0 removes it."
+                },
+                "comment_status": {
+                  "type": "string",
+                  "enum": ["open", "closed"],
+                  "description": "Whether readers may comment."
+                },
+                "password": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "Protects the item with this password; empty string removes it."
+                },
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "maxItems": 100,
+                  "description": "Category IDs; replaces the current list."
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "maxItems": 100,
+                  "description": "Tag IDs; replaces the current list."
+                },
+                "sticky": {
+                  "type": "boolean",
+                  "description": "Pin the post to the top of the blog."
+                },
+                "format": {
+                  "type": "string",
+                  "enum": [
+                    "standard",
+                    "aside",
+                    "chat",
+                    "gallery",
+                    "link",
+                    "image",
+                    "quote",
+                    "status",
+                    "video",
+                    "audio"
+                  ],
+                  "description": "Post format, where the theme supports it."
+                }
+              },
+              "additionalProperties": false,
+              "required": ["title"]
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.create_tag",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200,
+                  "description": "The tag name."
+                },
+                "slug": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "URL slug; derived from the name when omitted."
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 5000,
+                  "description": "What the tag is about."
+                }
+              },
+              "required": ["name"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.get_current_user",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "context": {
+                  "type": "string",
+                  "enum": ["view", "edit"],
+                  "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.get_media",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The media ID."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "context": {
+                  "type": "string",
+                  "enum": ["view", "edit"],
+                  "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.get_page",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The page ID."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "context": {
+                  "type": "string",
+                  "enum": ["view", "edit"],
+                  "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.get_post",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The post ID."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "query": {
+              "type": "object",
+              "properties": {
+                "context": {
+                  "type": "string",
+                  "enum": ["view", "edit"],
+                  "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.get_settings",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.list_categories",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 500,
+                  "description": "Words to search for."
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100000,
+                  "description": "Result page, from 1."
+                },
+                "per_page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Results per page, 1 to 100 (WordPress default 10)."
+                },
+                "hide_empty": {
+                  "type": "boolean",
+                  "description": "Leave out categories without posts."
+                },
+                "parent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Only children of this category ID; 0 for top level."
+                },
+                "orderby": {
+                  "type": "string",
+                  "enum": ["id", "name", "slug", "count"],
+                  "description": "Sort field."
+                },
+                "order": {
+                  "type": "string",
+                  "enum": ["asc", "desc"],
+                  "description": "Sort direction."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.list_comments",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "post": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "minItems": 1,
+                  "maxItems": 100,
+                  "description": "Only comments on these post or page IDs."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["approve", "hold", "spam", "trash"],
+                  "description": "Moderation status."
+                },
+                "search": {
+                  "type": "string",
+                  "maxLength": 500,
+                  "description": "Words to search for."
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100000,
+                  "description": "Result page, from 1."
+                },
+                "per_page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Results per page, 1 to 100 (WordPress default 10)."
+                },
+                "order": {
+                  "type": "string",
+                  "enum": ["asc", "desc"],
+                  "description": "Sort direction."
+                },
+                "context": {
+                  "type": "string",
+                  "enum": ["view", "edit"],
+                  "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.list_media",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 500,
+                  "description": "Words to search for."
+                },
+                "media_type": {
+                  "type": "string",
+                  "enum": ["image", "video", "text", "application", "audio"],
+                  "description": "Only this kind of file."
+                },
+                "parent": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "minItems": 1,
+                  "maxItems": 100,
+                  "description": "Only media attached to these post or page IDs."
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100000,
+                  "description": "Result page, from 1."
+                },
+                "per_page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Results per page, 1 to 100 (WordPress default 10)."
+                },
+                "order": {
+                  "type": "string",
+                  "enum": ["asc", "desc"],
+                  "description": "Sort direction."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.list_pages",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 500,
+                  "description": "Words to search for."
+                },
+                "status": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["publish", "future", "draft", "pending", "private", "trash"]
+                  },
+                  "minItems": 1,
+                  "maxItems": 6,
+                  "description": "Statuses to include. Drafts, pending, scheduled (`future`) and private items need edit rights."
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100000,
+                  "description": "Result page, from 1."
+                },
+                "per_page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Results per page, 1 to 100 (WordPress default 10)."
+                },
+                "orderby": {
+                  "type": "string",
+                  "enum": ["date", "modified", "title", "id", "relevance", "slug", "menu_order"],
+                  "description": "Sort field."
+                },
+                "order": {
+                  "type": "string",
+                  "enum": ["asc", "desc"],
+                  "description": "Sort direction."
+                },
+                "after": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "description": "Only items published after this ISO 8601 date."
+                },
+                "before": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "description": "Only items published before this ISO 8601 date."
+                },
+                "author": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "minItems": 1,
+                  "maxItems": 100,
+                  "description": "Only items by these user IDs."
+                },
+                "slug": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "Only the item with this slug."
+                },
+                "parent": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "minItems": 1,
+                  "maxItems": 100,
+                  "description": "Only children of these page IDs."
+                },
+                "context": {
+                  "type": "string",
+                  "enum": ["view", "edit"],
+                  "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.list_posts",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 500,
+                  "description": "Words to search for."
+                },
+                "status": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": ["publish", "future", "draft", "pending", "private", "trash"]
+                  },
+                  "minItems": 1,
+                  "maxItems": 6,
+                  "description": "Statuses to include. Drafts, pending, scheduled (`future`) and private items need edit rights."
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100000,
+                  "description": "Result page, from 1."
+                },
+                "per_page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Results per page, 1 to 100 (WordPress default 10)."
+                },
+                "orderby": {
+                  "type": "string",
+                  "enum": ["date", "modified", "title", "id", "relevance", "slug"],
+                  "description": "Sort field."
+                },
+                "order": {
+                  "type": "string",
+                  "enum": ["asc", "desc"],
+                  "description": "Sort direction."
+                },
+                "after": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "description": "Only items published after this ISO 8601 date."
+                },
+                "before": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "description": "Only items published before this ISO 8601 date."
+                },
+                "author": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "minItems": 1,
+                  "maxItems": 100,
+                  "description": "Only items by these user IDs."
+                },
+                "slug": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "Only the item with this slug."
+                },
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "minItems": 1,
+                  "maxItems": 100,
+                  "description": "Only posts in these category IDs."
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "minItems": 1,
+                  "maxItems": 100,
+                  "description": "Only posts with these tag IDs."
+                },
+                "context": {
+                  "type": "string",
+                  "enum": ["view", "edit"],
+                  "description": "`edit` returns raw (unrendered) title and content and needs edit rights; `view` is the public form."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.list_tags",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 500,
+                  "description": "Words to search for."
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100000,
+                  "description": "Result page, from 1."
+                },
+                "per_page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Results per page, 1 to 100 (WordPress default 10)."
+                },
+                "hide_empty": {
+                  "type": "boolean",
+                  "description": "Leave out tags without posts."
+                },
+                "orderby": {
+                  "type": "string",
+                  "enum": ["id", "name", "slug", "count"],
+                  "description": "Sort field."
+                },
+                "order": {
+                  "type": "string",
+                  "enum": ["asc", "desc"],
+                  "description": "Sort direction."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.list_users",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 500,
+                  "description": "Words to search for."
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100000,
+                  "description": "Result page, from 1."
+                },
+                "per_page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Results per page, 1 to 100 (WordPress default 10)."
+                },
+                "roles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "maxLength": 60
+                  },
+                  "minItems": 1,
+                  "maxItems": 10,
+                  "description": "Only users with these roles (Administrator only)."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.moderate_comment",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The comment ID."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "enum": ["approved", "hold", "spam"],
+                  "description": "`approved` shows it, `hold` hides it pending review, `spam` marks it as spam."
+                },
+                "content": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20000,
+                  "description": "Replacement comment text."
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.reply_to_comment",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "body": {
+              "type": "object",
+              "properties": {
+                "post": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The post or page ID."
+                },
+                "parent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Comment ID to reply to; 0 for a top-level comment."
+                },
+                "content": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 20000,
+                  "description": "The comment text."
+                }
+              },
+              "required": ["post", "content"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.search",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "object",
+              "properties": {
+                "search": {
+                  "type": "string",
+                  "maxLength": 500,
+                  "description": "Words to search for."
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["post", "term", "post-format"],
+                  "description": "What to search."
+                },
+                "subtype": {
+                  "type": "string",
+                  "maxLength": 100,
+                  "description": "Narrow by subtype, such as `post`, `page`, `category` or `post_tag`."
+                },
+                "page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100000,
+                  "description": "Result page, from 1."
+                },
+                "per_page": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "description": "Results per page, 1 to 100 (WordPress default 10)."
+                },
+                "_fields": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Comma-separated fields to return, such as `id,title,status,link`. Keeps responses small; content and rendered HTML can be large."
+                }
+              },
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.trash_comment",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The comment ID."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.trash_page",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The page ID."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.trash_post",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The post ID."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.update_media_details",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The media ID."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "Media title."
+                },
+                "alt_text": {
+                  "type": "string",
+                  "maxLength": 2000,
+                  "description": "Alternative text read by screen readers; describe the image."
+                },
+                "caption": {
+                  "type": "string",
+                  "maxLength": 5000,
+                  "description": "Caption shown with the image."
+                },
+                "description": {
+                  "type": "string",
+                  "maxLength": 10000,
+                  "description": "Longer description on the attachment page."
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.update_page",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The page ID."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "The page title, as plain text."
+                },
+                "content": {
+                  "type": "string",
+                  "maxLength": 500000,
+                  "description": "The page body as HTML or WordPress block markup, such as `<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->`."
+                },
+                "excerpt": {
+                  "type": "string",
+                  "maxLength": 5000,
+                  "description": "Short summary shown in lists and feeds."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["draft", "publish", "future", "pending", "private"],
+                  "description": "`draft` keeps it private to editors; `publish` makes it public now; `future` schedules it for `date`; `pending` asks an editor to review; `private` is visible to logged-in editors only."
+                },
+                "date": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "description": "Publish date in the site's time zone, `YYYY-MM-DDTHH:MM:SS`. Needed with status `future`."
+                },
+                "slug": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "URL slug, such as `summer-menu`."
+                },
+                "author": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "User ID of the author; defaults to the connected user."
+                },
+                "featured_media": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Media ID of the featured image, from the media library; 0 removes it."
+                },
+                "comment_status": {
+                  "type": "string",
+                  "enum": ["open", "closed"],
+                  "description": "Whether readers may comment."
+                },
+                "password": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "Protects the item with this password; empty string removes it."
+                },
+                "parent": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Parent page ID; 0 for a top-level page."
+                },
+                "menu_order": {
+                  "type": "integer",
+                  "minimum": -100000,
+                  "maximum": 100000,
+                  "description": "Order among sibling pages."
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wordpress.update_post",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "The post ID."
+                }
+              },
+              "required": ["id"],
+              "additionalProperties": false
+            },
+            "body": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "maxLength": 1000,
+                  "description": "The post title, as plain text."
+                },
+                "content": {
+                  "type": "string",
+                  "maxLength": 500000,
+                  "description": "The post body as HTML or WordPress block markup, such as `<!-- wp:paragraph --><p>Text</p><!-- /wp:paragraph -->`."
+                },
+                "excerpt": {
+                  "type": "string",
+                  "maxLength": 5000,
+                  "description": "Short summary shown in lists and feeds."
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["draft", "publish", "future", "pending", "private"],
+                  "description": "`draft` keeps it private to editors; `publish` makes it public now; `future` schedules it for `date`; `pending` asks an editor to review; `private` is visible to logged-in editors only."
+                },
+                "date": {
+                  "type": "string",
+                  "maxLength": 40,
+                  "description": "Publish date in the site's time zone, `YYYY-MM-DDTHH:MM:SS`. Needed with status `future`."
+                },
+                "slug": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "URL slug, such as `summer-menu`."
+                },
+                "author": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "User ID of the author; defaults to the connected user."
+                },
+                "featured_media": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Media ID of the featured image, from the media library; 0 removes it."
+                },
+                "comment_status": {
+                  "type": "string",
+                  "enum": ["open", "closed"],
+                  "description": "Whether readers may comment."
+                },
+                "password": {
+                  "type": "string",
+                  "maxLength": 200,
+                  "description": "Protects the item with this password; empty string removes it."
+                },
+                "categories": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "maxItems": 100,
+                  "description": "Category IDs; replaces the current list."
+                },
+                "tags": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "maxItems": 100,
+                  "description": "Tag IDs; replaces the current list."
+                },
+                "sticky": {
+                  "type": "boolean",
+                  "description": "Pin the post to the top of the blog."
+                },
+                "format": {
+                  "type": "string",
+                  "enum": [
+                    "standard",
+                    "aside",
+                    "chat",
+                    "gallery",
+                    "link",
+                    "image",
+                    "quote",
+                    "status",
+                    "video",
+                    "audio"
+                  ],
+                  "description": "Post format, where the theme supports it."
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "body"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityDigest": "0b227a176cc4b350133d122f782c51f65a741afc87200611f98d7c5f51f3e208",
+  "authorityDiffDigest": "4b8e2e725b41d4421e5976a8d1064d34daac33d3d9736bb4e037c101fe627757",
+  "releaseDigest": "c272b412542049b5fd795e2aab8ce1da235380c5366349543de7f6245246724d",
+  "decision": "approved"
+}

@@ -1,3 +1,4 @@
+import { PluginSha256 } from "./plugin-contract.js";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -7,7 +8,14 @@ import { compilePluginOpenApi } from "./plugin-openapi-compiler.js";
 import { discoverPluginOpenApiCandidates } from "./plugin-openapi-discovery.js";
 import { buildPluginOpenApiReleaseBundle } from "./plugin-openapi-release-bundle.js";
 import { loadPluginOpenApiSource } from "./plugin-openapi-source.js";
-import { digestReleaseSharedInputs, ReleaseReview } from "./release-bundle.js";
+import { ReleaseReview } from "./release-bundle.js";
+
+// These reviews are published, so they stay bound to the shared release inputs of their day
+// (main at f056756). Site connections changed those inputs later; rebuilding from today's
+// sources against that pinned digest proves the current compiler still yields what was reviewed.
+const publishedSharedInputDigest = PluginSha256.make(
+  "2f04e09e4690764473d36670e07c34204fa2452877950e56396240baa0094216",
+);
 
 const sourcePath = new URL("../plugins/resend-api", import.meta.url).pathname;
 
@@ -129,13 +137,12 @@ describe("Resend hosted OpenAPI source", () => {
         ),
       );
     const [previous, review] = await Promise.all([readReview("1.0.0"), readReview("1.0.1")]);
-    const index = JSON.parse(await readFile("releases/index.json", "utf8"));
     const outputDirectory = await mkdtemp(path.join(os.tmpdir(), "resend-api-1.0.1-"));
     try {
       const built = await buildPluginOpenApiReleaseBundle({
         sourceDirectory: sourcePath,
         outputDirectory,
-        sharedInputDigest: await digestReleaseSharedInputs(index.sharedInputs),
+        sharedInputDigest: publishedSharedInputDigest,
         mergeCommit: "0".repeat(40),
         releaseOrdinal: 1,
         review,

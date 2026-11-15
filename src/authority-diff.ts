@@ -168,7 +168,12 @@ export function derivePluginOpenApiAuthoritySnapshot(
       inputSchema: tool.inputSchema,
     })),
     allowedHosts: [
-      ...new Set(contract.bindings.map((binding) => new URL(binding.origin).hostname)),
+      // A site connection's host is the Owner's own site, so it names no fixed destination.
+      ...new Set(
+        contract.bindings.flatMap((binding) =>
+          binding.origin === "connection-site" ? [] : [new URL(binding.origin).hostname],
+        ),
+      ),
     ].toSorted(),
     config: [],
   });

@@ -79,11 +79,11 @@
     "status": "staged-not-deployed",
     "applicationBaseCommit": "d763ad32db5b69a7b706de76f2de9e6b147fd672",
     "files": {
-      "packages/domain/src/plugin-auth-strategy.ts": "8e317de4ed32b2aa27fcad29190b3f3f526390ae5d99564c1b53688d02a91824",
-      "packages/domain/schema/plugin-auth-strategy-definition.v1.schema.json": "a9eef3b7dbac3fc6fc8811cb09829136a1e14f688bff2ac155923c6011750b9e",
-      "apps/api/src/plugin-api-key-auth-strategy.ts": "8f79b37d6f175417cdd64a1cb3c102dc378eb1696c35ebcf932eeb32086a1733",
-      "apps/api/src/plugin-integration-families.ts": "45275b8c5b674f9daddb5a4f2923c62e1c49ca98c207bec50974be0b6b1a3dee"
+      "packages/domain/src/plugin-auth-strategy.ts": "9000cc09bbb60d78e767ed19ff35174cdc71ea23df0e866de3cd28b1e4877998",
+      "packages/domain/schema/plugin-auth-strategy-definition.v1.schema.json": "86fd84b9423957c96905ac86d968c16f4a184074262e40df8d86b8d5d0f77910",
+      "apps/api/src/plugin-api-key-auth-strategy.ts": "cd9eb836d22d9394b105e4a36f0c964d020b7fa24787ad9e5015b74978ac72fa",
+      "apps/api/src/plugin-integration-families.ts": "a400213f5de2aa34d055448ccd5e0e591a028db58eaa4c48387338b239fd3f71"
     },
-    "applicationCandidateCommit": "dc8f4584e4081be061cceb30fe5dbaaf4085d16d"
+    "applicationCandidateCommit": "736f9980cd1dba6f9329f6a51b02184c85873c1b"
   }
 }

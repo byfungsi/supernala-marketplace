@@ -117,6 +117,12 @@
       "reason": "Owner authorized the Jira REST API-token component of the Atlassian app (2026-11-08): email, a Jira API token with scopes and the site, verified at api.atlassian.com/ex/jira/{cloudId}; the cloudId comes from the site's public tenant_info and is filled into every call. Requires the credential-free provider registration atlassian-rest-v1 and the application's site-scoped API-key support. Independent review waived, not passed; live token acceptance is pending."
     },
     {
+      "sourceDirectory": "plugins/wordpress-self-hosted",
+      "kind": "managed-openapi",
+      "publicationEligible": true,
+      "reason": "Owner authorized WordPress Self-Hosted (2026-11-15): 25 tools on the WordPress core REST API (wp/v2) of the Owner's own site, signed in with a username and an application password as HTTP Basic; the site is entered at setup, verified at /wp-json/wp/v2/users/me, and every call goes to it. Reads allow; creates, updates and trash require approval; no permanent delete and no media upload. Requires the credential-free provider registration wordpress-site-v1 and the application's site connections (credential-site). Independent review waived, not passed; live site acceptance is pending."
+    },
+    {
       "sourceDirectory": "plugins/remotes/gmail.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": false,
@@ -169,6 +175,12 @@
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
       "reason": "Owner-authorized on 2026-11-15: Meta's hosted Ads MCP server reached with a user-supplied Meta access token; 108 tools captured from an Owner-consented tools/list, reads allow and every write asks first; live token connection follows publication"
+    },
+    {
+      "sourceDirectory": "plugins/remotes/wordpress-com.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Owner authorized WordPress.com through its official MCP server (2026-11-15): dynamic client registration, PKCE S256, scope auth, rotating refresh tokens and refresh-token revocation, captured with the Owner's account (4 tools in WordPress.com's tool-search layout). search, describe and docs read; execute runs any ability and requires approval, which is the user_confirmed WordPress.com demands for changes. Requires the provider registration wordpress-com-oauth-v1. Independent review waived, not passed; live connection through Supernala is pending."
     },
     {
       "sourceDirectory": "plugins/remotes/canva.json",

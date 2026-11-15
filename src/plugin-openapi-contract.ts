@@ -58,11 +58,22 @@ export const PluginOpenApiParameter = Schema.Struct({
 /** Reviewed primitive parameter or bounded form query collection. */
 export interface PluginOpenApiParameter extends Schema.Schema.Type<typeof PluginOpenApiParameter> {}
 
+/**
+ * Where a tool sends its request: a fixed reviewed origin, or `connection-site`, the site the Owner
+ * entered for a `credential-site` connection (such as a self-hosted WordPress).
+ */
+export const PluginOpenApiBindingOrigin = Schema.Union([
+  PluginOpenApiOrigin,
+  Schema.Literal("connection-site"),
+]);
+/** Where a tool sends its request. */
+export type PluginOpenApiBindingOrigin = typeof PluginOpenApiBindingOrigin.Type;
+
 /** Immutable wire instructions for one published OpenAPI tool. */
 export const PluginOpenApiBinding = Schema.Struct({
   toolId: PluginToolId,
   method: Schema.Literals(["GET", "POST", "PUT", "PATCH", "DELETE"]),
-  origin: PluginOpenApiOrigin,
+  origin: PluginOpenApiBindingOrigin,
   pathTemplate: Schema.String.pipe(
     Schema.check(Schema.isLengthBetween(1, 2_048)),
     Schema.check(Schema.isPattern(/^\/(?!\/)[A-Za-z0-9_./{}~-]*$/u)),
@@ -317,7 +328,13 @@ const fillsFromConnectionResource = (
   toolId: PluginOpenApiBinding["toolId"],
   parameter: PluginOpenApiParameter,
 ): boolean => {
-  if (authStrategy.profile !== "api-key" || authStrategy.resources.kind === "none") return false;
+  if (
+    authStrategy.profile !== "api-key" ||
+    authStrategy.resources.kind === "none" ||
+    authStrategy.resources.kind === "credential-site"
+  ) {
+    return false;
+  }
   const binding = authStrategy.resources.binding;
 
   return (
@@ -355,6 +372,17 @@ export function parsePluginOpenApiContract(
     [...tools].some((toolId) => !bindings.has(toolId))
   ) {
     return Result.fail(new PluginOpenApiContractFailure({ reason: "catalog-mismatch" }));
+  }
+  // A site connection calls only the entered site, and only a site connection may.
+  const siteConnection = contract.authStrategy.resources.kind === "credential-site";
+  if (
+    contract.bindings.some(
+      (binding) =>
+        (binding.origin === "connection-site") !== siteConnection ||
+        (siteConnection && binding.authentication !== "connection"),
+    )
+  ) {
+    return Result.fail(new PluginOpenApiContractFailure({ reason: "binding-invalid" }));
   }
 
   for (const binding of contract.bindings) {

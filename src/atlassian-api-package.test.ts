@@ -1,11 +1,19 @@
+import { PluginSha256 } from "./plugin-contract.js";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { Result, Schema } from "effect";
 import { expect, it } from "vitest";
 import { buildPluginOpenApiReleaseBundle } from "./plugin-openapi-release-bundle.js";
-import { digestReleaseSharedInputs, releaseReviewFile, ReleaseReview } from "./release-bundle.js";
+import { releaseReviewFile, ReleaseReview } from "./release-bundle.js";
 import { PluginReleaseIdentity } from "./release-machine.js";
+
+// These reviews are published, so they stay bound to the shared release inputs of their day
+// (main at f056756). Site connections changed those inputs later; rebuilding from today's
+// sources against that pinned digest proves the current compiler still yields what was reviewed.
+const publishedSharedInputDigest = PluginSha256.make(
+  "2f04e09e4690764473d36670e07c34204fa2452877950e56396240baa0094216",
+);
 
 const decodeReview = async (semanticVersion: string) =>
   Schema.decodeUnknownSync(ReleaseReview, { onExcessProperty: "error" })(
@@ -25,9 +33,6 @@ const decodeReview = async (semanticVersion: string) =>
   );
 
 it("binds the 1.0.1 review to the current source, with lineage from the published 1.0.0", async () => {
-  const index = Schema.decodeUnknownSync(
-    Schema.Struct({ sharedInputs: Schema.Array(Schema.NonEmptyString) }),
-  )(JSON.parse(await readFile("releases/index.json", "utf8")));
   const previous = await decodeReview("1.0.0");
   const review = await decodeReview("1.0.1");
   // Output limits and descriptions changed; no tool's authority did, so existing grants carry over.
@@ -37,7 +42,7 @@ it("binds the 1.0.1 review to the current source, with lineage from the publishe
     const built = await buildPluginOpenApiReleaseBundle({
       sourceDirectory: "plugins/atlassian-api",
       outputDirectory,
-      sharedInputDigest: await digestReleaseSharedInputs(index.sharedInputs),
+      sharedInputDigest: publishedSharedInputDigest,
       mergeCommit: "a".repeat(40),
       releaseOrdinal: 1,
       review,

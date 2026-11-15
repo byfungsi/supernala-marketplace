@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "wordpress-com",
+    "semanticVersion": "1.0.0"
+  },
+  "reviewId": "wordpress-com-1.0.0-first-publication-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1794734579386,
+  "artifactDigest": null,
+  "authorityBeforeIdentity": null,
+  "authorityBeforeReleaseDigest": null,
+  "authorityBefore": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "none",
+    "requestedScopes": [],
+    "endpoint": null,
+    "endpointRegistrationId": null,
+    "providerRegistrationId": null,
+    "providerDefinitionDigest": null,
+    "authStrategy": null,
+    "tools": [],
+    "allowedHosts": [],
+    "config": []
+  },
+  "authorityBeforeDigest": "a550e0c82f40e481406e144770a99999c39c2bad7676e314f0f58c4eb8109d03",
+  "decision": "approved",
+  "sourceInputDigest": "cf841bc2bcdd89c0e8c8cec831ca3799fb8b6b47abcd9eaa0674b7a907497684",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "wordpress-com-oauth-v1",
+    "providerDefinitionDigest": "da7098ce0cce722876b9b32ece825db6c6f441ea62936717b274ac204ed44424",
+    "requestedScopes": ["auth"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "wordpress-com-oauth-v1",
+    "providerDefinitionDigest": "da7098ce0cce722876b9b32ece825db6c6f441ea62936717b274ac204ed44424",
+    "requestedScopes": ["auth"],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://public-api.wordpress.com/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://public-api.wordpress.com/.well-known/oauth-protected-resource/wpcom/v2/mcp/v1",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "WordPress.com account"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "catalogDigest": "de17878f9ea4576e9af37288cdc2ae5a2b0d7be782c58dc78c593dc26c767657",
+  "configDigest": "e6ebf9c4674f06e5a34f3a0619d9caa13b618515eeff5f54267e104bd6400221",
+  "provenanceDigest": "19bb89f8f73e4d193811f0f5231fb7dcfe5249f149f68977e2cac15f11321c3e",
+  "authorityAfter": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["auth"],
+    "endpoint": "https://public-api.wordpress.com/wpcom/v2/mcp/v1",
+    "endpointRegistrationId": "wordpress-com-mcp-v1",
+    "providerRegistrationId": "wordpress-com-oauth-v1",
+    "providerDefinitionDigest": "da7098ce0cce722876b9b32ece825db6c6f441ea62936717b274ac204ed44424",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "wordpress-com-oauth-v1",
+      "providerDefinitionDigest": "da7098ce0cce722876b9b32ece825db6c6f441ea62936717b274ac204ed44424",
+      "requestedScopes": ["auth"],
+      "clientRegistration": {
+        "kind": "dynamic",
+        "authorizationServerMetadataUrl": "https://public-api.wordpress.com/.well-known/oauth-authorization-server"
+      },
+      "resourceMetadataUrl": "https://public-api.wordpress.com/.well-known/oauth-protected-resource/wpcom/v2/mcp/v1",
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "WordPress.com account"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "wpcom.search",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Case-insensitive words matched against ability names, labels, categories, descriptions, and keywords, such as \"site create\", \"pages\", \"templates\", or \"DNS\". Exact names and labels rank first; partial results identify unmatched terms. An empty string returns all matching names and labels grouped by category, with counts, for the selected site and readonly filter; this overview has no schemas or pagination. Maximum 500 UTF-8 bytes."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 25,
+              "description": "Maximum abilities returned for a nonempty query: 1 to 25 when detailed=false (default 10), or 1 to 5 when detailed=true (default 5). Does not limit the empty-query category overview."
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "description": "Number of matching abilities to skip for a nonempty query, starting at 0. Results include total and has_more for pagination. Does not apply to the empty-query category overview."
+            },
+            "detailed": {
+              "type": "boolean",
+              "default": false,
+              "description": "For a nonempty query, false returns names, labels, short descriptions, categories, and confirmation requirements. True returns complete descriptions, input schemas, instructions, and annotations, with at most five results. Empty queries always return the category overview."
+            },
+            "readonly": {
+              "type": "boolean",
+              "default": false,
+              "description": "Selects one approval classification, including for an empty query. True returns abilities explicitly marked read-only, plus read/write abilities whose readonly_actions run without approval. False (the default) returns abilities requiring approval, including mixed read/write abilities and those without a read-only annotation. False does not mean all abilities; there is no unfiltered value. Results include other_readonly_matches when the other value has matches."
+            },
+            "include_output_schema": {
+              "type": "boolean",
+              "default": false,
+              "description": "Adds each ability's declared output_schema to detailed results, describing its result fields and types. True requires detailed=true. Empty-query overviews contain no schemas."
+            },
+            "wpcom_site": {
+              "type": "string",
+              "description": "Existing target site: a site ID encoded as a string, a domain, or a full site URL. Site IDs and URLs are returned by wpcom/user-sites. Sets the site context for discovery or execution and is required for remote: abilities. Without a site, discovery covers only WordPress.com-defined abilities; account operations and creation of a new website need no existing site. Any site selector also present in the ability input must identify the same site."
+            }
+          },
+          "required": ["query"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wpcom.describe",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "names": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 5,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              },
+              "description": "One to five unique name values returned by search, including the full namespace, for example \"wpcom-mcp/create-site\" or \"wpcom/user-sites\". These are ability names, not labels or search terms. Names beginning with \"remote:\" require the wpcom_site where they were discovered. All names in this request share that site context."
+            },
+            "include_output_schema": {
+              "type": "boolean",
+              "default": false,
+              "description": "Adds the declared output_schema for each ability, describing its result fields and types. False (the default) still includes the full input schema and approval requirements."
+            },
+            "wpcom_site": {
+              "type": "string",
+              "description": "Existing target site: a site ID encoded as a string, a domain, or a full site URL. Site IDs and URLs are returned by wpcom/user-sites. Sets the site context for discovery or execution and is required for remote: abilities. Without a site, discovery covers only WordPress.com-defined abilities; account operations and creation of a new website need no existing site. Any site selector also present in the ability input must identify the same site."
+            }
+          },
+          "required": ["names"],
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wpcom.docs",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "topics": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 6,
+              "uniqueItems": true,
+              "description": "Guide IDs or skill/<slug> IDs from the topic index. Omitting topics returns the index; an empty array is invalid."
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      {
+        "id": "wpcom.execute",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Exact name returned by search or describe, including its namespace, for example \"wpcom-mcp/create-site\". A \"remote:\" prefix identifies an ability on the specified connected site. Display labels and legacy facade operation names are not accepted."
+            },
+            "input": {
+              "description": "JSON value matching the selected ability's input_schema. WordPress.com-defined abilities require an object, including {} when there are no input fields. For example, new-site creation accepts {\"spec\":{\"title\":\"Harbor Oven\"}}. Remote abilities may accept an object, array, scalar, or null as declared by their schema; an ability with no input takes null. Ability-specific fields belong here; summary and user_confirmed are separate outer properties."
+            },
+            "summary": {
+              "type": "string",
+              "maxLength": 500,
+              "description": "Optional explanation of the intended action, named target, and consequence, shown in the confirmation form and included in the Approval required error, for example \"Create a WordPress.com website titled Harbor Oven in Coming Soon mode.\" At most 500 characters of plain text on one line, without markup. This caller-provided text is not server-verified and does not itself authorize execution."
+            },
+            "user_confirmed": {
+              "type": "boolean",
+              "description": "Set true only after the user accepted this exact change, either by asking for it exactly or by approving what you showed them, including any content you wrote for it."
+            },
+            "wpcom_site": {
+              "type": "string",
+              "description": "Existing target site: a site ID encoded as a string, a domain, or a full site URL. Site IDs and URLs are returned by wpcom/user-sites. Sets the site context for discovery or execution and is required for remote: abilities. Without a site, discovery covers only WordPress.com-defined abilities; account operations and creation of a new website need no existing site. Any site selector also present in the ability input must identify the same site."
+            }
+          },
+          "required": ["name", "input"],
+          "additionalProperties": false
+        }
+      }
+    ],
+    "allowedHosts": ["public-api.wordpress.com"],
+    "config": []
+  },
+  "authorityDigest": "debe45df759850c97fe9a33430a498e8243c12ea36699c2998d01b00c6b69fde",
+  "authorityDiffDigest": "97777d64678bdd68c3986dfd9423a1c2db259187421770980c3eb41b53bc1eb8",
+  "releaseDigest": "b87285b0d4d54f1d46dac402762bd2e8125abb2779f7516614205a32d18970dc"
+}
