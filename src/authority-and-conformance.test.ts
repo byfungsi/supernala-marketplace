@@ -167,6 +167,7 @@ describe("authority and protocol gates", () => {
       ["buffer", true],
       ["repliz", true],
       ["tebar", true],
+      ["elevenlabs", true],
       ["gmail", false],
       ["resend", true],
     ] as const) {
@@ -414,6 +415,86 @@ describe("authority and protocol gates", () => {
     for (const mcpName of ["create_post", "send_dm", "cancel_scheduled_post"]) {
       expect(tools.find((tool) => tool.mcpName === mcpName)).toMatchObject({
         classification: "destructive",
+        defaultPolicy: "require-approval",
+      });
+    }
+    expect(decoded.success.catalog.digest).toBe(
+      await digestPluginBytes(
+        new TextEncoder().encode(
+          canonicalPluginJson({
+            schemaVersion: decoded.success.catalog.schemaVersion,
+            tools: decoded.success.catalog.tools,
+          }),
+        ),
+      ),
+    );
+    expect(
+      Result.isSuccess(validateManagedRemotePluginRelease(decoded.success, "publication")),
+    ).toBe(true);
+  });
+
+  it("keeps ElevenLabs bound to its CIMD OAuth authority and creative reviewed catalog", async () => {
+    const value: unknown = JSON.parse(await readFile("plugins/remotes/elevenlabs.json", "utf8"));
+    const decoded = validateManagedRemotePluginRelease(value, "authoring");
+    expect(Result.isSuccess(decoded)).toBe(true);
+    if (Result.isFailure(decoded)) return;
+
+    expect(decoded.success.endpoint).toBe("https://api.elevenlabs.io/v1/mcp");
+    expect(decoded.success.allowedHosts).toEqual(["api.elevenlabs.io"]);
+    expect(decoded.success.authStrategy).toMatchObject({
+      profile: "mcp-oauth",
+      providerRegistrationId: "elevenlabs-oauth-cimd-v1",
+      clientRegistration: {
+        kind: "cimd",
+        clientIdMetadataDocumentUrl:
+          "https://supernala.com/.well-known/oauth-client/elevenlabs.json",
+      },
+      resourceMetadataUrl: "https://api.elevenlabs.io/.well-known/oauth-protected-resource",
+      identity: { kind: "opaque-connection" },
+    });
+    expect(decoded.success.oauthProviderDefinition).toMatchObject({
+      issuer: "https://api.us.elevenlabs.io",
+      resourceIdentity: "https://api.elevenlabs.io/v1/mcp",
+      authorizationEndpoint: "https://elevenlabs.io/app/oauth/authorize",
+      tokenEndpoint: "https://api.us.elevenlabs.io/v1/oauth/token",
+      tokenEndpointAuthMethod: "none",
+      authorizationResponseIssuer: "required",
+      revocation: { endpoint: "https://api.us.elevenlabs.io/v1/oauth/revoke" },
+    });
+    if (decoded.success.oauthProviderDefinition === undefined) return;
+    expect(decoded.success.scopes.filter((scope) => /^(convai|ads)_/.test(scope))).toEqual([]);
+    expect(decoded.success.providerDefinitionDigest).toBe(
+      await digestPluginOAuthProviderDefinition(decoded.success.oauthProviderDefinition),
+    );
+    const tools = decoded.success.catalog.tools;
+    expect(tools).toHaveLength(20);
+    expect(
+      tools.filter(
+        (tool) =>
+          tool.mcpName.startsWith("agents_") ||
+          [
+            "creative_create_asset_upload",
+            "creative_finalize_asset_upload",
+            "creative_execute_sandbox",
+            "creative_show_flow_results",
+            "get_more_tools",
+          ].includes(tool.mcpName),
+      ),
+    ).toEqual([]);
+    expect(
+      tools.every((tool) =>
+        tool.classification === "read"
+          ? tool.defaultPolicy === "allow"
+          : tool.defaultPolicy === "require-approval",
+      ),
+    ).toBe(true);
+    for (const mcpName of [
+      "creative_generate_speech",
+      "creative_generate_video",
+      "creative_design_voice",
+    ]) {
+      expect(tools.find((tool) => tool.mcpName === mcpName)).toMatchObject({
+        classification: "write",
         defaultPolicy: "require-approval",
       });
     }
