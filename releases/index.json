@@ -211,6 +211,12 @@
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
       "reason": "Owner-authorized authenticated tools/list capture with 33-tool reviewed-subset authority excluding ChatGPT, UI-card, and local-terminal upload tools. Live consent, account identity, privacy review, and production acceptance remain pending."
+    },
+    {
+      "sourceDirectory": "plugins/remotes/elevenlabs.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Owner authorized ElevenLabs through api.elevenlabs.io/v1/mcp (2026-11-16): Client ID Metadata Document client at supernala.com/.well-known/oauth-client/elevenlabs.json, creative scopes only, 20-tool reviewed creative subset (10 read; 10 credit-spending or state-changing writes ask first), excluding voice-agent administration, local uploads, sandbox and view tools. Requires the application's ElevenLabs client document. Live sign-in, tools/list equality, privacy review, and production acceptance remain pending."
     }
   ]
 }

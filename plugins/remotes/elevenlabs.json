@@ -1,0 +1,1073 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-publishable",
+  "id": "supernala-public:supernala:elevenlabs@1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "elevenlabs",
+  "version": "1.0.0",
+  "name": "ElevenLabs",
+  "description": "ElevenLabs hosted MCP integration for generating speech, images and video, designing voices and transcribing audio on ElevenLabs flows",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "elevenlabs-mcp-v1",
+    "providerRegistrationId": "elevenlabs-oauth-cimd-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://api.elevenlabs.io/v1/mcp",
+  "oauthRegistrationMode": "cimd",
+  "providerDefinitionDigest": "05d6805d0059f34e6932053e5aeeb7cbb3e7cc6550b73590385111733b2f6415",
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "elevenlabs-oauth-cimd-v1",
+    "providerDefinitionDigest": "05d6805d0059f34e6932053e5aeeb7cbb3e7cc6550b73590385111733b2f6415",
+    "requestedScopes": [
+      "flows",
+      "image_video_generation",
+      "speech_history_read",
+      "text_to_speech",
+      "user_read",
+      "voice_generation"
+    ],
+    "clientRegistration": {
+      "kind": "cimd",
+      "clientIdMetadataDocumentUrl": "https://supernala.com/.well-known/oauth-client/elevenlabs.json"
+    },
+    "resourceMetadataUrl": "https://api.elevenlabs.io/.well-known/oauth-protected-resource",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "ElevenLabs workspace"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "oauthProviderDefinition": {
+    "schemaVersion": 1,
+    "protocol": "oauth2-authorization-code",
+    "issuer": "https://api.us.elevenlabs.io",
+    "provider": "elevenlabs-mcp",
+    "resourceIdentity": "https://api.elevenlabs.io/v1/mcp",
+    "authorizationEndpoint": "https://elevenlabs.io/app/oauth/authorize",
+    "tokenEndpoint": "https://api.us.elevenlabs.io/v1/oauth/token",
+    "tokenEndpointAuthMethod": "none",
+    "authorizationResponseIssuer": "required",
+    "pkce": {
+      "method": "S256"
+    },
+    "authorizationParameters": [],
+    "scopes": [
+      "flows",
+      "image_video_generation",
+      "speech_history_read",
+      "text_to_speech",
+      "user_read",
+      "voice_generation"
+    ],
+    "account": {
+      "kind": "declaration-managed"
+    },
+    "tokens": {
+      "accessTokenType": "bearer",
+      "expiresIn": {
+        "required": true,
+        "minimumSeconds": 1,
+        "maximumSeconds": 86400
+      },
+      "grantedScopes": {
+        "whenPresent": "exact-match",
+        "whenOmitted": "requested-scopes"
+      },
+      "initialRefreshToken": "required",
+      "refreshResponseToken": "retain-current-if-omitted"
+    },
+    "refresh": {
+      "kind": "standard-form-post",
+      "invalidGrant": "reauthorization-required",
+      "ambiguousOutcome": "fail-closed-no-replay"
+    },
+    "revocation": {
+      "kind": "standard-form-post",
+      "endpoint": "https://api.us.elevenlabs.io/v1/oauth/revoke",
+      "token": "refresh-token",
+      "clientAuthentication": "registration-method",
+      "outcome": "best-effort-observed"
+    }
+  },
+  "scopes": [
+    "flows",
+    "image_video_generation",
+    "speech_history_read",
+    "text_to_speech",
+    "user_read",
+    "voice_generation"
+  ],
+  "catalog": {
+    "id": "elevenlabs-creative-catalog-20261116",
+    "schemaVersion": 1,
+    "digest": "0e0fb53abdb2d8e9cc8eb10c92f81fd5ef268d86c476e48c75071eb0c5aa4f06",
+    "tools": [
+      {
+        "id": "elevenlabs.creative_generate_speech",
+        "mcpName": "creative_generate_speech",
+        "title": "Generate speech",
+        "description": "Turn text into spoken audio with an ElevenLabs voice. voice_id must come from creative_list_voices or the user, never from memory. Pass flow_id to add to an existing flow; create one first with creative_create_flow when the audio will feed another generation such as lipsync or a voiceover. Returns at once with flow_id, node_id and session_ids plus a canvas url; poll creative_get_flow_run_status with them, waiting poll_after_seconds between calls, until all_completed or has_failures is true. Spends credits: pass estimate_only to price it first, and never call it again to retry, which starts and charges a second run.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "estimate_only": {
+              "default": false,
+              "description": "Return the credit cost and any blocking node errors without generating anything. Worth doing before a long video or several variations, so the user can approve the spend first.",
+              "type": "boolean"
+            },
+            "flow_id": {
+              "description": "The flow to act on, as returned by creative_create_flow or creative_generate_in_flow. Omit it for a one-off generation and a new flow is created. Always pass it when this generation will be combined with another: nodes on different flows cannot be connected, so allocate one with creative_create_flow up front and reuse it.",
+              "type": "string"
+            },
+            "generations_count": {
+              "default": 2,
+              "description": "How many variations to produce, so the user can pick. Defaults to 2. Change it only when the user asks for a specific number of takes. Costs scale with the count.",
+              "maximum": 4,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "model_id": {
+              "description": "The model to generate with. Use eleven_v4 unless the user asks for something specific. Go looking for a different one when the request implies something the default may not do — a specific resolution or aspect, rendered text, a long duration, a named style or a named provider. creative_get_flow_node_types lists what this workspace can actually run; creative_get_model_guide explains how to prompt one. Pick by what the request needs: eleven_v4 for inline audio direction tags such as [whispering] or [laughs softly].",
+              "enum": [
+                "eleven_flash_v2_5",
+                "eleven_multilingual_v2",
+                "eleven_turbo_v2_5",
+                "eleven_v3",
+                "eleven_v4"
+              ],
+              "type": "string"
+            },
+            "prompt": {
+              "description": "What to generate.",
+              "type": "string"
+            },
+            "view_state_id": {
+              "description": "Set by the speech view when the user switches voice — never set this yourself. It files the new generation into that view as another take, next to the ones already there. An id that is not a speech view of this workspace simply starts a fresh one.",
+              "type": "string"
+            },
+            "voice_id": {
+              "description": "Pick the voice that fits what the user described — their own words about the speaker, the language, the mood, the medium — from creative_list_voices. When they gave no hint at all, still pick one: a clear, natural, general-purpose voice. Do not ask them to choose first; the result renders with a voice switcher they can use to change it, and each change keeps the earlier takes. A voice_id only ever comes from creative_list_voices or the user — never from memory or invention.",
+              "type": "string"
+            }
+          },
+          "required": ["prompt", "model_id", "voice_id"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_generate_image",
+        "mcpName": "creative_generate_image",
+        "title": "Generate image",
+        "description": "Generate images from a text prompt, optionally guided by reference nodes on the same flow passed as connect_from. creative_get_flow_node_types lists the models this workspace can run. Returns at once with flow_id, node_id and session_ids plus a canvas url; poll creative_get_flow_run_status with them, waiting poll_after_seconds between calls, until all_completed or has_failures is true. Spends credits: pass estimate_only to price it first, and never call it again to retry, which starts and charges a second run.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "connect_from": {
+              "description": "Existing node IDs that should feed INTO this new node. Pass these when you already know the upstream wiring — the canvas places the new node correctly on creation instead of parking it first and reflowing later. This is how a reference node created by creative_upload_flow_reference (or creative_add_flow_asset_node) gets wired into this generation — the node must already exist on this same flow_id. A node_id only ever comes from a tool result, creative_upload_flow_reference's widget context, or creative_get_flow — never from memory or invention. If you do not have one yet, call creative_get_flow and read it from there rather than guessing a name like 'reference'. For an image edit driven by a reference — 'change X into Y in this image' — use gpt-image-2.5-sunburst unless the user names a model. It is the default for this specifically; the plain text-to-image default does not apply once a reference is wired.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "estimate_only": {
+              "default": false,
+              "description": "Return the credit cost and any blocking node errors without generating anything. Worth doing before a long video or several variations, so the user can approve the spend first.",
+              "type": "boolean"
+            },
+            "flow_id": {
+              "description": "The flow to act on, as returned by creative_create_flow or creative_generate_in_flow. Omit it for a one-off generation and a new flow is created. Always pass it when this generation will be combined with another: nodes on different flows cannot be connected, so allocate one with creative_create_flow up front and reuse it.",
+              "type": "string"
+            },
+            "generations_count": {
+              "default": 4,
+              "description": "How many variations to produce, so the user can pick. Defaults to 4 so the user can pick from several options — keep it at 4 unless the user asks for a specific number. Costs scale with the count.",
+              "maximum": 4,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "model_id": {
+              "description": "The model to generate with. Use gpt-image-2.5-sunburst unless the user asks for something specific. Go looking for a different one when the request implies something the default may not do — a specific resolution or aspect, rendered text, a long duration, a named style or a named provider. creative_get_flow_node_types lists what this workspace can actually run; creative_get_model_guide explains how to prompt one. Pick by what the request needs: gpt-image-2 for rendered text, infographics, UI mockups or multi-panel layouts, and it takes up to 10 reference images; gemini-3-pro-image for editing an existing image, composing several into one, or holding a character consistent across shots; bytedance-seedream-5.5 for multi-round edits that keep the rest of the image intact, transparent backgrounds, and small or multilingual text, up to 4K UHD; bytedance-seedream-5-pro for photorealism, product shots, multilingual text and dense infographics, but caps at 2K; bytedance-seedream-5-lite for the same strengths as 5-pro when up to 3K is needed; flux-3-image for native 2K/4K, the strongest text rendering and layout control in the FLUX family, and edits and composes up to 10 references; krea-3 for aesthetic, art-directed looks at up to 2K, and edits and composes up to 8 references; flux-2-pro for fine detail and strict prompt adherence, and the FLUX variant to pick when two or more reference images must be combined (up to 5); flux-1-kontext for a single reference image only — do not pick it to combine two or more.",
+              "enum": [
+                "birefnet-v2-bg-removal",
+                "bytedance-seedream-4",
+                "bytedance-seedream-4.5",
+                "bytedance-seedream-5-lite",
+                "bytedance-seedream-5-pro",
+                "bytedance-seedream-5.5",
+                "flux-1-kontext",
+                "flux-2-pro",
+                "flux-3-image",
+                "gemini-2.5-flash-image",
+                "gemini-3-pro-image",
+                "gemini-3.1-flash-image",
+                "gemini-3.1-flash-lite-image",
+                "gemini-nano-banana-2.1",
+                "gpt-image-1.5",
+                "gpt-image-2",
+                "gpt-image-2.5-flare",
+                "gpt-image-2.5-sunburst",
+                "gpt-image-2.6-flare",
+                "gpt-image-2.6-sunburst",
+                "ideogram-4.5",
+                "kling-omni-image",
+                "krea-2-large",
+                "krea-2-medium",
+                "krea-3",
+                "recraft-v4",
+                "recraft-v4.1",
+                "recraft-v4.1-flash",
+                "recraft-v4.1-pro-vector",
+                "runway-gen4-image",
+                "runway-gen4-image-turbo",
+                "topaz-image-upscale-v2",
+                "wan-2.5-preview-image"
+              ],
+              "type": "string"
+            },
+            "prompt": {
+              "description": "What to generate.",
+              "type": "string"
+            }
+          },
+          "required": ["prompt", "model_id"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_generate_video",
+        "mcpName": "creative_generate_video",
+        "title": "Generate video",
+        "description": "Generate a video from a text prompt, optionally from image, video or audio reference nodes on the same flow passed as connect_from (talking heads, lipsync, image-to-video). Confirm with the user before a long video. Returns at once with flow_id, node_id and session_ids plus a canvas url; poll creative_get_flow_run_status with them, waiting poll_after_seconds between calls, until all_completed or has_failures is true. Spends credits: pass estimate_only to price it first, and never call it again to retry, which starts and charges a second run.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "connect_from": {
+              "description": "Existing node IDs that should feed INTO this new node. Pass these when you already know the upstream wiring — the canvas places the new node correctly on creation instead of parking it first and reflowing later. This is how a reference node created by creative_upload_flow_reference (or creative_add_flow_asset_node) gets wired into this generation — the node must already exist on this same flow_id. A node_id only ever comes from a tool result, creative_upload_flow_reference's widget context, or creative_get_flow — never from memory or invention. If you do not have one yet, call creative_get_flow and read it from there rather than guessing a name like 'reference'. For an image edit driven by a reference — 'change X into Y in this image' — use gpt-image-2.5-sunburst unless the user names a model. It is the default for this specifically; the plain text-to-image default does not apply once a reference is wired.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "estimate_only": {
+              "default": false,
+              "description": "Return the credit cost and any blocking node errors without generating anything. Worth doing before a long video or several variations, so the user can approve the spend first.",
+              "type": "boolean"
+            },
+            "flow_id": {
+              "description": "The flow to act on, as returned by creative_create_flow or creative_generate_in_flow. Omit it for a one-off generation and a new flow is created. Always pass it when this generation will be combined with another: nodes on different flows cannot be connected, so allocate one with creative_create_flow up front and reuse it.",
+              "type": "string"
+            },
+            "generations_count": {
+              "default": 1,
+              "description": "How many variations to produce, so the user can pick. Defaults to 1 so the user can pick from several options — keep it at 1 unless the user asks for a specific number. Costs scale with the count.",
+              "maximum": 1,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "model_id": {
+              "description": "The model to generate with. Use bytedance-seedance-v2.5 unless the user asks for something specific. Go looking for a different one when the request implies something the default may not do — a specific resolution or aspect, rendered text, a long duration, a named style or a named provider. creative_get_flow_node_types lists what this workspace can actually run; creative_get_model_guide explains how to prompt one. Pick by what the request needs: bytedance-omnihuman-v1.5 for animating a static image into a lip-synced talking-head video with an audio track, not dubbing existing video; creatify-aurora for turning a single image and an audio clip into a studio-grade talking-head video, not editing existing video; sync-lipsync-v3 for dubbing existing video with new audio, not animating a still image; sync-lipsync-v2-pro for dubbing existing video with new audio, the same use as sync-lipsync-v3, not animating a still image; veed-lipsync for editing or lip-syncing existing video within ElevenCreative workflows, not animating a still image; veed-fabric-1-fast for editing or lip-syncing existing video within ElevenCreative workflows, the same use as veed-lipsync, not animating a still image; kling-3-pro for 4K at 60fps, clips up to 15s, multi-shot sequences of up to 6 camera angles, native audio with lip-sync, and strong character consistency; veo-3.1-generate-001 for synchronized audio and spoken dialogue, and cinematic comprehension; bytedance-seedance-v2 for motion realism, character consistency and multi-shot storytelling; it accepts text, image, video and audio together; runway-gen4-turbo for silent cinematic video — Runway output has no audio, so add speech, music or SFX nodes and a composition node when the result needs sound; runway-aleph2 for editing a video you already have, rather than generating one; ltx-v2-fast for a fast draft when quality matters less than turnaround; ltx-audio-to-video for video that must sync to audio you already have.",
+              "enum": [
+                "bytedance-omnihuman-v1.5",
+                "bytedance-seedance-v1-pro",
+                "bytedance-seedance-v2",
+                "bytedance-seedance-v2-fast",
+                "bytedance-seedance-v2-mini",
+                "bytedance-seedance-v2.5",
+                "bytedance-seedance-v2.5-edit",
+                "bytedance-seedance-v2.5-extend",
+                "bytedance-seedance-v2.5-flash",
+                "creatify-aurora",
+                "flux-3-edit-video",
+                "flux-3-max-video",
+                "flux-3-video",
+                "gemini-omni-1.1-flash",
+                "gemini-omni-1.1-flash-extend",
+                "gemini-omni-1.2-flash",
+                "gemini-omni-1.2-flash-extend",
+                "gemini-omni-flash",
+                "heygen-avatar4",
+                "kling-2.5-turbo",
+                "kling-2.6-pro",
+                "kling-2.6-pro-motion-control",
+                "kling-3-pro",
+                "kling-3-pro-motion-control",
+                "kling-4",
+                "kling-4-edit-video",
+                "kling-o3-edit-video",
+                "kling-o3-pro",
+                "kling-omni-edit-video",
+                "kling-omni-video",
+                "ltx-audio-to-video",
+                "ltx-v2",
+                "ltx-v2-fast",
+                "ltx-v2-retake",
+                "minimax-h3",
+                "minimax-h3-max",
+                "minimax-h3-max-lipsync",
+                "minimax-h3-max-recast",
+                "runway-act-two",
+                "runway-aleph2",
+                "runway-gen4-5",
+                "runway-gen4-turbo",
+                "runway-ruby",
+                "sync-lipsync-v2-pro",
+                "sync-lipsync-v3",
+                "topaz-video-upscale-v2",
+                "veed-fabric-1-fast",
+                "veed-lipsync",
+                "veed-lipsync-v2",
+                "veed-video-background-removal-fast",
+                "veo-3.1-fast-generate-001",
+                "veo-3.1-generate-001",
+                "veo-3.1-lite-generate-001",
+                "wan-2.5-preview-video",
+                "wan-2.6"
+              ],
+              "type": "string"
+            },
+            "prompt": {
+              "description": "What to generate.",
+              "type": "string"
+            }
+          },
+          "required": ["prompt", "model_id"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_edit_image",
+        "mcpName": "creative_edit_image",
+        "title": "Edit image",
+        "description": "Edit an image already on this flow: pass its node_id as connect_from (from an earlier generation, creative_add_flow_asset_node or creative_attach_reference_file) and describe the change in prompt. connect_from is required. Returns at once with flow_id, node_id and session_ids plus a canvas url; poll creative_get_flow_run_status with them, waiting poll_after_seconds between calls, until all_completed or has_failures is true. Spends credits: pass estimate_only to price it first, and never call it again to retry, which starts and charges a second run.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "connect_from": {
+              "description": "Existing node IDs that should feed INTO this new node. Pass these when you already know the upstream wiring — the canvas places the new node correctly on creation instead of parking it first and reflowing later. This is how a reference node created by creative_upload_flow_reference (or creative_add_flow_asset_node) gets wired into this generation — the node must already exist on this same flow_id. A node_id only ever comes from a tool result, creative_upload_flow_reference's widget context, or creative_get_flow — never from memory or invention. If you do not have one yet, call creative_get_flow and read it from there rather than guessing a name like 'reference'. For an image edit driven by a reference — 'change X into Y in this image' — use gpt-image-2.5-sunburst unless the user names a model. It is the default for this specifically; the plain text-to-image default does not apply once a reference is wired.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "estimate_only": {
+              "default": false,
+              "description": "Return the credit cost and any blocking node errors without generating anything. Worth doing before a long video or several variations, so the user can approve the spend first.",
+              "type": "boolean"
+            },
+            "flow_id": {
+              "description": "The flow to act on, as returned by creative_create_flow or creative_generate_in_flow. Omit it for a one-off generation and a new flow is created. Always pass it when this generation will be combined with another: nodes on different flows cannot be connected, so allocate one with creative_create_flow up front and reuse it.",
+              "type": "string"
+            },
+            "generations_count": {
+              "default": 4,
+              "description": "How many variations to produce, so the user can pick. Defaults to 4 so the user can pick from several options — keep it at 4 unless the user asks for a specific number. Costs scale with the count.",
+              "maximum": 4,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "model_id": {
+              "description": "The model to generate with. Use gpt-image-2.5-sunburst unless the user asks for something specific. Go looking for a different one when the request implies something the default may not do — a specific resolution or aspect, rendered text, a long duration, a named style or a named provider. creative_get_flow_node_types lists what this workspace can actually run; creative_get_model_guide explains how to prompt one. Pick by what the request needs: gpt-image-2 for rendered text, infographics, UI mockups or multi-panel layouts, and it takes up to 10 reference images; gemini-3-pro-image for editing an existing image, composing several into one, or holding a character consistent across shots; bytedance-seedream-5.5 for multi-round edits that keep the rest of the image intact, transparent backgrounds, and small or multilingual text, up to 4K UHD; bytedance-seedream-5-pro for photorealism, product shots, multilingual text and dense infographics, but caps at 2K; bytedance-seedream-5-lite for the same strengths as 5-pro when up to 3K is needed; flux-3-image for native 2K/4K, the strongest text rendering and layout control in the FLUX family, and edits and composes up to 10 references; krea-3 for aesthetic, art-directed looks at up to 2K, and edits and composes up to 8 references; flux-2-pro for fine detail and strict prompt adherence, and the FLUX variant to pick when two or more reference images must be combined (up to 5); flux-1-kontext for a single reference image only — do not pick it to combine two or more.",
+              "enum": [
+                "birefnet-v2-bg-removal",
+                "bytedance-seedream-4",
+                "bytedance-seedream-4.5",
+                "bytedance-seedream-5-lite",
+                "bytedance-seedream-5-pro",
+                "bytedance-seedream-5.5",
+                "flux-1-kontext",
+                "flux-2-pro",
+                "flux-3-image",
+                "gemini-2.5-flash-image",
+                "gemini-3-pro-image",
+                "gemini-3.1-flash-image",
+                "gemini-3.1-flash-lite-image",
+                "gemini-nano-banana-2.1",
+                "gpt-image-1.5",
+                "gpt-image-2",
+                "gpt-image-2.5-flare",
+                "gpt-image-2.5-sunburst",
+                "gpt-image-2.6-flare",
+                "gpt-image-2.6-sunburst",
+                "ideogram-4.5",
+                "kling-omni-image",
+                "krea-2-large",
+                "krea-2-medium",
+                "krea-3",
+                "recraft-v4",
+                "recraft-v4.1",
+                "recraft-v4.1-flash",
+                "recraft-v4.1-pro-vector",
+                "runway-gen4-image",
+                "runway-gen4-image-turbo",
+                "topaz-image-upscale-v2",
+                "wan-2.5-preview-image"
+              ],
+              "type": "string"
+            },
+            "prompt": {
+              "description": "What to generate.",
+              "type": "string"
+            }
+          },
+          "required": ["prompt", "model_id"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_transcribe_audio",
+        "mcpName": "creative_transcribe_audio",
+        "title": "Transcribe audio",
+        "description": "Transcribe speech in an audio node on this flow into text, with per-word timings for captions and subtitles. Put the audio on the flow first with creative_attach_reference_file and pass its node_id as connect_from. Returns at once with flow_id, node_id and session_ids plus a canvas url; poll creative_get_flow_run_status with them, waiting poll_after_seconds between calls, until all_completed or has_failures is true. Never call it again to retry; that charges a second transcription.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "connect_from": {
+              "description": "Existing node IDs that should feed INTO this new node. Pass these when you already know the upstream wiring — the canvas places the new node correctly on creation instead of parking it first and reflowing later. The audio node on this same flow to transcribe, as returned by creative_upload_flow_reference or creative_add_flow_asset_node. A node_id only ever comes from a tool result or creative_get_flow, never from memory or invention. Omit it to let the user pick a file — if a view can render one, an upload picker is shown instead of raising.",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "estimate_only": {
+              "default": false,
+              "description": "Return the cost and any blocking node errors without transcribing anything, so the user can approve the spend first. Worth doing for a long recording.",
+              "type": "boolean"
+            },
+            "flow_id": {
+              "description": "The flow to act on, as returned by creative_create_flow or creative_generate_in_flow. Omit it for a one-off generation and a new flow is created. Always pass it when this generation will be combined with another: nodes on different flows cannot be connected, so allocate one with creative_create_flow up front and reuse it.",
+              "type": "string"
+            },
+            "model_id": {
+              "description": "The model to generate with. Use eleven_scribe_v1 unless the user asks for something specific. Go looking for a different one when the request implies something the default may not do — a specific resolution or aspect, rendered text, a long duration, a named style or a named provider. creative_get_flow_node_types lists what this workspace can actually run; creative_get_model_guide explains how to prompt one.",
+              "enum": ["eleven_scribe_v1"],
+              "type": "string"
+            },
+            "view_state_id": {
+              "description": "Set by a picker view when it resumes after a pick — never set this yourself. Refuses the call rather than starting a second, separately charged generation if this picker already resumed.",
+              "type": "string"
+            }
+          },
+          "required": ["model_id"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_get_flow_run_status",
+        "mcpName": "creative_get_flow_run_status",
+        "title": "Run status",
+        "description": "Check whether a generation run has finished and read its generations and output URLs. Poll with the flow_id and every session_id a run returned until all_completed or has_failures is true.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "flow_id": {
+              "description": "The flow to act on, as returned by creative_create_flow or creative_generate_in_flow. Omit it for a one-off generation and a new flow is created. Always pass it when this generation will be combined with another: nodes on different flows cannot be connected, so allocate one with creative_create_flow up front and reuse it.",
+              "type": "string"
+            },
+            "session_ids": {
+              "description": "The session_ids returned when the run started. A run of several variations reports one session per variation; pass them all so the status covers the whole run.",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 20,
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": ["flow_id", "session_ids"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_list_voices",
+        "mcpName": "creative_list_voices",
+        "title": "Search voices",
+        "description": "Search the voices this workspace can speak with, by free text plus language, accent, gender, age, use case and character filters, to pick a voice_id for creative_generate_speech.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "accent": {
+              "description": "Filter by accent code. Only meaningful when exactly one language is given.",
+              "type": "string"
+            },
+            "age": {
+              "description": "Filter by voice age.",
+              "enum": ["young", "middle_aged", "old"],
+              "type": "string"
+            },
+            "descriptives": {
+              "description": "Filter by voice-character words. Narrows results to library voices.",
+              "items": {
+                "enum": [
+                  "anxious",
+                  "calm",
+                  "casual",
+                  "chill",
+                  "classy",
+                  "confident",
+                  "crisp",
+                  "cute",
+                  "deep",
+                  "excited",
+                  "formal",
+                  "gentle",
+                  "grumpy",
+                  "hyped",
+                  "husky",
+                  "intense",
+                  "mature",
+                  "meditative",
+                  "modulated",
+                  "neutral",
+                  "pleasant",
+                  "professional",
+                  "raspy",
+                  "relaxed",
+                  "robotic",
+                  "rough",
+                  "sad",
+                  "sassy",
+                  "serious",
+                  "soft",
+                  "upbeat",
+                  "whispery",
+                  "wise"
+                ],
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "gender": {
+              "description": "Filter by voice gender.",
+              "enum": ["male", "female", "neutral"],
+              "type": "string"
+            },
+            "languages": {
+              "description": "Filter by spoken language, as ISO 639-1 lowercase codes (e.g. 'en', 'ko', 'de').",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "search": {
+              "description": "Optional search over voice names and descriptions.",
+              "type": "string"
+            },
+            "sort": {
+              "description": "Library voice ordering: trending, latest, most cloned, or most used by character count.",
+              "enum": ["trending", "created_date", "cloned_by_count", "usage_character_count_1y"],
+              "type": "string"
+            },
+            "use_cases": {
+              "description": "Filter by the use cases the voice is suited for.",
+              "items": {
+                "enum": [
+                  "narrative_story",
+                  "conversational",
+                  "characters_animation",
+                  "social_media",
+                  "entertainment_tv",
+                  "advertisement",
+                  "informative_educational"
+                ],
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            "voice_category": {
+              "description": "Filter by voice category. 'professional' and 'famous' narrow to library voices; 'high_quality' means studio quality.",
+              "enum": ["professional", "famous", "high_quality"],
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_design_voice",
+        "mcpName": "creative_design_voice",
+        "title": "Design voice",
+        "description": "Design a brand-new voice from a description and get three previews. The line it speaks (100 to 1000 characters) and its language must come from the user, never invented. Report the previews and ask which to keep, then call creative_save_designed_voice. Spends credits: pass estimate_only to price it first, and never call it again to retry, which starts and charges a second run.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "guidance_scale": {
+              "default": 5,
+              "description": "How closely the previews follow voice_description versus sounding natural. Higher follows the description more strictly.",
+              "maximum": 100,
+              "minimum": 0,
+              "type": "number"
+            },
+            "language": {
+              "description": "ISO language code for text. From the user, never guessed from voice_description alone.",
+              "type": "string"
+            },
+            "loudness": {
+              "default": 0.5,
+              "description": "Target loudness, from -1 (quietest) to 1 (loudest).",
+              "maximum": 1,
+              "minimum": -1,
+              "type": "number"
+            },
+            "model_id": {
+              "default": "eleven_ttv_v3",
+              "description": "The voice design model. Use eleven_ttv_v3 unless the user asks for the older multilingual model.",
+              "enum": ["eleven_ttv_v3", "eleven_multilingual_ttv_v2"],
+              "type": "string"
+            },
+            "quality": {
+              "description": "Higher quality gives a better voice but less variety. Only accepted with eleven_multilingual_ttv_v2; passing it with eleven_ttv_v3 is rejected.",
+              "maximum": 1,
+              "minimum": -1,
+              "type": "number"
+            },
+            "seed": {
+              "description": "Fixes the randomness so a repeat call reproduces the same previews. Omit for a fresh set each time.",
+              "maximum": 2147483647,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "should_enhance": {
+              "default": true,
+              "description": "Whether to enhance the generated previews. Leave at the default unless the user asks otherwise.",
+              "type": "boolean"
+            },
+            "text": {
+              "description": "The line the previews will speak. Obtained from the user, never invented or auto-generated — this is what they will judge the voice by.",
+              "maxLength": 1000,
+              "minLength": 100,
+              "type": "string"
+            },
+            "view_state_id": {
+              "description": "Set by the voice-design view when the user edits the line and hits Regenerate — never set this yourself. It replaces that view's previews with the new round instead of minting a separate view. Regenerating still spends credits like any other call to this tool: if you genuinely want another round, call this tool again with no view_state_id rather than passing this.",
+              "type": "string"
+            },
+            "voice_description": {
+              "description": "What the voice should sound like — age, accent, tone, pacing, emotion. From the user's own words, never invented.",
+              "maxLength": 1000,
+              "minLength": 20,
+              "type": "string"
+            }
+          },
+          "required": ["voice_description", "text", "language"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_save_designed_voice",
+        "mcpName": "creative_save_designed_voice",
+        "title": "Save designed voice",
+        "description": "Save the preview the user picked from creative_design_voice into the voice library and return a voice_id for creative_generate_speech. Pass the rejected previews as discarded_voice_ids.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "description": {
+              "description": "Description shown alongside the voice in the library.",
+              "maxLength": 500,
+              "minLength": 20,
+              "type": "string"
+            },
+            "discarded_voice_ids": {
+              "description": "generated_voice_ids of the other previews the user did not pick, from the same creative_design_voice call.",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 8,
+              "type": "array"
+            },
+            "generated_voice_id": {
+              "description": "The preview to keep, from creative_design_voice's previews[].generated_voice_id — never invented.",
+              "type": "string"
+            },
+            "labels": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Optional labels (e.g. accent, gender, age) stored with the voice; string values only. Max 20 entries, keys <=20 chars, values <=50 chars.",
+              "type": "object"
+            },
+            "name": {
+              "description": "Display name for the new voice in the workspace's library.",
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            "view_state_id": {
+              "description": "The id of the voice-design view this save belongs to, as returned by creative_design_voice — never set this yourself. Refuses the call rather than saving a second voice if this view already saved one.",
+              "type": "string"
+            }
+          },
+          "required": ["generated_voice_id", "name", "description"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_get_voice_design_previews",
+        "mcpName": "creative_get_voice_design_previews",
+        "title": "Voice design previews",
+        "description": "Read back playable preview URLs for earlier creative_design_voice previews without spending credits.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "generated_voice_ids": {
+              "description": "The ids from a creative_design_voice result to read previews back for.",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 10,
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": ["generated_voice_ids"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_create_flow",
+        "mcpName": "creative_create_flow",
+        "title": "Create flow",
+        "description": "Create an empty flow (canvas) and return its flow_id. Call it first when several generations must be wired together, and pass the flow_id to every following call.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "name": {
+              "description": "Optional display name shown in the user's flow list.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_list_flows",
+        "mcpName": "creative_list_flows",
+        "title": "List flows",
+        "description": "List the user's flows, newest first, with flow_id, name, node count and url, to continue an existing one.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "cursor": {
+              "description": "The next_cursor of the previous page, to read the next one.",
+              "type": "string"
+            },
+            "page_size": {
+              "default": 20,
+              "description": "How many flows to return.",
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "search": {
+              "description": "Only flows whose name contains this text, case-insensitive.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_get_flow",
+        "mcpName": "creative_get_flow",
+        "title": "Read flow",
+        "description": "Read a flow's nodes, connections, groups and per-node run state, optionally narrowed by node ids, label or group.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "flow_id": {
+              "description": "The flow to act on, as returned by creative_create_flow or creative_generate_in_flow. Omit it for a one-off generation and a new flow is created. Always pass it when this generation will be combined with another: nodes on different flows cannot be connected, so allocate one with creative_create_flow up front and reuse it.",
+              "type": "string"
+            },
+            "group": {
+              "description": "Only return the nodes in this group, by group id or name.",
+              "type": "string"
+            },
+            "label_contains": {
+              "description": "Only return nodes whose label contains this text, case-insensitive.",
+              "type": "string"
+            },
+            "node_ids": {
+              "description": "Only return these nodes.",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": ["flow_id"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_get_flow_node",
+        "mcpName": "creative_get_flow_node",
+        "title": "Read flow node",
+        "description": "Read one node's prompt, model, parameters, connected inputs and recent generations.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "flow_id": {
+              "description": "The flow to act on, as returned by creative_create_flow or creative_generate_in_flow. Omit it for a one-off generation and a new flow is created. Always pass it when this generation will be combined with another: nodes on different flows cannot be connected, so allocate one with creative_create_flow up front and reuse it.",
+              "type": "string"
+            },
+            "generations_limit": {
+              "default": 10,
+              "description": "How many of the node's most recent generations to list.",
+              "maximum": 50,
+              "minimum": 1,
+              "type": "integer"
+            },
+            "node_id": {
+              "description": "The node to read.",
+              "type": "string"
+            }
+          },
+          "required": ["flow_id", "node_id"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_get_generations",
+        "mcpName": "creative_get_generations",
+        "title": "Show generations",
+        "description": "Show up to four generations from a flow with status, model, size and a signed full-resolution URL. Spends no credits.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "flow_id": {
+              "description": "The flow to act on, as returned by creative_create_flow or creative_generate_in_flow. Omit it for a one-off generation and a new flow is created. Always pass it when this generation will be combined with another: nodes on different flows cannot be connected, so allocate one with creative_create_flow up front and reuse it.",
+              "type": "string"
+            },
+            "generation_ids": {
+              "description": "Generations on this flow to look at, from creative_get_flow_node's generations or creative_get_flow_run_status.",
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 4,
+              "minItems": 1,
+              "type": "array"
+            }
+          },
+          "required": ["flow_id", "generation_ids"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_attach_reference_file",
+        "mcpName": "creative_attach_reference_file",
+        "title": "Attach file by URL",
+        "description": "Fetch a file from a direct https URL into the workspace as an asset and, with flow_id, place it on that flow as a reference node whose node_id can feed a generation, edit or transcription. Pass url; leave file empty.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "file": {
+              "description": "A file the user attached to this conversation. The host fills this in — never construct it yourself.",
+              "properties": {
+                "download_url": {
+                  "type": "string"
+                },
+                "file_id": {
+                  "type": "string"
+                },
+                "file_name": {
+                  "type": "string"
+                },
+                "mime_type": {
+                  "type": "string"
+                }
+              },
+              "required": ["download_url", "file_id"],
+              "type": "object"
+            },
+            "flow_id": {
+              "description": "An existing flow, as returned by creative_create_flow or creative_generate_in_flow. When given, the file is placed on it as a reference node in the same call.",
+              "type": "string"
+            },
+            "name": {
+              "description": "Display name for the asset. Defaults to the file name.",
+              "type": "string"
+            },
+            "node_id": {
+              "description": "An existing placeholder reference node on flow_id. When given alongside flow_id, fills that node with this file instead of creating a new one.",
+              "type": "string"
+            },
+            "url": {
+              "description": "Direct https URL to the file itself, not to a page containing it. Use this for a link the user gave you.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_add_flow_asset_node",
+        "mcpName": "creative_add_flow_asset_node",
+        "title": "Add asset to flow",
+        "description": "Put an existing asset, a previous generation (for example the variation the user picked) or inline text on a flow as a node, so its node_id can feed another generation.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "content_asset_id": {
+              "description": "ID of an uploaded asset. For image/video/audio, set exactly one of content_asset_id or generation_id.",
+              "type": "string"
+            },
+            "flow_id": {
+              "description": "The flow to act on, as returned by creative_create_flow or creative_generate_in_flow. Omit it for a one-off generation and a new flow is created. Always pass it when this generation will be combined with another: nodes on different flows cannot be connected, so allocate one with creative_create_flow up front and reuse it.",
+              "type": "string"
+            },
+            "generation_id": {
+              "description": "ID of a previous generation. For image/video/audio, set exactly one of content_asset_id or generation_id.",
+              "type": "string"
+            },
+            "inline_text": {
+              "description": "Text content for modality 'text'. Required for it.",
+              "type": "string"
+            },
+            "label": {
+              "description": "Optional display label for the node.",
+              "type": "string"
+            },
+            "modality": {
+              "description": "The kind of static asset to add.",
+              "enum": ["image", "video", "audio", "text"],
+              "type": "string"
+            }
+          },
+          "required": ["modality"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_get_flow_node_types",
+        "mcpName": "creative_get_flow_node_types",
+        "title": "Available models",
+        "description": "List the node types and models this workspace can run in its region, with each type's default model.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "flow_id": {
+              "description": "An existing flow, to also report how many nodes of each type are already on it. Omit it to just list what this workspace can run — this tool never creates a flow.",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.creative_get_model_guide",
+        "mcpName": "creative_get_model_guide",
+        "title": "Model prompting guide",
+        "description": "Read prompting guidance for one model before writing a prompt for it.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "model_id": {
+              "description": "The model to read prompting guidance for.",
+              "type": "string"
+            }
+          },
+          "required": ["model_id"],
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "elevenlabs.account_get_usage",
+        "mcpName": "account_get_usage",
+        "title": "Plan and usage",
+        "description": "Read the ElevenLabs plan, credits used and limit, next reset, overage and voice slots.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "additionalProperties": false,
+          "properties": {},
+          "type": "object"
+        },
+        "maximumOutputBytes": 1048576
+      }
+    ]
+  },
+  "config": {
+    "revision": 1,
+    "fields": []
+  },
+  "allowedHosts": ["api.elevenlabs.io"],
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://elevenlabs.io/mcp",
+    "https://api.elevenlabs.io/.well-known/oauth-protected-resource",
+    "https://api.elevenlabs.io/.well-known/oauth-authorization-server",
+    "https://api.us.elevenlabs.io/.well-known/oauth-authorization-server"
+  ],
+  "verificationNotes": "Owner-authorized on 2026-11-16. Hosted MCP https://api.elevenlabs.io/v1/mcp answers 401 with resource metadata naming authorization server https://api.us.elevenlabs.io (authorize on elevenlabs.io/app/oauth/authorize), PKCE S256, iss response parameter, public clients (none), revocation endpoint, and Client ID Metadata Documents; it advertises no registration endpoint, so the client is the CIMD at supernala.com/.well-known/oauth-client/elevenlabs.json. Input schemas were taken verbatim from an Owner-authenticated ElevenLabs connector session. The 20 admitted tools are a creative reviewed subset (10 read, 10 write): speech, image and video generation, image edit, transcription, voice search and design, flows, generations and plan usage. Every credit-spending or state-changing tool asks first. Excluded: agents_* (voice agent administration), local-file upload tools, sandbox execution, view-rendering tools, low-level flow node editing and get_more_tools. Requested scopes are limited to the creative surface (no convai or ads). Live CIMD sign-in, exact tools/list equality, token lifetime, privacy review and production acceptance remain pending."
+}
