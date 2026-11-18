@@ -168,6 +168,7 @@ describe("authority and protocol gates", () => {
       ["repliz", true],
       ["tebar", true],
       ["elevenlabs", true],
+      ["google-maps", true],
       ["gmail", false],
       ["resend", true],
     ] as const) {
@@ -498,6 +499,69 @@ describe("authority and protocol gates", () => {
         defaultPolicy: "require-approval",
       });
     }
+    expect(decoded.success.catalog.digest).toBe(
+      await digestPluginBytes(
+        new TextEncoder().encode(
+          canonicalPluginJson({
+            schemaVersion: decoded.success.catalog.schemaVersion,
+            tools: decoded.success.catalog.tools,
+          }),
+        ),
+      ),
+    );
+    expect(
+      Result.isSuccess(validateManagedRemotePluginRelease(decoded.success, "publication")),
+    ).toBe(true);
+  });
+
+  it("keeps Google Maps bound to a raw x-goog-api-key header and its read-only catalog", async () => {
+    const value: unknown = JSON.parse(await readFile("plugins/remotes/google-maps.json", "utf8"));
+    const decoded = validateManagedRemotePluginRelease(value, "authoring");
+    expect(Result.isSuccess(decoded)).toBe(true);
+    if (Result.isFailure(decoded)) return;
+
+    expect(decoded.success.id).toBe("supernala-public:supernala:google-maps@1.0.0");
+    expect(decoded.success.endpoint).toBe("https://mapstools.googleapis.com/mcp");
+    expect(decoded.success.allowedHosts).toEqual(["mapstools.googleapis.com"]);
+    expect(decoded.success.runtime).toMatchObject({
+      endpointRegistrationId: "google-maps-mcp-v1",
+      providerRegistrationId: "google-maps-api-key-v1",
+      transport: "streamable-http",
+    });
+    expect(decoded.success.scopes).toEqual([]);
+    expect(decoded.success.providerDefinitionDigest).toBeUndefined();
+    expect(decoded.success.oauthProviderDefinition).toBeUndefined();
+    expect(decoded.success.authStrategy).toMatchObject({
+      profile: "api-key",
+      providerRegistrationId: "google-maps-api-key-v1",
+      identity: { kind: "opaque-connection", displayLabel: "Google Maps" },
+      resources: { kind: "none" },
+    });
+    if (decoded.success.authStrategy?.profile !== "api-key") return;
+    expect(decoded.success.authStrategy.fields).toMatchObject([
+      { key: "api_key", label: "Google Maps API key", secret: true },
+    ]);
+    expect(decoded.success.authStrategy.delivery).toEqual([
+      { kind: "header", field: "api_key", headerName: "x-goog-api-key", encoding: "raw" },
+    ]);
+
+    const tools = decoded.success.catalog.tools;
+    expect(tools.map((tool) => tool.mcpName)).toEqual([
+      "search_places",
+      "lookup_weather",
+      "compute_routes",
+      "search_along_route",
+      "resolve_names",
+      "resolve_maps_urls",
+    ]);
+    expect(
+      tools.every(
+        (tool) =>
+          tool.id === `google-maps.${tool.mcpName}` &&
+          tool.classification === "read" &&
+          tool.defaultPolicy === "allow",
+      ),
+    ).toBe(true);
     expect(decoded.success.catalog.digest).toBe(
       await digestPluginBytes(
         new TextEncoder().encode(

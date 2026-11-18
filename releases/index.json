@@ -217,6 +217,12 @@
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
       "reason": "Owner authorized ElevenLabs through api.elevenlabs.io/v1/mcp (2026-11-16): Client ID Metadata Document client at supernala.com/.well-known/oauth-client/elevenlabs.json, creative scopes only, 20-tool reviewed creative subset (10 read; 10 credit-spending or state-changing writes ask first), excluding voice-agent administration, local uploads, sandbox and view tools. Requires the application's ElevenLabs client document. Live sign-in, tools/list equality, privacy review, and production acceptance remain pending."
+    },
+    {
+      "sourceDirectory": "plugins/remotes/google-maps.json",
+      "kind": "managed-remote-mcp",
+      "publicationEligible": true,
+      "reason": "Google Maps through Google's hosted Maps Experience agent tools MCP server at mapstools.googleapis.com/mcp (2026-11-18): the Owner's own Google Cloud API key, sent raw as x-goog-api-key and billed to the Owner's Cloud project; Supernala supplies no key. 6 read-only tools from the public tools/list (places, weather, routes, search along route, resolve names and Maps links), all allowed by default. Live keyed invocation, privacy review, and production acceptance remain pending."
     }
   ]
 }
