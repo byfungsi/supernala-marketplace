@@ -1,0 +1,687 @@
+{
+  "schemaVersion": 1,
+  "identity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "supernala-social",
+    "semanticVersion": "1.0.3"
+  },
+  "reviewId": "supernala-social-1.0.3-hosted-mcp-v1",
+  "reviewer": "Claude Code agent source and authority review; Owner approval is the merge of this file",
+  "reviewedAt": 1795193335260,
+  "artifactDigest": null,
+  "authorityBeforeIdentity": {
+    "marketplaceId": "supernala-public",
+    "publisherNamespace": "supernala",
+    "pluginSlug": "supernala-social",
+    "semanticVersion": "1.0.2"
+  },
+  "authorityBeforeReleaseDigest": "ea55b2b98bf0b01250cb405ac949bbb50b645732e843388f3370d5abdc4978a5",
+  "authorityBefore": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["social"],
+    "endpoint": "https://social.supernala.com/mcp",
+    "endpointRegistrationId": "supernala-social-mcp-v1",
+    "providerRegistrationId": "supernala-social-oauth-v1",
+    "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "supernala-social-oauth-v1",
+      "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
+      "requestedScopes": ["social"],
+      "clientRegistration": {
+        "kind": "dynamic",
+        "authorizationServerMetadataUrl": "https://social.supernala.com/.well-known/oauth-authorization-server"
+      },
+      "resourceMetadataUrl": "https://social.supernala.com/.well-known/oauth-protected-resource/mcp",
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Supernala Social account"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "supernala-social.list_workspaces",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      },
+      {
+        "id": "supernala-social.list_accounts",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            }
+          }
+        }
+      },
+      {
+        "id": "supernala-social.list_posts",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        }
+      },
+      {
+        "id": "supernala-social.publish_post",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 10
+            },
+            "text": {
+              "type": "string",
+              "description": "Post text or image caption."
+            },
+            "image_url": {
+              "type": "string",
+              "description": "Public https URL of a JPEG or PNG image, up to 8 MB."
+            },
+            "schedule_at": {
+              "type": "string",
+              "description": "ISO 8601 time to publish, at least a minute ahead. Omit to publish now."
+            }
+          },
+          "required": ["account_ids", "text"]
+        }
+      },
+      {
+        "id": "supernala-social.cancel_scheduled_post",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "post_id": {
+              "type": "string"
+            }
+          },
+          "required": ["post_id"]
+        }
+      },
+      {
+        "id": "supernala-social.list_comments",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "status": {
+              "type": "string",
+              "enum": ["pending", "resolved", "ignored", "all"]
+            },
+            "account_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "id": "supernala-social.read_comment_thread",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "comment_id": {
+              "type": "string"
+            }
+          },
+          "required": ["comment_id"]
+        }
+      },
+      {
+        "id": "supernala-social.moderate_comment",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "comment_id": {
+              "type": "string"
+            },
+            "action": {
+              "type": "string",
+              "enum": ["reply", "hide", "unhide", "delete", "resolve", "ignore", "reopen"]
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["comment_id", "action"]
+        }
+      },
+      {
+        "id": "supernala-social.get_analytics",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            },
+            "days": {
+              "type": "integer",
+              "enum": [7, 30]
+            }
+          },
+          "required": ["account_id"]
+        }
+      },
+      {
+        "id": "supernala-social.list_conversations",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "id": "supernala-social.read_conversation",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            },
+            "conversation_id": {
+              "type": "string"
+            }
+          },
+          "required": ["account_id", "conversation_id"]
+        }
+      },
+      {
+        "id": "supernala-social.reply_to_conversation",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            },
+            "conversation_id": {
+              "type": "string"
+            },
+            "recipient_id": {
+              "type": "string",
+              "description": "participantId from list_conversations."
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["account_id", "conversation_id", "recipient_id", "text"]
+        }
+      },
+      {
+        "id": "supernala-social.list_activity",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            }
+          }
+        }
+      }
+    ],
+    "allowedHosts": ["social.supernala.com"],
+    "config": []
+  },
+  "authorityBeforeDigest": "81c80f6c5c52cb953d23f2be963c122c24286e40fb41fc58701a3805bc53c51b",
+  "decision": "approved",
+  "sourceInputDigest": "355bc56765c04e6dfc6b479f64974e47033883fc73b2f8fd3eab9108cd9cad84",
+  "authentication": {
+    "kind": "oauth",
+    "providerRegistration": "supernala-social-oauth-v1",
+    "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
+    "requestedScopes": ["social"],
+    "credentialDelivery": "short-lived-access-token-only"
+  },
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "supernala-social-oauth-v1",
+    "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
+    "requestedScopes": ["social"],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://social.supernala.com/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://social.supernala.com/.well-known/oauth-protected-resource/mcp",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Supernala Social account"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "catalogDigest": "6359aab14fc5cc6daf7427536a23d93f97d20d95aed7bf8ac445fd49db9493ab",
+  "configDigest": "e6ebf9c4674f06e5a34f3a0619d9caa13b618515eeff5f54267e104bd6400221",
+  "provenanceDigest": "6a9b436abec5bfd64540ff4a7870ccf53366ef76252a5fd9c61ca661cbecf722",
+  "authorityAfter": {
+    "runtimeKind": "managed-remote-mcp",
+    "authenticationKind": "mcp-oauth",
+    "requestedScopes": ["social"],
+    "endpoint": "https://social.supernala.com/mcp",
+    "endpointRegistrationId": "supernala-social-mcp-v1",
+    "providerRegistrationId": "supernala-social-oauth-v1",
+    "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
+    "authStrategy": {
+      "schemaVersion": 1,
+      "profile": "mcp-oauth",
+      "providerRegistrationId": "supernala-social-oauth-v1",
+      "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
+      "requestedScopes": ["social"],
+      "clientRegistration": {
+        "kind": "dynamic",
+        "authorizationServerMetadataUrl": "https://social.supernala.com/.well-known/oauth-authorization-server"
+      },
+      "resourceMetadataUrl": "https://social.supernala.com/.well-known/oauth-protected-resource/mcp",
+      "identity": {
+        "kind": "opaque-connection",
+        "displayLabel": "Supernala Social account"
+      },
+      "resources": {
+        "kind": "none"
+      }
+    },
+    "tools": [
+      {
+        "id": "supernala-social.list_workspaces",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {}
+        }
+      },
+      {
+        "id": "supernala-social.list_accounts",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            }
+          }
+        }
+      },
+      {
+        "id": "supernala-social.list_posts",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        }
+      },
+      {
+        "id": "supernala-social.publish_post",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 10
+            },
+            "text": {
+              "type": "string",
+              "description": "Post text or media caption."
+            },
+            "media": {
+              "type": "array",
+              "description": "Images and videos in the order they appear. Each url is a public https link: images JPEG or PNG up to 8 MB, videos MP4 up to 100 MB.",
+              "minItems": 1,
+              "maxItems": 10,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": ["image", "video"]
+                  }
+                },
+                "required": ["url", "kind"]
+              }
+            },
+            "image_url": {
+              "type": "string",
+              "description": "One image as a public https URL of a JPEG or PNG up to 8 MB; or use media."
+            },
+            "schedule_at": {
+              "type": "string",
+              "description": "ISO 8601 time to publish, at least a minute ahead. Omit to publish now."
+            }
+          },
+          "required": ["account_ids", "text"]
+        }
+      },
+      {
+        "id": "supernala-social.cancel_scheduled_post",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "post_id": {
+              "type": "string"
+            }
+          },
+          "required": ["post_id"]
+        }
+      },
+      {
+        "id": "supernala-social.list_comments",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "status": {
+              "type": "string",
+              "enum": ["pending", "resolved", "ignored", "all"]
+            },
+            "account_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "id": "supernala-social.read_comment_thread",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "comment_id": {
+              "type": "string"
+            }
+          },
+          "required": ["comment_id"]
+        }
+      },
+      {
+        "id": "supernala-social.moderate_comment",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "comment_id": {
+              "type": "string"
+            },
+            "action": {
+              "type": "string",
+              "enum": ["reply", "hide", "unhide", "delete", "resolve", "ignore", "reopen"]
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["comment_id", "action"]
+        }
+      },
+      {
+        "id": "supernala-social.get_analytics",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            },
+            "days": {
+              "type": "integer",
+              "enum": [7, 30]
+            }
+          },
+          "required": ["account_id"]
+        }
+      },
+      {
+        "id": "supernala-social.list_conversations",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      {
+        "id": "supernala-social.read_conversation",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            },
+            "conversation_id": {
+              "type": "string"
+            }
+          },
+          "required": ["account_id", "conversation_id"]
+        }
+      },
+      {
+        "id": "supernala-social.reply_to_conversation",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            },
+            "conversation_id": {
+              "type": "string"
+            },
+            "recipient_id": {
+              "type": "string",
+              "description": "participantId from list_conversations."
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["account_id", "conversation_id", "recipient_id", "text"]
+        }
+      },
+      {
+        "id": "supernala-social.list_activity",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            }
+          }
+        }
+      }
+    ],
+    "allowedHosts": ["social.supernala.com"],
+    "config": []
+  },
+  "authorityDigest": "1088b558f2ed8f668b597f3502a03f7a4371c43dc69058c7dc3fb530957aefc7",
+  "authorityDiffDigest": "6a933e28006a53a992d6d345a0a15f1dbc236d3127db1d9c1b0c58330f3facd7",
+  "releaseDigest": "762cb236308ba198db78f5aef4e7da629d700fe87e62fdfc3fa3cbd4b81ef85b"
+}
