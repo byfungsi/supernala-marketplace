@@ -82,7 +82,7 @@ const authentication = {
   credentialDelivery: "short-lived-access-token-only",
 };
 const catalogDigest = await writeJson("catalog.json", {
-  id: "slack-web-api-catalog-v1",
+  id: "slack-web-api-catalog-v2",
   schemaVersion: 1,
   tools: slackApiToolDefinitions.map(({ name, description, inputSchema, classification }) => ({
     id: `slack.${name}`,
@@ -149,7 +149,7 @@ await writeJson("package-manifest.json", {
   schemaVersion: 1,
   id: "slack",
   publisher: "supernala",
-  version: "1.1.3",
+  version: "1.1.4",
   name: "Slack (Preview)",
   description:
     "Preview for testing Slack MCP with an existing authorized workspace. Search messages, channels, files, canvases and lists. Slack Marketplace approval is pending; availability may be restricted by Slack.",

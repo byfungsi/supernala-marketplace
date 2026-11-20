@@ -38,7 +38,7 @@ it("creates a validated 32-tool package with exact MCP catalog, OAuth and host a
   if (Result.isFailure(source)) throw source.failure;
   expect(source.success.manifest).toMatchObject({
     id: "slack",
-    version: "1.1.3",
+    version: "1.1.4",
     network: { allowedHosts: ["slack.com"] },
   });
   expect(source.success.catalog.tools).toHaveLength(32);

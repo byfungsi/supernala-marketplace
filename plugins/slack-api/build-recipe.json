@@ -16,12 +16,12 @@
     {
       "source": "plugins/slack-api/package-manifest.json",
       "destination": "plugin.json",
-      "sha256": "02cd92fec58a8be26100ef17c07e09ad8ac08e1586d8ecb99cdea0ae17d2b4dc"
+      "sha256": "feb7ee70013a73d849361c5518980221c50d8de8418a47df1c5e4bf5d2bf078e"
     },
     {
       "source": "plugins/slack-api/catalog.json",
       "destination": "catalog.json",
-      "sha256": "4793b94b533875b1a76830b978e28aadeaa4e2ff6b6a9a9c81e8dd4db47c6f37"
+      "sha256": "48f1ed2bcf16f166c0b7627032857287e7550aec0d05253295d312198ca46f96"
     },
     {
       "source": "plugins/slack-api/config.json",
@@ -46,7 +46,7 @@
     {
       "source": "plugins/slack-api/source/server.mjs",
       "destination": "dist/server.mjs",
-      "sha256": "c82f9e9745829882c13bc4b26eafeeb5cb43de55677b276e080385cde8f1dd57"
+      "sha256": "6443f89abbcc6dc860ee032f1e2325af980f8c4cdaf4b3c5383427b82a39200b"
     },
     {
       "source": "plugins/slack-api/source/slack-web-api.mjs",
