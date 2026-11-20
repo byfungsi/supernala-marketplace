@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:supernala-social@1.0.1",
+  "id": "supernala-public:supernala:supernala-social@1.0.2",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "supernala-social",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "name": "Supernala Social",
   "description": "Supernala Social hosted MCP integration for publishing and scheduling posts, inbox comments, direct messages, analytics, and activity across Social workspaces",
   "license": "LicenseRef-Provider-Service",
@@ -85,9 +85,9 @@
   },
   "scopes": ["social"],
   "catalog": {
-    "id": "supernala-social-tools-list-20261120-strict",
+    "id": "supernala-social-tools-list-20261121",
     "schemaVersion": 1,
-    "digest": "e62fbad9fa072c4cca4bbc5bfb8d3e3a19c8fcaec4e63d643b5d2dd51d308563",
+    "digest": "c537b1c1781c995e7c680f01deb92ebdbb0023bbce0e0cb29e5ad6d6d4413e13",
     "tools": [
       {
         "id": "supernala-social.list_workspaces",
@@ -126,7 +126,7 @@
         "id": "supernala-social.list_posts",
         "mcpName": "list_posts",
         "title": "List posts",
-        "description": "Scheduled and published posts in a workspace, newest first, with each account's result.",
+        "description": "Posts made through Social Supernala in a workspace (scheduled and published), newest first, with each account's result. Posts published directly in the platform apps aren't here; get_analytics lists every recent post of an account.",
         "classification": "read",
         "defaultPolicy": "allow",
         "inputSchema": {
@@ -292,7 +292,7 @@
         "id": "supernala-social.get_analytics",
         "mcpName": "get_analytics",
         "title": "Get account analytics",
-        "description": "An account's metrics for the last 7 or 30 days compared with the period before, plus per-post metrics.",
+        "description": "An account's metrics for the last 7 or 30 days compared with the period before, plus metrics for every post the account published in that period, including posts made outside Social Supernala.",
         "classification": "read",
         "defaultPolicy": "allow",
         "inputSchema": {
@@ -431,5 +431,5 @@
     "https://social.supernala.com/.well-known/oauth-protected-resource/mcp",
     "https://social.supernala.com/.well-known/oauth-authorization-server"
   ],
-  "verificationNotes": "First-party provider. The catalog is the complete tools/list of the Social Supernala MCP server (server social-supernala 1.1.0, protocol 2025-06-18, one page, 13 tools), taken verbatim from its source (apps/api/src/social-mcp-server.ts in byfungsi/funbot, byfungsi/supernala#1077) on 2026-11-20; tools/list is static and does not vary by person. 1.0.1 adds additionalProperties: false to every input schema, matching the server, so unknown arguments such as a camelCase workspaceId are refused before dispatch instead of being ignored and acting in the personal workspace; the server also refuses them by name. All 13 tools are admitted (9 read, 2 write, 2 destructive), including the comment, direct message and analytics tools that follow the social-inbox flag; when the flag is off for the person and the workspace creator, those tools return a \"not enabled yet\" error rather than disappearing. Classifications follow the server readOnlyHint/destructiveHint annotations; every write and destructive tool requires approval. Live metadata documents Streamable HTTP, dynamic client registration (public clients, https redirect URIs accepted), PKCE S256 only, the single social scope, authorization-code and refresh grants, and RFC 7009 revocation that ends the whole grant; it does not return an authorization-response issuer parameter. Tokens carry scope \"social\", a 3,600-second access lifetime and a rotated 30-day refresh token; replaying a rotated-out refresh token revokes the grant. Supernala and Supernala Social stay separate: the Owner approves the connection on the Social consent page, the grant acts as that person in their Social workspaces with Social membership and viewer rules applied, and the account stays an opaque connection. Live Store consent and production acceptance remain pending."
+  "verificationNotes": "First-party provider. The catalog is the complete static tools/list of the Social Supernala MCP server (server 1.1.0, protocol 2025-06-18, one page, 13 tools), taken verbatim from apps/api/src/social-mcp-server.ts (byfungsi/supernala#1077, #1095) on 2026-11-21. All tools are admitted (9 read, 2 write, 2 destructive), including the comment, direct message and analytics tools behind the social-inbox flag, which return a \"not enabled yet\" error when it is off. Classifications follow the readOnlyHint/destructiveHint annotations; every write and destructive tool requires approval. Every input schema sets additionalProperties: false, so unknown arguments such as a camelCase workspaceId are refused before dispatch; the server refuses them by name too. list_posts covers only posts made through Social Supernala and points to get_analytics, whose per-post metrics include posts made outside it. Live metadata documents Streamable HTTP, dynamic client registration, PKCE S256 only, the single social scope, authorization-code and refresh grants, and RFC 7009 revocation that ends the grant; no authorization-response issuer parameter. Tokens carry scope \"social\", a 3,600-second access lifetime and a rotated 30-day refresh token; replaying a rotated-out refresh token revokes the grant. Supernala and Supernala Social stay separate: the Owner approves on the Social consent page, the grant acts as that person in their Social workspaces with membership and viewer rules applied, and the account stays an opaque connection. Live Store consent and production acceptance remain pending."
 }
