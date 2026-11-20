@@ -641,6 +641,13 @@ describe("authority and protocol gates", () => {
           : tool.defaultPolicy === "require-approval",
       ),
     ).toBe(true);
+    // Unknown arguments such as a camelCase workspaceId are refused before dispatch.
+    expect(
+      tools.every(
+        (tool) =>
+          (tool.inputSchema as { additionalProperties?: unknown }).additionalProperties === false,
+      ),
+    ).toBe(true);
     expect(
       tools.filter((tool) => tool.classification !== "read").map((tool) => tool.mcpName),
     ).toEqual([
