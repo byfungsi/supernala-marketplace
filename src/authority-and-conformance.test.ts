@@ -167,6 +167,7 @@ describe("authority and protocol gates", () => {
       ["buffer", true],
       ["repliz", true],
       ["tebar", true],
+      ["supernala-social", true],
       ["elevenlabs", true],
       ["google-maps", true],
       ["gmail", false],
@@ -562,6 +563,92 @@ describe("authority and protocol gates", () => {
           tool.defaultPolicy === "allow",
       ),
     ).toBe(true);
+    expect(decoded.success.catalog.digest).toBe(
+      await digestPluginBytes(
+        new TextEncoder().encode(
+          canonicalPluginJson({
+            schemaVersion: decoded.success.catalog.schemaVersion,
+            tools: decoded.success.catalog.tools,
+          }),
+        ),
+      ),
+    );
+    expect(
+      Result.isSuccess(validateManagedRemotePluginRelease(decoded.success, "publication")),
+    ).toBe(true);
+  });
+
+  it("keeps Supernala Social bound to its first-party social scope and complete catalog, flag-gated tools included", async () => {
+    const value: unknown = JSON.parse(
+      await readFile("plugins/remotes/supernala-social.json", "utf8"),
+    );
+    const decoded = validateManagedRemotePluginRelease(value, "authoring");
+    expect(Result.isSuccess(decoded)).toBe(true);
+    if (Result.isFailure(decoded)) return;
+
+    expect(decoded.success.endpoint).toBe("https://social.supernala.com/mcp");
+    expect(decoded.success.allowedHosts).toEqual(["social.supernala.com"]);
+    expect(decoded.success.scopes).toEqual(["social"]);
+    expect(decoded.success.authStrategy).toMatchObject({
+      profile: "mcp-oauth",
+      providerRegistrationId: "supernala-social-oauth-v1",
+      requestedScopes: ["social"],
+      clientRegistration: {
+        kind: "dynamic",
+        authorizationServerMetadataUrl:
+          "https://social.supernala.com/.well-known/oauth-authorization-server",
+      },
+      resourceMetadataUrl: "https://social.supernala.com/.well-known/oauth-protected-resource/mcp",
+      identity: { kind: "opaque-connection" },
+    });
+    expect(decoded.success.oauthProviderDefinition).toMatchObject({
+      issuer: "https://social.supernala.com",
+      authorizationEndpoint: "https://social.supernala.com/oauth/authorize",
+      tokenEndpoint: "https://social.supernala.com/oauth/token",
+      tokenEndpointAuthMethod: "none",
+      authorizationResponseIssuer: "not-supported",
+      scopes: ["social"],
+      revocation: {
+        kind: "standard-form-post",
+        endpoint: "https://social.supernala.com/oauth/revoke",
+        token: "refresh-token",
+      },
+    });
+    if (decoded.success.oauthProviderDefinition === undefined) return;
+    expect(decoded.success.providerDefinitionDigest).toBe(
+      await digestPluginOAuthProviderDefinition(decoded.success.oauthProviderDefinition),
+    );
+    const tools = decoded.success.catalog.tools;
+    expect(tools.map((tool) => tool.mcpName)).toEqual([
+      "list_workspaces",
+      "list_accounts",
+      "list_posts",
+      "publish_post",
+      "cancel_scheduled_post",
+      "list_comments",
+      "read_comment_thread",
+      "moderate_comment",
+      "get_analytics",
+      "list_conversations",
+      "read_conversation",
+      "reply_to_conversation",
+      "list_activity",
+    ]);
+    expect(
+      tools.every((tool) =>
+        tool.classification === "read"
+          ? tool.defaultPolicy === "allow"
+          : tool.defaultPolicy === "require-approval",
+      ),
+    ).toBe(true);
+    expect(
+      tools.filter((tool) => tool.classification !== "read").map((tool) => tool.mcpName),
+    ).toEqual([
+      "publish_post",
+      "cancel_scheduled_post",
+      "moderate_comment",
+      "reply_to_conversation",
+    ]);
     expect(decoded.success.catalog.digest).toBe(
       await digestPluginBytes(
         new TextEncoder().encode(

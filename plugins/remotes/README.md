@@ -16,6 +16,7 @@ These records preserve fixed provider endpoints, OAuth definitions, registration
 | Repliz                             | Dynamic OAuth, PKCE S256, scope-free; slash-origin issuer           | 73 authenticated tools            | Live catalog equality, workspace identity, privacy, acceptance |
 | Tebar                              | Dynamic OAuth, PKCE S256, `read` `write`; rotated refresh           | 33 authenticated tools            | Live catalog equality, account identity, privacy, acceptance   |
 | ElevenLabs                         | Public CIMD OAuth, PKCE S256, 6 creative scopes; US issuer          | 20 creative tools                 | Live catalog equality, workspace identity, privacy, acceptance |
+| Supernala Social                   | Dynamic OAuth, PKCE S256, `social`; first-party, rotated refresh    | All 13 tools, flag-gated included | Live Store consent, acceptance                                 |
 | Google Maps                        | Owner API key, raw `x-goog-api-key` header; Owner-billed            | 6 public read-only tools          | Live keyed invocation, privacy, acceptance                     |
 | Resend                             | Deployed public CIMD OAuth; `emails:send` only                      | `send-email` from official source | Live catalog equality, team identity, privacy, acceptance      |
 
