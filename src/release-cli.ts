@@ -41,6 +41,7 @@ import {
   buildManagedRemoteReleaseBundle,
   calculateManagedRemoteSourceInputDigest,
   draftManagedRemoteBootstrapReview,
+  draftManagedRemoteUpgradeReview,
   loadManagedRemoteReleaseBundle,
 } from "./remote-release-bundle.js";
 import { ReleaseSet } from "./release-set.js";
@@ -655,6 +656,7 @@ const draftRemoteReview = async (
   sourceFile: string,
   reviewId: string,
   reviewer: string,
+  previousReviewFile?: string,
 ): Promise<void> => {
   const index = await readJson("releases/index.json", ReleaseIndex);
   if (
@@ -667,14 +669,20 @@ const draftRemoteReview = async (
   ) {
     fail("remote-source-not-publication-eligible");
   }
+  const draft = {
+    sourceFile,
+    sharedInputDigest: await digestReleaseSharedInputs(index.sharedInputs),
+    reviewId,
+    reviewer,
+    reviewedAt: Date.now(),
+  };
   const review = unwrap(
-    await draftManagedRemoteBootstrapReview({
-      sourceFile,
-      sharedInputDigest: await digestReleaseSharedInputs(index.sharedInputs),
-      reviewId,
-      reviewer,
-      reviewedAt: Date.now(),
-    }),
+    previousReviewFile === undefined
+      ? await draftManagedRemoteBootstrapReview(draft)
+      : await draftManagedRemoteUpgradeReview({
+          ...draft,
+          previousReview: await readReleaseReview(previousReviewFile),
+        }),
     (error) => error,
   );
   const reviewFile = releaseReviewFile(review.identity);
@@ -738,7 +746,15 @@ const main = async (): Promise<void> => {
       arguments_[2] ?? fail("reviewer-required"),
     );
   }
-  fail("expected baseline|build|publish|draft-remote-review");
+  if (command === "draft-remote-upgrade-review") {
+    return draftRemoteReview(
+      arguments_[0] ?? fail("remote-source-required"),
+      arguments_[1] ?? fail("review-id-required"),
+      arguments_[2] ?? fail("reviewer-required"),
+      arguments_[3] ?? fail("previous-review-required"),
+    );
+  }
+  fail("expected baseline|build|publish|draft-remote-review|draft-remote-upgrade-review");
 };
 
 main().catch((error: unknown) => {

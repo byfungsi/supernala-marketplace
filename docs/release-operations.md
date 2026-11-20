@@ -55,7 +55,7 @@ Refresh the snapshot from a Supernala checkout at the deployed commit after any 
 
 ## Drafting a first-publication review
 
-`pnpm release draft-remote-review plugins/remotes/<slug>.json <review-id> <reviewer>` writes `releases/reviews/<identity>.json` for a publication-eligible managed remote with no published predecessor. Its digests come from the same derivation the release build verifies. It never replaces an existing review. Committing the file is the owner's approval of the exact authority it lists. Later versions need lineage from the verified published predecessor and are not drafted by this command.
+`pnpm release draft-remote-review plugins/remotes/<slug>.json <review-id> <reviewer>` writes `releases/reviews/<identity>.json` for a publication-eligible managed remote with no published predecessor. Its digests come from the same derivation the release build verifies. It never replaces an existing review. Committing the file is the owner's approval of the exact authority it lists. `pnpm release draft-remote-upgrade-review plugins/remotes/<slug>.json <review-id> <reviewer> releases/reviews/<previous identity>.json` drafts a later version: its authority baseline is the previous version's approved review (identity, release digest and authority), which the release build checks against the verified published journal record, so a stale or unpublished predecessor fails the build.
 
 ## Failure reasons
 

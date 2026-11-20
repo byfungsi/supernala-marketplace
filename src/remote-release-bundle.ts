@@ -322,11 +322,48 @@ export async function draftManagedRemoteBootstrapReview(input: {
   readonly reviewer: string;
   readonly reviewedAt: number;
 }): Promise<Result.Result<ReleaseReview, string>> {
+  return draftManagedRemoteReview({ ...input, previousReview: null });
+}
+
+/**
+ * Drafts the review for a later version of a published managed remote. Its authority baseline is
+ * the previous version's approved review, which the release checks against the journal record.
+ */
+export async function draftManagedRemoteUpgradeReview(input: {
+  readonly sourceFile: string;
+  readonly sharedInputDigest: typeof PluginSha256.Type;
+  readonly reviewId: string;
+  readonly reviewer: string;
+  readonly reviewedAt: number;
+  readonly previousReview: ReleaseReview;
+}): Promise<Result.Result<ReleaseReview, string>> {
+  return draftManagedRemoteReview(input);
+}
+
+async function draftManagedRemoteReview(input: {
+  readonly sourceFile: string;
+  readonly sharedInputDigest: typeof PluginSha256.Type;
+  readonly reviewId: string;
+  readonly reviewer: string;
+  readonly reviewedAt: number;
+  readonly previousReview: ReleaseReview | null;
+}): Promise<Result.Result<ReleaseReview, string>> {
   const loaded = await loadReviewedRemote(input.sourceFile);
   if (Result.isFailure(loaded)) return Result.fail(loaded.failure);
-  const authorityBefore = deriveBootstrapAuthoritySnapshot(
-    deriveManagedRemoteAuthoritySnapshot(loaded.success),
-  );
+  const previous = input.previousReview;
+  if (
+    previous !== null &&
+    (previous.identity.marketplaceId !== loaded.success.marketplaceId ||
+      previous.identity.publisherNamespace !== loaded.success.publisherNamespace ||
+      previous.identity.pluginSlug !== loaded.success.pluginSlug ||
+      previous.identity.semanticVersion === loaded.success.version)
+  ) {
+    return Result.fail("previous-review-mismatch");
+  }
+  const authorityBefore =
+    previous === null
+      ? deriveBootstrapAuthoritySnapshot(deriveManagedRemoteAuthoritySnapshot(loaded.success))
+      : previous.authorityAfter;
   const placeholder = PluginSha256.make("0".repeat(64));
   const metadata = {
     schemaVersion: 1,
@@ -340,8 +377,8 @@ export async function draftManagedRemoteBootstrapReview(input: {
     reviewer: input.reviewer,
     reviewedAt: input.reviewedAt,
     artifactDigest: null,
-    authorityBeforeIdentity: null,
-    authorityBeforeReleaseDigest: null,
+    authorityBeforeIdentity: previous === null ? null : previous.identity,
+    authorityBeforeReleaseDigest: previous === null ? null : previous.releaseDigest,
     authorityBefore,
     authorityBeforeDigest: await digestJson(authorityBefore),
     decision: "approved",
@@ -364,7 +401,16 @@ export async function draftManagedRemoteBootstrapReview(input: {
     mergeCommit: "0".repeat(40),
     releaseOrdinal: 0,
     review: provisional,
-    previousPublished: null,
+    previousPublished:
+      previous === null
+        ? null
+        : {
+            status: "published",
+            durableStateVerified: true,
+            identity: previous.identity,
+            releaseDigest: previous.releaseDigest,
+            authorityDigest: previous.authorityDigest,
+          },
   });
   if (Result.isFailure(derived)) return Result.fail(derived.failure);
   const { candidate, authorityAfter } = derived.success;
