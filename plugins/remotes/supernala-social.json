@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:supernala-social@1.0.2",
+  "id": "supernala-public:supernala:supernala-social@1.0.3",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "supernala-social",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "name": "Supernala Social",
   "description": "Supernala Social hosted MCP integration for publishing and scheduling posts, inbox comments, direct messages, analytics, and activity across Social workspaces",
   "license": "LicenseRef-Provider-Service",
@@ -85,9 +85,9 @@
   },
   "scopes": ["social"],
   "catalog": {
-    "id": "supernala-social-tools-list-20261121",
+    "id": "supernala-social-tools-list-20261121-media",
     "schemaVersion": 1,
-    "digest": "c537b1c1781c995e7c680f01deb92ebdbb0023bbce0e0cb29e5ad6d6d4413e13",
+    "digest": "6359aab14fc5cc6daf7427536a23d93f97d20d95aed7bf8ac445fd49db9493ab",
     "tools": [
       {
         "id": "supernala-social.list_workspaces",
@@ -150,7 +150,7 @@
         "id": "supernala-social.publish_post",
         "mcpName": "publish_post",
         "title": "Publish or schedule a post",
-        "description": "Posts text, optionally with one image, to one or more connected accounts now or at schedule_at. Instagram needs an image (JPEG). This publishes publicly.",
+        "description": "Posts text with up to ten images or videos, in order, to one or more connected accounts now or at schedule_at. Instagram needs at least one image (JPEG) or video. Facebook Pages, LinkedIn Pages and TikTok take several images or one video, not both; Instagram, Threads and Discord can mix them. This publishes publicly.",
         "classification": "write",
         "defaultPolicy": "require-approval",
         "inputSchema": {
@@ -171,11 +171,31 @@
             },
             "text": {
               "type": "string",
-              "description": "Post text or image caption."
+              "description": "Post text or media caption."
+            },
+            "media": {
+              "type": "array",
+              "description": "Images and videos in the order they appear. Each url is a public https link: images JPEG or PNG up to 8 MB, videos MP4 up to 100 MB.",
+              "minItems": 1,
+              "maxItems": 10,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": ["image", "video"]
+                  }
+                },
+                "required": ["url", "kind"]
+              }
             },
             "image_url": {
               "type": "string",
-              "description": "Public https URL of a JPEG or PNG image, up to 8 MB."
+              "description": "One image as a public https URL of a JPEG or PNG up to 8 MB; or use media."
             },
             "schedule_at": {
               "type": "string",
@@ -431,5 +451,5 @@
     "https://social.supernala.com/.well-known/oauth-protected-resource/mcp",
     "https://social.supernala.com/.well-known/oauth-authorization-server"
   ],
-  "verificationNotes": "First-party provider. The catalog is the complete static tools/list of the Social Supernala MCP server (server 1.1.0, protocol 2025-06-18, one page, 13 tools), taken verbatim from apps/api/src/social-mcp-server.ts (byfungsi/supernala#1077, #1095) on 2026-11-21. All tools are admitted (9 read, 2 write, 2 destructive), including the comment, direct message and analytics tools behind the social-inbox flag, which return a \"not enabled yet\" error when it is off. Classifications follow the readOnlyHint/destructiveHint annotations; every write and destructive tool requires approval. Every input schema sets additionalProperties: false, so unknown arguments such as a camelCase workspaceId are refused before dispatch; the server refuses them by name too. list_posts covers only posts made through Social Supernala and points to get_analytics, whose per-post metrics include posts made outside it. Live metadata documents Streamable HTTP, dynamic client registration, PKCE S256 only, the single social scope, authorization-code and refresh grants, and RFC 7009 revocation that ends the grant; no authorization-response issuer parameter. Tokens carry scope \"social\", a 3,600-second access lifetime and a rotated 30-day refresh token; replaying a rotated-out refresh token revokes the grant. Supernala and Supernala Social stay separate: the Owner approves on the Social consent page, the grant acts as that person in their Social workspaces with membership and viewer rules applied, and the account stays an opaque connection. Live Store consent and production acceptance remain pending."
+  "verificationNotes": "First-party provider. The catalog is the complete static tools/list of the Social Supernala MCP server (server 1.1.0, protocol 2025-06-18, one page, 13 tools), taken verbatim from apps/api/src/social-mcp-server.ts (byfungsi/supernala#1077, #1095, #1096) on 2026-11-21. All tools are admitted (9 read, 2 write, 2 destructive), including the comment, direct message and analytics tools behind the social-inbox flag, which return a \"not enabled yet\" error when it is off. Classifications follow the readOnlyHint/destructiveHint annotations; every write and destructive tool requires approval. Every input schema sets additionalProperties: false, so unknown arguments such as a camelCase workspaceId are refused before dispatch; the server refuses them by name too. list_posts covers only posts made through Social Supernala and points to get_analytics, whose per-post metrics include posts made outside it. publish_post takes up to ten media items (JPEG or PNG images up to 8 MB, MP4 videos up to 100 MB streamed into Social's part upload) or one image_url. Live metadata documents Streamable HTTP, dynamic client registration, PKCE S256 only, the single social scope, authorization-code and refresh grants, and RFC 7009 revocation that ends the grant; no authorization-response issuer parameter. Tokens carry scope \"social\", a 3,600-second access lifetime and a rotated 30-day refresh token; replaying a rotated-out refresh token revokes the grant. Supernala and Supernala Social stay separate: the Owner approves on the Social consent page, the grant acts as that person in their Social workspaces with membership and viewer rules applied, and the account stays an opaque connection. Live Store consent and production acceptance remain pending."
 }
