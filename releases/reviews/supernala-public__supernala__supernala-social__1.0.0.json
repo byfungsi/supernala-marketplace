@@ -32,9 +32,7 @@
     "kind": "oauth",
     "providerRegistration": "supernala-social-oauth-v1",
     "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
-    "requestedScopes": [
-      "social"
-    ],
+    "requestedScopes": ["social"],
     "credentialDelivery": "short-lived-access-token-only"
   },
   "authStrategy": {
@@ -42,9 +40,7 @@
     "profile": "mcp-oauth",
     "providerRegistrationId": "supernala-social-oauth-v1",
     "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
-    "requestedScopes": [
-      "social"
-    ],
+    "requestedScopes": ["social"],
     "clientRegistration": {
       "kind": "dynamic",
       "authorizationServerMetadataUrl": "https://social.supernala.com/.well-known/oauth-authorization-server"
@@ -64,9 +60,7 @@
   "authorityAfter": {
     "runtimeKind": "managed-remote-mcp",
     "authenticationKind": "mcp-oauth",
-    "requestedScopes": [
-      "social"
-    ],
+    "requestedScopes": ["social"],
     "endpoint": "https://social.supernala.com/mcp",
     "endpointRegistrationId": "supernala-social-mcp-v1",
     "providerRegistrationId": "supernala-social-oauth-v1",
@@ -76,9 +70,7 @@
       "profile": "mcp-oauth",
       "providerRegistrationId": "supernala-social-oauth-v1",
       "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
-      "requestedScopes": [
-        "social"
-      ],
+      "requestedScopes": ["social"],
       "clientRegistration": {
         "kind": "dynamic",
         "authorizationServerMetadataUrl": "https://social.supernala.com/.well-known/oauth-authorization-server"
@@ -167,10 +159,7 @@
               "description": "ISO 8601 time to publish, at least a minute ahead. Omit to publish now."
             }
           },
-          "required": [
-            "account_ids",
-            "text"
-          ]
+          "required": ["account_ids", "text"]
         }
       },
       {
@@ -188,9 +177,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "post_id"
-          ]
+          "required": ["post_id"]
         }
       },
       {
@@ -206,12 +193,7 @@
             },
             "status": {
               "type": "string",
-              "enum": [
-                "pending",
-                "resolved",
-                "ignored",
-                "all"
-              ]
+              "enum": ["pending", "resolved", "ignored", "all"]
             },
             "account_id": {
               "type": "string"
@@ -234,9 +216,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "comment_id"
-          ]
+          "required": ["comment_id"]
         }
       },
       {
@@ -255,24 +235,13 @@
             },
             "action": {
               "type": "string",
-              "enum": [
-                "reply",
-                "hide",
-                "unhide",
-                "delete",
-                "resolve",
-                "ignore",
-                "reopen"
-              ]
+              "enum": ["reply", "hide", "unhide", "delete", "resolve", "ignore", "reopen"]
             },
             "text": {
               "type": "string"
             }
           },
-          "required": [
-            "comment_id",
-            "action"
-          ]
+          "required": ["comment_id", "action"]
         }
       },
       {
@@ -291,15 +260,10 @@
             },
             "days": {
               "type": "integer",
-              "enum": [
-                7,
-                30
-              ]
+              "enum": [7, 30]
             }
           },
-          "required": [
-            "account_id"
-          ]
+          "required": ["account_id"]
         }
       },
       {
@@ -337,10 +301,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "account_id",
-            "conversation_id"
-          ]
+          "required": ["account_id", "conversation_id"]
         }
       },
       {
@@ -368,12 +329,7 @@
               "type": "string"
             }
           },
-          "required": [
-            "account_id",
-            "conversation_id",
-            "recipient_id",
-            "text"
-          ]
+          "required": ["account_id", "conversation_id", "recipient_id", "text"]
         }
       },
       {
@@ -391,9 +347,7 @@
         }
       }
     ],
-    "allowedHosts": [
-      "social.supernala.com"
-    ],
+    "allowedHosts": ["social.supernala.com"],
     "config": []
   },
   "authorityDigest": "693db02d721414089dd2f273db82d877417079a6f9a24cf8ffcb2395f6f02e79",
