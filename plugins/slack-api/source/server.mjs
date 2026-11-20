@@ -5,7 +5,10 @@ import { pathToFileURL } from "node:url";
 import { slackApiToolCatalog } from "./slack-tool-catalog.mjs";
 import { createSlackApiToolHandler } from "./slack-web-api.mjs";
 
-const maximumFrameBytes = 262144;
+// One MCP message; the Supernala Plugin Host accepts up to 1 MiB per message.
+const maximumFrameBytes = 1048576;
+// Requests stay small: arguments are bounded by the catalog's input schemas.
+const maximumRequestFrameBytes = 262144;
 const supportedVersions = new Set(["2024-11-05", "2025-03-26", "2025-06-18", "2025-11-25"]);
 const isRecord = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
 const validId = (value) =>
@@ -171,7 +174,7 @@ export const startSlackApiMcpServer = async ({
       const boundary = chunk.indexOf(10, offset);
       const end = boundary < 0 ? chunk.length : boundary;
       if (!discardingOversizedLine) {
-        if (buffered.length + end - offset > maximumFrameBytes) {
+        if (buffered.length + end - offset > maximumRequestFrameBytes) {
           buffered = Buffer.alloc(0);
           discardingOversizedLine = true;
           fail(null, -32600, "Slack MCP request too large");

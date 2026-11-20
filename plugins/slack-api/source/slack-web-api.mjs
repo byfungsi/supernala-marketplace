@@ -4,10 +4,11 @@
 import { inspect } from "node:util";
 import { slackApiToolDefinitions } from "./slack-tool-catalog.mjs";
 
-const maximumResponseBytes = 524288;
-// The MCP server sends a result twice (as text and as structuredContent) in one 262144-byte frame,
-// so a projected result must stay under half of it, with room for the envelope.
-const maximumOutputBytes = 120000;
+// Slack's raw answer, read before projection: a page of rich search matches can pass 512 KiB.
+const maximumResponseBytes = 2097152;
+// The MCP server sends a result twice (as text and as structuredContent) in one 1048576-byte frame,
+// so a projected result must stay under half of it, with room for the envelope and escaping.
+const maximumOutputBytes = 480000;
 const maximumRequestBytes = 100000;
 const apiOrigin = "https://slack.com/api/";
 // Use the official Slack SDK's form wire format for classic scalar read methods.
@@ -266,7 +267,7 @@ const readSlackJson = async (response) => {
     const value = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
     let nodes = 0;
     const isBounded = (entry, depth = 0) => {
-      if (++nodes > 20000 || depth > 20) return false;
+      if (++nodes > 100000 || depth > 20) return false;
       if (Array.isArray(entry))
         return entry.length <= 2000 && entry.every((item) => isBounded(item, depth + 1));
       if (isRecord(entry))

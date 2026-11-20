@@ -8,9 +8,9 @@
   },
   "reviewId": "slack-1.1.3-search-result-size-20261120",
   "reviewer": "Supernala Owner (independent review waived, not passed)",
-  "reviewedAt": 1795140483000,
-  "sourceInputDigest": "5e715439268817e2a2c27b1a2c53866b28640fe144a18f5fcb9ea3a2be00024b",
-  "artifactDigest": "9f4ae06ca3a345a8905c1d3dd16827b682e29dfb18294ce4c519339da40e50a1",
+  "reviewedAt": 1795140879000,
+  "sourceInputDigest": "3d1c5707677c92057b91f718dcb23248877e6545a7912665cfd97b02ff7f9481",
+  "artifactDigest": "3bf515b30cb719ccd579c7925756ebdbdc2f80dd9bd5fa99b8c26849f98afbd3",
   "authentication": {
     "kind": "oauth",
     "providerRegistration": "slack-web-api-oauth-v1",
@@ -43,7 +43,7 @@
     ],
     "credentialDelivery": "short-lived-access-token-only"
   },
-  "catalogDigest": "542f6f738a447b03ade5d5c096d913f97e425760ad42cf2251a14c2d961d2008",
+  "catalogDigest": "4793b94b533875b1a76830b978e28aadeaa4e2ff6b6a9a9c81e8dd4db47c6f37",
   "configDigest": "7dd8b6b255b2be5cdf9aabcab5a2813167e38e3cbe58d2de6bd146c65dbeb334",
   "provenanceDigest": "d3d35fd3d93993149ca3e2dc248aede1d0773e850814b6179bcd3d7f7330fd20",
   "authorityBeforeIdentity": {
@@ -2234,6 +2234,6 @@
   },
   "authorityDigest": "c6cc1ec1e5b1ef8327d89d39096567d7b965911e73cef941dfe5a49c23d01f98",
   "authorityDiffDigest": "b7e4e45364aa7ecccb29be72c28b69161cc31f2456cfb4838dcce4aba60bb06e",
-  "releaseDigest": "05815ccc2769ae465b2c0edc4f567d0de95c9ad4d29382010afa6aadad0b05bd",
+  "releaseDigest": "f049fcccb62a486e22ba9b95aa1564ccec164aa0c48d8e994a54368a6f2b9517",
   "decision": "approved"
 }

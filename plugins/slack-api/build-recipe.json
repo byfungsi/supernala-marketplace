@@ -16,12 +16,12 @@
     {
       "source": "plugins/slack-api/package-manifest.json",
       "destination": "plugin.json",
-      "sha256": "11b144d592d07967a289cd4bbcfd3a1b3b731f0e7e155f40caba6fece78ae646"
+      "sha256": "02cd92fec58a8be26100ef17c07e09ad8ac08e1586d8ecb99cdea0ae17d2b4dc"
     },
     {
       "source": "plugins/slack-api/catalog.json",
       "destination": "catalog.json",
-      "sha256": "542f6f738a447b03ade5d5c096d913f97e425760ad42cf2251a14c2d961d2008"
+      "sha256": "4793b94b533875b1a76830b978e28aadeaa4e2ff6b6a9a9c81e8dd4db47c6f37"
     },
     {
       "source": "plugins/slack-api/config.json",
@@ -46,12 +46,12 @@
     {
       "source": "plugins/slack-api/source/server.mjs",
       "destination": "dist/server.mjs",
-      "sha256": "302829b08f2fc10db035018548d1996187c3f66941b44f509f3f29b38cb5f4df"
+      "sha256": "c82f9e9745829882c13bc4b26eafeeb5cb43de55677b276e080385cde8f1dd57"
     },
     {
       "source": "plugins/slack-api/source/slack-web-api.mjs",
       "destination": "dist/slack-web-api.mjs",
-      "sha256": "2a5c23de5c0d0d1a9b9eca62b3d88be6d3d2ded5ae9d6687704fb99082e3e0de"
+      "sha256": "8324ed8bde8ffd8995fc15635c3acd11fc45b3c2d7ce486e5f835f0c9aeac830"
     },
     {
       "source": "plugins/slack-api/source/slack-tool-catalog.mjs",

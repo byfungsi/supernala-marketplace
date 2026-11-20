@@ -92,7 +92,7 @@ const catalogDigest = await writeJson("catalog.json", {
     inputSchema,
     classification,
     defaultPolicy: classification === "destructive" ? "block" : "require-approval",
-    maximumOutputBytes: 262144,
+    maximumOutputBytes: 1048576,
   })),
 });
 const configDigest = await writeJson("config.json", { revision: 1, fields: [] });

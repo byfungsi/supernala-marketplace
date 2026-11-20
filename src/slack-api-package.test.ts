@@ -703,7 +703,7 @@ it.each([
     new Response("{}", {
       headers: { "content-type": "application/json", "content-length": "9999999" },
     }),
-  () => jsonResponse({ ok: true, messages: [{ text: "x".repeat(524288) }] }),
+  () => jsonResponse({ ok: true, messages: [{ text: "x".repeat(2097152) }] }),
 ])("fails closed on redirects, malformed and oversized provider responses", async (response) => {
   const transport = recordingTransport(response);
   const result = await createSlackApiToolHandler({
@@ -809,7 +809,7 @@ it("slims search matches so a page of rich mentions fits in one MCP frame", asyn
   const lines = Buffer.concat(chunks).toString("utf8").trim().split("\n");
   const searchLine = lines[1] ?? "";
 
-  expect(Buffer.byteLength(searchLine)).toBeLessThan(262144);
+  expect(Buffer.byteLength(searchLine)).toBeLessThan(1048576);
   const frame = Schema.decodeUnknownSync(
     Schema.Struct({
       result: Schema.Struct({
@@ -840,9 +840,9 @@ it("slims search matches so a page of rich mentions fits in one MCP frame", asyn
 });
 
 it("returns a readable tool error, not a protocol error, when a result can't fit one frame", async () => {
-  // Under the result cap, but quotes are escaped once more in the text copy, overflowing the frame.
+  // Under the 480000-byte result cap, but the text copy escapes every quote again, overflowing 1 MiB.
   const transport = recordingTransport(() =>
-    jsonResponse({ ok: true, messages: [{ ...message, text: '"'.repeat(55000) }] }),
+    jsonResponse({ ok: true, messages: [{ ...message, text: '"'.repeat(230000) }] }),
   );
   const frames = await runMcpFrames(
     [
