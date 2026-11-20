@@ -92,7 +92,7 @@ const catalogDigest = await writeJson("catalog.json", {
     inputSchema,
     classification,
     defaultPolicy: classification === "destructive" ? "block" : "require-approval",
-    maximumOutputBytes: 262144,
+    maximumOutputBytes: 1048576,
   })),
 });
 const configDigest = await writeJson("config.json", { revision: 1, fields: [] });
@@ -149,7 +149,7 @@ await writeJson("package-manifest.json", {
   schemaVersion: 1,
   id: "slack",
   publisher: "supernala",
-  version: "1.1.2",
+  version: "1.1.3",
   name: "Slack (Preview)",
   description:
     "Preview for testing Slack MCP with an existing authorized workspace. Search messages, channels, files, canvases and lists. Slack Marketplace approval is pending; availability may be restricted by Slack.",

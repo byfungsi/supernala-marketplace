@@ -39,7 +39,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_list_user_channels",
@@ -73,7 +73,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_read_channel_info",
@@ -95,7 +95,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_read_channel",
@@ -142,7 +142,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_read_thread",
@@ -195,7 +195,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_list_channel_members",
@@ -227,7 +227,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_search_messages",
@@ -266,7 +266,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_search_files",
@@ -297,7 +297,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_search_users",
@@ -328,7 +328,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_read_user_profile",
@@ -353,7 +353,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_search_emojis",
@@ -374,7 +374,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_send_message",
@@ -410,7 +410,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_schedule_message",
@@ -451,7 +451,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_update_message",
@@ -484,7 +484,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_delete_message",
@@ -512,7 +512,7 @@
       },
       "classification": "destructive",
       "defaultPolicy": "block",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_create_channel",
@@ -537,7 +537,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_open_conversation",
@@ -564,7 +564,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_add_reaction",
@@ -597,7 +597,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_remove_reaction",
@@ -630,7 +630,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_get_reactions",
@@ -658,7 +658,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_read_file",
@@ -680,7 +680,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_get_file_upload_url",
@@ -716,7 +716,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_complete_file_upload",
@@ -760,7 +760,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_read_canvas",
@@ -782,7 +782,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_create_canvas",
@@ -808,7 +808,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_find_canvas_sections",
@@ -835,7 +835,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_update_canvas",
@@ -871,7 +871,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_read_list",
@@ -906,7 +906,7 @@
       },
       "classification": "read",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_create_list",
@@ -964,7 +964,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_update_list",
@@ -999,7 +999,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_add_list_record",
@@ -1086,7 +1086,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     },
     {
       "id": "slack.slack_update_list_record",
@@ -1173,7 +1173,7 @@
       },
       "classification": "write",
       "defaultPolicy": "require-approval",
-      "maximumOutputBytes": 262144
+      "maximumOutputBytes": 1048576
     }
   ]
 }

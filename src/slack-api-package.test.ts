@@ -38,7 +38,7 @@ it("creates a validated 32-tool package with exact MCP catalog, OAuth and host a
   if (Result.isFailure(source)) throw source.failure;
   expect(source.success.manifest).toMatchObject({
     id: "slack",
-    version: "1.1.2",
+    version: "1.1.3",
     network: { allowedHosts: ["slack.com"] },
   });
   expect(source.success.catalog.tools).toHaveLength(32);
@@ -703,7 +703,7 @@ it.each([
     new Response("{}", {
       headers: { "content-type": "application/json", "content-length": "9999999" },
     }),
-  () => jsonResponse({ ok: true, messages: [{ text: "x".repeat(524288) }] }),
+  () => jsonResponse({ ok: true, messages: [{ text: "x".repeat(2097152) }] }),
 ])("fails closed on redirects, malformed and oversized provider responses", async (response) => {
   const transport = recordingTransport(response);
   const result = await createSlackApiToolHandler({
@@ -755,6 +755,111 @@ it("runs MCP initialize, list and a real API-backed tool through the stdio entry
     result: { structuredContent: { messages: [message], contentTrust: "untrusted-slack-content" } },
   });
   expect(transport.requests).toHaveLength(1);
+});
+
+it("slims search matches so a page of rich mentions fits in one MCP frame", async () => {
+  // Each match carries rich-text blocks and attachments, as Slack's search.messages returns them.
+  const richMatch = (index: number) => ({
+    iid: `iid-${index}`,
+    type: "message",
+    ts: `1793340000.${String(index).padStart(6, "0")}`,
+    text: `<@U0734PT0WRY> please review ${index}`,
+    user: "U123",
+    username: "reviewer",
+    team: "T1",
+    permalink: `https://example.slack.com/archives/C1/p${index}`,
+    channel: {
+      id: "C1",
+      name: "engineering",
+      is_private: false,
+      is_shared: false,
+      pending_shared: [],
+    },
+    blocks: Array.from({ length: 8 }, () => ({
+      type: "rich_text",
+      elements: [
+        { type: "rich_text_section", elements: [{ type: "text", text: "y".repeat(400) }] },
+      ],
+    })),
+    attachments: [{ fallback: "z".repeat(800), text: "z".repeat(800) }],
+  });
+  const transport = recordingTransport(() =>
+    jsonResponse({
+      ok: true,
+      query: "<@U0734PT0WRY>",
+      messages: { total: 50, matches: Array.from({ length: 50 }, (_, index) => richMatch(index)) },
+    }),
+  );
+  const input = new PassThrough();
+  const output = new PassThrough();
+  const chunks: Buffer[] = [];
+  output.on("data", (chunk: Buffer) => chunks.push(chunk));
+  const serving = startSlackApiMcpServer({
+    input,
+    output,
+    accessToken: "synthetic",
+    fetch: transport.fetch,
+  });
+  input.write(initialize);
+  input.write(
+    '{"jsonrpc":"2.0","id":"search","method":"tools/call","params":{"name":"slack_search_messages","arguments":{"query":"<@U0734PT0WRY>","count":50}}}\n',
+  );
+  input.end();
+  await serving;
+  const lines = Buffer.concat(chunks).toString("utf8").trim().split("\n");
+  const searchLine = lines[1] ?? "";
+
+  expect(Buffer.byteLength(searchLine)).toBeLessThan(1048576);
+  const frame = Schema.decodeUnknownSync(
+    Schema.Struct({
+      result: Schema.Struct({
+        isError: Schema.optionalKey(Schema.Boolean),
+        structuredContent: Schema.Struct({
+          messages: Schema.Struct({
+            total: Schema.Number,
+            matches: Schema.Array(Schema.JsonObject),
+          }),
+        }),
+      }),
+    }),
+  )(JSON.parse(searchLine));
+  expect(frame.result.isError).toBeUndefined();
+  expect(frame.result.structuredContent.messages.matches).toHaveLength(50);
+  expect(frame.result.structuredContent.messages.matches[0]).toEqual({
+    iid: "iid-0",
+    type: "message",
+    ts: "1793340000.000000",
+    text: "<@U0734PT0WRY> please review 0",
+    user: "U123",
+    username: "reviewer",
+    team: "T1",
+    permalink: "https://example.slack.com/archives/C1/p0",
+    channel: { id: "C1", name: "engineering", is_private: false },
+    attachmentCount: 1,
+  });
+});
+
+it("returns a readable tool error, not a protocol error, when a result can't fit one frame", async () => {
+  // Under the 480000-byte result cap, but the text copy escapes every quote again, overflowing 1 MiB.
+  const transport = recordingTransport(() =>
+    jsonResponse({ ok: true, messages: [{ ...message, text: '"'.repeat(230000) }] }),
+  );
+  const frames = await runMcpFrames(
+    [
+      initialize,
+      '{"jsonrpc":"2.0","id":"big","method":"tools/call","params":{"name":"slack_read_channel","arguments":{"channel_id":"C123"}}}\n',
+    ],
+    transport.fetch,
+  );
+  expect(frames[1]).toMatchObject({
+    id: "big",
+    result: {
+      isError: true,
+      content: [{ type: "text", text: expect.stringContaining("Ask for fewer results") }],
+      structuredContent: { error: { reason: "response-too-large" } },
+    },
+  });
+  expect(frames[1]).not.toHaveProperty("error");
 });
 
 it("reports an expired token and retry delay as standard MCP tool errors", async () => {
