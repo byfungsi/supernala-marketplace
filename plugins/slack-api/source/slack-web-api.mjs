@@ -5,7 +5,9 @@ import { inspect } from "node:util";
 import { slackApiToolDefinitions } from "./slack-tool-catalog.mjs";
 
 const maximumResponseBytes = 524288;
-const maximumOutputBytes = 220000;
+// The MCP server sends a result twice (as text and as structuredContent) in one 262144-byte frame,
+// so a projected result must stay under half of it, with room for the envelope.
+const maximumOutputBytes = 120000;
 const maximumRequestBytes = 100000;
 const apiOrigin = "https://slack.com/api/";
 // Use the official Slack SDK's form wire format for classic scalar read methods.
@@ -290,6 +292,34 @@ const readSlackJson = async (response) => {
   }
 };
 
+const pick = (record, keys) =>
+  Object.fromEntries(
+    keys.filter((key) => Object.hasOwn(record, key)).map((key) => [key, record[key]]),
+  );
+
+// A search match carries the message's rich-text blocks and attachments, often several KiB each.
+// Keep what identifies and shows it; the text field already holds the message.
+const slimSearchMatch = (match) => {
+  if (!isRecord(match)) return match;
+  const slim = pick(match, [
+    "iid",
+    "type",
+    "ts",
+    "thread_ts",
+    "text",
+    "user",
+    "username",
+    "team",
+    "permalink",
+  ]);
+  if (isRecord(match.channel))
+    slim.channel = pick(match.channel, ["id", "name", "is_private", "is_im", "is_mpim"]);
+  if (Array.isArray(match.files))
+    slim.files = match.files.filter(isRecord).map((file) => pick(file, ["id", "name", "title"]));
+  if (Array.isArray(match.attachments)) slim.attachmentCount = match.attachments.length;
+  return slim;
+};
+
 const projectSlackResult = (definition, args, value) => {
   // Provider content remains private tool data. Never expose unselected top-level fields or errors.
   const data = Object.fromEntries(
@@ -322,6 +352,13 @@ const projectSlackResult = (definition, args, value) => {
     );
     data.emoji = Object.fromEntries(entries.slice(0, 100));
     data.truncated = entries.length > 100;
+  }
+  if (
+    definition.method === "search.messages" &&
+    isRecord(data.messages) &&
+    Array.isArray(data.messages.matches)
+  ) {
+    data.messages = { ...data.messages, matches: data.messages.matches.map(slimSearchMatch) };
   }
   if (Buffer.byteLength(JSON.stringify(data)) > maximumOutputBytes)
     return failure("response-too-large");
