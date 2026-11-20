@@ -1,0 +1,422 @@
+{
+  "schemaVersion": 1,
+  "status": "reviewed-publishable",
+  "id": "supernala-public:supernala:supernala-social@1.0.0",
+  "marketplaceId": "supernala-public",
+  "publisherNamespace": "supernala",
+  "pluginSlug": "supernala-social",
+  "version": "1.0.0",
+  "name": "Supernala Social",
+  "description": "Supernala Social hosted MCP integration for publishing and scheduling posts, inbox comments, direct messages, analytics, and activity across Social workspaces",
+  "license": "LicenseRef-Provider-Service",
+  "runtime": {
+    "_tag": "ManagedRemoteMcp",
+    "kind": "managed-remote-mcp",
+    "endpointRegistrationId": "supernala-social-mcp-v1",
+    "providerRegistrationId": "supernala-social-oauth-v1",
+    "transport": "streamable-http"
+  },
+  "endpoint": "https://social.supernala.com/mcp",
+  "oauthRegistrationMode": "dynamic",
+  "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
+  "authStrategy": {
+    "schemaVersion": 1,
+    "profile": "mcp-oauth",
+    "providerRegistrationId": "supernala-social-oauth-v1",
+    "providerDefinitionDigest": "7e04d767763c46616711701d0ec10c1d39650b1f9f5d10919c8a824c8ad611b8",
+    "requestedScopes": ["social"],
+    "clientRegistration": {
+      "kind": "dynamic",
+      "authorizationServerMetadataUrl": "https://social.supernala.com/.well-known/oauth-authorization-server"
+    },
+    "resourceMetadataUrl": "https://social.supernala.com/.well-known/oauth-protected-resource/mcp",
+    "identity": {
+      "kind": "opaque-connection",
+      "displayLabel": "Supernala Social account"
+    },
+    "resources": {
+      "kind": "none"
+    }
+  },
+  "oauthProviderDefinition": {
+    "schemaVersion": 1,
+    "protocol": "oauth2-authorization-code",
+    "issuer": "https://social.supernala.com",
+    "provider": "supernala-social-mcp",
+    "resourceIdentity": "https://social.supernala.com/mcp",
+    "authorizationEndpoint": "https://social.supernala.com/oauth/authorize",
+    "tokenEndpoint": "https://social.supernala.com/oauth/token",
+    "tokenEndpointAuthMethod": "none",
+    "authorizationResponseIssuer": "not-supported",
+    "pkce": {
+      "method": "S256"
+    },
+    "authorizationParameters": [],
+    "scopes": ["social"],
+    "account": {
+      "kind": "declaration-managed"
+    },
+    "tokens": {
+      "accessTokenType": "bearer",
+      "expiresIn": {
+        "required": true,
+        "minimumSeconds": 1,
+        "maximumSeconds": 86400
+      },
+      "grantedScopes": {
+        "whenPresent": "exact-match",
+        "whenOmitted": "requested-scopes"
+      },
+      "initialRefreshToken": "required",
+      "refreshResponseToken": "retain-current-if-omitted"
+    },
+    "refresh": {
+      "kind": "standard-form-post",
+      "invalidGrant": "reauthorization-required",
+      "ambiguousOutcome": "fail-closed-no-replay"
+    },
+    "revocation": {
+      "kind": "standard-form-post",
+      "endpoint": "https://social.supernala.com/oauth/revoke",
+      "token": "refresh-token",
+      "clientAuthentication": "registration-method",
+      "outcome": "best-effort-observed"
+    }
+  },
+  "scopes": ["social"],
+  "catalog": {
+    "id": "supernala-social-tools-list-20261120",
+    "schemaVersion": 1,
+    "digest": "bf94e01204d5c06d12cfd4b5fb79353a0247dfa9c2c3d3b2016542ee062d93f7",
+    "tools": [
+      {
+        "id": "supernala-social.list_workspaces",
+        "mcpName": "list_workspaces",
+        "title": "List workspaces",
+        "description": "Workspaces the person belongs to, their role in each, and pending invitations.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {}
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.list_accounts",
+        "mcpName": "list_accounts",
+        "title": "List connected accounts",
+        "description": "Social accounts connected in a workspace, with their IDs, platforms and status.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.list_posts",
+        "mcpName": "list_posts",
+        "title": "List posts",
+        "description": "Scheduled and published posts in a workspace, newest first, with each account's result.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.publish_post",
+        "mcpName": "publish_post",
+        "title": "Publish or schedule a post",
+        "description": "Posts text, optionally with one image, to one or more connected accounts now or at schedule_at. Instagram needs an image (JPEG). This publishes publicly.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "maxItems": 10
+            },
+            "text": {
+              "type": "string",
+              "description": "Post text or image caption."
+            },
+            "image_url": {
+              "type": "string",
+              "description": "Public https URL of a JPEG or PNG image, up to 8 MB."
+            },
+            "schedule_at": {
+              "type": "string",
+              "description": "ISO 8601 time to publish, at least a minute ahead. Omit to publish now."
+            }
+          },
+          "required": ["account_ids", "text"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.cancel_scheduled_post",
+        "mcpName": "cancel_scheduled_post",
+        "title": "Cancel a scheduled post",
+        "description": "Cancels a post that hasn't started sending.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "post_id": {
+              "type": "string"
+            }
+          },
+          "required": ["post_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.list_comments",
+        "mcpName": "list_comments",
+        "title": "List inbox comments",
+        "description": "Comments and replies on the workspace's posts, newest first, after pulling new ones from the platforms.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "status": {
+              "type": "string",
+              "enum": ["pending", "resolved", "ignored", "all"]
+            },
+            "account_id": {
+              "type": "string"
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.read_comment_thread",
+        "mcpName": "read_comment_thread",
+        "title": "Read a comment thread",
+        "description": "A comment with the comment it answers and the replies under it.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "comment_id": {
+              "type": "string"
+            }
+          },
+          "required": ["comment_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.moderate_comment",
+        "mcpName": "moderate_comment",
+        "title": "Reply to or moderate a comment",
+        "description": "reply (publicly, as the account; needs text), hide, unhide, delete (Facebook and Instagram), or mark resolved, ignored or pending.",
+        "classification": "destructive",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "comment_id": {
+              "type": "string"
+            },
+            "action": {
+              "type": "string",
+              "enum": ["reply", "hide", "unhide", "delete", "resolve", "ignore", "reopen"]
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["comment_id", "action"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.get_analytics",
+        "mcpName": "get_analytics",
+        "title": "Get account analytics",
+        "description": "An account's metrics for the last 7 or 30 days compared with the period before, plus per-post metrics.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            },
+            "days": {
+              "type": "integer",
+              "enum": [7, 30]
+            }
+          },
+          "required": ["account_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.list_conversations",
+        "mcpName": "list_conversations",
+        "title": "List direct messages",
+        "description": "Instagram and Facebook Page direct message conversations, newest first.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.read_conversation",
+        "mcpName": "read_conversation",
+        "title": "Read a conversation",
+        "description": "The latest messages of one direct message conversation, oldest first.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            },
+            "conversation_id": {
+              "type": "string"
+            }
+          },
+          "required": ["account_id", "conversation_id"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.reply_to_conversation",
+        "mcpName": "reply_to_conversation",
+        "title": "Reply to a direct message",
+        "description": "Sends a direct message reply as the account. Meta allows this only within 24 hours of the person's last message.",
+        "classification": "write",
+        "defaultPolicy": "require-approval",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            },
+            "account_id": {
+              "type": "string"
+            },
+            "conversation_id": {
+              "type": "string"
+            },
+            "recipient_id": {
+              "type": "string",
+              "description": "participantId from list_conversations."
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": ["account_id", "conversation_id", "recipient_id", "text"]
+        },
+        "maximumOutputBytes": 1048576
+      },
+      {
+        "id": "supernala-social.list_activity",
+        "mcpName": "list_activity",
+        "title": "List activity",
+        "description": "Recent actions taken on the workspace's accounts, with who did them and the result.",
+        "classification": "read",
+        "defaultPolicy": "allow",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "workspace_id": {
+              "type": "string",
+              "description": "Workspace to act in. Omit for the person's personal workspace."
+            }
+          }
+        },
+        "maximumOutputBytes": 1048576
+      }
+    ]
+  },
+  "config": {
+    "revision": 1,
+    "fields": []
+  },
+  "allowedHosts": ["social.supernala.com"],
+  "protocolPolicy": {
+    "catalogCompatibility": "reviewed-subset",
+    "maximumCatalogPages": 10
+  },
+  "evidenceUrls": [
+    "https://social.supernala.com/?mcp=connect",
+    "https://social.supernala.com/.well-known/oauth-protected-resource/mcp",
+    "https://social.supernala.com/.well-known/oauth-authorization-server"
+  ],
+  "verificationNotes": "First-party provider. The catalog is the complete tools/list of the Social Supernala MCP server (server social-supernala 1.0.0, protocol 2025-06-18, one page, 13 tools), taken verbatim from its source (apps/api/src/social-mcp-server.ts in byfungsi/funbot) on 2026-11-20; tools/list is static and does not vary by person. All 13 tools are admitted (9 read, 2 write, 2 destructive), including the comment, direct message and analytics tools that follow the social-inbox flag; when the flag is off for the person and the workspace creator, those tools return a \"not enabled yet\" error rather than disappearing. Classifications follow the server readOnlyHint/destructiveHint annotations; every write and destructive tool requires approval. Live metadata documents Streamable HTTP, dynamic client registration (public clients, https redirect URIs accepted), PKCE S256 only, the single social scope, authorization-code and refresh grants, and RFC 7009 revocation that ends the whole grant; it does not return an authorization-response issuer parameter. Tokens carry scope \"social\", a 3,600-second access lifetime and a rotated 30-day refresh token; replaying a rotated-out refresh token revokes the grant. Supernala and Supernala Social stay separate: the Owner approves the connection on the Social consent page, the grant acts as that person in their Social workspaces with Social membership and viewer rules applied, and the account stays an opaque connection. Live Store consent and production acceptance remain pending."
+}
