@@ -1,11 +1,11 @@
 ---
 plugin: supernala-public:supernala:supernala-social
-revision: 2
+revision: 3
 ---
 
 # Set up Supernala Social
 
-Supernala Social lets your Bots publish and schedule posts to your Facebook Pages, Instagram professional accounts, Threads profiles, Discord channels and LinkedIn Pages, read and answer inbox comments and direct messages, check analytics (including posts you published outside Supernala Social), and review recent activity, in your personal Social workspace and any shared workspaces you belong to. Posts carry text and at most one image. Connecting accounts, workspace administration and TikTok posting stay in the Social app.
+Supernala Social lets your Bots publish and schedule posts to your Facebook Pages, Instagram professional accounts, Threads profiles, Discord channels and LinkedIn Pages, read and answer inbox comments and direct messages, check analytics (including posts you published outside Supernala Social), and review recent activity, in your personal Social workspace and any shared workspaces you belong to. Posts carry text with up to ten photos and videos. Facebook Pages and LinkedIn Pages take several photos or one video. Connecting accounts, workspace administration and TikTok posting stay in the Social app.
 
 Supernala Social is a separate product with its own sign-in, so you approve the connection on the Social side.
 
