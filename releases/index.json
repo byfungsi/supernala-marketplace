@@ -228,7 +228,7 @@
       "sourceDirectory": "plugins/remotes/supernala-social.json",
       "kind": "managed-remote-mcp",
       "publicationEligible": true,
-      "reason": "First-party Supernala Social MCP at social.supernala.com/mcp (2026-11-20): dynamic OAuth with PKCE S256 and the single social scope, approved by the Owner on the Social consent page, so Supernala and Supernala Social stay separate accounts. All 13 tools of the static tools/list, including the flag-gated comment, direct message and analytics tools (9 read; publishing, DM replies, moderation and cancelling ask first). 1.0.1 closes every input schema with additionalProperties: false, matching server 1.1.0, so unknown arguments are refused instead of acting in the personal workspace. Live Store consent and production acceptance remain pending."
+      "reason": "First-party Supernala Social MCP at social.supernala.com/mcp (2026-11-20): dynamic OAuth with PKCE S256 and the single social scope, approved by the Owner on the Social consent page, so Supernala and Supernala Social stay separate accounts. All 13 tools of the static tools/list, including the flag-gated comment, direct message and analytics tools (9 read; publishing, DM replies, moderation and cancelling ask first). 1.0.1 closes every input schema with additionalProperties: false, matching server 1.1.0, so unknown arguments are refused instead of acting in the personal workspace. 1.0.2 takes the server's clarified list_posts and get_analytics descriptions, so reports count posts made outside Social. Live Store consent and production acceptance remain pending."
     }
   ]
 }
