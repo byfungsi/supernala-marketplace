@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "status": "reviewed-publishable",
-  "id": "supernala-public:supernala:supernala-social@1.0.0",
+  "id": "supernala-public:supernala:supernala-social@1.0.1",
   "marketplaceId": "supernala-public",
   "publisherNamespace": "supernala",
   "pluginSlug": "supernala-social",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Supernala Social",
   "description": "Supernala Social hosted MCP integration for publishing and scheduling posts, inbox comments, direct messages, analytics, and activity across Social workspaces",
   "license": "LicenseRef-Provider-Service",
@@ -85,9 +85,9 @@
   },
   "scopes": ["social"],
   "catalog": {
-    "id": "supernala-social-tools-list-20261120",
+    "id": "supernala-social-tools-list-20261120-strict",
     "schemaVersion": 1,
-    "digest": "bf94e01204d5c06d12cfd4b5fb79353a0247dfa9c2c3d3b2016542ee062d93f7",
+    "digest": "e62fbad9fa072c4cca4bbc5bfb8d3e3a19c8fcaec4e63d643b5d2dd51d308563",
     "tools": [
       {
         "id": "supernala-social.list_workspaces",
@@ -98,6 +98,7 @@
         "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {}
         },
         "maximumOutputBytes": 1048576
@@ -111,6 +112,7 @@
         "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -129,6 +131,7 @@
         "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -152,6 +155,7 @@
         "defaultPolicy": "require-approval",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -191,6 +195,7 @@
         "defaultPolicy": "require-approval",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -213,6 +218,7 @@
         "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -238,6 +244,7 @@
         "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -260,6 +267,7 @@
         "defaultPolicy": "require-approval",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -289,6 +297,7 @@
         "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -315,6 +324,7 @@
         "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -336,6 +346,7 @@
         "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -361,6 +372,7 @@
         "defaultPolicy": "require-approval",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -393,6 +405,7 @@
         "defaultPolicy": "allow",
         "inputSchema": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
             "workspace_id": {
               "type": "string",
@@ -418,5 +431,5 @@
     "https://social.supernala.com/.well-known/oauth-protected-resource/mcp",
     "https://social.supernala.com/.well-known/oauth-authorization-server"
   ],
-  "verificationNotes": "First-party provider. The catalog is the complete tools/list of the Social Supernala MCP server (server social-supernala 1.0.0, protocol 2025-06-18, one page, 13 tools), taken verbatim from its source (apps/api/src/social-mcp-server.ts in byfungsi/funbot) on 2026-11-20; tools/list is static and does not vary by person. All 13 tools are admitted (9 read, 2 write, 2 destructive), including the comment, direct message and analytics tools that follow the social-inbox flag; when the flag is off for the person and the workspace creator, those tools return a \"not enabled yet\" error rather than disappearing. Classifications follow the server readOnlyHint/destructiveHint annotations; every write and destructive tool requires approval. Live metadata documents Streamable HTTP, dynamic client registration (public clients, https redirect URIs accepted), PKCE S256 only, the single social scope, authorization-code and refresh grants, and RFC 7009 revocation that ends the whole grant; it does not return an authorization-response issuer parameter. Tokens carry scope \"social\", a 3,600-second access lifetime and a rotated 30-day refresh token; replaying a rotated-out refresh token revokes the grant. Supernala and Supernala Social stay separate: the Owner approves the connection on the Social consent page, the grant acts as that person in their Social workspaces with Social membership and viewer rules applied, and the account stays an opaque connection. Live Store consent and production acceptance remain pending."
+  "verificationNotes": "First-party provider. The catalog is the complete tools/list of the Social Supernala MCP server (server social-supernala 1.1.0, protocol 2025-06-18, one page, 13 tools), taken verbatim from its source (apps/api/src/social-mcp-server.ts in byfungsi/funbot, byfungsi/supernala#1077) on 2026-11-20; tools/list is static and does not vary by person. 1.0.1 adds additionalProperties: false to every input schema, matching the server, so unknown arguments such as a camelCase workspaceId are refused before dispatch instead of being ignored and acting in the personal workspace; the server also refuses them by name. All 13 tools are admitted (9 read, 2 write, 2 destructive), including the comment, direct message and analytics tools that follow the social-inbox flag; when the flag is off for the person and the workspace creator, those tools return a \"not enabled yet\" error rather than disappearing. Classifications follow the server readOnlyHint/destructiveHint annotations; every write and destructive tool requires approval. Live metadata documents Streamable HTTP, dynamic client registration (public clients, https redirect URIs accepted), PKCE S256 only, the single social scope, authorization-code and refresh grants, and RFC 7009 revocation that ends the whole grant; it does not return an authorization-response issuer parameter. Tokens carry scope \"social\", a 3,600-second access lifetime and a rotated 30-day refresh token; replaying a rotated-out refresh token revokes the grant. Supernala and Supernala Social stay separate: the Owner approves the connection on the Social consent page, the grant acts as that person in their Social workspaces with Social membership and viewer rules applied, and the account stays an opaque connection. Live Store consent and production acceptance remain pending."
 }
