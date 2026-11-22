@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:meta-ads-token",
-  "revision": 1,
+  "revision": 2,
   "watchables": [
     {
       "id": "campaign-spend",
@@ -143,8 +143,26 @@
         },
         "values": {
           "ad_account_ids": "$.ad_accounts[*].id",
-          "ad_account_names": "$.ad_accounts[*].name"
+          "ad_account_names": "$.ad_accounts[*].name",
+          "first_ad_account_id": "$.ad_accounts[0].id"
         }
+      }
+    ],
+    "suggestedWatches": [
+      {
+        "id": "campaign-stopped",
+        "watchable": "campaign-spend",
+        "label": "Tell me when a campaign stops delivering",
+        "args": {
+          "ad_account_id": "$profile.first_ad_account_id"
+        },
+        "condition": {
+          "kind": "field-changed",
+          "field": "effective_status",
+          "from": "ACTIVE",
+          "to": ["WITH_ISSUES", "DISAPPROVED", "PENDING_BILLING_INFO", "CAMPAIGN_PAUSED"]
+        },
+        "notify": "A campaign stopped delivering"
       }
     ]
   }

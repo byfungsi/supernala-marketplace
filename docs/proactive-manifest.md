@@ -343,6 +343,13 @@ Default Watches in `profile` use watchables too.
 
 At most 12 watchables. Parameter and field names are `^[a-z][a-z0-9_]{0,39}$`.
 
+**Suggested Watches.** `profile.suggestedWatches` (at most 6) has the shape and checks of
+`defaultWatches` plus a required `label` the Owner reads. The host never creates them by itself:
+it offers each as a one-tap suggestion on the Overnight card when the connection is profiled;
+Accept creates the Watch exactly as declared (with a Cancel receipt), and two dismissals stop the
+offer. Use them for useful but opt-in checks (a Meta Ads campaign that stops delivering). Ids are
+unique across `defaultWatches` and `suggestedWatches`.
+
 **Types.** A parameter or field is `string`, `number`, `boolean` or `enum`; conditions compare a `boolean` field with `true` or `false` (for example `field-changed` on `merged` to `true`). An `enum` lists 1–16 unique
 `values` (each ≤ 60 characters); `values` is required for an enum and refused for any other type.
 A parameter may be `required` and may carry a `label` (≤ 80 characters) the Bot reads when it fills

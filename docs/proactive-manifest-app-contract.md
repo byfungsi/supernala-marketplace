@@ -161,6 +161,7 @@ interface PollSource {
 
 type ValueName = string; // ^[a-z][a-z0-9_]{0,39}$  (parameters, fields, profile values)
 type ValueType = "string" | "number" | "enum" | "boolean";
+// profile.suggestedWatches?: (DefaultWatch & { label: string })[]  // offered, never created by the host
 type EnumValues = ShortText<60>[]; // 1..16, unique; required for (and only for) "enum"
 
 interface Watchable {

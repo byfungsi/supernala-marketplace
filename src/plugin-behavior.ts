@@ -601,6 +601,17 @@ export const BehaviorDefaultWatch = Schema.Struct({
 /** A Watch the host creates by default. */
 export interface BehaviorDefaultWatch extends Schema.Schema.Type<typeof BehaviorDefaultWatch> {}
 
+/**
+ * A Watch the host offers as a suggestion (one tap to accept) instead of creating it: the same
+ * shape and checks as a default Watch, plus the label the Owner reads on the suggestion.
+ */
+export const BehaviorSuggestedWatch = Schema.Struct({
+  ...BehaviorDefaultWatch.fields,
+  label: shortText(L.maximumLabelCharacters),
+});
+/** A Watch the host offers as a suggestion. */
+export interface BehaviorSuggestedWatch extends Schema.Schema.Type<typeof BehaviorSuggestedWatch> {}
+
 /** What the host learns about the account at connect, and the default Watches it creates. */
 export const BehaviorProfile = Schema.Struct({
   steps: Schema.Array(BehaviorProfileStep).pipe(
@@ -608,6 +619,11 @@ export const BehaviorProfile = Schema.Struct({
   ),
   defaultWatches: Schema.optionalKey(
     Schema.Array(BehaviorDefaultWatch).pipe(
+      Schema.check(Schema.isMaxLength(L.maximumDefaultWatches)),
+    ),
+  ),
+  suggestedWatches: Schema.optionalKey(
+    Schema.Array(BehaviorSuggestedWatch).pipe(
       Schema.check(Schema.isMaxLength(L.maximumDefaultWatches)),
     ),
   ),
@@ -1162,8 +1178,15 @@ const checkWatchablesAndProfile = (
     issues.push({ problem: "behavior-shape-invalid", at: "$.profile.steps" });
   }
   const defaultIds = new Set<string>();
-  for (const [index, entry] of (profile.defaultWatches ?? []).entries()) {
-    const at = `$.profile.defaultWatches[${index}]`;
+  const entries = [
+    ...(profile.defaultWatches ?? []).map(
+      (entry, index) => [entry, `$.profile.defaultWatches[${index}]`] as const,
+    ),
+    ...(profile.suggestedWatches ?? []).map(
+      (entry, index) => [entry, `$.profile.suggestedWatches[${index}]`] as const,
+    ),
+  ];
+  for (const [entry, at] of entries) {
     if (defaultIds.has(entry.id)) {
       issues.push({ problem: "behavior-default-watch-duplicate-id", at });
     }
