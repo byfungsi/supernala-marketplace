@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:slack",
+  "revision": 1,
+  "followUps": [
+    {
+      "id": "message-replies",
+      "after": {
+        "tool": "slack.slack_send_message",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "slack.slack_read_thread",
+        "args": {
+          "channel_id": "$result.channel",
+          "message_ts": "$result.ts"
+        },
+        "checkAt": ["+1h", "+4h", "+24h"],
+        "stopAfter": "+2d"
+      },
+      "judge": {
+        "classify": {
+          "name": "thread",
+          "options": ["no replies", "acknowledged", "question asked", "disagreement", "resolved"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "owner_should_know = yes",
+      "instruction": "Summarise new replies since the last check and say whether anyone is waiting on the Owner."
+    }
+  ],
+  "failures": {
+    "signals": {
+      "providerCodePaths": ["$.error.reason"],
+      "httpStatusPaths": ["$.error.httpStatus"],
+      "retryAfterPaths": ["$.error.retryAfterSeconds"]
+    },
+    "rules": [
+      {
+        "kind": "auth_revoked",
+        "providerCode": ["reauthorization-required"]
+      },
+      {
+        "kind": "permission_denied",
+        "providerCode": ["missing-scope"]
+      },
+      {
+        "kind": "permission_denied",
+        "providerCode": ["access-denied", "plan-restricted", "unsupported-conversation"],
+        "fix": "owner",
+        "action": "report"
+      },
+      {
+        "kind": "permission_denied",
+        "providerCode": ["token-type-rejected"],
+        "fix": "publisher",
+        "action": "report"
+      },
+      {
+        "kind": "not_found",
+        "providerCode": ["not-found"]
+      },
+      {
+        "kind": "rate_limited",
+        "providerCode": ["rate-limited"]
+      },
+      {
+        "kind": "transient",
+        "providerCode": ["provider-unavailable", "network-failed"]
+      },
+      {
+        "kind": "schema_changed",
+        "providerCode": ["invalid-response"]
+      }
+    ],
+    "kinds": {
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "schema_changed": {
+        "fix": "publisher",
+        "action": "report"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "slack.slack_search_messages",
+      "entity": "message",
+      "items": "$.messages.matches[*]",
+      "key": "$.permalink",
+      "time": "$.ts",
+      "keep": [
+        "text",
+        "user",
+        "username",
+        "ts",
+        "thread_ts",
+        "channel.id",
+        "channel.name",
+        "channel.is_im",
+        "permalink"
+      ],
+      "describe": {
+        "classify": {
+          "name": "kind",
+          "options": ["question", "request", "decision", "announcement", "incident", "social"]
+        },
+        "yesNo": {
+          "name": "needs_reply",
+          "question": "Is someone waiting for the Owner to reply to this?"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:wordpress-self-hosted",
+  "revision": 1,
+  "followUps": [
+    {
+      "id": "post-comments",
+      "after": {
+        "tool": "wordpress.create_post",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "wordpress.list_comments",
+        "args": {
+          "query": {
+            "post": ["$result.id"],
+            "per_page": 50
+          }
+        },
+        "checkAt": ["+1d", "+3d", "+7d"],
+        "stopAfter": "+14d"
+      },
+      "judge": {
+        "classify": {
+          "name": "response",
+          "options": ["no comments", "positive", "questions waiting", "negative", "spam"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "response = questions waiting or response = negative or owner_should_know = yes",
+      "instruction": "Summarise new comments on the post since the last check and suggest which to answer first."
+    }
+  ],
+  "failures": {
+    "signals": {
+      "providerCodePaths": ["$.code"]
+    },
+    "rules": [
+      {
+        "kind": "auth_revoked",
+        "httpStatus": [401]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "report"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "wordpress.list_comments",
+      "entity": "comment",
+      "items": "$[*]",
+      "key": "$.id",
+      "time": "$.date_gmt",
+      "keep": ["post", "author_name", "status", "date_gmt", "link", "content.rendered"],
+      "describe": {
+        "classify": {
+          "name": "kind",
+          "options": ["question", "praise", "complaint", "spam", "other"]
+        },
+        "yesNo": {
+          "name": "needs_reply",
+          "question": "Should the site owner reply to this comment?"
+        }
+      }
+    }
+  ]
+}

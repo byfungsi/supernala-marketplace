@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:github",
+  "revision": 1,
+  "followUps": [
+    {
+      "id": "comment-replies",
+      "after": {
+        "tool": "github.add_issue_comment",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "github.issue_read",
+        "args": {
+          "method": "get_comments",
+          "owner": "$args.owner",
+          "repo": "$args.repo",
+          "issue_number": "$args.issue_number"
+        },
+        "checkAt": ["+2h", "+24h", "+72h"],
+        "stopAfter": "+7d"
+      },
+      "judge": {
+        "classify": {
+          "name": "thread",
+          "options": ["no reply", "replied", "question asked", "changes requested", "resolved"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "owner_should_know = yes",
+      "instruction": "Summarise replies after the Owner's comment and say whether anyone is waiting on the Owner."
+    }
+  ],
+  "observe": [
+    {
+      "from": "github.search_issues",
+      "entity": "issue",
+      "items": "$.items[*]",
+      "key": "$.html_url",
+      "time": "$.updated_at",
+      "keep": [
+        "number",
+        "title",
+        "state",
+        "user.login",
+        "labels",
+        "comments",
+        "updated_at",
+        "html_url",
+        "pull_request.html_url"
+      ],
+      "describe": {
+        "classify": {
+          "name": "kind",
+          "options": ["bug", "feature request", "question", "pull request", "security"]
+        },
+        "yesNo": {
+          "name": "needs_owner",
+          "question": "Is this waiting on the Owner?"
+        }
+      }
+    }
+  ]
+}

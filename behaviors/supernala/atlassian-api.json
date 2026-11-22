@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:atlassian-api",
+  "revision": 1,
+  "followUps": [
+    {
+      "id": "issue-progress",
+      "after": {
+        "tool": "jira.create_issue",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "jira.get_issue",
+        "args": {
+          "path": {
+            "issueIdOrKey": "$result.key"
+          },
+          "query": {
+            "fields": "summary,status,assignee,updated,comment"
+          }
+        },
+        "checkAt": ["+1d", "+3d", "+7d"],
+        "stopAfter": "+14d"
+      },
+      "judge": {
+        "classify": {
+          "name": "progress",
+          "options": ["untouched", "assigned", "in progress", "blocked", "done"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "progress = blocked or owner_should_know = yes",
+      "instruction": "Summarise what changed on the issue since the last check and who it is waiting on."
+    }
+  ],
+  "failures": {
+    "signals": {
+      "providerCodePaths": ["$.errorMessages"]
+    },
+    "rules": [
+      {
+        "kind": "auth_revoked",
+        "httpStatus": [401]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "report"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "jira.search_issues",
+      "entity": "issue",
+      "items": "$.issues[*]",
+      "key": "$.key",
+      "time": "$.fields.updated",
+      "keep": [
+        "fields.summary",
+        "fields.status.name",
+        "fields.issuetype.name",
+        "fields.priority.name",
+        "fields.assignee.displayName",
+        "fields.reporter.displayName",
+        "fields.duedate",
+        "fields.updated"
+      ],
+      "describe": {
+        "classify": {
+          "name": "kind",
+          "options": ["bug", "task", "request", "incident", "question"]
+        },
+        "yesNo": {
+          "name": "time_sensitive",
+          "question": "Does this need action within 7 days?"
+        }
+      }
+    }
+  ]
+}
