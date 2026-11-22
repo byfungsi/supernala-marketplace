@@ -25,6 +25,8 @@ Unless explicitly stated otherwise for third-party material, contributions submi
 1. Pin immutable source and dependency identities and include license/provenance evidence.
 2. Run the offline checks in `README.md` without credentials.
 3. Review the complete authority diff: tools, JSON Schemas, classifications, policies, OAuth scopes/modes, network hosts, Config destinations, runtime, provenance, privacy, and license.
+   For changes under `behaviors/`, also follow the review checklist in
+   `docs/proactive-manifest.md`.
 4. Record explicit approval for the exact source tree, artifact, catalog, and authority-diff digests.
 5. A trusted maintainer may separately invoke the shared D1/R2 publisher after approval. Authors do
    not receive publication credentials or call privileged adapters.
