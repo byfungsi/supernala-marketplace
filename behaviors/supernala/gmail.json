@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:gmail",
-  "revision": 3,
+  "revision": 4,
   "failures": {
     "signals": {
       "messageTemplates": ["Gmail adapter request failed with status {status}"]
@@ -88,19 +88,6 @@
         "yesNo": {
           "name": "time_sensitive",
           "question": "Does this need action within 7 days?"
-        }
-      }
-    }
-  ],
-  "sources": [
-    {
-      "id": "new-mail",
-      "kind": "provider-watch",
-      "adapter": "gmail",
-      "fetch": {
-        "tool": "gmail.get_message",
-        "args": {
-          "messageId": "$event.messageId"
         }
       }
     }

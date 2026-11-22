@@ -426,7 +426,10 @@ The application (`packages/domain/src/plugin-behavior.ts` is the source of truth
    `active`, the last grant is revoked, or the Owner turns watching off (or Follow-ups Off).
 2. **provider-watch `gmail`.** The host switches Gmail monitoring on for the connection. Each
    message the monitoring pipeline adds becomes one item `{ messageId, threadId }`; Workflow Gmail
-   triggers keep receiving the same events.
+   triggers keep receiving the same events. The shipped Gmail declaration (revision 4) no longer
+   declares this source: proactive Gmail reading is the profile's capture-only `inbox` Watch on the
+   hourly checkpoint (search, then get each new message), feeding the default commitments
+   interest. The adapter stays available, and Gmail Pub/Sub keeps serving Workflow triggers.
 3. **webhook `github`.** The GitHub App's webhook (one URL for the App, operator-configured secret)
    delivers events for installations; the host maps a delivery's installation to the connections
    that reach it and queues one item per delivery (`{ owner, repo, number, event, action, url }`)
