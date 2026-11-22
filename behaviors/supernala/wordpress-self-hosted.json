@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:wordpress-self-hosted",
-  "revision": 1,
+  "revision": 2,
   "followUps": [
     {
       "id": "post-comments",
@@ -101,6 +101,21 @@
           "question": "Should the site owner reply to this comment?"
         }
       }
+    }
+  ],
+  "sources": [
+    {
+      "id": "held-comments",
+      "kind": "poll",
+      "tool": "wordpress.list_comments",
+      "args": {
+        "query": {
+          "status": "hold"
+        }
+      },
+      "intervalMinutes": 60,
+      "items": "$[*]",
+      "key": "$.id"
     }
   ]
 }

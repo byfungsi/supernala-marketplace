@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:google-docs",
-  "revision": 1,
+  "revision": 2,
   "failures": {
     "signals": {
       "messageTemplates": ["Google Docs request failed with status {status}"]
@@ -76,6 +76,23 @@
       "key": "$.fileId",
       "time": "$.modifiedTime",
       "keep": ["name", "mimeType", "modifiedTime", "url", "owners", "shared", "parentIds"]
+    }
+  ],
+  "sources": [
+    {
+      "id": "changed-documents",
+      "kind": "poll",
+      "tool": "google-docs.search_documents",
+      "args": {
+        "pageSize": 25
+      },
+      "intervalMinutes": 60,
+      "items": "$.files[*]",
+      "key": "$.fileId",
+      "cursor": {
+        "path": "$.modifiedTime",
+        "arg": "modifiedAfter"
+      }
     }
   ]
 }

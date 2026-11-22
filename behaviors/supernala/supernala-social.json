@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:supernala-social",
-  "revision": 1,
+  "revision": 2,
   "followUps": [
     {
       "id": "post-performance",
@@ -80,6 +80,19 @@
           "question": "Should the account reply to this comment?"
         }
       }
+    }
+  ],
+  "sources": [
+    {
+      "id": "pending-comments",
+      "kind": "poll",
+      "tool": "supernala-social.list_comments",
+      "args": {
+        "status": "pending"
+      },
+      "intervalMinutes": 30,
+      "items": "$.comments[*]",
+      "key": "$.id"
     }
   ]
 }

@@ -5,8 +5,9 @@ import { canonicalPluginJson } from "./plugin-contract.js";
 /*
  * Plugin behaviour declarations tell the host what an app's tools mean over time, beyond the
  * tools themselves: which read tool watches the outcome of a write (`followUps`), how a failure
- * is classified and who fixes it (`failures`), and which read results become Workspace
- * observations (`observe`). A declaration grants no authority. Every tool it names must already
+ * is classified and who fixes it (`failures`), which read results become Workspace
+ * observations (`observe`), and how new items reach the host without anyone asking
+ * (`sources`: a provider watch, a webhook, or a bounded poll). A declaration grants no authority. Every tool it names must already
  * be in the Plugin's reviewed catalog, every invocation still goes through the Owner's grants and
  * policies, and its short strings are app guidance, never Owner instructions.
  *
@@ -46,6 +47,10 @@ export const PLUGIN_BEHAVIOR_LIMITS = {
   minimumScoreLevels: 2,
   maximumScoreLevels: 10,
   maximumWakeClauses: 4,
+  maximumSources: 4,
+  maximumSourceEvents: 8,
+  minimumPollIntervalMinutes: 15,
+  maximumPollIntervalMinutes: 24 * 60,
 } as const;
 
 const L = PLUGIN_BEHAVIOR_LIMITS;
@@ -304,6 +309,106 @@ export const BehaviorObservation = Schema.Struct({
 /** Which read results become Workspace observations. */
 export interface BehaviorObservation extends Schema.Schema.Type<typeof BehaviorObservation> {}
 
+/**
+ * Host-owned event adapters a source may name, with the event fields its fetch arguments may
+ * reference as `$event.<field>`. Adapters are reviewed platform code: a declaration only chooses
+ * one, it never describes a provider API. An adapter the host does not know is ignored at binding.
+ */
+export const BEHAVIOR_SOURCE_ADAPTERS = {
+  "provider-watch": {
+    /** Gmail `users.watch` to Pub/Sub, then `history.list`; one event per added message. */
+    gmail: { events: [], fields: ["messageId", "threadId"] },
+  },
+  webhook: {
+    /** GitHub App webhook deliveries for the connection's installation. */
+    github: {
+      events: [
+        "issues",
+        "issue_comment",
+        "pull_request",
+        "pull_request_review",
+        "pull_request_review_comment",
+      ],
+      fields: ["owner", "repo", "number", "event", "action", "url"],
+    },
+  },
+} as const satisfies Record<
+  "provider-watch" | "webhook",
+  Record<string, { readonly events: ReadonlyArray<string>; readonly fields: ReadonlyArray<string> }>
+>;
+
+/** Kinds of event source. */
+export type BehaviorSourceKind = "provider-watch" | "webhook" | "poll";
+
+const SOURCE_EVENT_REFERENCE = new RegExp(`^\\$event\\.(${PATH_SEGMENT})$`, "u");
+
+const SourceArgs = Schema.Record(Schema.String, Schema.Json);
+
+/** How the host reads one new item an event names: a `read` tool and its argument template. */
+export const BehaviorSourceFetch = Schema.Struct({
+  tool: ToolReference,
+  /** Scalars, or `$event.<field>` references to the adapter's event fields. */
+  args: SourceArgs,
+});
+/** How the host reads one new item an event names. */
+export interface BehaviorSourceFetch extends Schema.Schema.Type<typeof BehaviorSourceFetch> {}
+
+/** A provider push watch the host registers at connect (for example Gmail Pub/Sub). */
+export const BehaviorProviderWatchSource = Schema.Struct({
+  id: Slug,
+  kind: Schema.Literal("provider-watch"),
+  adapter: Slug,
+  fetch: BehaviorSourceFetch,
+});
+
+/** A provider webhook subscription the host owns (for example the GitHub App's deliveries). */
+export const BehaviorWebhookSource = Schema.Struct({
+  id: Slug,
+  kind: Schema.Literal("webhook"),
+  adapter: Slug,
+  events: Schema.Array(
+    Schema.String.pipe(Schema.check(Schema.isPattern(/^[a-z][a-z0-9_]{0,63}$/u))),
+  ).pipe(Schema.check(Schema.isLengthBetween(1, L.maximumSourceEvents))),
+  fetch: BehaviorSourceFetch,
+});
+
+/** A bounded poll of one `read` tool, for apps that cannot push. */
+export const BehaviorPollSource = Schema.Struct({
+  id: Slug,
+  kind: Schema.Literal("poll"),
+  tool: ToolReference,
+  /** Literal arguments only (no references). */
+  args: SourceArgs,
+  intervalMinutes: Schema.Int,
+  items: ItemsPath,
+  key: ItemPath,
+  /**
+   * Optional high-water mark: the greatest value at `path` across a result's items is stored and
+   * passed back as argument `arg` on the next poll (strings compared as text, numbers as numbers).
+   */
+  cursor: Schema.optionalKey(
+    Schema.Struct({
+      path: ItemPath,
+      arg: Schema.String.pipe(Schema.check(Schema.isPattern(/^[A-Za-z_][A-Za-z0-9_-]{0,63}$/u))),
+    }),
+  ),
+});
+
+/** One event source: how new items reach the host without anyone asking. */
+export const BehaviorSource = Schema.Union([
+  BehaviorProviderWatchSource,
+  BehaviorWebhookSource,
+  BehaviorPollSource,
+]);
+/** One event source: how new items reach the host without anyone asking. */
+export type BehaviorSource = typeof BehaviorSource.Type;
+/** A provider push watch source. */
+export type BehaviorProviderWatchSource = typeof BehaviorProviderWatchSource.Type;
+/** A webhook source. */
+export type BehaviorWebhookSource = typeof BehaviorWebhookSource.Type;
+/** A bounded poll source. */
+export type BehaviorPollSource = typeof BehaviorPollSource.Type;
+
 /** One immutable behaviour declaration revision for one Plugin definition. */
 export const PluginBehaviorDeclaration = Schema.Struct({
   schemaVersion: Schema.Literal(1),
@@ -315,6 +420,9 @@ export const PluginBehaviorDeclaration = Schema.Struct({
   failures: Schema.optionalKey(BehaviorFailures),
   observe: Schema.optionalKey(
     Schema.Array(BehaviorObservation).pipe(Schema.check(Schema.isMaxLength(L.maximumObserve))),
+  ),
+  sources: Schema.optionalKey(
+    Schema.Array(BehaviorSource).pipe(Schema.check(Schema.isMaxLength(L.maximumSources))),
   ),
 });
 /** One immutable behaviour declaration revision for one Plugin definition. */
@@ -357,7 +465,16 @@ export type PluginBehaviorProblem =
   | "behavior-rule-empty"
   | "behavior-rule-kind-unhandled"
   | "behavior-template-invalid"
-  | "behavior-handling-invalid";
+  | "behavior-handling-invalid"
+  | "behavior-source-duplicate-id"
+  | "behavior-source-adapter-unknown"
+  | "behavior-source-event-unknown"
+  | "behavior-source-not-read"
+  | "behavior-source-not-observed"
+  | "behavior-source-arg-unknown"
+  | "behavior-source-arg-missing"
+  | "behavior-source-arg-invalid"
+  | "behavior-source-interval-invalid";
 
 /** A located problem: which rule failed and where in the declaration. */
 export interface PluginBehaviorIssue {
@@ -474,12 +591,36 @@ const asJsonObject = (value: Schema.Json | undefined): Schema.JsonObject | undef
  * grammar, no nulls, and object keys known to (and required by) the tool's input schema where
  * the schema declares `properties`.
  */
+const WATCH_ARGUMENT_PROBLEMS = {
+  invalid: "behavior-watch-arg-invalid",
+  unknown: "behavior-watch-arg-unknown",
+  missing: "behavior-watch-arg-missing",
+} as const;
+
+const SOURCE_ARGUMENT_PROBLEMS = {
+  invalid: "behavior-source-arg-invalid",
+  unknown: "behavior-source-arg-unknown",
+  missing: "behavior-source-arg-missing",
+} as const;
+
 const checkWatchArguments = (
   args: Readonly<Record<string, Schema.Json>>,
   inputSchema: Schema.JsonObject | undefined,
   at: string,
   issues: Array<PluginBehaviorIssue>,
+  options: {
+    readonly problems: {
+      readonly invalid: PluginBehaviorProblem;
+      readonly unknown: PluginBehaviorProblem;
+      readonly missing: PluginBehaviorProblem;
+    };
+    /** Whether a `$` string is an acceptable reference; `undefined` refuses every reference. */
+    readonly isReference: ((value: string) => boolean) | undefined;
+    /** Keys the host fills itself (a poll cursor), so a required one need not be present. */
+    readonly hostFilled?: ReadonlyArray<string>;
+  } = { problems: WATCH_ARGUMENT_PROBLEMS, isReference: (value) => REFERENCE.test(value) },
 ): void => {
+  const problems = options.problems;
   let leaves = 0;
   const visit = (
     value: Schema.Json,
@@ -488,7 +629,7 @@ const checkWatchArguments = (
     depth: number,
   ): void => {
     if (depth > L.maximumWatchArgDepth) {
-      issues.push({ problem: "behavior-watch-arg-invalid", at: path });
+      issues.push({ problem: problems.invalid, at: path });
       return;
     }
     if (Array.isArray(value)) {
@@ -509,9 +650,9 @@ const checkWatchArguments = (
       (typeof value === "string" &&
         (value.length === 0 ||
           value.length > 300 ||
-          (value.startsWith("$") && !REFERENCE.test(value))))
+          (value.startsWith("$") && options.isReference?.(value) !== true)))
     ) {
-      issues.push({ problem: "behavior-watch-arg-invalid", at: path });
+      issues.push({ problem: problems.invalid, at: path });
     }
   };
   const visitObject = (
@@ -523,24 +664,27 @@ const checkWatchArguments = (
     const properties = asJsonObject(schema?.["properties"]);
     for (const [key, entry] of Object.entries(object)) {
       const entryPath = `${path}.${key}`;
-      if (!ARGUMENT_KEY.test(key))
-        issues.push({ problem: "behavior-watch-arg-invalid", at: entryPath });
+      if (!ARGUMENT_KEY.test(key)) issues.push({ problem: problems.invalid, at: entryPath });
       if (properties !== undefined && !Object.hasOwn(properties, key)) {
-        issues.push({ problem: "behavior-watch-arg-unknown", at: entryPath });
+        issues.push({ problem: problems.unknown, at: entryPath });
       }
       visit(entry, asJsonObject(properties?.[key]), entryPath, depth + 1);
     }
     const required = schema?.["required"];
     if (Array.isArray(required)) {
       for (const name of required) {
-        if (typeof name === "string" && !Object.hasOwn(object, name)) {
-          issues.push({ problem: "behavior-watch-arg-missing", at: `${path}.${name}` });
+        if (
+          typeof name === "string" &&
+          !Object.hasOwn(object, name) &&
+          !(depth === 0 && options.hostFilled?.includes(name) === true)
+        ) {
+          issues.push({ problem: problems.missing, at: `${path}.${name}` });
         }
       }
     }
   };
   visitObject(args, inputSchema, at, 0);
-  if (leaves > L.maximumWatchArgLeaves) issues.push({ problem: "behavior-watch-arg-invalid", at });
+  if (leaves > L.maximumWatchArgLeaves) issues.push({ problem: problems.invalid, at });
 };
 
 const questionNames = (questions: BehaviorQuestions): ReadonlyArray<string> =>
@@ -594,7 +738,8 @@ export const checkPluginBehaviorDeclaration = (
   if (
     declaration.followUps === undefined &&
     declaration.failures === undefined &&
-    declaration.observe === undefined
+    declaration.observe === undefined &&
+    declaration.sources === undefined
   ) {
     issues.push({ problem: "behavior-empty", at: "$" });
   }
@@ -659,6 +804,86 @@ export const checkPluginBehaviorDeclaration = (
     if (observation.describe !== undefined) {
       checkQuestions(observation.describe, `${at}.describe`, issues);
     }
+  }
+
+  const observedTools = new Set((declaration.observe ?? []).map((entry) => entry.from));
+  const sourceIds = new Set<string>();
+  for (const [index, source] of (declaration.sources ?? []).entries()) {
+    const at = `$.sources[${index}]`;
+    if (sourceIds.has(source.id)) issues.push({ problem: "behavior-source-duplicate-id", at });
+    sourceIds.add(source.id);
+
+    const toolId = source.kind === "poll" ? source.tool : source.fetch.tool;
+    const toolAt = source.kind === "poll" ? `${at}.tool` : `${at}.fetch.tool`;
+    const tool = requireTool(toolId, toolAt);
+    if (tool !== undefined && tool.classification !== "read") {
+      issues.push({ problem: "behavior-source-not-read", at: toolAt });
+    }
+    // A source exists to feed observations; a tool nothing observes would fetch for nothing.
+    if (!observedTools.has(toolId)) {
+      issues.push({ problem: "behavior-source-not-observed", at: toolAt });
+    }
+
+    if (source.kind === "poll") {
+      if (
+        source.intervalMinutes < L.minimumPollIntervalMinutes ||
+        source.intervalMinutes > L.maximumPollIntervalMinutes
+      ) {
+        issues.push({ problem: "behavior-source-interval-invalid", at: `${at}.intervalMinutes` });
+      }
+      const cursorArg = source.cursor?.arg;
+      const properties = asJsonObject(tool?.inputSchema?.["properties"]);
+      if (
+        cursorArg !== undefined &&
+        properties !== undefined &&
+        !Object.hasOwn(properties, cursorArg)
+      ) {
+        issues.push({ problem: "behavior-source-arg-unknown", at: `${at}.cursor.arg` });
+      }
+      for (const path of [source.key, source.cursor?.path]) {
+        if (path !== undefined && path.split(".").length - 1 > L.maximumPathSegments) {
+          issues.push({ problem: "behavior-shape-invalid", at });
+        }
+      }
+      checkWatchArguments(source.args, tool?.inputSchema, `${at}.args`, issues, {
+        problems: SOURCE_ARGUMENT_PROBLEMS,
+        isReference: undefined,
+        hostFilled: cursorArg === undefined ? [] : [cursorArg],
+      });
+      continue;
+    }
+
+    const adapters: Readonly<
+      Record<
+        string,
+        { readonly events: ReadonlyArray<string>; readonly fields: ReadonlyArray<string> }
+      >
+    > = BEHAVIOR_SOURCE_ADAPTERS[source.kind];
+
+    const adapter = Object.hasOwn(adapters, source.adapter) ? adapters[source.adapter] : undefined;
+    if (adapter === undefined) {
+      issues.push({ problem: "behavior-source-adapter-unknown", at: `${at}.adapter` });
+    } else if (source.kind === "webhook") {
+      if (new Set(source.events).size !== source.events.length) {
+        issues.push({ problem: "behavior-source-event-unknown", at: `${at}.events` });
+      }
+      for (const [position, event] of source.events.entries()) {
+        if (!adapter.events.includes(event)) {
+          issues.push({
+            problem: "behavior-source-event-unknown",
+            at: `${at}.events[${position}]`,
+          });
+        }
+      }
+    }
+    checkWatchArguments(source.fetch.args, tool?.inputSchema, `${at}.fetch.args`, issues, {
+      problems: SOURCE_ARGUMENT_PROBLEMS,
+      isReference: (value) => {
+        const field = SOURCE_EVENT_REFERENCE.exec(value)?.[1];
+
+        return field !== undefined && adapter?.fields.includes(field) === true;
+      },
+    });
   }
 
   const failures = declaration.failures;

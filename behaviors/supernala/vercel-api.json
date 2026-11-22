@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:vercel-api",
-  "revision": 1,
+  "revision": 2,
   "followUps": [
     {
       "id": "deployment-outcome",
@@ -99,6 +99,21 @@
         "meta.githubCommitMessage",
         "meta.githubCommitRef"
       ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "recent-deployments",
+      "kind": "poll",
+      "tool": "vercel.list_deployments",
+      "args": {
+        "query": {
+          "limit": 20
+        }
+      },
+      "intervalMinutes": 60,
+      "items": "$.deployments[*]",
+      "key": "$.uid"
     }
   ]
 }

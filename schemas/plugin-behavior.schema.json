@@ -885,6 +885,210 @@
         "additionalProperties": true
       },
       "maxItems": 8
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 64
+                  }
+                ]
+              },
+              "kind": {
+                "type": "string",
+                "enum": ["provider-watch"]
+              },
+              "adapter": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 64
+                  }
+                ]
+              },
+              "fetch": {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+                    "allOf": [
+                      {
+                        "minLength": 1
+                      },
+                      {
+                        "maxLength": 160
+                      }
+                    ]
+                  },
+                  "args": {
+                    "type": "object"
+                  }
+                },
+                "required": ["tool", "args"],
+                "additionalProperties": true
+              }
+            },
+            "required": ["id", "kind", "adapter", "fetch"],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 64
+                  }
+                ]
+              },
+              "kind": {
+                "type": "string",
+                "enum": ["webhook"]
+              },
+              "adapter": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 64
+                  }
+                ]
+              },
+              "events": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-z][a-z0-9_]{0,63}$"
+                },
+                "allOf": [
+                  {
+                    "minItems": 1
+                  },
+                  {
+                    "maxItems": 8
+                  }
+                ]
+              },
+              "fetch": {
+                "type": "object",
+                "properties": {
+                  "tool": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+                    "allOf": [
+                      {
+                        "minLength": 1
+                      },
+                      {
+                        "maxLength": 160
+                      }
+                    ]
+                  },
+                  "args": {
+                    "type": "object"
+                  }
+                },
+                "required": ["tool", "args"],
+                "additionalProperties": true
+              }
+            },
+            "required": ["id", "kind", "adapter", "events", "fetch"],
+            "additionalProperties": true
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 64
+                  }
+                ]
+              },
+              "kind": {
+                "type": "string",
+                "enum": ["poll"]
+              },
+              "tool": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 160
+                  }
+                ]
+              },
+              "args": {
+                "type": "object"
+              },
+              "intervalMinutes": {
+                "type": "integer"
+              },
+              "items": {
+                "type": "string",
+                "pattern": "^\\$(?:\\.[A-Za-z_][A-Za-z0-9_]{0,63})*(?:\\[\\*\\])?$",
+                "maxLength": 300
+              },
+              "key": {
+                "type": "string",
+                "pattern": "^\\$(?:\\.[A-Za-z_][A-Za-z0-9_]{0,63})+$",
+                "maxLength": 300
+              },
+              "cursor": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "pattern": "^\\$(?:\\.[A-Za-z_][A-Za-z0-9_]{0,63})+$",
+                    "maxLength": 300
+                  },
+                  "arg": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z_][A-Za-z0-9_-]{0,63}$"
+                  }
+                },
+                "required": ["path", "arg"],
+                "additionalProperties": true
+              }
+            },
+            "required": ["id", "kind", "tool", "args", "intervalMinutes", "items", "key"],
+            "additionalProperties": true
+          }
+        ]
+      },
+      "maxItems": 4
     }
   },
   "required": ["schemaVersion", "plugin", "revision"],

@@ -76,8 +76,28 @@
         "properties": {
           "query": {
             "type": "string"
+          },
+          "since": {
+            "type": "string"
           }
         }
+      }
+    },
+    {
+      "id": "acme.get_message",
+      "classification": "read",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string"
+          },
+          "format": {
+            "type": "string"
+          }
+        },
+        "required": ["messageId"],
+        "additionalProperties": false
       }
     }
   ],
@@ -271,6 +291,72 @@
             "items": "$",
             "key": "$.post.id",
             "keep": ["post.likes", "post.reach"]
+          }
+        ]
+      }
+    },
+    {
+      "name": "event sources",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
           }
         ]
       }
@@ -6983,6 +7069,1235 @@
                 "name": "time_sensitive",
                 "question": "Does this need action within 7 days?"
               }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "source unknown kind",
+      "problem": "behavior-shape-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "stream",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "too many sources",
+      "problem": "behavior-shape-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          },
+          {
+            "id": "p2",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          },
+          {
+            "id": "p3",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "poll interval below 15 minutes",
+      "problem": "behavior-source-interval-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 10,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "poll interval beyond a day",
+      "problem": "behavior-source-interval-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 1441,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate source id",
+      "problem": "behavior-source-duplicate-id",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "new-mail",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown adapter",
+      "problem": "behavior-source-adapter-unknown",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "outlook",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "webhook unknown event",
+      "problem": "behavior-source-event-unknown",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "star"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "webhook duplicate event",
+      "problem": "behavior-source-event-unknown",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issues"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "fetch with a write",
+      "problem": "behavior-source-not-read",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.publish_post",
+              "args": {
+                "account_ids": ["$event.messageId"],
+                "text": "x"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "poll unknown tool",
+      "problem": "behavior-tool-unknown",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_everything",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "fetch tool not observed",
+      "problem": "behavior-source-not-observed",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown event field",
+      "problem": "behavior-source-arg-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.subject",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "event field of another adapter",
+      "problem": "behavior-source-arg-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "poll with a reference",
+      "problem": "behavior-source-arg-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "$event.messageId"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "poll cursor argument unknown",
+      "problem": "behavior-source-arg-unknown",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "after"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "unknown fetch argument",
+      "problem": "behavior-source-arg-unknown",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata",
+                "labels": "INBOX"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "missing required fetch argument",
+      "problem": "behavior-source-arg-missing",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "$.updatedAt",
+              "arg": "since"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "bad cursor path",
+      "problem": "behavior-shape-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 3,
+        "observe": [
+          {
+            "from": "acme.get_message",
+            "entity": "email",
+            "items": "$",
+            "key": "$.id",
+            "keep": ["subject", "from"]
+          },
+          {
+            "from": "acme.list_messages",
+            "entity": "email",
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "time": "$.updatedAt",
+            "keep": ["subject"]
+          }
+        ],
+        "sources": [
+          {
+            "id": "new-mail",
+            "kind": "provider-watch",
+            "adapter": "gmail",
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.messageId",
+                "format": "metadata"
+              }
+            }
+          },
+          {
+            "id": "repo-activity",
+            "kind": "webhook",
+            "adapter": "github",
+            "events": ["issues", "issue_comment"],
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$event.url"
+              }
+            }
+          },
+          {
+            "id": "inbox-poll",
+            "kind": "poll",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "in:inbox"
+            },
+            "intervalMinutes": 30,
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "cursor": {
+              "path": "updatedAt",
+              "arg": "since"
             }
           }
         ]

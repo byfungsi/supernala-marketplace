@@ -7,6 +7,8 @@ themselves:
   when, which typed questions judge it, and when a Bot should hear about it.
 - **`failures`**: how the app's failures map to typed kinds, and who fixes each kind.
 - **`observe`**: which read results become Workspace observations, and which fields are kept.
+- **`sources`**: how new items reach Supernala on their own: a provider watch, a webhook, or a
+  bounded poll, registered when a connection is ready.
 
 A declaration **grants no authority**. Every tool it names must already be in the Plugin's
 reviewed catalog with the right classification; every call it causes still goes through the
@@ -250,6 +252,47 @@ At most 8 observations. There are no ignore lists: relevance is decided per Work
 Bot's interests. Keep only what helps a Bot decide whether an item matters; never keep message
 bodies, file contents or other bulk text (the host bounds kept fields to 2 KB per item).
 
+### `sources`
+
+How new items reach Supernala without anyone asking (ADR 0044 in the application). When a
+connection is ready the host registers each source without asking again: installing the app and
+connecting the account is the Owner's consent. Disconnecting, uninstalling, revoking the last grant,
+or turning **Watching for new items** off removes it. Every new item is read with a `read` tool of
+this Plugin and goes through `observe`, so a source's tool **must** have an `observe` entry.
+
+| Kind             | Fields                                                             | Meaning                                                                                                                                               |
+| ---------------- | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `provider-watch` | `id`, `adapter`, `fetch`                                           | A provider push watch the host owns (`gmail`: Gmail `users.watch` to Pub/Sub, one event per added message).                                           |
+| `webhook`        | `id`, `adapter`, `events`, `fetch`                                 | A provider webhook the host owns (`github`: the GitHub App's deliveries for the installations the connection reaches); `events` picks which to fetch. |
+| `poll`           | `id`, `tool`, `args`, `intervalMinutes`, `items`, `key`, `cursor?` | A bounded poll of a cheap list or search read, for apps that cannot push.                                                                             |
+
+- `fetch` is `{ "tool": <read tool>, "args": <template> }`. Template leaves are literals or
+  `$event.<field>` references to the adapter's event fields; a missing field removes its key, and
+  strings are never interpolated. Fields: `gmail` — `messageId`, `threadId`; `github` — `owner`,
+  `repo`, `number`, `event`, `action`, `url`. GitHub events: `issues`, `issue_comment`,
+  `pull_request`, `pull_request_review`, `pull_request_review_comment`.
+- A `poll`'s `args` are literal only. `intervalMinutes` is 15 to 1440. `items` and `key` use the
+  `observe` path grammar. The optional `cursor` is `{ "path": <item path>, "arg": <top-level
+argument> }`: the greatest value at `path` across a result's items (text or number) is stored and
+  passed as `arg` on the next poll; `arg` must be a top-level property of the tool's input schema
+  and may be one of its `required` keys.
+- At most 4 sources, ids unique. Adapters are reviewed host code: a declaration chooses one, never
+  describes a provider API. An adapter the application does not know is ignored at binding.
+- The host polls only while some Bot has an interest in what the poll feeds (or the default
+  commitments interest applies to `email`), reads as the Workspace's default proactive Bot (else
+  the first Bot holding an `allow` grant for the tool), and bills each read as a plugin call.
+
+```json
+"sources": [
+  {
+    "id": "new-mail",
+    "kind": "provider-watch",
+    "adapter": "gmail",
+    "fetch": { "tool": "gmail.get_message", "args": { "messageId": "$event.messageId" } }
+  }
+]
+```
+
 ## Writing a declaration
 
 - Start from what an Owner would want to hear about unprompted. Declare a follow-up only when a
@@ -282,7 +325,9 @@ Add this to the authority review of any change under `behaviors/`:
    ambiguous write outcomes stay unmatched; Owner-facing fixes are honest (reconnecting does not
    fix "not in channel").
 8. `observe` keys are stable and unique; `keep` excludes bodies, file contents and secrets.
-9. The revision is bumped if the published text changed.
+9. Every `sources` entry feeds an `observe` entry; a poll uses a cheap list or search read with
+   an interval no shorter than the items change, and its `cursor.path` matches the actual result.
+10. The revision is bumped if the published text changed.
 
 ## Publishing
 

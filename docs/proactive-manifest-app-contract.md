@@ -55,7 +55,8 @@ interface PluginBehaviorDeclaration {
   followUps?: FollowUp[]; // <= 8
   failures?: Failures;
   observe?: Observation[]; // <= 8
-} // at least one of followUps, failures, observe; unknown keys rejected everywhere
+  sources?: Source[]; // <= 4
+} // at least one of followUps, failures, observe, sources; unknown keys rejected everywhere
 
 interface Questions {
   classify?: { name: AnswerName; options: ShortText<60>[] }; // 2..10, unique ignoring case
@@ -122,6 +123,39 @@ interface Observation {
   describe?: Questions;
 }
 // Path segment: [A-Za-z_][A-Za-z0-9_]{0,63}; at most 8 segments.
+
+type Source = ProviderWatchSource | WebhookSource | PollSource; // ids (Slug) unique
+
+interface SourceFetch {
+  tool: ToolId; // classification "read", and named by an `observe` entry's `from`
+  args: Record<string, Json>; // literals or "$event.<field>" (the adapter's fields), see 7
+}
+
+interface ProviderWatchSource {
+  id: Slug;
+  kind: "provider-watch";
+  adapter: Slug; // known: "gmail" (fields messageId, threadId)
+  fetch: SourceFetch;
+}
+
+interface WebhookSource {
+  id: Slug;
+  kind: "webhook";
+  adapter: Slug; // known: "github" (fields owner, repo, number, event, action, url)
+  events: string[]; // 1..8, unique, ^[a-z][a-z0-9_]{0,63}$, from the adapter's events
+  fetch: SourceFetch;
+}
+
+interface PollSource {
+  id: Slug;
+  kind: "poll";
+  tool: ToolId; // classification "read", and named by an `observe` entry's `from`
+  args: Record<string, Json>; // literal only, no "$" references
+  intervalMinutes: number; // integer 15..1440
+  items: ItemsPath;
+  key: ItemPath;
+  cursor?: { path: ItemPath; arg: string }; // arg ^[A-Za-z_][A-Za-z0-9_-]{0,63}$, a top-level input property
+}
 ```
 
 Coherent `fix`/`action` pairs (checked for `kinds` entries and rule overrides):
@@ -148,7 +182,10 @@ installed version's catalog snapshot**:
 - every referenced tool exists, with `after.tool` = `write`, `watch.tool` and `observe.from` =
   `read`;
 - watch argument keys exist in the watch tool's input schema where it declares `properties`, and
-  its `required` keys are present (recursively, as in `checkPluginBehaviorDeclaration`).
+  its `required` keys are present (recursively, as in `checkPluginBehaviorDeclaration`);
+- a source's fetch or poll tool exists, is `read`, and an `observe` entry names it; its adapter
+  and events are known; its arguments pass the same key checks (a poll's `cursor.arg` counts as
+  present). A source whose observe entry was ignored for the version is ignored too.
 
 An entry that fails is **ignored for that version** (log a safe reason with the definition,
 revision and entry index); the rest of the declaration still applies. A rule whose `tools` do not
@@ -312,7 +349,39 @@ a Workflow), without a model:
 
 Multiple entries may name the same tool with different entities; each is applied independently.
 
-## 7. Example
+## 7. Event sources
+
+Problems: `behavior-source-duplicate-id`, `behavior-source-adapter-unknown`,
+`behavior-source-event-unknown` (unknown or repeated webhook event), `behavior-source-not-read`,
+`behavior-source-not-observed`, `behavior-source-arg-unknown`, `behavior-source-arg-missing`,
+`behavior-source-arg-invalid` (a bad reference, a reference in a poll, nulls, depth or leaf
+bounds as for watch arguments), `behavior-source-interval-invalid`.
+
+The application (`packages/domain/src/plugin-behavior.ts` is the source of truth for this section):
+
+1. **Registration.** When a connection is `ready` with an active installation and at least one
+   active grant, the host registers each bound source (no further consent: install + connect).
+   It removes the registration when the connection is disconnected, the installation leaves
+   `active`, the last grant is revoked, or the Owner turns watching off (or Follow-ups Off).
+2. **provider-watch `gmail`.** The host switches Gmail monitoring on for the connection. Each
+   message the monitoring pipeline adds becomes one item `{ messageId, threadId }`; Workflow Gmail
+   triggers keep receiving the same events.
+3. **webhook `github`.** The GitHub App's webhook (one URL for the App, operator-configured secret)
+   delivers events for installations; the host maps a delivery's installation to the connections
+   that reach it and queues one item per delivery (`{ owner, repo, number, event, action, url }`)
+   for registrations whose `events` include the delivery's event. Deliveries without an issue or
+   pull request are ignored.
+4. **Fetch.** Each item resolves `fetch.args` (`$event.` references as in 4.1, never interpolated)
+   and runs `fetch.tool` as the Workspace's default proactive Bot (else the first Bot holding an
+   `allow` grant for the tool) through the normal Plugin call path, so `observe` applies to the
+   result. Items are idempotent per (source, event key); three attempts, then given up.
+5. **Poll.** Due polls run on the minute schedule, bounded per pass and per Workspace, only while
+   some Bot's interest covers the entity the poll's tool observes (or the entity is `email`, which
+   the default commitments interest covers). `args` plus the stored cursor (as `cursor.arg`) are
+   sent; the next cursor is the greatest `cursor.path` value seen (strings compared as text,
+   numbers as numbers), else the previous one.
+
+## 8. Example
 
 `behaviors/supernala/slack.json` (abridged):
 
