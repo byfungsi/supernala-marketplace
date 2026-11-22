@@ -10,7 +10,7 @@ Every publication-eligible Plugin in `releases/index.json` needs a guide under `
 
 ## Behaviour declarations
 
-Optional `behaviors/<publisher>/<slug>.json` files declare follow-ups, failure classification and observations for a Plugin definition. They live outside Plugin source roots so they never change a digest; `pnpm check` validates them against the reviewed catalog. Follow `docs/proactive-manifest.md`, keep `docs/proactive-manifest-app-contract.md` in step with `src/plugin-behavior.ts`, and bump a declaration's `revision` when changing published content.
+Optional `behaviors/<publisher>/<slug>.json` files declare follow-ups, failure classification and observations for a Plugin definition. They live outside Plugin source roots so they never change a digest; `pnpm check` validates them against the reviewed catalog. Follow `docs/proactive-manifest.md`, keep `docs/proactive-manifest-app-contract.md` in step with `src/plugin-behavior.ts`, and bump a declaration's `revision` when changing published content. `compatibility/plugin-behaviors/` vendors the application's behaviour migration byte-for-byte; re-vendor it (and `PLUGIN_BEHAVIOR_MIGRATION`) if the application changes it.
 
 ## Security
 

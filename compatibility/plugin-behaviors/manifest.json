@@ -1,0 +1,12 @@
+{
+  "owner": "byfungsi/supernala",
+  "applicationCommit": "9dfcde7e1a965300313690c736ba0daeb3f2586c",
+  "files": {
+    "0262_plugin_behavior_declarations.sql": {
+      "sourcePath": "apps/api/application-migrations/0262_plugin_behavior_declarations.sql",
+      "sha256": "c36972fc73dd34646e49903d1bcdb69f2f65501de2bb8eed03d00edf26203666"
+    }
+  },
+  "contract": "packages/domain/src/plugin-behavior.ts",
+  "reader": "apps/api/src/plugin-behavior-store.ts"
+}

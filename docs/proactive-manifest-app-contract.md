@@ -15,8 +15,9 @@ Nothing in the existing package, catalog or version decoders changes, and every 
 stays byte-identical. They are published separately, like setup guides, one row per
 `(plugin_definition_id, revision)`.
 
-Proposed application migration (the Marketplace will vendor the exact committed bytes under
-`compatibility/plugin-behaviors/` and add `pnpm marketplace behaviors publish`, mirroring guides):
+Application migration `0262_plugin_behavior_declarations.sql` (vendored byte-for-byte under
+`compatibility/plugin-behaviors/` and written by `pnpm marketplace behaviors publish`, mirroring
+guides; see [Publishing](proactive-manifest.md#publishing)):
 
 ```sql
 CREATE TABLE plugin_behavior_declarations (

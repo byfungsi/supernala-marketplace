@@ -1,15 +1,12 @@
-import { constants } from "node:fs";
-import { open, realpath } from "node:fs/promises";
 import { homedir } from "node:os";
 import path from "node:path";
 import { createInterface } from "node:readline/promises";
-import { parseEnv } from "node:util";
-import { Redacted, Result, Schema } from "effect";
-import { CloudflareD1RestTransport } from "./cloudflare-adapters.js";
+import { Redacted, Result } from "effect";
 import {
-  releaseProcessEnvironment,
-  verifyLocalReleaseCheckout,
-} from "./local-release-workspace.js";
+  readApplicationPublicationCredentials,
+  verifyApplicationPublicationCheckout,
+} from "./application-publication-credentials.js";
+import { CloudflareD1RestTransport } from "./cloudflare-adapters.js";
 import {
   eligiblePluginDefinitionIds,
   loadPluginSetupGuides,
@@ -50,61 +47,16 @@ const loadCheckedGuides = async (repositoryRoot: string) => {
   return guides;
 };
 
-const GuideTopology = Schema.Struct({
-  CLOUDFLARE_ACCOUNT_ID: Schema.String.pipe(Schema.check(Schema.isPattern(/^[a-f0-9]{32}$/u))),
-  APPLICATION_DATABASE_ID: Schema.String.pipe(Schema.check(Schema.isUUID())),
-});
-
 /** Guide publication credentials: an owner-only file outside the checkout with exactly these keys. */
-export const readGuidePublicationCredentials = async (input: {
+export const readGuidePublicationCredentials = (input: {
   readonly file: string;
   readonly repositoryRoot: string;
-}): Promise<
-  Result.Result<
-    { readonly topology: typeof GuideTopology.Type; readonly token: Redacted.Redacted<string> },
-    string
-  >
-> => {
-  try {
-    const resolved = await realpath(input.file);
-    const root = await realpath(input.repositoryRoot);
-    if (resolved === root || resolved.startsWith(`${root}${path.sep}`)) {
-      return Result.fail("guide-credentials-must-be-outside-repository");
-    }
-    const file = await open(input.file, constants.O_RDONLY | constants.O_NOFOLLOW);
-    try {
-      const stat = await file.stat();
-      if (
-        !stat.isFile() ||
-        stat.size > 65_536 ||
-        (stat.mode & 0o077) !== 0 ||
-        (process.getuid !== undefined && stat.uid !== process.getuid())
-      ) {
-        return Result.fail("guide-credentials-require-owner-only-file");
-      }
-      const values = parseEnv(await file.readFile("utf8"));
-      const topology = Schema.decodeUnknownResult(GuideTopology)(values);
-      if (Result.isFailure(topology)) return Result.fail("guide-topology-invalid");
-      const allowed = new Set([
-        ...Object.keys(GuideTopology.fields),
-        "APPLICATION_GUIDE_PUBLISH_TOKEN",
-      ]);
-      if (Object.keys(values).some((key) => !allowed.has(key))) {
-        return Result.fail("guide-credentials-unexpected-key");
-      }
-      const token = values["APPLICATION_GUIDE_PUBLISH_TOKEN"];
-      if (token === undefined || token.trim() === "") {
-        return Result.fail("guide-credentials-incomplete");
-      }
-
-      return Result.succeed({ topology: topology.success, token: Redacted.make(token) });
-    } finally {
-      await file.close();
-    }
-  } catch {
-    return Result.fail("guide-credentials-read-failed");
-  }
-};
+}) =>
+  readApplicationPublicationCredentials({
+    ...input,
+    tokenKey: "APPLICATION_GUIDE_PUBLISH_TOKEN",
+    label: "guide",
+  });
 
 const describeStep = ({ guide, step }: GuidePublicationPlanEntry) =>
   step.kind === "publish-revision"
@@ -127,18 +79,7 @@ const publishCommand = async (repositoryRoot: string, arguments_: ReadonlyArray<
     option(arguments_, "--credentials") ??
     path.join(homedir(), ".config/supernala-marketplace/production.guides.env");
 
-  // Same Git authority as Plugin deploys: the operator's Git config and SSH agent, nothing else.
-  const checkout = await verifyLocalReleaseCheckout({
-    cwd: repositoryRoot,
-    environment: {
-      ...releaseProcessEnvironment(homedir()),
-      HOME: homedir(),
-      GIT_CONFIG_GLOBAL: path.join(homedir(), ".gitconfig"),
-      ...(process.env["SSH_AUTH_SOCK"] === undefined
-        ? {}
-        : { SSH_AUTH_SOCK: process.env["SSH_AUTH_SOCK"] }),
-    },
-  });
+  const checkout = await verifyApplicationPublicationCheckout(repositoryRoot);
   const commit = Result.isSuccess(checkout)
     ? checkout.success
     : fail(`guide-publication-checkout-rejected: ${checkout.failure.reason}`);

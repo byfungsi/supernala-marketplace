@@ -30,6 +30,9 @@ Unless explicitly stated otherwise for third-party material, contributions submi
 4. Record explicit approval for the exact source tree, artifact, catalog, and authority-diff digests.
 5. A trusted maintainer may separately invoke the shared D1/R2 publisher after approval. Authors do
    not receive publication credentials or call privileged adapters.
+   Behaviour declarations publish separately with `pnpm marketplace behaviors publish`
+   (dry run, then `--confirm`), only after the application release with migration 0262 is
+   deployed; see `docs/proactive-manifest.md#publishing`.
 
 Validation never implies publication. Added or expanded authority never enters existing Agent Grants automatically.
 

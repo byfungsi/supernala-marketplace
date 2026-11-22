@@ -284,8 +284,51 @@ Add this to the authority review of any change under `behaviors/`:
 8. `observe` keys are stable and unique; `keep` excludes bodies, file contents and secrets.
 9. The revision is bumped if the published text changed.
 
+## Publishing
+
+Declarations reach the application through `pnpm marketplace behaviors publish`, which inserts one
+row per `(plugin_definition_id, revision)` into the application's `plugin_behavior_declarations`
+table: `declaration_json` is the canonical JSON and `content_sha256` its SHA-256, exactly what the
+application recomputes on read. `compatibility/plugin-behaviors/` vendors the application's exact
+migration (`0262_plugin_behavior_declarations.sql`) with its digest; tests apply it to SQLite and
+publish into it, and fail if the vendored bytes drift from what the publisher assumes.
+
+**Ordering.** Publish only after the application release that applies migration 0262 is deployed
+to production. Before that, the plan fails because the table does not exist; nothing is written.
+
+```sh
+git switch main && git pull --ff-only
+pnpm marketplace behaviors publish --environment production            # dry run: plan only
+pnpm marketplace behaviors publish --environment production --confirm  # insert and read back
+```
+
+Both forms require a clean `main` equal to fetched `origin/main`, validate every declaration
+against its definition's reviewed catalog (any invalid declaration stops the run), read the
+application's current rows and print the plan:
+
+- `insert`: a new revision for a definition the application has.
+- `unchanged`: that revision is already stored with the same digest; nothing is written.
+- `skip`: the definition is not in `plugin_definitions` yet. Others still publish; re-run after
+  the Plugin is published.
+- `REFUSED`: a stored revision has a different digest (`behavior-revision-content-changed`), or a
+  higher revision is already stored (`behavior-revision-not-newer`). Revisions are immutable, so
+  any refusal stops the whole run; bump `revision` instead.
+
+Without `--confirm` the command writes nothing. With it, each new revision is inserted and read
+back, and the stored text and digest must match. The publisher only ever issues `INSERT`; the
+vendored triggers abort any `UPDATE` or `DELETE`. Running it again is a no-op, so an interrupted
+run is retried by running it again.
+
+Credentials come from outside the repository: an owner-only (`0600`) file, by default
+`~/.config/supernala-marketplace/production.behaviors.env`, or `--credentials <file>`, holding
+exactly `CLOUDFLARE_ACCOUNT_ID`, `APPLICATION_DATABASE_ID` and `APPLICATION_BEHAVIOR_PUBLISH_TOKEN`
+(a Cloudflare API token with D1 edit on the application database). Nothing is read from the
+process environment; the guide token is a separate file and is not accepted here.
+
+A successful run does not establish that the application binds or acts on a declaration; check
+the application's behaviour support route for the definition after publishing.
+
 ## What needs republishing
 
-Nothing in this change alters a Plugin version, package, release, catalog or guide. The
-declarations reach the application only after it ships the behaviour table and publication path
-described in the app contract; publishing them is a separate step like guide publication.
+Nothing in this change alters a Plugin version, package, release, catalog or guide. Changing a
+declaration needs a revision bump and a `behaviors publish`; nothing else is republished.

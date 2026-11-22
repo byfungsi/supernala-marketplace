@@ -6,7 +6,7 @@ It also curates the Marketplace **Skills** catalog: reviewed Skill folders from 
 
 Every publication-eligible app also has an Owner-facing setup guide under `guides/`, published with `pnpm marketplace guides publish`. See [Plugin setup guides](docs/plugin-setup-guides.md).
 
-Apps may also declare behaviour under `behaviors/`: which reads watch the outcome of a write, how failures are classified, and which read results become Workspace observations. Declarations grant no authority and change no Plugin digest. See [Plugin behaviour declarations](docs/proactive-manifest.md).
+Apps may also declare behaviour under `behaviors/`: which reads watch the outcome of a write, how failures are classified, and which read results become Workspace observations. Declarations grant no authority and change no Plugin digest. They are published with `pnpm marketplace behaviors publish`. See [Plugin behaviour declarations](docs/proactive-manifest.md).
 
 ## Commands
 
