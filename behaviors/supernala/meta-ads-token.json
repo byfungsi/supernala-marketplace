@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:meta-ads-token",
+  "revision": 1,
+  "watchables": [
+    {
+      "id": "campaign-spend",
+      "label": "Campaign spend and budgets",
+      "tool": "meta-ads.ads_get_ad_entities",
+      "params": {
+        "ad_account_id": {
+          "type": "string",
+          "required": true,
+          "label": "Numeric ad account ID"
+        },
+        "date_preset": {
+          "type": "enum",
+          "values": [
+            "today",
+            "yesterday",
+            "this_month",
+            "last_month",
+            "last_7d",
+            "last_14d",
+            "last_28d",
+            "last_30d",
+            "maximum"
+          ],
+          "label": "Reporting period"
+        }
+      },
+      "args": {
+        "ad_account_id": "$param.ad_account_id",
+        "level": "campaign",
+        "fields": [
+          "id",
+          "name",
+          "amount_spent",
+          "daily_budget",
+          "lifetime_budget",
+          "effective_status"
+        ],
+        "date_preset": "$param.date_preset",
+        "include_additional_context": false,
+        "reporting_purpose": ["metric_lookup"],
+        "scheduled_task_run": true
+      },
+      "items": "$.ad_entities[*]",
+      "key": "$.id",
+      "fields": {
+        "name": {
+          "path": "$.name",
+          "type": "string"
+        },
+        "amount_spent": {
+          "path": "$.amount_spent",
+          "type": "number"
+        },
+        "daily_budget": {
+          "path": "$.daily_budget",
+          "type": "number"
+        },
+        "lifetime_budget": {
+          "path": "$.lifetime_budget",
+          "type": "number"
+        },
+        "effective_status": {
+          "path": "$.effective_status",
+          "type": "enum",
+          "values": [
+            "ACTIVE",
+            "PAUSED",
+            "DELETED",
+            "ARCHIVED",
+            "IN_PROCESS",
+            "WITH_ISSUES",
+            "CAMPAIGN_PAUSED",
+            "ADSET_PAUSED",
+            "PENDING_REVIEW",
+            "DISAPPROVED",
+            "PREAPPROVED",
+            "PENDING_BILLING_INFO"
+          ]
+        }
+      }
+    },
+    {
+      "id": "account-spend",
+      "label": "Ad account spend",
+      "tool": "meta-ads.ads_get_ad_entities",
+      "params": {
+        "ad_account_id": {
+          "type": "string",
+          "required": true,
+          "label": "Numeric ad account ID"
+        },
+        "date_preset": {
+          "type": "enum",
+          "values": [
+            "today",
+            "yesterday",
+            "this_month",
+            "last_month",
+            "last_7d",
+            "last_14d",
+            "last_28d",
+            "last_30d",
+            "maximum"
+          ],
+          "label": "Reporting period"
+        }
+      },
+      "args": {
+        "ad_account_id": "$param.ad_account_id",
+        "level": "ad_account",
+        "fields": ["id", "name", "amount_spent"],
+        "date_preset": "$param.date_preset",
+        "include_additional_context": false,
+        "reporting_purpose": ["metric_lookup"],
+        "scheduled_task_run": true
+      },
+      "items": "$.ad_entities[*]",
+      "key": "$.id",
+      "fields": {
+        "name": {
+          "path": "$.name",
+          "type": "string"
+        },
+        "amount_spent": {
+          "path": "$.amount_spent",
+          "type": "number"
+        }
+      }
+    }
+  ],
+  "profile": {
+    "steps": [
+      {
+        "tool": "meta-ads.ads_get_ad_accounts",
+        "args": {
+          "limit": 50,
+          "scheduled_task_run": true
+        },
+        "values": {
+          "ad_account_ids": "$.ad_accounts[*].id",
+          "ad_account_names": "$.ad_accounts[*].name"
+        }
+      }
+    ]
+  }
+}

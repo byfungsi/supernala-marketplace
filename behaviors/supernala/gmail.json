@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:gmail",
-  "revision": 2,
+  "revision": 3,
   "failures": {
     "signals": {
       "messageTemplates": ["Gmail adapter request failed with status {status}"]
@@ -104,5 +104,80 @@
         }
       }
     }
-  ]
+  ],
+  "watchables": [
+    {
+      "id": "inbox-new-mail",
+      "label": "New mail in the inbox",
+      "tool": "gmail.search_messages",
+      "args": {
+        "query": "in:inbox newer_than:1d",
+        "maxResults": 25
+      },
+      "items": "$.messages[*]",
+      "key": "$.messageId",
+      "fields": {
+        "thread_id": {
+          "path": "$.threadId",
+          "type": "string"
+        }
+      },
+      "fetch": {
+        "tool": "gmail.get_message",
+        "args": {
+          "messageId": "$item.key"
+        }
+      }
+    },
+    {
+      "id": "mail-search",
+      "label": "New mail matching a Gmail search",
+      "tool": "gmail.search_messages",
+      "params": {
+        "query": {
+          "type": "string",
+          "required": true,
+          "label": "Gmail search, such as from:billing@example.com"
+        }
+      },
+      "args": {
+        "query": "newer_than:2d $param.query",
+        "maxResults": 25
+      },
+      "items": "$.messages[*]",
+      "key": "$.messageId",
+      "fields": {
+        "thread_id": {
+          "path": "$.threadId",
+          "type": "string"
+        }
+      },
+      "fetch": {
+        "tool": "gmail.get_message",
+        "args": {
+          "messageId": "$item.key"
+        }
+      }
+    }
+  ],
+  "profile": {
+    "steps": [
+      {
+        "tool": "gmail.search_messages",
+        "args": {
+          "query": "in:inbox",
+          "maxResults": 1
+        },
+        "values": {
+          "inbox_size_estimate": "$.resultSizeEstimate"
+        }
+      }
+    ],
+    "defaultWatches": [
+      {
+        "id": "inbox",
+        "watchable": "inbox-new-mail"
+      }
+    ]
+  }
 }

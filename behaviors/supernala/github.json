@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:github",
-  "revision": 2,
+  "revision": 3,
   "followUps": [
     {
       "id": "comment-replies",
@@ -108,5 +108,253 @@
         }
       }
     }
-  ]
+  ],
+  "watchables": [
+    {
+      "id": "my-open-prs",
+      "label": "My open pull requests",
+      "tool": "github.search_pull_requests",
+      "params": {
+        "qualifiers": {
+          "type": "string",
+          "label": "Extra GitHub search qualifiers, such as repo:owner/name"
+        }
+      },
+      "args": {
+        "query": "is:pr is:open author:$profile.login $param.qualifiers",
+        "fields": ["number", "title", "state", "html_url", "updated_at", "repository_url"],
+        "sort": "updated",
+        "order": "desc",
+        "perPage": 50
+      },
+      "items": "$.items[*]",
+      "key": "$.html_url",
+      "fields": {
+        "title": {
+          "path": "$.title",
+          "type": "string"
+        },
+        "state": {
+          "path": "$.state",
+          "type": "enum",
+          "values": ["open", "closed"]
+        },
+        "number": {
+          "path": "$.number",
+          "type": "number"
+        },
+        "updated": {
+          "path": "$.updated_at",
+          "type": "string"
+        },
+        "repository": {
+          "path": "$.repository_url",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "review-requests",
+      "label": "Pull requests waiting for my review",
+      "tool": "github.search_pull_requests",
+      "params": {
+        "qualifiers": {
+          "type": "string",
+          "label": "Extra GitHub search qualifiers, such as repo:owner/name"
+        }
+      },
+      "args": {
+        "query": "is:pr is:open review-requested:$profile.login $param.qualifiers",
+        "fields": ["number", "title", "state", "html_url", "updated_at", "repository_url"],
+        "sort": "updated",
+        "order": "desc",
+        "perPage": 50
+      },
+      "items": "$.items[*]",
+      "key": "$.html_url",
+      "fields": {
+        "title": {
+          "path": "$.title",
+          "type": "string"
+        },
+        "state": {
+          "path": "$.state",
+          "type": "enum",
+          "values": ["open", "closed"]
+        },
+        "number": {
+          "path": "$.number",
+          "type": "number"
+        },
+        "updated": {
+          "path": "$.updated_at",
+          "type": "string"
+        },
+        "repository": {
+          "path": "$.repository_url",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "pull-request",
+      "label": "One pull request",
+      "tool": "github.pull_request_read",
+      "params": {
+        "owner": {
+          "type": "string",
+          "required": true,
+          "label": "Repository owner"
+        },
+        "repo": {
+          "type": "string",
+          "required": true,
+          "label": "Repository name"
+        },
+        "number": {
+          "type": "number",
+          "required": true,
+          "label": "Pull request number"
+        }
+      },
+      "args": {
+        "method": "get",
+        "owner": "$param.owner",
+        "repo": "$param.repo",
+        "pullNumber": "$param.number"
+      },
+      "items": "$",
+      "key": "$.html_url",
+      "fields": {
+        "title": {
+          "path": "$.title",
+          "type": "string"
+        },
+        "state": {
+          "path": "$.state",
+          "type": "enum",
+          "values": ["open", "closed"]
+        },
+        "mergeable_state": {
+          "path": "$.mergeable_state",
+          "type": "enum",
+          "values": [
+            "clean",
+            "dirty",
+            "blocked",
+            "behind",
+            "unstable",
+            "has_hooks",
+            "draft",
+            "unknown"
+          ]
+        },
+        "merged_at": {
+          "path": "$.merged_at",
+          "type": "string"
+        },
+        "comments": {
+          "path": "$.comments",
+          "type": "number"
+        },
+        "commits": {
+          "path": "$.commits",
+          "type": "number"
+        },
+        "updated": {
+          "path": "$.updated_at",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "pull-request-reviews",
+      "label": "Reviews on one pull request",
+      "tool": "github.pull_request_read",
+      "params": {
+        "owner": {
+          "type": "string",
+          "required": true,
+          "label": "Repository owner"
+        },
+        "repo": {
+          "type": "string",
+          "required": true,
+          "label": "Repository name"
+        },
+        "number": {
+          "type": "number",
+          "required": true,
+          "label": "Pull request number"
+        }
+      },
+      "args": {
+        "method": "get_reviews",
+        "owner": "$param.owner",
+        "repo": "$param.repo",
+        "pullNumber": "$param.number",
+        "perPage": 100
+      },
+      "items": "$[*]",
+      "key": "$.id",
+      "fields": {
+        "state": {
+          "path": "$.state",
+          "type": "enum",
+          "values": ["APPROVED", "CHANGES_REQUESTED", "COMMENTED", "DISMISSED", "PENDING"]
+        },
+        "reviewer": {
+          "path": "$.user.login",
+          "type": "string"
+        },
+        "submitted": {
+          "path": "$.submitted_at",
+          "type": "string"
+        }
+      }
+    }
+  ],
+  "profile": {
+    "steps": [
+      {
+        "tool": "github.get_me",
+        "args": {},
+        "values": {
+          "login": "$.login"
+        }
+      }
+    ],
+    "defaultWatches": [
+      {
+        "id": "pr-approved",
+        "watchable": "my-open-prs",
+        "args": {
+          "qualifiers": "review:approved"
+        },
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "Your pull request was approved."
+      },
+      {
+        "id": "pr-changes-requested",
+        "watchable": "my-open-prs",
+        "args": {
+          "qualifiers": "review:changes_requested"
+        },
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "A reviewer requested changes on your pull request."
+      },
+      {
+        "id": "new-review-request",
+        "watchable": "review-requests",
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "Someone asked you to review a pull request."
+      }
+    ]
+  }
 }

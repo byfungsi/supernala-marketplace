@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:supernala-social",
-  "revision": 2,
+  "revision": 3,
   "followUps": [
     {
       "id": "post-performance",
@@ -93,6 +93,54 @@
       "intervalMinutes": 30,
       "items": "$.comments[*]",
       "key": "$.id"
+    }
+  ],
+  "watchables": [
+    {
+      "id": "comments",
+      "label": "Comments on the workspace's posts",
+      "tool": "supernala-social.list_comments",
+      "params": {
+        "workspace_id": {
+          "type": "string",
+          "label": "Social workspace ID; omit for the personal workspace"
+        },
+        "account_id": {
+          "type": "string",
+          "label": "Social account ID"
+        },
+        "status": {
+          "type": "enum",
+          "values": ["pending", "resolved", "ignored", "all"],
+          "label": "Comment status"
+        }
+      },
+      "args": {
+        "workspace_id": "$param.workspace_id",
+        "account_id": "$param.account_id",
+        "status": "$param.status"
+      },
+      "items": "$.comments[*]",
+      "key": "$.id",
+      "fields": {
+        "account_id": {
+          "path": "$.account_id",
+          "type": "string"
+        },
+        "platform": {
+          "path": "$.platform",
+          "type": "string"
+        },
+        "post_id": {
+          "path": "$.post_id",
+          "type": "string"
+        },
+        "status": {
+          "path": "$.status",
+          "type": "enum",
+          "values": ["pending", "resolved", "ignored"]
+        }
+      }
     }
   ]
 }
