@@ -174,9 +174,9 @@ Single read `jev.ask`. Failures only: 401 key revoked, 402 out of credits (OpenR
 
 - `buffer` (remote, 17): `create_post` (write) → `get_post` / `get_aggregated_post_metrics` is a
   good future follow-up once result shapes are captured.
-- `tebar` (33), `repliz` (73), `meta-ads-token` (108), `linear` (65), `elevenlabs` (20): writes and
-  lists exist (`linear.save_issue`, `repliz.create_schedule`, `meta-ads.ads_create_campaign`), but
-  result shapes are unknown. Linear `list_issues` and `get_notifications` are strong future
+- `tebar` (33), `repliz` (73), `linear` (65), `elevenlabs` (20): writes and lists exist
+  (`linear.save_issue`, `repliz.create_schedule`), but result shapes are unknown. `meta-ads-token`
+  (108) has watchables only (below). Linear `list_issues` and `get_notifications` are strong future
   observation sources.
 - `notion` (3 reads), `maple` (24 reads), `google-maps` (6 reads): read-only. Maple
   `list_alert_incidents` and Notion search are good observation candidates after a capture.
@@ -185,6 +185,56 @@ Single read `jev.ask`. Failures only: 401 key revoked, 402 out of credits (OpenR
 - `resend` (remote): one write, no read to watch with.
 - `canva`: revoked. `remotes/gmail.json`: staged, no catalog. `openapi-inventory`,
   `offline-fixture`: fixtures.
+
+## Watchables and app profiles (ADR 0045)
+
+Added after the application's Watch contract (2026-11-22). Paths below were checked against the
+package source or the upstream server source where one exists; _inferred_ paths need a live
+capture before an Owner relies on them (a wrong path reads nothing, it never acts).
+
+- **github** (remote MCP; upstream `github/github-mcp-server` source). Profile: `get_me` →
+  `login` (`$.login`, `MinimalUser`). Watchables: `my-open-prs` and `review-requests`
+  (`search_pull_requests`, `author:` / `review-requested:` the profile login plus an optional
+  `qualifiers` parameter; the result is the GitHub search object, `items[*]` keyed by
+  `$.html_url`, with `fields` limiting each item); `pull-request` (`pull_request_read` `get`, a
+  `MinimalPullRequest`: `state`, `mergeable_state`, `merged_at`, `comments`, `commits`,
+  `updated_at`); `pull-request-reviews` (`get_reviews`, a top-level array keyed by `$.id`, `state`
+  in GitHub's review states). Defaults, all about the Owner: `pr-approved` and
+  `pr-changes-requested` (`my-open-prs` with `review:approved` / `review:changes_requested`,
+  `new-item`; search items carry no review state, so entering the filtered set is the state
+  change) and `new-review-request` (`review-requests`, `new-item`). Gap: `merged` is a boolean and
+  `merged_at` goes from absent to present, neither of which a field condition can see; "tell me
+  when it is merged" is `field-changed` on `state` to `closed` (which also fires on a close
+  without merge) or an `ask` condition.
+- **gmail** (package source). No identity read is in the catalog (the profile endpoint is only
+  used inside `send_message`), so the profile records the inbox's `resultSizeEstimate` from a
+  one-message `search_messages`: a harmless value that lets the declaration carry its default.
+  Watchables: `inbox-new-mail` (`in:inbox newer_than:1d`, 25 results) and `mail-search` (an
+  Owner-supplied query), both `messages[*]` keyed by `$.messageId` with `threadId`, each new
+  message read in full by `fetch` → `get_message`, which `observe` already captures. Default:
+  `inbox`, capture only (no condition), so new mail feeds the default commitments interest
+  without a nudge per email.
+- **meta-ads-token** (remote MCP; no source, Meta's tool descriptions only). Profile:
+  `ads_get_ad_accounts` → `ad_account_ids` / `ad_account_names` from `$.ad_accounts[*].id` and
+  `.name` (_inferred_; the description names `next_cursor` but not the list key). Watchables:
+  `campaign-spend` and `account-spend` (`ads_get_ad_entities` at `campaign` / `ad_account` level
+  with `ad_account_id` and an optional `date_preset`; `ad_entities[*]` keyed by `$.id`, as the
+  description says live results come back in `ad_entities`; number fields `amount_spent`,
+  `daily_budget`, `lifetime_budget`, _inferred_ to sit on each entity). Meta returns money in the
+  account currency's smallest unit, often as numeric strings, which number fields accept.
+  `ad_account_id` is the numeric id; an `act_` prefix in the profile value is not stripped. No
+  default Watches: the Owner asks for thresholds.
+- **vercel-api** (OpenAPI; Vercel REST). Profile: `get_user` → `user_id` / `username`
+  (`$.user.id`, `$.user.username`). Watchables: `my-failed-deployments` (`list_deployments` with
+  `state: ERROR` and `users` = the profile user id, optional project) and `deployments` (optional
+  project, state and target), `deployments[*]` keyed by `$.uid` with `state` as an enum. Default:
+  `deployment-failed` (`new-item`), the Owner's own failed deployments only.
+- **slack** (package source). No identity read, so no profile. Watchable `message-search`
+  (`slack_search_messages` with an Owner-supplied query, newest first; `messages.matches[*]` keyed
+  by `$.permalink`, channel, user and thread fields from the slimmed match).
+- **supernala-social** (remote MCP). Watchable `comments` (`list_comments` with optional
+  workspace, account and status; `comments[*]` keyed by `$.id`, _inferred_ as for `observe`). No
+  profile: the existing pending-comments poll already feeds capture.
 
 ## Gaps and risks
 
