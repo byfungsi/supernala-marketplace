@@ -1089,6 +1089,730 @@
         ]
       },
       "maxItems": 4
+    },
+    "watchables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 64
+              }
+            ]
+          },
+          "label": {
+            "type": "string",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 80
+              }
+            ],
+            "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+          },
+          "tool": {
+            "type": "string",
+            "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+            "allOf": [
+              {
+                "minLength": 1
+              },
+              {
+                "maxLength": 160
+              }
+            ]
+          },
+          "params": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["string", "number", "enum"]
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "allOf": [
+                      {
+                        "minLength": 1
+                      },
+                      {
+                        "maxLength": 60
+                      }
+                    ],
+                    "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                  },
+                  "allOf": [
+                    {
+                      "minItems": 1
+                    },
+                    {
+                      "maxItems": 16
+                    }
+                  ]
+                },
+                "required": {
+                  "type": "boolean"
+                },
+                "label": {
+                  "type": "string",
+                  "allOf": [
+                    {
+                      "minLength": 1
+                    },
+                    {
+                      "maxLength": 80
+                    }
+                  ],
+                  "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                }
+              },
+              "required": ["type"],
+              "additionalProperties": true
+            }
+          },
+          "args": {
+            "type": "object"
+          },
+          "items": {
+            "type": "string",
+            "pattern": "^\\$(?:\\.[A-Za-z_][A-Za-z0-9_]{0,63})*(?:\\[\\*\\])?$",
+            "maxLength": 300
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^\\$(?:\\.[A-Za-z_][A-Za-z0-9_]{0,63})+$",
+            "maxLength": 300
+          },
+          "fields": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "pattern": "^\\$(?:\\.[A-Za-z_][A-Za-z0-9_]{0,63})+$",
+                  "maxLength": 300
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["string", "number", "enum"]
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "allOf": [
+                      {
+                        "minLength": 1
+                      },
+                      {
+                        "maxLength": 60
+                      }
+                    ],
+                    "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                  },
+                  "allOf": [
+                    {
+                      "minItems": 1
+                    },
+                    {
+                      "maxItems": 16
+                    }
+                  ]
+                }
+              },
+              "required": ["path", "type"],
+              "additionalProperties": true
+            }
+          },
+          "fetch": {
+            "type": "object",
+            "properties": {
+              "tool": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 160
+                  }
+                ]
+              },
+              "args": {
+                "type": "object"
+              }
+            },
+            "required": ["tool", "args"],
+            "additionalProperties": true
+          }
+        },
+        "required": ["id", "label", "tool", "args", "items", "key", "fields"],
+        "additionalProperties": true
+      },
+      "maxItems": 12
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "tool": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 160
+                  }
+                ]
+              },
+              "args": {
+                "type": "object"
+              },
+              "values": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string",
+                  "pattern": "^\\$(?:(?:\\.[A-Za-z_][A-Za-z0-9_]{0,63}(?:\\[[0-9]{1,2}\\])?)+|(?:\\.[A-Za-z_][A-Za-z0-9_]{0,63})*\\[\\*\\](?:\\.[A-Za-z_][A-Za-z0-9_]{0,63})+)$",
+                  "maxLength": 300
+                }
+              }
+            },
+            "required": ["tool", "args", "values"],
+            "additionalProperties": true
+          },
+          "allOf": [
+            {
+              "minItems": 1
+            },
+            {
+              "maxItems": 4
+            }
+          ]
+        },
+        "defaultWatches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 64
+                  }
+                ]
+              },
+              "watchable": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 64
+                  }
+                ]
+              },
+              "args": {
+                "type": "object"
+              },
+              "condition": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": ["new-item"]
+                      },
+                      "where": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "allOf": [
+                                    {
+                                      "minLength": 1
+                                    },
+                                    {
+                                      "maxLength": 60
+                                    }
+                                  ],
+                                  "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "allOf": [
+                                      {
+                                        "minLength": 1
+                                      },
+                                      {
+                                        "maxLength": 60
+                                      }
+                                    ],
+                                    "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "allOf": [
+                                {
+                                  "minItems": 1
+                                },
+                                {
+                                  "maxItems": 10
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": ["kind"],
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": ["field-changed"]
+                      },
+                      "field": {
+                        "type": "string"
+                      },
+                      "from": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "allOf": [
+                              {
+                                "minLength": 1
+                              },
+                              {
+                                "maxLength": 60
+                              }
+                            ],
+                            "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "to": {
+                        "anyOf": [
+                          {
+                            "anyOf": [
+                              {
+                                "type": "string",
+                                "allOf": [
+                                  {
+                                    "minLength": 1
+                                  },
+                                  {
+                                    "maxLength": 60
+                                  }
+                                ],
+                                "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "allOf": [
+                                    {
+                                      "minLength": 1
+                                    },
+                                    {
+                                      "maxLength": 60
+                                    }
+                                  ],
+                                  "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            },
+                            "allOf": [
+                              {
+                                "minItems": 1
+                              },
+                              {
+                                "maxItems": 10
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      "where": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "allOf": [
+                                    {
+                                      "minLength": 1
+                                    },
+                                    {
+                                      "maxLength": 60
+                                    }
+                                  ],
+                                  "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "allOf": [
+                                      {
+                                        "minLength": 1
+                                      },
+                                      {
+                                        "maxLength": 60
+                                      }
+                                    ],
+                                    "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "allOf": [
+                                {
+                                  "minItems": 1
+                                },
+                                {
+                                  "maxItems": 10
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": ["kind", "field"],
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": ["threshold"]
+                      },
+                      "field": {
+                        "type": "string"
+                      },
+                      "op": {
+                        "type": "string",
+                        "enum": [">=", "<="]
+                      },
+                      "value": {
+                        "type": "number"
+                      },
+                      "rearm": {
+                        "type": "boolean"
+                      },
+                      "where": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "allOf": [
+                                    {
+                                      "minLength": 1
+                                    },
+                                    {
+                                      "maxLength": 60
+                                    }
+                                  ],
+                                  "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "allOf": [
+                                      {
+                                        "minLength": 1
+                                      },
+                                      {
+                                        "maxLength": 60
+                                      }
+                                    ],
+                                    "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "allOf": [
+                                {
+                                  "minItems": 1
+                                },
+                                {
+                                  "maxItems": 10
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": ["kind", "field", "op", "value"],
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": ["count"]
+                      },
+                      "op": {
+                        "type": "string",
+                        "enum": [">=", "<="]
+                      },
+                      "value": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "rearm": {
+                        "type": "boolean"
+                      },
+                      "where": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "allOf": [
+                                    {
+                                      "minLength": 1
+                                    },
+                                    {
+                                      "maxLength": 60
+                                    }
+                                  ],
+                                  "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "allOf": [
+                                      {
+                                        "minLength": 1
+                                      },
+                                      {
+                                        "maxLength": 60
+                                      }
+                                    ],
+                                    "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "allOf": [
+                                {
+                                  "minItems": 1
+                                },
+                                {
+                                  "maxItems": 10
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": ["kind", "op", "value"],
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "kind": {
+                        "type": "string",
+                        "enum": ["ask"]
+                      },
+                      "question": {
+                        "type": "string",
+                        "allOf": [
+                          {
+                            "minLength": 1
+                          },
+                          {
+                            "maxLength": 200
+                          }
+                        ],
+                        "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                      },
+                      "where": {
+                        "type": "object",
+                        "additionalProperties": {
+                          "anyOf": [
+                            {
+                              "anyOf": [
+                                {
+                                  "type": "string",
+                                  "allOf": [
+                                    {
+                                      "minLength": 1
+                                    },
+                                    {
+                                      "maxLength": 60
+                                    }
+                                  ],
+                                  "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                },
+                                {
+                                  "type": "number"
+                                }
+                              ]
+                            },
+                            {
+                              "type": "array",
+                              "items": {
+                                "anyOf": [
+                                  {
+                                    "type": "string",
+                                    "allOf": [
+                                      {
+                                        "minLength": 1
+                                      },
+                                      {
+                                        "maxLength": 60
+                                      }
+                                    ],
+                                    "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+                                  },
+                                  {
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "allOf": [
+                                {
+                                  "minItems": 1
+                                },
+                                {
+                                  "maxItems": 10
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    },
+                    "required": ["kind", "question"],
+                    "additionalProperties": true
+                  }
+                ]
+              },
+              "notify": {
+                "type": "string",
+                "allOf": [
+                  {
+                    "minLength": 1
+                  },
+                  {
+                    "maxLength": 200
+                  }
+                ],
+                "pattern": "^[^\\s](?:[^\\p{Cc}<>{}]*[^\\s])?$"
+              }
+            },
+            "required": ["id", "watchable"],
+            "additionalProperties": true
+          },
+          "maxItems": 6
+        }
+      },
+      "required": ["steps"],
+      "additionalProperties": true
     }
   },
   "required": ["schemaVersion", "plugin", "revision"],

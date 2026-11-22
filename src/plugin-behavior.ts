@@ -7,7 +7,9 @@ import { canonicalPluginJson } from "./plugin-contract.js";
  * tools themselves: which read tool watches the outcome of a write (`followUps`), how a failure
  * is classified and who fixes it (`failures`), which read results become Workspace
  * observations (`observe`), and how new items reach the host without anyone asking
- * (`sources`: a provider watch, a webhook, or a bounded poll). A declaration grants no authority. Every tool it names must already
+ * (`sources`: a provider watch, a webhook, or a bounded poll), which named read queries a Watch may
+ * run (`watchables`), and what the host learns about the account at connect and which Owner-scoped
+ * Watches it creates by default (`profile`). A declaration grants no authority. Every tool it names must already
  * be in the Plugin's reviewed catalog, every invocation still goes through the Owner's grants and
  * policies, and its short strings are app guidance, never Owner instructions.
  *
@@ -51,6 +53,17 @@ export const PLUGIN_BEHAVIOR_LIMITS = {
   maximumSourceEvents: 8,
   minimumPollIntervalMinutes: 15,
   maximumPollIntervalMinutes: 24 * 60,
+  maximumWatchables: 12,
+  maximumWatchableParams: 6,
+  maximumWatchableFields: 12,
+  maximumEnumValues: 16,
+  maximumLabelCharacters: 80,
+  maximumProfileSteps: 4,
+  maximumProfileValues: 8,
+  maximumDefaultWatches: 6,
+  maximumNotifyCharacters: 200,
+  maximumConditionClauses: 8,
+  maximumConditionAlternatives: 10,
 } as const;
 
 const L = PLUGIN_BEHAVIOR_LIMITS;
@@ -409,6 +422,195 @@ export type BehaviorWebhookSource = typeof BehaviorWebhookSource.Type;
 /** A bounded poll source. */
 export type BehaviorPollSource = typeof BehaviorPollSource.Type;
 
+/** A named value of a watchable or profile: lowercase, digits and underscores. */
+const VALUE_NAME = /^[a-z][a-z0-9_]{0,39}$/u;
+
+/** Value types a watchable parameter or field declares. */
+export const BehaviorWatchValueType = Schema.Literals(["string", "number", "enum"]);
+/** Value types a watchable parameter or field declares. */
+export type BehaviorWatchValueType = typeof BehaviorWatchValueType.Type;
+
+const EnumValues = Schema.Array(shortText(L.maximumOptionCharacters)).pipe(
+  Schema.check(Schema.isLengthBetween(1, L.maximumEnumValues)),
+);
+
+/** One parameter a Watch supplies to a watchable; `values` is required for (and only for) enums. */
+export const BehaviorWatchableParam = Schema.Struct({
+  type: BehaviorWatchValueType,
+  values: Schema.optionalKey(EnumValues),
+  required: Schema.optionalKey(Schema.Boolean),
+  label: Schema.optionalKey(shortText(L.maximumLabelCharacters)),
+});
+/** One parameter a Watch supplies to a watchable. */
+export interface BehaviorWatchableParam extends Schema.Schema.Type<typeof BehaviorWatchableParam> {}
+
+/** One typed field read from each result item; conditions compare these, never raw JSON. */
+export const BehaviorWatchableField = Schema.Struct({
+  path: ItemPath,
+  type: BehaviorWatchValueType,
+  values: Schema.optionalKey(EnumValues),
+});
+/** One typed field read from each result item. */
+export interface BehaviorWatchableField extends Schema.Schema.Type<typeof BehaviorWatchableField> {}
+
+/**
+ * A named, read-only query a Watch may run on a connection: a `read` tool with an argument
+ * template whose strings may use `$param.<name>` (the Watch's own arguments) and
+ * `$profile.<name>` (values the app profile recorded for the connection), either as the whole
+ * string (the typed value) or inside a longer string (its text). Items are selected like
+ * `observe`, keyed, and reduced to typed fields. An optional `fetch` reads each new item in full
+ * with `$item.key` / `$item.<field>` references (for example a search followed by get-message).
+ */
+export const BehaviorWatchable = Schema.Struct({
+  id: Slug,
+  label: shortText(L.maximumLabelCharacters),
+  tool: ToolReference,
+  params: Schema.optionalKey(Schema.Record(Schema.String, BehaviorWatchableParam)),
+  args: Schema.Record(Schema.String, Schema.Json),
+  items: ItemsPath,
+  key: ItemPath,
+  fields: Schema.Record(Schema.String, BehaviorWatchableField),
+  fetch: Schema.optionalKey(
+    Schema.Struct({ tool: ToolReference, args: Schema.Record(Schema.String, Schema.Json) }),
+  ),
+});
+/** A named, read-only query a Watch may run on a connection. */
+export interface BehaviorWatchable extends Schema.Schema.Type<typeof BehaviorWatchable> {}
+
+const ConditionScalar = Schema.Union([shortText(L.maximumOptionCharacters), Schema.Finite]);
+/** A literal a condition compares a field with. */
+export type BehaviorConditionScalar = typeof ConditionScalar.Type;
+
+/** Field filters: every clause must hold; a clause holds when the field equals one alternative. */
+const ConditionWhere = Schema.Record(
+  Schema.String,
+  Schema.Union([
+    ConditionScalar,
+    Schema.Array(ConditionScalar).pipe(
+      Schema.check(Schema.isLengthBetween(1, L.maximumConditionAlternatives)),
+    ),
+  ]),
+);
+
+const ComparisonOperator = Schema.Literals([">=", "<="]);
+
+/** A new item (by key) whose fields match `where`; the first read only records a baseline. */
+export const BehaviorNewItemCondition = Schema.Struct({
+  kind: Schema.Literal("new-item"),
+  where: Schema.optionalKey(ConditionWhere),
+});
+
+/** A field of a known item changed, optionally from one value and to one of several. */
+export const BehaviorFieldChangedCondition = Schema.Struct({
+  kind: Schema.Literal("field-changed"),
+  field: Schema.String,
+  from: Schema.optionalKey(ConditionScalar),
+  to: Schema.optionalKey(
+    Schema.Union([
+      ConditionScalar,
+      Schema.Array(ConditionScalar).pipe(
+        Schema.check(Schema.isLengthBetween(1, L.maximumConditionAlternatives)),
+      ),
+    ]),
+  ),
+  where: Schema.optionalKey(ConditionWhere),
+});
+
+/**
+ * A number field crossed a threshold. Fires once per item while it stays across; with `rearm`
+ * it may fire again after the value falls back, otherwise the Watch ends after firing.
+ */
+export const BehaviorThresholdCondition = Schema.Struct({
+  kind: Schema.Literal("threshold"),
+  field: Schema.String,
+  op: ComparisonOperator,
+  value: Schema.Finite,
+  rearm: Schema.optionalKey(Schema.Boolean),
+  where: Schema.optionalKey(ConditionWhere),
+});
+
+/** The number of matching items crossed a threshold. */
+export const BehaviorCountCondition = Schema.Struct({
+  kind: Schema.Literal("count"),
+  op: ComparisonOperator,
+  value: Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(0))),
+  rearm: Schema.optionalKey(Schema.Boolean),
+  where: Schema.optionalKey(ConditionWhere),
+});
+
+/** A fuzzy question about new or changed items, answered by one billed Jev call. */
+export const BehaviorAskCondition = Schema.Struct({
+  kind: Schema.Literal("ask"),
+  question: shortText(L.maximumQuestionCharacters),
+  where: Schema.optionalKey(ConditionWhere),
+});
+
+/** A typed Watch condition (ADR 0045); `ask` is the only one that uses a model. */
+export const BehaviorWatchCondition = Schema.Union([
+  BehaviorNewItemCondition,
+  BehaviorFieldChangedCondition,
+  BehaviorThresholdCondition,
+  BehaviorCountCondition,
+  BehaviorAskCondition,
+]);
+/** A typed Watch condition. */
+export type BehaviorWatchCondition = typeof BehaviorWatchCondition.Type;
+
+/** `$.a.b` (a scalar, indices allowed) or `$.list[*].field` (a list of scalars). */
+const PROFILE_PATH = new RegExp(
+  `^\\$(?:(?:\\.${PATH_SEGMENT}(?:\\[[0-9]{1,2}\\])?)+|(?:\\.${PATH_SEGMENT})*\\[\\*\\](?:\\.${PATH_SEGMENT})+)$`,
+  "u",
+);
+
+const ProfilePath = Schema.String.pipe(
+  Schema.check(Schema.isPattern(PROFILE_PATH)),
+  Schema.check(Schema.isMaxLength(300)),
+);
+
+/** Whether a profile path names a list (`[*]`) rather than one scalar. */
+export const isProfileListPath = (path: string): boolean => path.includes("[*]");
+
+/** One deterministic identity read at connect; each value is stored under its name. */
+export const BehaviorProfileStep = Schema.Struct({
+  tool: ToolReference,
+  /** Literal arguments only. */
+  args: Schema.Record(Schema.String, Schema.Json),
+  values: Schema.Record(Schema.String, ProfilePath),
+});
+/** One deterministic identity read at connect. */
+export interface BehaviorProfileStep extends Schema.Schema.Type<typeof BehaviorProfileStep> {}
+
+/**
+ * A Watch the host creates for the connection's default proactive Bot, scoped to the Owner (or
+ * the connecting member), when the connection becomes ready. Arguments are literals or
+ * `$profile.<name>`; conditions are deterministic (no `ask`). Without a condition the Watch only
+ * feeds observation capture (triage, interests and the default commitments interest decide what
+ * matters); `notify` is the line the Bot is woken with when the condition fires.
+ */
+export const BehaviorDefaultWatch = Schema.Struct({
+  id: Slug,
+  watchable: Slug,
+  args: Schema.optionalKey(Schema.Record(Schema.String, Schema.Json)),
+  condition: Schema.optionalKey(BehaviorWatchCondition),
+  notify: Schema.optionalKey(shortText(L.maximumNotifyCharacters)),
+});
+/** A Watch the host creates by default. */
+export interface BehaviorDefaultWatch extends Schema.Schema.Type<typeof BehaviorDefaultWatch> {}
+
+/** What the host learns about the account at connect, and the default Watches it creates. */
+export const BehaviorProfile = Schema.Struct({
+  steps: Schema.Array(BehaviorProfileStep).pipe(
+    Schema.check(Schema.isLengthBetween(1, L.maximumProfileSteps)),
+  ),
+  defaultWatches: Schema.optionalKey(
+    Schema.Array(BehaviorDefaultWatch).pipe(
+      Schema.check(Schema.isMaxLength(L.maximumDefaultWatches)),
+    ),
+  ),
+});
+/** What the host learns about the account at connect, and the default Watches it creates. */
+export interface BehaviorProfile extends Schema.Schema.Type<typeof BehaviorProfile> {}
+
 /** One immutable behaviour declaration revision for one Plugin definition. */
 export const PluginBehaviorDeclaration = Schema.Struct({
   schemaVersion: Schema.Literal(1),
@@ -424,6 +626,10 @@ export const PluginBehaviorDeclaration = Schema.Struct({
   sources: Schema.optionalKey(
     Schema.Array(BehaviorSource).pipe(Schema.check(Schema.isMaxLength(L.maximumSources))),
   ),
+  watchables: Schema.optionalKey(
+    Schema.Array(BehaviorWatchable).pipe(Schema.check(Schema.isMaxLength(L.maximumWatchables))),
+  ),
+  profile: Schema.optionalKey(BehaviorProfile),
 });
 /** One immutable behaviour declaration revision for one Plugin definition. */
 export interface PluginBehaviorDeclaration extends Schema.Schema.Type<
@@ -474,7 +680,24 @@ export type PluginBehaviorProblem =
   | "behavior-source-arg-unknown"
   | "behavior-source-arg-missing"
   | "behavior-source-arg-invalid"
-  | "behavior-source-interval-invalid";
+  | "behavior-source-interval-invalid"
+  | "behavior-watchable-duplicate-id"
+  | "behavior-watchable-not-read"
+  | "behavior-watchable-name-invalid"
+  | "behavior-watchable-field-invalid"
+  | "behavior-watchable-reference-unknown"
+  | "behavior-watchable-arg-unknown"
+  | "behavior-watchable-arg-missing"
+  | "behavior-watchable-arg-invalid"
+  | "behavior-profile-not-read"
+  | "behavior-profile-arg-unknown"
+  | "behavior-profile-arg-missing"
+  | "behavior-profile-arg-invalid"
+  | "behavior-profile-value-duplicate"
+  | "behavior-default-watch-duplicate-id"
+  | "behavior-default-watch-watchable-unknown"
+  | "behavior-default-watch-arg-invalid"
+  | "behavior-condition-invalid";
 
 /** A located problem: which rule failed and where in the declaration. */
 export interface PluginBehaviorIssue {
@@ -719,6 +942,261 @@ const checkQuestions = (
   }
 };
 
+const WATCHABLE_ARGUMENT_PROBLEMS = {
+  invalid: "behavior-watchable-arg-invalid",
+  unknown: "behavior-watchable-arg-unknown",
+  missing: "behavior-watchable-arg-missing",
+} as const;
+
+const PROFILE_ARGUMENT_PROBLEMS = {
+  invalid: "behavior-profile-arg-invalid",
+  unknown: "behavior-profile-arg-unknown",
+  missing: "behavior-profile-arg-missing",
+} as const;
+
+/** A whole-string watchable reference: `$param.<name>` or `$profile.<name>`. */
+export const WATCHABLE_REFERENCE = /^\$(param|profile)\.([a-z][a-z0-9_]{0,39})$/u;
+/** Any `$<namespace>.<name>` token inside a string. */
+const REFERENCE_TOKEN = /\$([a-z]+)\.([A-Za-z_][A-Za-z0-9_]{0,63})/gu;
+/** A whole-string fetch reference: `$item.key` or `$item.<field>`. */
+export const WATCHABLE_ITEM_REFERENCE = /^\$item\.([a-z][a-z0-9_]{0,39})$/u;
+
+const jsonStrings = (value: Schema.Json): ReadonlyArray<string> => {
+  if (typeof value === "string") return [value];
+  if (Array.isArray(value)) return value.flatMap(jsonStrings);
+  const object = asJsonObject(value);
+  return object === undefined ? [] : Object.values(object).flatMap(jsonStrings);
+};
+
+const literalMatchesType = (
+  value: Schema.Json,
+  type: BehaviorWatchValueType,
+  values: ReadonlyArray<string> | undefined,
+): boolean =>
+  type === "number"
+    ? typeof value === "number" && Number.isFinite(value)
+    : type === "enum"
+      ? typeof value === "string" && (values ?? []).includes(value)
+      : typeof value === "string" && value.length > 0 && value.length <= 300;
+
+/**
+ * Whether a condition is well typed against a watchable's fields: every named field exists, a
+ * threshold compares a number field, and every literal has its field's type (an enum literal is
+ * one of its values). The host applies the same check to Owner-requested Watches.
+ */
+export const checkBehaviorWatchCondition = (
+  condition: BehaviorWatchCondition,
+  fields: Readonly<Record<string, BehaviorWatchableField>>,
+): boolean => {
+  const fieldOf = (name: string) => (Object.hasOwn(fields, name) ? fields[name] : undefined);
+
+  const literalFits = (name: string, literal: BehaviorConditionScalar): boolean => {
+    const field = fieldOf(name);
+
+    return field !== undefined && literalMatchesType(literal, field.type, field.values);
+  };
+
+  const where = condition.where ?? {};
+  if (Object.keys(where).length > L.maximumConditionClauses) return false;
+  for (const [name, expected] of Object.entries(where)) {
+    const alternatives = Array.isArray(expected) ? expected : [expected];
+    if (!alternatives.every((literal) => literalFits(name, literal))) return false;
+  }
+  switch (condition.kind) {
+    case "field-changed": {
+      if (fieldOf(condition.field) === undefined) return false;
+      if (condition.from === undefined && condition.to === undefined) return false;
+      const to =
+        condition.to === undefined
+          ? []
+          : Array.isArray(condition.to)
+            ? condition.to
+            : [condition.to];
+
+      return (
+        (condition.from === undefined || literalFits(condition.field, condition.from)) &&
+        to.every((literal) => literalFits(condition.field, literal))
+      );
+    }
+    case "threshold":
+      return fieldOf(condition.field)?.type === "number";
+    default:
+      return true;
+  }
+};
+
+const checkTypedEntries = (
+  entries: Readonly<
+    Record<
+      string,
+      { readonly type: BehaviorWatchValueType; readonly values?: ReadonlyArray<string> }
+    >
+  >,
+  maximum: number,
+  minimum: number,
+  at: string,
+  issues: Array<PluginBehaviorIssue>,
+): void => {
+  const names = Object.keys(entries);
+  if (names.length > maximum || names.length < minimum) {
+    issues.push({ problem: "behavior-shape-invalid", at });
+  }
+  for (const [name, entry] of Object.entries(entries)) {
+    if (!VALUE_NAME.test(name)) {
+      issues.push({ problem: "behavior-watchable-name-invalid", at: `${at}.${name}` });
+    }
+    const values = entry.values;
+    if (
+      (entry.type === "enum") !== (values !== undefined) ||
+      (values !== undefined && new Set(values).size !== values.length)
+    ) {
+      issues.push({ problem: "behavior-watchable-field-invalid", at: `${at}.${name}` });
+    }
+  }
+};
+
+/** Checks `watchables` and `profile` (ADR 0045) against the catalog and each other. */
+const checkWatchablesAndProfile = (
+  declaration: PluginBehaviorDeclaration,
+  requireTool: (id: string, at: string) => BehaviorCatalogTool | undefined,
+  issues: Array<PluginBehaviorIssue>,
+): void => {
+  const profileValues = new Map<string, boolean>();
+  for (const [index, step] of (declaration.profile?.steps ?? []).entries()) {
+    for (const [name, path] of Object.entries(step.values)) {
+      const at = `$.profile.steps[${index}].values.${name}`;
+      if (!VALUE_NAME.test(name)) issues.push({ problem: "behavior-watchable-name-invalid", at });
+      if (profileValues.has(name)) issues.push({ problem: "behavior-profile-value-duplicate", at });
+      profileValues.set(name, isProfileListPath(path));
+    }
+  }
+
+  const watchableIds = new Map<string, BehaviorWatchable>();
+  for (const [index, watchable] of (declaration.watchables ?? []).entries()) {
+    const at = `$.watchables[${index}]`;
+    if (watchableIds.has(watchable.id)) {
+      issues.push({ problem: "behavior-watchable-duplicate-id", at });
+    }
+    watchableIds.set(watchable.id, watchable);
+    const tool = requireTool(watchable.tool, `${at}.tool`);
+    if (tool !== undefined && tool.classification !== "read") {
+      issues.push({ problem: "behavior-watchable-not-read", at: `${at}.tool` });
+    }
+    const params = watchable.params ?? {};
+    checkTypedEntries(params, L.maximumWatchableParams, 0, `${at}.params`, issues);
+    checkTypedEntries(watchable.fields, L.maximumWatchableFields, 1, `${at}.fields`, issues);
+    for (const path of [
+      watchable.key,
+      ...Object.values(watchable.fields).map((field) => field.path),
+    ]) {
+      if (path.split(".").length - 1 > L.maximumPathSegments) {
+        issues.push({ problem: "behavior-shape-invalid", at });
+      }
+    }
+    const resolves = (namespace: string, name: string): boolean =>
+      namespace === "param"
+        ? Object.hasOwn(params, name)
+        : namespace === "profile" && profileValues.get(name) === false;
+    checkWatchArguments(watchable.args, tool?.inputSchema, `${at}.args`, issues, {
+      problems: WATCHABLE_ARGUMENT_PROBLEMS,
+      isReference: (value) => WATCHABLE_REFERENCE.test(value),
+    });
+    for (const text of jsonStrings(watchable.args)) {
+      for (const match of text.matchAll(REFERENCE_TOKEN)) {
+        if (!resolves(match[1] ?? "", match[2] ?? "")) {
+          issues.push({ problem: "behavior-watchable-reference-unknown", at: `${at}.args` });
+        }
+      }
+    }
+    if (watchable.fetch !== undefined) {
+      const fetchTool = requireTool(watchable.fetch.tool, `${at}.fetch.tool`);
+      if (fetchTool !== undefined && fetchTool.classification !== "read") {
+        issues.push({ problem: "behavior-watchable-not-read", at: `${at}.fetch.tool` });
+      }
+      const itemReference = (value: string): boolean => {
+        const name = WATCHABLE_ITEM_REFERENCE.exec(value)?.[1];
+
+        return name !== undefined && (name === "key" || Object.hasOwn(watchable.fields, name));
+      };
+      checkWatchArguments(
+        watchable.fetch.args,
+        fetchTool?.inputSchema,
+        `${at}.fetch.args`,
+        issues,
+        {
+          problems: WATCHABLE_ARGUMENT_PROBLEMS,
+          isReference: itemReference,
+        },
+      );
+      for (const text of jsonStrings(watchable.fetch.args)) {
+        if (!itemReference(text) && REFERENCE_TOKEN.test(text)) {
+          issues.push({ problem: "behavior-watchable-reference-unknown", at: `${at}.fetch.args` });
+        }
+        REFERENCE_TOKEN.lastIndex = 0;
+      }
+    }
+  }
+
+  const profile = declaration.profile;
+  if (profile === undefined) return;
+  for (const [index, step] of profile.steps.entries()) {
+    const at = `$.profile.steps[${index}]`;
+    const tool = requireTool(step.tool, `${at}.tool`);
+    if (tool !== undefined && tool.classification !== "read") {
+      issues.push({ problem: "behavior-profile-not-read", at: `${at}.tool` });
+    }
+    checkWatchArguments(step.args, tool?.inputSchema, `${at}.args`, issues, {
+      problems: PROFILE_ARGUMENT_PROBLEMS,
+      isReference: undefined,
+    });
+    const count = Object.keys(step.values).length;
+    if (count === 0) issues.push({ problem: "behavior-shape-invalid", at: `${at}.values` });
+  }
+  if (profileValues.size > L.maximumProfileValues) {
+    issues.push({ problem: "behavior-shape-invalid", at: "$.profile.steps" });
+  }
+  const defaultIds = new Set<string>();
+  for (const [index, entry] of (profile.defaultWatches ?? []).entries()) {
+    const at = `$.profile.defaultWatches[${index}]`;
+    if (defaultIds.has(entry.id)) {
+      issues.push({ problem: "behavior-default-watch-duplicate-id", at });
+    }
+    defaultIds.add(entry.id);
+    const watchable = watchableIds.get(entry.watchable);
+    if (watchable === undefined) {
+      issues.push({ problem: "behavior-default-watch-watchable-unknown", at: `${at}.watchable` });
+      continue;
+    }
+    const params = watchable.params ?? {};
+    const args = entry.args ?? {};
+    for (const [name, value] of Object.entries(args)) {
+      const param = Object.hasOwn(params, name) ? params[name] : undefined;
+      const reference = typeof value === "string" ? WATCHABLE_REFERENCE.exec(value) : null;
+
+      const fits =
+        param !== undefined &&
+        (reference !== null
+          ? reference[1] === "profile" && profileValues.get(reference[2] ?? "") === false
+          : literalMatchesType(value, param.type, param.values));
+      if (!fits) {
+        issues.push({ problem: "behavior-default-watch-arg-invalid", at: `${at}.args.${name}` });
+      }
+    }
+    for (const [name, param] of Object.entries(params)) {
+      if (param.required === true && !Object.hasOwn(args, name)) {
+        issues.push({ problem: "behavior-default-watch-arg-invalid", at: `${at}.args.${name}` });
+      }
+    }
+    const condition = entry.condition;
+    if (
+      condition !== undefined &&
+      (condition.kind === "ask" || !checkBehaviorWatchCondition(condition, watchable.fields))
+    ) {
+      issues.push({ problem: "behavior-condition-invalid", at: `${at}.condition` });
+    }
+  }
+};
+
 /**
  * Checks a structurally valid declaration against the Plugin's reviewed catalog. The
  * application performs the same checks against each installed version's catalog.
@@ -739,7 +1217,9 @@ export const checkPluginBehaviorDeclaration = (
     declaration.followUps === undefined &&
     declaration.failures === undefined &&
     declaration.observe === undefined &&
-    declaration.sources === undefined
+    declaration.sources === undefined &&
+    declaration.watchables === undefined &&
+    declaration.profile === undefined
   ) {
     issues.push({ problem: "behavior-empty", at: "$" });
   }
@@ -885,6 +1365,8 @@ export const checkPluginBehaviorDeclaration = (
       },
     });
   }
+
+  checkWatchablesAndProfile(declaration, requireTool, issues);
 
   const failures = declaration.failures;
   if (failures !== undefined) {
