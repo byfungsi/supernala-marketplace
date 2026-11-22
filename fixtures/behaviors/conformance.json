@@ -531,6 +531,175 @@
           ]
         }
       }
+    },
+    {
+      "name": "boolean field changed to true",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 6,
+        "watchables": [
+          {
+            "id": "inbox",
+            "label": "New mail in a folder",
+            "tool": "acme.list_messages",
+            "params": {
+              "folder": {
+                "type": "enum",
+                "values": ["inbox", "spam"],
+                "required": true
+              },
+              "sender": {
+                "type": "string"
+              }
+            },
+            "args": {
+              "query": "in:$param.folder from:$param.sender to:$profile.address",
+              "since": "1d"
+            },
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "fields": {
+              "subject": {
+                "path": "$.subject",
+                "type": "string"
+              },
+              "size": {
+                "path": "$.size",
+                "type": "number"
+              },
+              "status": {
+                "path": "$.status",
+                "type": "enum",
+                "values": ["unread", "read"]
+              }
+            },
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$item.key"
+              }
+            }
+          },
+          {
+            "id": "post-insights",
+            "label": "Post insights",
+            "tool": "acme.get_post_insights",
+            "params": {
+              "post": {
+                "type": "string",
+                "required": true,
+                "label": "Post id"
+              }
+            },
+            "args": {
+              "path": {
+                "postId": "$param.post"
+              },
+              "query": {
+                "account": "$profile.account",
+                "window": 24
+              }
+            },
+            "items": "$",
+            "key": "$.postId",
+            "fields": {
+              "reach": {
+                "path": "$.reach",
+                "type": "number"
+              },
+              "state": {
+                "path": "$.state",
+                "type": "enum",
+                "values": ["live", "removed"]
+              },
+              "removed": {
+                "path": "$.removed",
+                "type": "boolean"
+              }
+            }
+          }
+        ],
+        "profile": {
+          "steps": [
+            {
+              "tool": "acme.list_messages",
+              "args": {
+                "query": "from:me"
+              },
+              "values": {
+                "address": "$.owner.address",
+                "account": "$.accounts[0].id",
+                "accounts": "$.accounts[*].id"
+              }
+            }
+          ],
+          "defaultWatches": [
+            {
+              "id": "new-inbox-mail",
+              "watchable": "inbox",
+              "args": {
+                "folder": "inbox"
+              },
+              "condition": {
+                "kind": "new-item",
+                "where": {
+                  "status": "unread"
+                }
+              },
+              "notify": "New unread mail arrived in your inbox"
+            },
+            {
+              "id": "reach-milestone",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "threshold",
+                "field": "reach",
+                "op": ">=",
+                "value": 1000
+              },
+              "notify": "Your post reached 1,000 people"
+            },
+            {
+              "id": "post-removed",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "field-changed",
+                "field": "state",
+                "from": "live",
+                "to": "removed"
+              },
+              "notify": "Your post was removed"
+            },
+            {
+              "id": "inbox-capture",
+              "watchable": "inbox",
+              "args": {
+                "folder": "spam"
+              }
+            },
+            {
+              "id": "post-taken-down",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "field-changed",
+                "field": "removed",
+                "to": true
+              },
+              "notify": "Your post was taken down"
+            }
+          ]
+        }
+      }
     }
   ],
   "rejected": [
@@ -12826,6 +12995,518 @@
               "args": {
                 "folder": "spam"
               }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "threshold on a boolean field",
+      "problem": "behavior-condition-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 6,
+        "watchables": [
+          {
+            "id": "inbox",
+            "label": "New mail in a folder",
+            "tool": "acme.list_messages",
+            "params": {
+              "folder": {
+                "type": "enum",
+                "values": ["inbox", "spam"],
+                "required": true
+              },
+              "sender": {
+                "type": "string"
+              }
+            },
+            "args": {
+              "query": "in:$param.folder from:$param.sender to:$profile.address",
+              "since": "1d"
+            },
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "fields": {
+              "subject": {
+                "path": "$.subject",
+                "type": "string"
+              },
+              "size": {
+                "path": "$.size",
+                "type": "number"
+              },
+              "status": {
+                "path": "$.status",
+                "type": "enum",
+                "values": ["unread", "read"]
+              }
+            },
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$item.key"
+              }
+            }
+          },
+          {
+            "id": "post-insights",
+            "label": "Post insights",
+            "tool": "acme.get_post_insights",
+            "params": {
+              "post": {
+                "type": "string",
+                "required": true,
+                "label": "Post id"
+              }
+            },
+            "args": {
+              "path": {
+                "postId": "$param.post"
+              },
+              "query": {
+                "account": "$profile.account",
+                "window": 24
+              }
+            },
+            "items": "$",
+            "key": "$.postId",
+            "fields": {
+              "reach": {
+                "path": "$.reach",
+                "type": "number"
+              },
+              "state": {
+                "path": "$.state",
+                "type": "enum",
+                "values": ["live", "removed"]
+              },
+              "removed": {
+                "path": "$.removed",
+                "type": "boolean"
+              }
+            }
+          }
+        ],
+        "profile": {
+          "steps": [
+            {
+              "tool": "acme.list_messages",
+              "args": {
+                "query": "from:me"
+              },
+              "values": {
+                "address": "$.owner.address",
+                "account": "$.accounts[0].id",
+                "accounts": "$.accounts[*].id"
+              }
+            }
+          ],
+          "defaultWatches": [
+            {
+              "id": "new-inbox-mail",
+              "watchable": "inbox",
+              "args": {
+                "folder": "inbox"
+              },
+              "condition": {
+                "kind": "new-item",
+                "where": {
+                  "status": "unread"
+                }
+              },
+              "notify": "New unread mail arrived in your inbox"
+            },
+            {
+              "id": "reach-milestone",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "threshold",
+                "field": "reach",
+                "op": ">=",
+                "value": 1000
+              },
+              "notify": "Your post reached 1,000 people"
+            },
+            {
+              "id": "post-removed",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "field-changed",
+                "field": "state",
+                "from": "live",
+                "to": "removed"
+              },
+              "notify": "Your post was removed"
+            },
+            {
+              "id": "inbox-capture",
+              "watchable": "inbox",
+              "args": {
+                "folder": "spam"
+              }
+            },
+            {
+              "id": "post-taken-down",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "threshold",
+                "field": "removed",
+                "op": ">=",
+                "value": 1
+              },
+              "notify": "Your post was taken down"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "boolean field with values",
+      "problem": "behavior-watchable-field-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 6,
+        "watchables": [
+          {
+            "id": "inbox",
+            "label": "New mail in a folder",
+            "tool": "acme.list_messages",
+            "params": {
+              "folder": {
+                "type": "enum",
+                "values": ["inbox", "spam"],
+                "required": true
+              },
+              "sender": {
+                "type": "string"
+              }
+            },
+            "args": {
+              "query": "in:$param.folder from:$param.sender to:$profile.address",
+              "since": "1d"
+            },
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "fields": {
+              "subject": {
+                "path": "$.subject",
+                "type": "string"
+              },
+              "size": {
+                "path": "$.size",
+                "type": "number"
+              },
+              "status": {
+                "path": "$.status",
+                "type": "enum",
+                "values": ["unread", "read"]
+              }
+            },
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$item.key"
+              }
+            }
+          },
+          {
+            "id": "post-insights",
+            "label": "Post insights",
+            "tool": "acme.get_post_insights",
+            "params": {
+              "post": {
+                "type": "string",
+                "required": true,
+                "label": "Post id"
+              }
+            },
+            "args": {
+              "path": {
+                "postId": "$param.post"
+              },
+              "query": {
+                "account": "$profile.account",
+                "window": 24
+              }
+            },
+            "items": "$",
+            "key": "$.postId",
+            "fields": {
+              "reach": {
+                "path": "$.reach",
+                "type": "number"
+              },
+              "state": {
+                "path": "$.state",
+                "type": "enum",
+                "values": ["live", "removed"]
+              },
+              "removed": {
+                "path": "$.removed",
+                "type": "boolean",
+                "values": ["yes"]
+              }
+            }
+          }
+        ],
+        "profile": {
+          "steps": [
+            {
+              "tool": "acme.list_messages",
+              "args": {
+                "query": "from:me"
+              },
+              "values": {
+                "address": "$.owner.address",
+                "account": "$.accounts[0].id",
+                "accounts": "$.accounts[*].id"
+              }
+            }
+          ],
+          "defaultWatches": [
+            {
+              "id": "new-inbox-mail",
+              "watchable": "inbox",
+              "args": {
+                "folder": "inbox"
+              },
+              "condition": {
+                "kind": "new-item",
+                "where": {
+                  "status": "unread"
+                }
+              },
+              "notify": "New unread mail arrived in your inbox"
+            },
+            {
+              "id": "reach-milestone",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "threshold",
+                "field": "reach",
+                "op": ">=",
+                "value": 1000
+              },
+              "notify": "Your post reached 1,000 people"
+            },
+            {
+              "id": "post-removed",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "field-changed",
+                "field": "state",
+                "from": "live",
+                "to": "removed"
+              },
+              "notify": "Your post was removed"
+            },
+            {
+              "id": "inbox-capture",
+              "watchable": "inbox",
+              "args": {
+                "folder": "spam"
+              }
+            },
+            {
+              "id": "post-taken-down",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "field-changed",
+                "field": "removed",
+                "to": true
+              },
+              "notify": "Your post was taken down"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "boolean field compared with text",
+      "problem": "behavior-condition-invalid",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 6,
+        "watchables": [
+          {
+            "id": "inbox",
+            "label": "New mail in a folder",
+            "tool": "acme.list_messages",
+            "params": {
+              "folder": {
+                "type": "enum",
+                "values": ["inbox", "spam"],
+                "required": true
+              },
+              "sender": {
+                "type": "string"
+              }
+            },
+            "args": {
+              "query": "in:$param.folder from:$param.sender to:$profile.address",
+              "since": "1d"
+            },
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "fields": {
+              "subject": {
+                "path": "$.subject",
+                "type": "string"
+              },
+              "size": {
+                "path": "$.size",
+                "type": "number"
+              },
+              "status": {
+                "path": "$.status",
+                "type": "enum",
+                "values": ["unread", "read"]
+              }
+            },
+            "fetch": {
+              "tool": "acme.get_message",
+              "args": {
+                "messageId": "$item.key"
+              }
+            }
+          },
+          {
+            "id": "post-insights",
+            "label": "Post insights",
+            "tool": "acme.get_post_insights",
+            "params": {
+              "post": {
+                "type": "string",
+                "required": true,
+                "label": "Post id"
+              }
+            },
+            "args": {
+              "path": {
+                "postId": "$param.post"
+              },
+              "query": {
+                "account": "$profile.account",
+                "window": 24
+              }
+            },
+            "items": "$",
+            "key": "$.postId",
+            "fields": {
+              "reach": {
+                "path": "$.reach",
+                "type": "number"
+              },
+              "state": {
+                "path": "$.state",
+                "type": "enum",
+                "values": ["live", "removed"]
+              },
+              "removed": {
+                "path": "$.removed",
+                "type": "boolean"
+              }
+            }
+          }
+        ],
+        "profile": {
+          "steps": [
+            {
+              "tool": "acme.list_messages",
+              "args": {
+                "query": "from:me"
+              },
+              "values": {
+                "address": "$.owner.address",
+                "account": "$.accounts[0].id",
+                "accounts": "$.accounts[*].id"
+              }
+            }
+          ],
+          "defaultWatches": [
+            {
+              "id": "new-inbox-mail",
+              "watchable": "inbox",
+              "args": {
+                "folder": "inbox"
+              },
+              "condition": {
+                "kind": "new-item",
+                "where": {
+                  "status": "unread"
+                }
+              },
+              "notify": "New unread mail arrived in your inbox"
+            },
+            {
+              "id": "reach-milestone",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "threshold",
+                "field": "reach",
+                "op": ">=",
+                "value": 1000
+              },
+              "notify": "Your post reached 1,000 people"
+            },
+            {
+              "id": "post-removed",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "field-changed",
+                "field": "state",
+                "from": "live",
+                "to": "removed"
+              },
+              "notify": "Your post was removed"
+            },
+            {
+              "id": "inbox-capture",
+              "watchable": "inbox",
+              "args": {
+                "folder": "spam"
+              }
+            },
+            {
+              "id": "post-taken-down",
+              "watchable": "post-insights",
+              "args": {
+                "post": "$profile.account"
+              },
+              "condition": {
+                "kind": "field-changed",
+                "field": "removed",
+                "to": "true"
+              },
+              "notify": "Your post was taken down"
             }
           ]
         }

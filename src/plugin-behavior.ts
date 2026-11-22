@@ -426,7 +426,7 @@ export type BehaviorPollSource = typeof BehaviorPollSource.Type;
 const VALUE_NAME = /^[a-z][a-z0-9_]{0,39}$/u;
 
 /** Value types a watchable parameter or field declares. */
-export const BehaviorWatchValueType = Schema.Literals(["string", "number", "enum"]);
+export const BehaviorWatchValueType = Schema.Literals(["string", "number", "enum", "boolean"]);
 /** Value types a watchable parameter or field declares. */
 export type BehaviorWatchValueType = typeof BehaviorWatchValueType.Type;
 
@@ -477,7 +477,11 @@ export const BehaviorWatchable = Schema.Struct({
 /** A named, read-only query a Watch may run on a connection. */
 export interface BehaviorWatchable extends Schema.Schema.Type<typeof BehaviorWatchable> {}
 
-const ConditionScalar = Schema.Union([shortText(L.maximumOptionCharacters), Schema.Finite]);
+const ConditionScalar = Schema.Union([
+  shortText(L.maximumOptionCharacters),
+  Schema.Finite,
+  Schema.Boolean,
+]);
 /** A literal a condition compares a field with. */
 export type BehaviorConditionScalar = typeof ConditionScalar.Type;
 
@@ -975,9 +979,11 @@ const literalMatchesType = (
 ): boolean =>
   type === "number"
     ? typeof value === "number" && Number.isFinite(value)
-    : type === "enum"
-      ? typeof value === "string" && (values ?? []).includes(value)
-      : typeof value === "string" && value.length > 0 && value.length <= 300;
+    : type === "boolean"
+      ? typeof value === "boolean"
+      : type === "enum"
+        ? typeof value === "string" && (values ?? []).includes(value)
+        : typeof value === "string" && value.length > 0 && value.length <= 300;
 
 /**
  * Whether a condition is well typed against a watchable's fields: every named field exists, a

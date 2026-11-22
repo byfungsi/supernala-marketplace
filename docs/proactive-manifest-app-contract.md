@@ -160,7 +160,7 @@ interface PollSource {
 }
 
 type ValueName = string; // ^[a-z][a-z0-9_]{0,39}$  (parameters, fields, profile values)
-type ValueType = "string" | "number" | "enum";
+type ValueType = "string" | "number" | "enum" | "boolean";
 type EnumValues = ShortText<60>[]; // 1..16, unique; required for (and only for) "enum"
 
 interface Watchable {

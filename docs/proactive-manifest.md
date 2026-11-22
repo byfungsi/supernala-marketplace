@@ -343,7 +343,7 @@ Default Watches in `profile` use watchables too.
 
 At most 12 watchables. Parameter and field names are `^[a-z][a-z0-9_]{0,39}$`.
 
-**Types.** A parameter or field is `string`, `number` or `enum`. An `enum` lists 1–16 unique
+**Types.** A parameter or field is `string`, `number`, `boolean` or `enum`; conditions compare a `boolean` field with `true` or `false` (for example `field-changed` on `merged` to `true`). An `enum` lists 1–16 unique
 `values` (each ≤ 60 characters); `values` is required for an enum and refused for any other type.
 A parameter may be `required` and may carry a `label` (≤ 80 characters) the Bot reads when it fills
 it in. A field's `path` is an item path (`$.a.b`, no indices, ≤ 8 segments). When an item is read,

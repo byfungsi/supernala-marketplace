@@ -1138,7 +1138,7 @@
               "properties": {
                 "type": {
                   "type": "string",
-                  "enum": ["string", "number", "enum"]
+                  "enum": ["string", "number", "enum", "boolean"]
                 },
                 "values": {
                   "type": "array",
@@ -1208,7 +1208,7 @@
                 },
                 "type": {
                   "type": "string",
-                  "enum": ["string", "number", "enum"]
+                  "enum": ["string", "number", "enum", "boolean"]
                 },
                 "values": {
                   "type": "array",
@@ -1371,6 +1371,9 @@
                                 },
                                 {
                                   "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
                                 }
                               ]
                             },
@@ -1392,6 +1395,9 @@
                                   },
                                   {
                                     "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
                                   }
                                 ]
                               },
@@ -1437,6 +1443,9 @@
                           },
                           {
                             "type": "number"
+                          },
+                          {
+                            "type": "boolean"
                           }
                         ]
                       },
@@ -1458,6 +1467,9 @@
                               },
                               {
                                 "type": "number"
+                              },
+                              {
+                                "type": "boolean"
                               }
                             ]
                           },
@@ -1479,6 +1491,9 @@
                                 },
                                 {
                                   "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
                                 }
                               ]
                             },
@@ -1513,6 +1528,9 @@
                                 },
                                 {
                                   "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
                                 }
                               ]
                             },
@@ -1534,6 +1552,9 @@
                                   },
                                   {
                                     "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
                                   }
                                 ]
                               },
@@ -1593,6 +1614,9 @@
                                 },
                                 {
                                   "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
                                 }
                               ]
                             },
@@ -1614,6 +1638,9 @@
                                   },
                                   {
                                     "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
                                   }
                                 ]
                               },
@@ -1671,6 +1698,9 @@
                                 },
                                 {
                                   "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
                                 }
                               ]
                             },
@@ -1692,6 +1722,9 @@
                                   },
                                   {
                                     "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
                                   }
                                 ]
                               },
@@ -1750,6 +1783,9 @@
                                 },
                                 {
                                   "type": "number"
+                                },
+                                {
+                                  "type": "boolean"
                                 }
                               ]
                             },
@@ -1771,6 +1807,9 @@
                                   },
                                   {
                                     "type": "number"
+                                  },
+                                  {
+                                    "type": "boolean"
                                   }
                                 ]
                               },

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:github",
-  "revision": 3,
+  "revision": 4,
   "followUps": [
     {
       "id": "comment-replies",
@@ -198,7 +198,7 @@
     },
     {
       "id": "pull-request",
-      "label": "One pull request",
+      "label": "One pull request (state, merged)",
       "tool": "github.pull_request_read",
       "params": {
         "owner": {
@@ -264,6 +264,10 @@
         "updated": {
           "path": "$.updated_at",
           "type": "string"
+        },
+        "merged": {
+          "path": "$.merged",
+          "type": "boolean"
         }
       }
     },
