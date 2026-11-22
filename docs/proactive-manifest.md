@@ -9,6 +9,10 @@ themselves:
 - **`observe`**: which read results become Workspace observations, and which fields are kept.
 - **`sources`**: how new items reach Supernala on their own: a provider watch, a webhook, or a
   bounded poll, registered when a connection is ready.
+- **`watchables`**: named, read-only queries a Watch may run on a connection, with typed
+  parameters and typed result fields that Watch conditions compare.
+- **`profile`**: deterministic identity reads the host runs when a connection becomes ready, and
+  the default Watches it then creates for the Owner (never about other people's activity).
 
 A declaration **grants no authority**. Every tool it names must already be in the Plugin's
 reviewed catalog with the right classification; every call it causes still goes through the
@@ -112,7 +116,8 @@ The JSON Schema is `schemas/plugin-behavior.schema.json`, generated from `src/pl
 }
 ```
 
-At least one of `followUps`, `failures` and `observe` is required. Unknown keys are rejected.
+At least one of `followUps`, `failures`, `observe`, `sources`, `watchables` and `profile` is
+required. Unknown keys are rejected.
 
 ### Typed questions
 
@@ -293,6 +298,190 @@ argument> }`: the greatest value at `path` across a result's items (text or numb
 ]
 ```
 
+### `watchables`
+
+A Watch (ADR 0045 in the application) is a standing, read-only check on one connection that the
+host runs on an hourly checkpoint. A Bot never names a raw tool for a Watch: it picks one of the
+app's **watchables**, supplies the watchable's parameters, and optionally adds a typed condition.
+Default Watches in `profile` use watchables too.
+
+```json
+"watchables": [
+  {
+    "id": "my-open-prs",
+    "label": "My open pull requests",
+    "tool": "github.search_pull_requests",
+    "params": {
+      "qualifiers": { "type": "string", "label": "Extra GitHub search qualifiers" }
+    },
+    "args": {
+      "query": "is:pr is:open author:$profile.login $param.qualifiers",
+      "perPage": 50
+    },
+    "items": "$.items[*]",
+    "key": "$.html_url",
+    "fields": {
+      "title": { "path": "$.title", "type": "string" },
+      "state": { "path": "$.state", "type": "enum", "values": ["open", "closed"] },
+      "number": { "path": "$.number", "type": "number" }
+    }
+  }
+]
+```
+
+| Field    | Rule                                                                                    |
+| -------- | --------------------------------------------------------------------------------------- |
+| `id`     | kebab-case, ≤ 64, unique among watchables                                               |
+| `label`  | ≤ 80 characters, one line: what the query reads, as a Bot would describe it             |
+| `tool`   | a `read` tool of this Plugin                                                            |
+| `params` | optional, ≤ 6 typed parameters the Watch supplies (below)                               |
+| `args`   | JSON template for the tool's input: literals plus `$param.` and `$profile.` references  |
+| `items`  | `observe` items grammar: `$`, `$.<path>[*]` or `$[*]`                                   |
+| `key`    | `$.<path>` inside each item: the provider's stable identity (a string or number)        |
+| `fields` | 1–12 typed fields read from each item; conditions compare only these                    |
+| `fetch`  | optional `{ "tool": <read tool>, "args": <template> }` that reads each new item in full |
+
+At most 12 watchables. Parameter and field names are `^[a-z][a-z0-9_]{0,39}$`.
+
+**Host profile value.** `$profile.account_subject` is always available without a step: the
+connection's verified provider account id (the subject its reviewed account endpoint returned at
+connect, such as Slack's `auth.test` user id). A step may not declare it, and `steps` may be empty
+when a profile only needs it.
+
+**Suggested Watches.** `profile.suggestedWatches` (at most 6) has the shape and checks of
+`defaultWatches` plus a required `label` the Owner reads. The host never creates them by itself:
+it offers each as a one-tap suggestion on the Overnight card when the connection is profiled;
+Accept creates the Watch exactly as declared (with a Cancel receipt), and two dismissals stop the
+offer. Use them for useful but opt-in checks (a Meta Ads campaign that stops delivering). Ids are
+unique across `defaultWatches` and `suggestedWatches`.
+
+**Types.** A parameter or field is `string`, `number`, `boolean` or `enum`; conditions compare a `boolean` field with `true` or `false` (for example `field-changed` on `merged` to `true`). An `enum` lists 1–16 unique
+`values` (each ≤ 60 characters); `values` is required for an enum and refused for any other type.
+A parameter may be `required` and may carry a `label` (≤ 80 characters) the Bot reads when it fills
+it in. A field's `path` is an item path (`$.a.b`, no indices, ≤ 8 segments). When an item is read,
+a `number` field accepts a JSON number or a numeric string (`"1250.50"`), a `string` field a string
+or number (cut to 300 characters), and an `enum` field only one of its values; a value of the wrong
+type, a boolean, an object or a missing path leaves the field out of that item. There is no boolean
+type: expose a boolean as the value it implies (a state enum, or a timestamp string).
+
+**References.** Argument templates follow the follow-up rules (depth ≤ 3, ≤ 16 leaves, keys known
+to and required by the input schema), with two reference namespaces:
+
+- `$param.<name>`: the Watch's own value for a declared parameter;
+- `$profile.<name>`: a value the app profile recorded for the connection. Only a scalar profile
+  value (a path without `[*]`) may be referenced.
+
+A whole string reference (`"pullNumber": "$param.number"`) becomes the typed value; an absent
+optional parameter removes the key. A reference inside a longer string
+(`"is:pr author:$profile.login $param.qualifiers"`) becomes its text; an absent optional
+parameter becomes nothing and repeated spaces collapse. A string that starts with `$` must be a
+whole reference, so put embedded references after some literal text. Every `$<namespace>.<name>`
+token anywhere in `args` must name a declared parameter or a scalar profile value; any other token
+(`$event.`, `$item.`, an unknown name) is refused. If a profile value the template needs was not
+recorded, the host does not run the Watch.
+
+**`fetch`.** When a list result carries only identities (a Gmail search returns message ids), the
+host reads each **new** item with `fetch.tool`, at most 10 per read. `fetch.args` leaves are
+literals or a whole `$item.key` / `$item.<field>` reference to the selected item; nothing is
+interpolated. The fetch result goes through `observe` like any read, so give the fetch tool an
+`observe` entry when its result should become an observation.
+
+### Watch conditions
+
+A condition is a typed predicate over a watchable's items, evaluated without a model. The host
+uses the same grammar for Owner-requested Watches and for default Watches.
+
+| `kind`          | Fields                                                              | Fires                                                                                                               |
+| --------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `new-item`      | `where?`                                                            | for each item whose key was not seen before and that matches `where`                                                |
+| `field-changed` | `field`, `from?`, `to?` (one or a list), `where?`                   | for a known item whose field moved (from `from`, to one of `to`)                                                    |
+| `threshold`     | `field` (a `number`), `op` (`>=`/`<=`), `value`, `rearm?`, `where?` | once per item that crosses; without `rearm` the Watch then ends, with it an item may fire again after it falls back |
+| `count`         | `op`, `value` (integer ≥ 0), `rearm?`, `where?`                     | once when the number of matching items crosses; ends or re-arms like `threshold`                                    |
+| `ask`           | `question` (≤ 200 characters), `where?`                             | when one billed Jev call says a new or changed item answers the question                                            |
+
+`where` holds up to 8 clauses `{ "<field>": literal | [literal, …] }` (1–10 alternatives); every
+clause must hold, and a clause holds when the field equals one alternative. Every named field must
+exist, a literal must have its field's type (an enum literal is one of its values), `field-changed`
+needs `from` or `to`, and `threshold` compares a number field. The first read of a Watch records a
+baseline and fires nothing, except a `threshold` or `count` that is already across. `ask` is only
+for Owner-requested Watches; a default Watch must be deterministic.
+
+### `profile`
+
+What the host learns about the account when a connection becomes ready, and the Watches it
+creates by default for the connection's default proactive Bot. Default Watches are about the
+Owner (in a Team Workspace, the member who connected the account): my pull requests, pull requests
+waiting for my review, my inbox. Never declare a default that reads other people's activity.
+
+```json
+"profile": {
+  "steps": [{ "tool": "github.get_me", "args": {}, "values": { "login": "$.login" } }],
+  "defaultWatches": [
+    {
+      "id": "pr-approved",
+      "watchable": "my-open-prs",
+      "args": { "qualifiers": "review:approved" },
+      "condition": { "kind": "new-item" },
+      "notify": "Your pull request was approved."
+    }
+  ]
+}
+```
+
+| Field                        | Rule                                                                                                                          |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `steps`                      | 1–4 deterministic reads                                                                                                       |
+| `steps[].tool`               | a `read` tool of this Plugin; a cheap identity read where the app has one                                                     |
+| `steps[].args`               | literal arguments only (no references), checked against the input schema                                                      |
+| `steps[].values`             | 1 or more `{ "<name>": <path> }`; ≤ 8 names across all steps, unique, `^[a-z][a-z0-9_]{0,39}$`                                |
+| `defaultWatches`             | optional, ≤ 6                                                                                                                 |
+| `defaultWatches[].id`        | kebab-case, unique among default Watches                                                                                      |
+| `defaultWatches[].watchable` | the `id` of a watchable in this declaration                                                                                   |
+| `defaultWatches[].args`      | optional; keys are the watchable's parameters, values a literal of the parameter's type or a whole `$profile.<name>` (scalar) |
+| `defaultWatches[].condition` | optional deterministic condition (any kind but `ask`), typed against the watchable's fields                                   |
+| `defaultWatches[].notify`    | optional, ≤ 200 characters: the line the Bot is woken with when the condition fires                                           |
+
+A profile value path is `$.a.b` (a scalar; `[n]` indices allowed) or `$.list[*].field` (a list of
+scalars, such as every ad account id). List values are stored for the Bot to read but cannot be
+referenced in arguments. A value whose path does not resolve is left out.
+
+Every required parameter of the watchable must be supplied. A default Watch **without a
+condition** only feeds observation capture: its reads become observations, and triage, Bot
+interests and the default commitments interest decide what matters. Use that for high-volume reads
+such as an inbox, where a nudge per item would be noise. A default Watch with a condition wakes the
+Bot with `notify` when it fires.
+
+Profiles exist to scope default Watches to the account. If an app has no identity read, a profile
+step may record a harmless value (Gmail records the inbox size estimate) so the default Watches
+can be declared; say so in the research notes.
+
+Review state is not always a field. GitHub search results carry no review state, so the GitHub
+defaults use the search's own `review:approved` and `review:changes_requested` qualifiers with
+`new-item`: a pull request entering the approved set is the state change.
+
+**Problems** `pnpm marketplace behaviors validate` reports for these sections:
+
+| Problem                                                  | Meaning                                                                                                           |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `behavior-watchable-duplicate-id`                        | two watchables share an `id`                                                                                      |
+| `behavior-watchable-not-read`                            | a watchable's `tool` or `fetch.tool` is not a `read` tool                                                         |
+| `behavior-watchable-name-invalid`                        | a parameter, field or profile value name is not `^[a-z][a-z0-9_]{0,39}$`                                          |
+| `behavior-watchable-field-invalid`                       | `values` missing on an enum, present on another type, or repeated                                                 |
+| `behavior-watchable-reference-unknown`                   | a `$…` token in `args` or `fetch.args` names no parameter, scalar profile value or item field                     |
+| `behavior-watchable-arg-unknown`                         | an argument key the tool's input schema does not declare                                                          |
+| `behavior-watchable-arg-missing`                         | a key the tool's input schema requires is missing                                                                 |
+| `behavior-watchable-arg-invalid`                         | a bad key, null, empty or over-long string, a `$` string that is not a whole reference, depth or leaf bounds      |
+| `behavior-profile-not-read`                              | a profile step's tool is not a `read` tool                                                                        |
+| `behavior-profile-arg-unknown` / `-missing` / `-invalid` | as for watchable arguments; any reference in a profile step is invalid                                            |
+| `behavior-profile-value-duplicate`                       | two steps record the same value name                                                                              |
+| `behavior-default-watch-duplicate-id`                    | two default Watches share an `id`                                                                                 |
+| `behavior-default-watch-watchable-unknown`               | a default Watch names no declared watchable                                                                       |
+| `behavior-default-watch-arg-invalid`                     | an unknown parameter, a value of the wrong type, a list or unknown profile value, or a missing required parameter |
+| `behavior-condition-invalid`                             | an `ask` default, or a condition not typed against the watchable's fields                                         |
+
+Bounds (too many watchables, parameters, fields, steps, values or default Watches; a path deeper
+than 8 segments; a step without values) are `behavior-shape-invalid`.
+
 ## Writing a declaration
 
 - Start from what an Owner would want to hear about unprompted. Declare a follow-up only when a
@@ -306,6 +495,11 @@ argument> }`: the greatest value at `path` across a result's items (text or numb
 - Keep `instruction` to one sentence about what to summarise and what to suggest. Never address
   the Owner, never ask for credentials, never mention other apps' data.
 - `remember` names a topic ("best posting time by platform"), never a value.
+- Declare a watchable for each question an Owner is likely to ask about the app ("tell me when my
+  pull request is approved", "when my ad spend reaches X"), over the cheapest read that answers
+  it. Expose only fields a condition can compare, never bodies or bulk text.
+- Default Watches should be few, about the Owner, and quiet: prefer capture-only Watches for
+  high-volume reads and conditions with `notify` only for events an Owner wants to hear about.
 
 ## Review checklist
 
@@ -327,7 +521,12 @@ Add this to the authority review of any change under `behaviors/`:
 8. `observe` keys are stable and unique; `keep` excludes bodies, file contents and secrets.
 9. Every `sources` entry feeds an `observe` entry; a poll uses a cheap list or search read with
    an interval no shorter than the items change, and its `cursor.path` matches the actual result.
-10. The revision is bumped if the published text changed.
+10. Every watchable's `items`, `key` and field paths match the actual result; field types match
+    the provider's values (numbers may arrive as numeric strings); `fetch` reads only new items.
+11. Profile steps are cheap identity reads with literal arguments; default Watches are about the
+    Owner only, conditions are deterministic, capture-only defaults are used for noisy reads, and
+    `notify` lines are short and neutral.
+12. The revision is bumped if the published text changed.
 
 ## Publishing
 

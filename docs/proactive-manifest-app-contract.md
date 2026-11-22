@@ -56,7 +56,9 @@ interface PluginBehaviorDeclaration {
   failures?: Failures;
   observe?: Observation[]; // <= 8
   sources?: Source[]; // <= 4
-} // at least one of followUps, failures, observe, sources; unknown keys rejected everywhere
+  watchables?: Watchable[]; // <= 12, see 8
+  profile?: Profile; // see 8
+} // at least one of followUps, failures, observe, sources, watchables, profile; unknown keys rejected everywhere
 
 interface Questions {
   classify?: { name: AnswerName; options: ShortText<60>[] }; // 2..10, unique ignoring case
@@ -156,6 +158,59 @@ interface PollSource {
   key: ItemPath;
   cursor?: { path: ItemPath; arg: string }; // arg ^[A-Za-z_][A-Za-z0-9_-]{0,63}$, a top-level input property
 }
+
+type ValueName = string; // ^[a-z][a-z0-9_]{0,39}$  (parameters, fields, profile values)
+type ValueType = "string" | "number" | "enum" | "boolean";
+// profile.suggestedWatches?: (DefaultWatch & { label: string })[]  // offered, never created by the host
+type EnumValues = ShortText<60>[]; // 1..16, unique; required for (and only for) "enum"
+
+interface Watchable {
+  id: Slug; // unique among watchables
+  label: ShortText<80>;
+  tool: ToolId; // classification "read"
+  params?: Record<
+    ValueName,
+    { type: ValueType; values?: EnumValues; required?: boolean; label?: ShortText<80> }
+  >; // <= 6
+  args: Record<string, Json>; // template: literals, "$param.<name>", "$profile.<name>" (whole or embedded), see 8.1
+  items: ItemsPath;
+  key: ItemPath;
+  fields: Record<ValueName, { path: ItemPath; type: ValueType; values?: EnumValues }>; // 1..12
+  fetch?: { tool: ToolId; args: Record<string, Json> }; // "read"; literals or whole "$item.key" / "$item.<field>"
+}
+
+type Scalar = ShortText<60> | number; // finite
+type Where = Record<string, Scalar | Scalar[]>; // <= 8 clauses, 1..10 alternatives
+
+type WatchCondition =
+  | { kind: "new-item"; where?: Where }
+  | { kind: "field-changed"; field: string; from?: Scalar; to?: Scalar | Scalar[]; where?: Where } // from or to
+  | {
+      kind: "threshold";
+      field: string;
+      op: ">=" | "<=";
+      value: number;
+      rearm?: boolean;
+      where?: Where;
+    } // number field
+  | { kind: "count"; op: ">=" | "<="; value: number; rearm?: boolean; where?: Where } // integer >= 0
+  | { kind: "ask"; question: ShortText<200>; where?: Where }; // never in a default Watch
+
+interface Profile {
+  steps: {
+    tool: ToolId; // classification "read"
+    args: Record<string, Json>; // literal only
+    values: Record<ValueName, ProfilePath>; // >= 1; <= 8 names across steps, unique
+  }[]; // 1..4
+  defaultWatches?: {
+    id: Slug; // unique among default Watches
+    watchable: Slug; // a declared watchable id
+    args?: Record<ValueName, Json>; // the watchable's params: typed literal or whole "$profile.<scalar>"
+    condition?: WatchCondition; // deterministic; absent = capture only
+    notify?: ShortText<200>;
+  }[]; // <= 6
+}
+// ProfilePath: "$.a.b" (scalar, "[n]" indices allowed) or "$.list[*].field" (list of scalars), <= 300 chars.
 ```
 
 Coherent `fix`/`action` pairs (checked for `kinds` entries and rule overrides):
@@ -185,7 +240,14 @@ installed version's catalog snapshot**:
   its `required` keys are present (recursively, as in `checkPluginBehaviorDeclaration`);
 - a source's fetch or poll tool exists, is `read`, and an `observe` entry names it; its adapter
   and events are known; its arguments pass the same key checks (a poll's `cursor.arg` counts as
-  present). A source whose observe entry was ignored for the version is ignored too.
+  present). A source whose observe entry was ignored for the version is ignored too;
+- a watchable's tool (and `fetch.tool`) exists and is `read`, and its argument templates pass the
+  same key checks. A watchable that does not bind is ignored for that version: no Watch on that
+  connection can use it;
+- every profile step's tool exists and is `read` and its literal arguments pass the key checks.
+  If any step does not bind, the **whole profile** is ignored for that version (no values are
+  recorded and no default Watches are created). A default Watch that fails its own checks, or
+  whose watchable was ignored, is dropped; the rest of the profile still applies.
 
 An entry that fails is **ignored for that version** (log a safe reason with the definition,
 revision and entry index); the rest of the declaration still applies. A rule whose `tools` do not
@@ -365,7 +427,10 @@ The application (`packages/domain/src/plugin-behavior.ts` is the source of truth
    `active`, the last grant is revoked, or the Owner turns watching off (or Follow-ups Off).
 2. **provider-watch `gmail`.** The host switches Gmail monitoring on for the connection. Each
    message the monitoring pipeline adds becomes one item `{ messageId, threadId }`; Workflow Gmail
-   triggers keep receiving the same events.
+   triggers keep receiving the same events. The shipped Gmail declaration (revision 4) no longer
+   declares this source: proactive Gmail reading is the profile's capture-only `inbox` Watch on the
+   hourly checkpoint (search, then get each new message), feeding the default commitments
+   interest. The adapter stays available, and Gmail Pub/Sub keeps serving Workflow triggers.
 3. **webhook `github`.** The GitHub App's webhook (one URL for the App, operator-configured secret)
    delivers events for installations; the host maps a delivery's installation to the connections
    that reach it and queues one item per delivery (`{ owner, repo, number, event, action, url }`)
@@ -381,7 +446,92 @@ The application (`packages/domain/src/plugin-behavior.ts` is the source of truth
    sent; the next cursor is the greatest `cursor.path` value seen (strings compared as text,
    numbers as numbers), else the previous one.
 
-## 8. Example
+## 8. Watches and app profiles
+
+Problems: `behavior-watchable-duplicate-id`, `behavior-watchable-not-read`,
+`behavior-watchable-name-invalid` (a parameter, field or profile value name),
+`behavior-watchable-field-invalid` (enum `values` missing, misplaced or repeated),
+`behavior-watchable-reference-unknown`, `behavior-watchable-arg-unknown`,
+`behavior-watchable-arg-missing`, `behavior-watchable-arg-invalid`, `behavior-profile-not-read`,
+`behavior-profile-arg-unknown`, `behavior-profile-arg-missing`, `behavior-profile-arg-invalid` (any
+reference in a step), `behavior-profile-value-duplicate`, `behavior-default-watch-duplicate-id`,
+`behavior-default-watch-watchable-unknown`, `behavior-default-watch-arg-invalid`,
+`behavior-condition-invalid`. Count and path bounds are `behavior-shape-invalid`. Checks run in
+`checkWatchablesAndProfile`, after sources and before failures.
+
+The application (ADR 0045; `packages/domain/src/plugin-behavior.ts` and
+`packages/domain/src/watch.ts` are the source of truth for this section):
+
+### 8.1 Arguments and items
+
+- **Watchable arguments.** A whole string `$param.<name>` or `$profile.<name>` becomes the typed
+  value; an absent optional parameter removes its key (in an array, the element). Inside a longer
+  string each token becomes its text; an absent optional parameter becomes nothing and runs of
+  whitespace collapse to one space (trimmed). A `$profile.` value that was not recorded fails the
+  resolution, and the Watch does not run until the profile records it. Only scalar profile values
+  resolve. The Watch's own arguments are checked against `params` (declared keys, typed values,
+  required present) when it is created.
+- **Default Watch arguments** are literals or whole `$profile.<name>` values, resolved when the
+  default Watch is created.
+- **Items.** `items` and `key` select as in 6 (at most 50 items per read; a string or finite number
+  key, else the item is skipped). Each field walks its path: a `number` field takes a number or a
+  numeric string; a `string` field a string or number, cut to 300 characters; an `enum` field only
+  one of its values. Any other value leaves the field out of that item.
+- **Fetch.** For each **new** item (by key), at most 10 per read, `fetch.args` is resolved
+  (`$item.key` is the item key, `$item.<field>` its field; an unresolved reference removes its key)
+  and `fetch.tool` runs through the normal Plugin call path, so `observe` applies to its result.
+
+### 8.2 Conditions
+
+Evaluated without a model against what the Watch remembered from its previous read (at most 200
+item keys). The first read records a baseline and fires nothing, except a `threshold` or `count`
+already across. `new-item` fires for keys not seen before that match `where`; `field-changed` for
+known keys whose field moved (from `from`, to one of `to`); `threshold` once per item while across
+(without `rearm` an item stays fired and the Watch ends after firing; with it, an item that fell
+back may fire again); `count` once while the number of matching items is across (the same
+end/re-arm rule). `ask` collects new or changed items matching `where` and asks one billed Jev
+question (`observation-triage`). Without a condition nothing fires: reads only feed observation
+capture. `checkBehaviorWatchCondition` is the typing check, shared with Owner-requested Watches.
+
+### 8.3 Profiles and default Watches
+
+1. **When.** Each time a connection becomes `ready` (created ready, reconnected or reauthorized),
+   and once for every connection that was already ready when Watches shipped (a bounded backfill
+   queue drained a few per minute), the host runs the bound profile.
+2. **Who.** Steps run as the connection's default proactive Bot when it holds an active grant on
+   the connection, else the earliest-granted active Bot, through the normal Plugin call path and
+   grants. Default Watches belong to that Bot and are **scoped to the person they are about**: a
+   personal connection's member; in a Team Workspace the member who connected the account; in a
+   personal Workspace its Owner.
+3. **Values.** Each step's values are read from its result with the profile paths (`[*]` paths
+   yield lists); a value that does not resolve is left out. Values are stored in Account Knowledge
+   for the connection (grant-scoped Workspace data, erased on disconnect), never in Bot memory.
+4. **Defaults.** Each bound default Watch is created with origin `profile`, idempotent per
+   (connection, default Watch id): a default the Owner ended is never created again. A default
+   whose `$profile.` argument was not recorded is skipped. The Owner can end any default and ask
+   for other Watches.
+
+### 8.4 Hourly checkpoint
+
+1. One scheduler per Workspace wakes at most hourly, selects due Watches (dream-origin Watches
+   are due daily), groups them by connection and **deduplicates identical reads** (same
+   connection, tool and resolved arguments) across Watches and Bots.
+2. **Push first.** While a connection's push source (Gmail provider watch, GitHub webhook) is
+   delivering, its read is skipped and Watches evaluate pushed items.
+3. A connection with no active, unpaused Watch is never read. Each read runs as an owning Bot
+   under its current grants (`read` tools with an `allow` policy).
+4. **Bounds.** At most 20 connections and 60 reads per Workspace per checkpoint, 10 per-item
+   fetches per read, 24 active Watches per Bot and 200 per Workspace.
+5. Results go through observation capture (triage, interests and the Owner-wide nudge budget
+   apply) and then each Watch's condition. A firing wakes the owning Bot (a default Watch's `notify` is the line it is
+   woken with); a fire-once Watch ends after firing.
+6. **Pauses.** Host-enforced pauses (one Watch, one app or connection, one Bot, or everything;
+   for an hour, until local midnight, a week, or until resumed) stop checkpoint reads,
+   event-source capture, triage and nudges for their scope. Dreams and default Watches never undo
+   a pause.
+7. Plugin calls are unmetered; only `ask` conditions spend (billed Jev).
+
+## 9. Example
 
 `behaviors/supernala/slack.json` (abridged):
 
@@ -448,6 +598,8 @@ The application (`packages/domain/src/plugin-behavior.ts` is the source of truth
 }
 ```
 
-Shipped declarations (revision 1): atlassian-api, github, gmail, google-docs, google-drive,
-google-sheets, jev, jev-openrouter, resend-api, slack, supernala-social, vercel-api,
-wordpress-self-hosted.
+Shipped declarations: atlassian-api, github, gmail, google-docs, google-drive, google-sheets, jev,
+jev-openrouter, meta-ads-token, resend-api, slack, supernala-social, vercel-api,
+wordpress-self-hosted. Watchables: github, gmail, meta-ads-token, slack, supernala-social,
+vercel-api. Profiles with default Watches: github, gmail (capture only), vercel-api; meta-ads-token
+has a profile without defaults.

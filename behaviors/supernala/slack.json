@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:slack",
-  "revision": 1,
+  "revision": 3,
   "followUps": [
     {
       "id": "message-replies",
@@ -132,5 +132,98 @@
         }
       }
     }
-  ]
+  ],
+  "watchables": [
+    {
+      "id": "message-search",
+      "label": "New Slack messages matching a search",
+      "tool": "slack.slack_search_messages",
+      "params": {
+        "query": {
+          "type": "string",
+          "required": true,
+          "label": "Slack search, such as in:#launch deploy"
+        }
+      },
+      "args": {
+        "query": "$param.query",
+        "count": 20,
+        "sort": "timestamp",
+        "sort_dir": "desc"
+      },
+      "items": "$.messages.matches[*]",
+      "key": "$.permalink",
+      "fields": {
+        "channel_id": {
+          "path": "$.channel.id",
+          "type": "string"
+        },
+        "channel_name": {
+          "path": "$.channel.name",
+          "type": "string"
+        },
+        "user": {
+          "path": "$.user",
+          "type": "string"
+        },
+        "username": {
+          "path": "$.username",
+          "type": "string"
+        },
+        "thread_ts": {
+          "path": "$.thread_ts",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "mentions-of-me",
+      "label": "Messages that mention me",
+      "tool": "slack.slack_search_messages",
+      "args": {
+        "query": "<@$profile.account_subject>",
+        "count": 20,
+        "sort": "timestamp",
+        "sort_dir": "desc"
+      },
+      "items": "$.messages.matches[*]",
+      "key": "$.permalink",
+      "fields": {
+        "channel_id": {
+          "path": "$.channel.id",
+          "type": "string"
+        },
+        "channel_name": {
+          "path": "$.channel.name",
+          "type": "string"
+        },
+        "user": {
+          "path": "$.user",
+          "type": "string"
+        },
+        "username": {
+          "path": "$.username",
+          "type": "string"
+        },
+        "thread_ts": {
+          "path": "$.thread_ts",
+          "type": "string"
+        }
+      }
+    }
+  ],
+  "profile": {
+    "steps": [],
+    "suggestedWatches": [
+      {
+        "id": "mentions",
+        "watchable": "mentions-of-me",
+        "label": "Tell me when someone mentions me on Slack",
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "Someone mentioned you on Slack"
+      }
+    ]
+  }
 }
