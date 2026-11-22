@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "plugin": "supernala-public:supernala:github",
-  "revision": 4,
+  "revision": 5,
   "followUps": [
     {
       "id": "comment-replies",
@@ -316,6 +316,43 @@
           "type": "string"
         }
       }
+    },
+    {
+      "id": "my-merged-prs",
+      "label": "My merged pull requests",
+      "tool": "github.search_pull_requests",
+      "args": {
+        "query": "is:pr is:merged author:$profile.login",
+        "fields": ["number", "title", "state", "html_url", "updated_at", "repository_url"],
+        "sort": "updated",
+        "order": "desc",
+        "perPage": 50
+      },
+      "items": "$.items[*]",
+      "key": "$.html_url",
+      "fields": {
+        "title": {
+          "path": "$.title",
+          "type": "string"
+        },
+        "state": {
+          "path": "$.state",
+          "type": "enum",
+          "values": ["open", "closed"]
+        },
+        "number": {
+          "path": "$.number",
+          "type": "number"
+        },
+        "updated": {
+          "path": "$.updated_at",
+          "type": "string"
+        },
+        "repository": {
+          "path": "$.repository_url",
+          "type": "string"
+        }
+      }
     }
   ],
   "profile": {
@@ -358,6 +395,17 @@
           "kind": "new-item"
         },
         "notify": "Someone asked you to review a pull request."
+      }
+    ],
+    "suggestedWatches": [
+      {
+        "id": "pr-merged",
+        "watchable": "my-merged-prs",
+        "label": "Tell me when any of my pull requests is merged",
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "Your pull request was merged"
       }
     ]
   }

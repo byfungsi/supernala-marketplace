@@ -343,6 +343,11 @@ Default Watches in `profile` use watchables too.
 
 At most 12 watchables. Parameter and field names are `^[a-z][a-z0-9_]{0,39}$`.
 
+**Host profile value.** `$profile.account_subject` is always available without a step: the
+connection's verified provider account id (the subject its reviewed account endpoint returned at
+connect, such as Slack's `auth.test` user id). A step may not declare it, and `steps` may be empty
+when a profile only needs it.
+
 **Suggested Watches.** `profile.suggestedWatches` (at most 6) has the shape and checks of
 `defaultWatches` plus a required `label` the Owner reads. The host never creates them by itself:
 it offers each as a one-tap suggestion on the Overnight card when the connection is profiled;

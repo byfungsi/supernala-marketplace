@@ -560,6 +560,12 @@ export const BehaviorWatchCondition = Schema.Union([
 /** A typed Watch condition. */
 export type BehaviorWatchCondition = typeof BehaviorWatchCondition.Type;
 
+/**
+ * A profile value the host provides without a step: the connection's verified provider account
+ * subject (for Slack the user id from `auth.test`). Steps may not declare it.
+ */
+export const BEHAVIOR_ACCOUNT_SUBJECT = "account_subject";
+
 /** `$.a.b` (a scalar, indices allowed) or `$.list[*].field` (a list of scalars). */
 const PROFILE_PATH = new RegExp(
   `^\\$(?:(?:\\.${PATH_SEGMENT}(?:\\[[0-9]{1,2}\\])?)+|(?:\\.${PATH_SEGMENT})*\\[\\*\\](?:\\.${PATH_SEGMENT})+)$`,
@@ -615,7 +621,7 @@ export interface BehaviorSuggestedWatch extends Schema.Schema.Type<typeof Behavi
 /** What the host learns about the account at connect, and the default Watches it creates. */
 export const BehaviorProfile = Schema.Struct({
   steps: Schema.Array(BehaviorProfileStep).pipe(
-    Schema.check(Schema.isLengthBetween(1, L.maximumProfileSteps)),
+    Schema.check(Schema.isMaxLength(L.maximumProfileSteps)),
   ),
   defaultWatches: Schema.optionalKey(
     Schema.Array(BehaviorDefaultWatch).pipe(
@@ -1083,7 +1089,9 @@ const checkWatchablesAndProfile = (
   requireTool: (id: string, at: string) => BehaviorCatalogTool | undefined,
   issues: Array<PluginBehaviorIssue>,
 ): void => {
-  const profileValues = new Map<string, boolean>();
+  // The host always knows the connection's verified account subject (the provider account id the
+  // reviewed account endpoint returned at connect), as the scalar profile value `account_subject`.
+  const profileValues = new Map<string, boolean>([[BEHAVIOR_ACCOUNT_SUBJECT, false]]);
   for (const [index, step] of (declaration.profile?.steps ?? []).entries()) {
     for (const [name, path] of Object.entries(step.values)) {
       const at = `$.profile.steps[${index}].values.${name}`;
@@ -1174,7 +1182,7 @@ const checkWatchablesAndProfile = (
     const count = Object.keys(step.values).length;
     if (count === 0) issues.push({ problem: "behavior-shape-invalid", at: `${at}.values` });
   }
-  if (profileValues.size > L.maximumProfileValues) {
+  if (profileValues.size - 1 > L.maximumProfileValues) {
     issues.push({ problem: "behavior-shape-invalid", at: "$.profile.steps" });
   }
   const defaultIds = new Set<string>();

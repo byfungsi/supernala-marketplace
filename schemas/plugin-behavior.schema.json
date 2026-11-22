@@ -1301,14 +1301,7 @@
             "required": ["tool", "args", "values"],
             "additionalProperties": true
           },
-          "allOf": [
-            {
-              "minItems": 1
-            },
-            {
-              "maxItems": 4
-            }
-          ]
+          "maxItems": 4
         },
         "defaultWatches": {
           "type": "array",

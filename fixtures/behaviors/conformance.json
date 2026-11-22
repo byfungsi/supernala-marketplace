@@ -869,6 +869,46 @@
           ]
         }
       }
+    },
+    {
+      "name": "host account subject without steps",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 8,
+        "watchables": [
+          {
+            "id": "mentions-of-me",
+            "label": "Messages that mention me",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "<@$profile.account_subject>"
+            },
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "fields": {
+              "subject": {
+                "path": "$.subject",
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "profile": {
+          "steps": [],
+          "suggestedWatches": [
+            {
+              "id": "mentions",
+              "watchable": "mentions-of-me",
+              "label": "Tell me when someone mentions me",
+              "condition": {
+                "kind": "new-item"
+              },
+              "notify": "Someone mentioned you"
+            }
+          ]
+        }
+      }
     }
   ],
   "rejected": [
@@ -14353,6 +14393,55 @@
                 "question": "Is it viral?"
               },
               "notify": "Your post reached 10,000 people"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a step declares account_subject",
+      "problem": "behavior-profile-value-duplicate",
+      "declaration": {
+        "schemaVersion": 1,
+        "plugin": "supernala-public:acme:mail",
+        "revision": 8,
+        "watchables": [
+          {
+            "id": "mentions-of-me",
+            "label": "Messages that mention me",
+            "tool": "acme.list_messages",
+            "args": {
+              "query": "<@$profile.account_subject>"
+            },
+            "items": "$.messages[*]",
+            "key": "$.id",
+            "fields": {
+              "subject": {
+                "path": "$.subject",
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "profile": {
+          "steps": [
+            {
+              "tool": "acme.list_messages",
+              "args": {},
+              "values": {
+                "account_subject": "$.id"
+              }
+            }
+          ],
+          "suggestedWatches": [
+            {
+              "id": "mentions",
+              "watchable": "mentions-of-me",
+              "label": "Tell me when someone mentions me",
+              "condition": {
+                "kind": "new-item"
+              },
+              "notify": "Someone mentioned you"
             }
           ]
         }
