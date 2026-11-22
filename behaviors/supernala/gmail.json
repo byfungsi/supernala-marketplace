@@ -1,0 +1,108 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:gmail",
+  "revision": 2,
+  "failures": {
+    "signals": {
+      "messageTemplates": ["Gmail adapter request failed with status {status}"]
+    },
+    "rules": [
+      {
+        "kind": "auth_expired",
+        "httpStatus": [401]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_expired": {
+        "fix": "auto",
+        "action": "refresh_token"
+      },
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "gmail.get_message",
+      "entity": "email",
+      "items": "$",
+      "key": "$.messageId",
+      "time": "$.internalDate",
+      "keep": [
+        "threadId",
+        "headers.from",
+        "headers.to",
+        "headers.subject",
+        "headers.date",
+        "labelIds",
+        "snippet",
+        "attachments"
+      ],
+      "describe": {
+        "classify": {
+          "name": "kind",
+          "options": [
+            "newsletter",
+            "receipt",
+            "ticket or booking",
+            "bill due",
+            "security alert",
+            "personal",
+            "work request"
+          ]
+        },
+        "yesNo": {
+          "name": "time_sensitive",
+          "question": "Does this need action within 7 days?"
+        }
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "new-mail",
+      "kind": "provider-watch",
+      "adapter": "gmail",
+      "fetch": {
+        "tool": "gmail.get_message",
+        "args": {
+          "messageId": "$event.messageId"
+        }
+      }
+    }
+  ]
+}

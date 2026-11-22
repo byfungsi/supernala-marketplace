@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:supernala-social",
+  "revision": 2,
+  "followUps": [
+    {
+      "id": "post-performance",
+      "after": {
+        "tool": "supernala-social.publish_post",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "supernala-social.get_analytics",
+        "args": {
+          "workspace_id": "$args.workspace_id",
+          "account_id": "$args.account_ids[0]",
+          "days": 7
+        },
+        "checkAt": ["+1h", "+6h", "+24h", "+72h"],
+        "stopAfter": "+7d"
+      },
+      "judge": {
+        "classify": {
+          "name": "status",
+          "options": ["normal", "taking off", "underperforming", "removed"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "owner_should_know = yes",
+      "instruction": "Summarise how the new post is doing compared with recent posts and suggest one action.",
+      "remember": ["best posting time by platform"]
+    },
+    {
+      "id": "post-replies",
+      "after": {
+        "tool": "supernala-social.publish_post",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "supernala-social.list_comments",
+        "args": {
+          "workspace_id": "$args.workspace_id",
+          "status": "pending"
+        },
+        "checkAt": ["+1h", "+6h", "+24h", "+72h"],
+        "stopAfter": "+7d"
+      },
+      "judge": {
+        "classify": {
+          "name": "replies",
+          "options": ["none new", "positive", "questions waiting", "negative replies"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "replies = negative replies or owner_should_know = yes",
+      "instruction": "Summarise new comments waiting for a reply and suggest which to answer first."
+    }
+  ],
+  "observe": [
+    {
+      "from": "supernala-social.list_comments",
+      "entity": "social-comment",
+      "items": "$.comments[*]",
+      "key": "$.id",
+      "time": "$.created_at",
+      "keep": ["account_id", "platform", "post_id", "author", "text", "status", "created_at"],
+      "describe": {
+        "classify": {
+          "name": "kind",
+          "options": ["question", "praise", "complaint", "spam", "other"]
+        },
+        "yesNo": {
+          "name": "needs_reply",
+          "question": "Should the account reply to this comment?"
+        }
+      }
+    }
+  ],
+  "sources": [
+    {
+      "id": "pending-comments",
+      "kind": "poll",
+      "tool": "supernala-social.list_comments",
+      "args": {
+        "status": "pending"
+      },
+      "intervalMinutes": 30,
+      "items": "$.comments[*]",
+      "key": "$.id"
+    }
+  ]
+}

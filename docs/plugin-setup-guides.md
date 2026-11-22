@@ -45,6 +45,10 @@ The command requires a clean `main` equal to fetched `origin/main`, validates ev
 
 `compatibility/plugin-setup-guides/` vendors the application's exact `plugin_setup_guides` migration with its digest; tests publish into it with SQLite.
 
+## Behaviour declarations
+
+A guide explains setup; it does not describe what the app watches or how its failures are fixed. Those belong in the app's behaviour declaration, `behaviors/<publisher>/<slug>.json` ([Plugin behaviour declarations](proactive-manifest.md)). When an app declares follow-ups or observations, say so in one plain sentence in the guide's introduction, for example "After you send a Slack message, Bots can check the thread for replies for two days." Never promise behaviour the declaration does not contain. A guide's wording change still needs a guide revision; a declaration change needs a declaration revision. Declarations publish separately with `pnpm marketplace behaviors publish` ([Publishing](proactive-manifest.md#publishing)); publish the guide revision that mentions new behaviour together with, or after, the declaration it describes.
+
 ## Credentials
 
 Publication reads `$HOME/.config/supernala-marketplace/production.guides.env`, or another file passed with `--credentials FILE`. The file must be mode `600`, owned by the operator, outside the checkout, and contain exactly these keys:

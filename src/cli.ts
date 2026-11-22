@@ -391,6 +391,10 @@ const main = async (): Promise<void> => {
       const { runGuideCommand } = await import("./plugin-setup-guide-cli.js");
       return runGuideCommand(arguments_);
     }
+    case "behaviors": {
+      const { runBehaviorCommand } = await import("./plugin-behavior-cli.js");
+      return runBehaviorCommand(arguments_);
+    }
     case "validate":
       return validateCommand(requireArgument(arguments_, 0, "source-directory"));
     case "create":
@@ -447,7 +451,7 @@ const main = async (): Promise<void> => {
       );
     default:
       return fail(
-        "expected deploy|skills|guides|create|validate|prepare|discover-openapi|inspect|diff-authority|conformance|validate-remotes|capture-remote-catalog|plan-publication|verify-plan|public-safety|export-schemas",
+        "expected deploy|skills|guides|behaviors|create|validate|prepare|discover-openapi|inspect|diff-authority|conformance|validate-remotes|capture-remote-catalog|plan-publication|verify-plan|public-safety|export-schemas",
       );
   }
 };

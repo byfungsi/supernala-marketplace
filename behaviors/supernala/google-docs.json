@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:google-docs",
+  "revision": 2,
+  "failures": {
+    "signals": {
+      "messageTemplates": ["Google Docs request failed with status {status}"]
+    },
+    "rules": [
+      {
+        "kind": "auth_expired",
+        "messagePrefix": ["Google Docs rejected the connection (401)"]
+      },
+      {
+        "kind": "permission_denied",
+        "messagePrefix": [
+          "The Google Drive API is not enabled in the Google Cloud project",
+          "The Google Docs API is not enabled in the Google Cloud project"
+        ],
+        "fix": "owner",
+        "action": "report"
+      },
+      {
+        "kind": "permission_denied",
+        "messagePrefix": ["Google Docs lacks permission for this"]
+      },
+      {
+        "kind": "not_found",
+        "messagePrefix": ["Google Docs found nothing with that id"]
+      },
+      {
+        "kind": "rate_limited",
+        "messagePrefix": ["Google Docs is rate limited by Google"]
+      },
+      {
+        "kind": "transient",
+        "messagePrefix": ["Google Docs could not reach Google"]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_expired": {
+        "fix": "auto",
+        "action": "refresh_token"
+      },
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "google-docs.search_documents",
+      "entity": "document",
+      "items": "$.files[*]",
+      "key": "$.fileId",
+      "time": "$.modifiedTime",
+      "keep": ["name", "mimeType", "modifiedTime", "url", "owners", "shared", "parentIds"]
+    }
+  ],
+  "sources": [
+    {
+      "id": "changed-documents",
+      "kind": "poll",
+      "tool": "google-docs.search_documents",
+      "args": {
+        "pageSize": 25
+      },
+      "intervalMinutes": 60,
+      "items": "$.files[*]",
+      "key": "$.fileId",
+      "cursor": {
+        "path": "$.modifiedTime",
+        "arg": "modifiedAfter"
+      }
+    }
+  ]
+}

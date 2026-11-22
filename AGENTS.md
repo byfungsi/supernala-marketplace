@@ -8,6 +8,10 @@ Treat `compatibility/phase-1-sources.json` and `docs/phase-1-compatibility.md` a
 
 Every publication-eligible Plugin in `releases/index.json` needs a guide under `guides/<publisher>/<slug>.md`; `pnpm check` fails without one. Follow `docs/plugin-setup-guides.md`, and bump a guide's `revision` when changing published text.
 
+## Behaviour declarations
+
+Optional `behaviors/<publisher>/<slug>.json` files declare follow-ups, failure classification and observations for a Plugin definition. They live outside Plugin source roots so they never change a digest; `pnpm check` validates them against the reviewed catalog. Follow `docs/proactive-manifest.md`, keep `docs/proactive-manifest-app-contract.md` in step with `src/plugin-behavior.ts`, and bump a declaration's `revision` when changing published content. `compatibility/plugin-behaviors/` vendors the application's behaviour migration byte-for-byte; re-vendor it (and `PLUGIN_BEHAVIOR_MIGRATION`) if the application changes it.
+
 ## Security
 
 Read `SECURITY.md` before changing builds, publication, provider metadata, archive handling, or diagnostics. Public files contain declarations and binding names only. Keep values and publication authority outside this repository.

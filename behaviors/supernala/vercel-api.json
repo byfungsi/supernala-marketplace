@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:vercel-api",
+  "revision": 2,
+  "followUps": [
+    {
+      "id": "deployment-outcome",
+      "after": {
+        "tool": "vercel.create_deployment",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "vercel.get_deployment",
+        "args": {
+          "path": {
+            "idOrUrl": "$result.id"
+          }
+        },
+        "checkAt": ["+5m", "+15m", "+1h"],
+        "stopAfter": "+6h"
+      },
+      "judge": {
+        "classify": {
+          "name": "state",
+          "options": ["building", "ready", "error", "canceled"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "state = error or owner_should_know = yes",
+      "instruction": "Say whether the deployment is live; if it failed, name the failing step and suggest one fix."
+    }
+  ],
+  "failures": {
+    "signals": {
+      "providerCodePaths": ["$.error.code"]
+    },
+    "rules": [
+      {
+        "kind": "auth_revoked",
+        "httpStatus": [401]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "vercel.list_deployments",
+      "entity": "deployment",
+      "items": "$.deployments[*]",
+      "key": "$.uid",
+      "time": "$.created",
+      "keep": [
+        "name",
+        "url",
+        "state",
+        "target",
+        "created",
+        "creator.username",
+        "meta.githubCommitMessage",
+        "meta.githubCommitRef"
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "recent-deployments",
+      "kind": "poll",
+      "tool": "vercel.list_deployments",
+      "args": {
+        "query": {
+          "limit": 20
+        }
+      },
+      "intervalMinutes": 60,
+      "items": "$.deployments[*]",
+      "key": "$.uid"
+    }
+  ]
+}

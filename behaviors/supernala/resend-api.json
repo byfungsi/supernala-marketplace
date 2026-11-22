@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:resend-api",
+  "revision": 1,
+  "followUps": [
+    {
+      "id": "email-delivery",
+      "after": {
+        "tool": "http.post.emails",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "http.get.emails.by.email.id",
+        "args": {
+          "path": {
+            "email_id": "$result.id"
+          }
+        },
+        "checkAt": ["+10m", "+1h", "+24h"],
+        "stopAfter": "+3d"
+      },
+      "judge": {
+        "classify": {
+          "name": "delivery",
+          "options": ["sending", "delivered", "opened or clicked", "bounced", "complained"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "delivery = bounced or delivery = complained or owner_should_know = yes",
+      "instruction": "Say what happened to the email and, if it bounced or was marked as spam, suggest one fix."
+    }
+  ],
+  "failures": {
+    "signals": {
+      "providerCodePaths": ["$.name"]
+    },
+    "rules": [
+      {
+        "kind": "auth_revoked",
+        "httpStatus": [401, 403],
+        "providerCode": ["missing_api_key", "invalid_api_key"]
+      },
+      {
+        "kind": "permission_denied",
+        "providerCode": ["restricted_api_key"],
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      {
+        "kind": "quota_exceeded",
+        "providerCode": ["monthly_quota_exceeded"],
+        "fix": "owner",
+        "action": "report"
+      },
+      {
+        "kind": "quota_exceeded",
+        "providerCode": ["daily_quota_exceeded"]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "report"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      },
+      "quota_exceeded": {
+        "fix": "auto",
+        "action": "backoff"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "http.get.emails",
+      "entity": "sent-email",
+      "items": "$.data[*]",
+      "key": "$.id",
+      "time": "$.created_at",
+      "keep": ["to", "from", "subject", "created_at", "last_event"]
+    }
+  ]
+}
