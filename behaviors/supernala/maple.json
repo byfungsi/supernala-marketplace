@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:maple",
+  "revision": 1,
+  "failures": {
+    "rules": [
+      {
+        "kind": "auth_expired",
+        "httpStatus": [401]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_expired": {
+        "fix": "auto",
+        "action": "refresh_token"
+      },
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "maple.list_error_issues",
+      "entity": "error-issue",
+      "items": "$.issues[*]",
+      "key": "$.id",
+      "time": "$.lastSeenAt",
+      "keep": [
+        "kind",
+        "workflowState",
+        "severity",
+        "serviceName",
+        "errorLabel",
+        "occurrenceCount",
+        "firstSeenAt",
+        "lastSeenAt",
+        "regressionCount",
+        "hasOpenIncident"
+      ]
+    },
+    {
+      "from": "maple.list_alert_incidents",
+      "entity": "alert-incident",
+      "items": "$.incidents[*]",
+      "key": "$.id",
+      "time": "$.firstTriggeredAt",
+      "keep": [
+        "ruleName",
+        "groupKey",
+        "signalType",
+        "severity",
+        "status",
+        "threshold",
+        "comparator",
+        "lastObservedValue",
+        "firstTriggeredAt",
+        "resolvedAt",
+        "acknowledgedAt"
+      ]
+    }
+  ],
+  "watchables": [
+    {
+      "id": "error-issues",
+      "label": "Error issues, optionally by state, severity, kind or service",
+      "tool": "maple.list_error_issues",
+      "params": {
+        "workflow_state": {
+          "type": "enum",
+          "values": [
+            "triage",
+            "regressed",
+            "todo",
+            "in_progress",
+            "in_review",
+            "verifying",
+            "done",
+            "cancelled",
+            "wontfix"
+          ],
+          "label": "Workflow state"
+        },
+        "severity": {
+          "type": "enum",
+          "values": ["critical", "high", "medium", "low", "unset"],
+          "label": "Triage severity"
+        },
+        "kind": {
+          "type": "enum",
+          "values": ["error", "alert", "integration"],
+          "label": "Issue kind"
+        },
+        "service": {
+          "type": "string",
+          "label": "Service name"
+        }
+      },
+      "args": {
+        "workflow_state": "$param.workflow_state",
+        "severity": "$param.severity",
+        "kind": "$param.kind",
+        "service": "$param.service",
+        "compact": true,
+        "limit": 50
+      },
+      "items": "$.issues[*]",
+      "key": "$.id",
+      "fields": {
+        "kind": {
+          "path": "$.kind",
+          "type": "enum",
+          "values": ["error", "alert", "integration"]
+        },
+        "workflow_state": {
+          "path": "$.workflowState",
+          "type": "enum",
+          "values": [
+            "triage",
+            "regressed",
+            "todo",
+            "in_progress",
+            "in_review",
+            "verifying",
+            "done",
+            "cancelled",
+            "wontfix"
+          ]
+        },
+        "severity": {
+          "path": "$.severity",
+          "type": "enum",
+          "values": ["critical", "high", "medium", "low", "unset"]
+        },
+        "service": {
+          "path": "$.serviceName",
+          "type": "string"
+        },
+        "error": {
+          "path": "$.errorLabel",
+          "type": "string"
+        },
+        "occurrences": {
+          "path": "$.occurrenceCount",
+          "type": "number"
+        },
+        "regressions": {
+          "path": "$.regressionCount",
+          "type": "number"
+        },
+        "last_seen": {
+          "path": "$.lastSeenAt",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "alert-incidents",
+      "label": "Alert incidents, optionally by status and severity",
+      "tool": "maple.list_alert_incidents",
+      "params": {
+        "status": {
+          "type": "enum",
+          "values": ["open", "resolved"],
+          "label": "Incident status"
+        },
+        "severity": {
+          "type": "enum",
+          "values": ["warning", "critical"],
+          "label": "Incident severity"
+        }
+      },
+      "args": {
+        "status": "$param.status",
+        "severity": "$param.severity",
+        "limit": 50
+      },
+      "items": "$.incidents[*]",
+      "key": "$.id",
+      "fields": {
+        "rule": {
+          "path": "$.ruleName",
+          "type": "string"
+        },
+        "group": {
+          "path": "$.groupKey",
+          "type": "string"
+        },
+        "severity": {
+          "path": "$.severity",
+          "type": "enum",
+          "values": ["warning", "critical"]
+        },
+        "status": {
+          "path": "$.status",
+          "type": "enum",
+          "values": ["open", "resolved"]
+        },
+        "last_value": {
+          "path": "$.lastObservedValue",
+          "type": "number"
+        },
+        "triggered": {
+          "path": "$.firstTriggeredAt",
+          "type": "string"
+        }
+      }
+    }
+  ],
+  "profile": {
+    "steps": [],
+    "defaultWatches": [
+      {
+        "id": "severe-error-issue",
+        "watchable": "error-issues",
+        "args": {
+          "kind": "error"
+        },
+        "condition": {
+          "kind": "new-item",
+          "where": {
+            "severity": ["critical", "high"]
+          }
+        },
+        "notify": "A new critical or high severity error issue appeared in Maple."
+      },
+      {
+        "id": "alert-incident-opened",
+        "watchable": "alert-incidents",
+        "args": {
+          "status": "open"
+        },
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "A Maple alert started firing."
+      }
+    ],
+    "suggestedWatches": [
+      {
+        "id": "error-regressed",
+        "watchable": "error-issues",
+        "label": "Tell me when a fixed error starts happening again",
+        "args": {
+          "workflow_state": "regressed"
+        },
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "A fixed error in Maple regressed"
+      },
+      {
+        "id": "any-new-error-issue",
+        "watchable": "error-issues",
+        "label": "Tell me about every new error issue, whatever its severity",
+        "args": {
+          "kind": "error"
+        },
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "A new error issue appeared in Maple"
+      }
+    ]
+  }
+}

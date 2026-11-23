@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:atlassian-api-token",
+  "revision": 1,
+  "followUps": [
+    {
+      "id": "issue-progress",
+      "after": {
+        "tool": "atlassian.create_jira_issue",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "atlassian.get_jira_issue",
+        "args": {
+          "cloudId": "$args.cloudId",
+          "issueIdOrKey": "$result.key"
+        },
+        "checkAt": ["+1d", "+3d", "+7d"],
+        "stopAfter": "+14d"
+      },
+      "judge": {
+        "classify": {
+          "name": "progress",
+          "options": ["untouched", "assigned", "in progress", "blocked", "done"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "progress = blocked or owner_should_know = yes",
+      "instruction": "Summarise what changed on the issue since the last check and who it is waiting on."
+    }
+  ],
+  "failures": {
+    "rules": [
+      {
+        "kind": "auth_revoked",
+        "httpStatus": [401]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "report"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "atlassian.search_jira_issues_using_jql",
+      "entity": "issue",
+      "items": "$.issues[*]",
+      "key": "$.key",
+      "time": "$.fields.updated",
+      "keep": [
+        "fields.summary",
+        "fields.status.name",
+        "fields.issuetype.name",
+        "fields.priority.name",
+        "fields.assignee.displayName",
+        "fields.reporter.displayName",
+        "fields.duedate",
+        "fields.updated"
+      ],
+      "describe": {
+        "classify": {
+          "name": "kind",
+          "options": ["bug", "task", "request", "incident", "question"]
+        },
+        "yesNo": {
+          "name": "time_sensitive",
+          "question": "Does this need action within 7 days?"
+        }
+      }
+    }
+  ],
+  "watchables": [
+    {
+      "id": "my-open-issues",
+      "label": "Open Jira issues assigned to me",
+      "tool": "atlassian.search_jira_issues_using_jql",
+      "params": {
+        "qualifiers": {
+          "type": "string",
+          "label": "Extra JQL clauses, such as AND project = PROJ"
+        }
+      },
+      "args": {
+        "cloudId": "$profile.cloud_id",
+        "jql": "assignee = currentUser() AND statusCategory != Done $param.qualifiers ORDER BY created DESC",
+        "fields": ["summary", "status", "priority", "issuetype", "assignee", "updated"],
+        "maxResults": 50
+      },
+      "items": "$.issues[*]",
+      "key": "$.key",
+      "fields": {
+        "summary": {
+          "path": "$.fields.summary",
+          "type": "string"
+        },
+        "status": {
+          "path": "$.fields.status.name",
+          "type": "string"
+        },
+        "priority": {
+          "path": "$.fields.priority.name",
+          "type": "string"
+        },
+        "issue_type": {
+          "path": "$.fields.issuetype.name",
+          "type": "string"
+        },
+        "updated": {
+          "path": "$.fields.updated",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "my-transitioned-issues",
+      "label": "My Jira issues someone else moved to a new status today",
+      "tool": "atlassian.search_jira_issues_using_jql",
+      "args": {
+        "cloudId": "$profile.cloud_id",
+        "jql": "assignee = currentUser() AND status CHANGED AFTER -1d AND NOT status CHANGED BY currentUser() AFTER -1d ORDER BY updated DESC",
+        "fields": ["summary", "status", "priority", "issuetype", "assignee", "updated"],
+        "maxResults": 50
+      },
+      "items": "$.issues[*]",
+      "key": "$.key",
+      "fields": {
+        "summary": {
+          "path": "$.fields.summary",
+          "type": "string"
+        },
+        "status": {
+          "path": "$.fields.status.name",
+          "type": "string"
+        },
+        "priority": {
+          "path": "$.fields.priority.name",
+          "type": "string"
+        },
+        "issue_type": {
+          "path": "$.fields.issuetype.name",
+          "type": "string"
+        },
+        "updated": {
+          "path": "$.fields.updated",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "jql-search",
+      "label": "Jira issues matching a JQL query",
+      "tool": "atlassian.search_jira_issues_using_jql",
+      "params": {
+        "jql": {
+          "type": "string",
+          "required": true,
+          "label": "JQL query"
+        }
+      },
+      "args": {
+        "cloudId": "$profile.cloud_id",
+        "jql": "$param.jql",
+        "fields": ["summary", "status", "priority", "issuetype", "assignee", "updated"],
+        "maxResults": 50
+      },
+      "items": "$.issues[*]",
+      "key": "$.key",
+      "fields": {
+        "summary": {
+          "path": "$.fields.summary",
+          "type": "string"
+        },
+        "status": {
+          "path": "$.fields.status.name",
+          "type": "string"
+        },
+        "priority": {
+          "path": "$.fields.priority.name",
+          "type": "string"
+        },
+        "issue_type": {
+          "path": "$.fields.issuetype.name",
+          "type": "string"
+        },
+        "updated": {
+          "path": "$.fields.updated",
+          "type": "string"
+        }
+      }
+    }
+  ],
+  "profile": {
+    "steps": [
+      {
+        "tool": "atlassian.atlassian_user_info",
+        "args": {},
+        "values": {
+          "account_id": "$.data.accountId"
+        }
+      },
+      {
+        "tool": "atlassian.get_accessible_atlassian_resources",
+        "args": {},
+        "values": {
+          "cloud_id": "$.data.resources[0].cloudId",
+          "site_url": "$.data.resources[0].url"
+        }
+      }
+    ],
+    "defaultWatches": [
+      {
+        "id": "issue-assigned",
+        "watchable": "my-open-issues",
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "A Jira issue was assigned to you."
+      },
+      {
+        "id": "my-issue-transitioned",
+        "watchable": "my-transitioned-issues",
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "Someone moved one of your Jira issues to a new status."
+      }
+    ]
+  }
+}

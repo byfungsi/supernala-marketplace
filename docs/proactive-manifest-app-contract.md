@@ -598,8 +598,12 @@ capture. `checkBehaviorWatchCondition` is the typing check, shared with Owner-re
 }
 ```
 
-Shipped declarations: atlassian-api, github, gmail, google-docs, google-drive, google-sheets, jev,
-jev-openrouter, meta-ads-token, resend-api, slack, supernala-social, vercel-api,
-wordpress-self-hosted. Watchables: github, gmail, meta-ads-token, slack, supernala-social,
-vercel-api. Profiles with default Watches: github, gmail (capture only), vercel-api; meta-ads-token
-has a profile without defaults.
+Shipped declarations: atlassian, atlassian-api, atlassian-api-token, buffer, cloudflare,
+elevenlabs, github, gmail, google-docs, google-drive, google-maps, google-sheets, jev,
+jev-openrouter, linear, maple, meta-ads-token, notion, posthog, repliz, resend, resend-api, slack,
+supernala-social, tebar, vercel, vercel-api, wordpress-com, wordpress-self-hosted. Watchables:
+atlassian, atlassian-api-token, buffer, github, gmail, linear, maple, meta-ads-token, repliz, slack,
+supernala-social, tebar, vercel, vercel-api. Profiles with default Watches: atlassian,
+atlassian-api-token, buffer, github, gmail (capture only), linear, maple, repliz, tebar, vercel,
+vercel-api; meta-ads-token and slack have profiles with suggested Watches only. Failures only:
+cloudflare, elevenlabs, google-maps, notion, posthog, resend, wordpress-com.

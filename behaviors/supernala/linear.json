@@ -1,0 +1,419 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:linear",
+  "revision": 1,
+  "followUps": [
+    {
+      "id": "issue-progress",
+      "after": {
+        "tool": "linear.save_issue",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "linear.get_issue",
+        "args": {
+          "id": "$result.id"
+        },
+        "checkAt": ["+1d", "+3d", "+7d"],
+        "stopAfter": "+14d"
+      },
+      "judge": {
+        "classify": {
+          "name": "progress",
+          "options": ["untouched", "assigned", "in progress", "blocked", "done"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "progress = blocked or owner_should_know = yes",
+      "instruction": "Summarise what changed on the issue since the last check and who it is waiting on."
+    }
+  ],
+  "failures": {
+    "rules": [
+      {
+        "kind": "auth_expired",
+        "httpStatus": [401]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_expired": {
+        "fix": "auto",
+        "action": "refresh_token"
+      },
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "linear.list_issues",
+      "entity": "issue",
+      "items": "$.issues[*]",
+      "key": "$.id",
+      "time": "$.updatedAt",
+      "keep": ["title", "status", "statusType", "priority", "assignee", "team", "url", "updatedAt"],
+      "describe": {
+        "classify": {
+          "name": "kind",
+          "options": ["bug", "feature", "task", "incident", "question"]
+        },
+        "yesNo": {
+          "name": "needs_owner",
+          "question": "Is this waiting on the Owner?"
+        }
+      }
+    },
+    {
+      "from": "linear.get_issue",
+      "entity": "issue",
+      "items": "$",
+      "key": "$.id",
+      "time": "$.updatedAt",
+      "keep": ["title", "status", "statusType", "priority", "assignee", "team", "url", "updatedAt"],
+      "describe": {
+        "classify": {
+          "name": "kind",
+          "options": ["bug", "feature", "task", "incident", "question"]
+        },
+        "yesNo": {
+          "name": "needs_owner",
+          "question": "Is this waiting on the Owner?"
+        }
+      }
+    }
+  ],
+  "watchables": [
+    {
+      "id": "my-recent-issues",
+      "label": "Issues assigned to me that changed in the last 7 days",
+      "tool": "linear.list_issues",
+      "params": {
+        "team": {
+          "type": "string",
+          "label": "Team name or ID"
+        }
+      },
+      "args": {
+        "assignee": "me",
+        "team": "$param.team",
+        "orderBy": "updatedAt",
+        "updatedAt": "-P7D",
+        "fields": [
+          "id",
+          "title",
+          "status",
+          "statusType",
+          "priority",
+          "url",
+          "updatedAt",
+          "createdAt",
+          "team"
+        ],
+        "limit": 50
+      },
+      "items": "$.issues[*]",
+      "key": "$.id",
+      "fields": {
+        "title": {
+          "path": "$.title",
+          "type": "string"
+        },
+        "status": {
+          "path": "$.status",
+          "type": "string"
+        },
+        "status_type": {
+          "path": "$.statusType",
+          "type": "string"
+        },
+        "priority": {
+          "path": "$.priority",
+          "type": "string"
+        },
+        "team": {
+          "path": "$.team",
+          "type": "string"
+        },
+        "url": {
+          "path": "$.url",
+          "type": "string"
+        },
+        "updated": {
+          "path": "$.updatedAt",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "my-assigned-issues",
+      "label": "Issues assigned to me, newest first",
+      "tool": "linear.list_issues",
+      "params": {
+        "team": {
+          "type": "string",
+          "label": "Team name or ID"
+        }
+      },
+      "args": {
+        "assignee": "me",
+        "team": "$param.team",
+        "orderBy": "createdAt",
+        "fields": [
+          "id",
+          "title",
+          "status",
+          "statusType",
+          "priority",
+          "url",
+          "updatedAt",
+          "createdAt",
+          "team"
+        ],
+        "limit": 50
+      },
+      "items": "$.issues[*]",
+      "key": "$.id",
+      "fields": {
+        "title": {
+          "path": "$.title",
+          "type": "string"
+        },
+        "status": {
+          "path": "$.status",
+          "type": "string"
+        },
+        "status_type": {
+          "path": "$.statusType",
+          "type": "string"
+        },
+        "priority": {
+          "path": "$.priority",
+          "type": "string"
+        },
+        "team": {
+          "path": "$.team",
+          "type": "string"
+        },
+        "url": {
+          "path": "$.url",
+          "type": "string"
+        },
+        "updated": {
+          "path": "$.updatedAt",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "issues",
+      "label": "Issues matching a team, project, state or label",
+      "tool": "linear.list_issues",
+      "params": {
+        "team": {
+          "type": "string",
+          "label": "Team name or ID"
+        },
+        "project": {
+          "type": "string",
+          "label": "Project name, ID or slug"
+        },
+        "state": {
+          "type": "string",
+          "label": "State type, name or ID"
+        },
+        "label": {
+          "type": "string",
+          "label": "Label name or ID"
+        },
+        "assignee": {
+          "type": "string",
+          "label": "User ID, name, email, or me"
+        }
+      },
+      "args": {
+        "team": "$param.team",
+        "project": "$param.project",
+        "state": "$param.state",
+        "label": "$param.label",
+        "assignee": "$param.assignee",
+        "orderBy": "updatedAt",
+        "fields": [
+          "id",
+          "title",
+          "status",
+          "statusType",
+          "priority",
+          "url",
+          "updatedAt",
+          "createdAt",
+          "team"
+        ],
+        "limit": 50
+      },
+      "items": "$.issues[*]",
+      "key": "$.id",
+      "fields": {
+        "title": {
+          "path": "$.title",
+          "type": "string"
+        },
+        "status": {
+          "path": "$.status",
+          "type": "string"
+        },
+        "status_type": {
+          "path": "$.statusType",
+          "type": "string"
+        },
+        "priority": {
+          "path": "$.priority",
+          "type": "string"
+        },
+        "team": {
+          "path": "$.team",
+          "type": "string"
+        },
+        "url": {
+          "path": "$.url",
+          "type": "string"
+        },
+        "updated": {
+          "path": "$.updatedAt",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "issue-comments",
+      "label": "Comments on one issue",
+      "tool": "linear.list_comments",
+      "params": {
+        "issue": {
+          "type": "string",
+          "required": true,
+          "label": "Issue identifier, such as ENG-123"
+        }
+      },
+      "args": {
+        "issueId": "$param.issue",
+        "orderBy": "createdAt",
+        "limit": 50
+      },
+      "items": "$.comments[*]",
+      "key": "$.id",
+      "fields": {
+        "created": {
+          "path": "$.createdAt",
+          "type": "string"
+        },
+        "url": {
+          "path": "$.url",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "my-unread-notifications",
+      "label": "Unread notifications in my Linear inbox",
+      "tool": "linear.get_notifications",
+      "args": {
+        "unreadOnly": true,
+        "limit": 50
+      },
+      "items": "$.notifications[*]",
+      "key": "$.id",
+      "fields": {
+        "type": {
+          "path": "$.type",
+          "type": "string"
+        },
+        "created": {
+          "path": "$.createdAt",
+          "type": "string"
+        }
+      }
+    }
+  ],
+  "profile": {
+    "steps": [
+      {
+        "tool": "linear.get_user",
+        "args": {
+          "query": "me"
+        },
+        "values": {
+          "user_id": "$.id",
+          "name": "$.name"
+        }
+      }
+    ],
+    "defaultWatches": [
+      {
+        "id": "issue-assigned",
+        "watchable": "my-assigned-issues",
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "A Linear issue was assigned to you."
+      },
+      {
+        "id": "my-issue-status-changed",
+        "watchable": "my-recent-issues",
+        "condition": {
+          "kind": "field-changed",
+          "field": "status_type",
+          "to": ["triage", "backlog", "unstarted", "started", "completed", "canceled"]
+        },
+        "notify": "One of your Linear issues changed status."
+      }
+    ],
+    "suggestedWatches": [
+      {
+        "id": "inbox-notifications",
+        "watchable": "my-unread-notifications",
+        "label": "Tell me about new Linear inbox notifications, such as comments and mentions",
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "You have a new Linear notification"
+      }
+    ]
+  }
+}
