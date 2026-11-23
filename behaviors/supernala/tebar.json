@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:tebar",
+  "revision": 1,
+  "failures": {
+    "rules": [
+      {
+        "kind": "auth_expired",
+        "httpStatus": [401]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_expired": {
+        "fix": "auto",
+        "action": "refresh_token"
+      },
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "tebar.list_comments",
+      "entity": "comment",
+      "items": "$.comments[*]",
+      "key": "$.id",
+      "time": "$.created_at",
+      "keep": [
+        "account_id",
+        "post_id",
+        "platform",
+        "username",
+        "status",
+        "created_at",
+        "permalink"
+      ],
+      "describe": {
+        "classify": {
+          "name": "kind",
+          "options": ["praise", "question", "complaint", "spam", "other"]
+        },
+        "yesNo": {
+          "name": "needs_reply",
+          "question": "Does this comment need a reply from the Owner?"
+        }
+      }
+    }
+  ],
+  "watchables": [
+    {
+      "id": "comments",
+      "label": "Comments and replies on my posts",
+      "tool": "tebar.list_comments",
+      "params": {
+        "status": {
+          "type": "enum",
+          "values": ["unreplied", "replied", "ignored", "all"],
+          "label": "Comment status"
+        },
+        "account_id": {
+          "type": "string",
+          "label": "Account ID from list_accounts"
+        }
+      },
+      "args": {
+        "status": "$param.status",
+        "account_id": "$param.account_id",
+        "limit": 50
+      },
+      "items": "$.comments[*]",
+      "key": "$.id",
+      "fields": {
+        "account_id": {
+          "path": "$.account_id",
+          "type": "string"
+        },
+        "post_id": {
+          "path": "$.post_id",
+          "type": "string"
+        },
+        "platform": {
+          "path": "$.platform",
+          "type": "string"
+        },
+        "status": {
+          "path": "$.status",
+          "type": "enum",
+          "values": ["unreplied", "replied", "ignored"]
+        }
+      }
+    },
+    {
+      "id": "conversations",
+      "label": "Instagram DM conversations",
+      "tool": "tebar.list_conversations",
+      "params": {
+        "status": {
+          "type": "enum",
+          "values": ["open", "done", "all"],
+          "label": "Conversation status"
+        },
+        "account_id": {
+          "type": "string",
+          "label": "Account ID from list_accounts"
+        }
+      },
+      "args": {
+        "status": "$param.status",
+        "account_id": "$param.account_id",
+        "limit": 50
+      },
+      "items": "$.conversations[*]",
+      "key": "$.id",
+      "fields": {
+        "account_id": {
+          "path": "$.account_id",
+          "type": "string"
+        },
+        "status": {
+          "path": "$.status",
+          "type": "enum",
+          "values": ["open", "done"]
+        },
+        "updated": {
+          "path": "$.updated_at",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "posts",
+      "label": "Posts made through Tebar, by status",
+      "tool": "tebar.list_posts",
+      "params": {
+        "status": {
+          "type": "enum",
+          "values": [
+            "draft",
+            "scheduled",
+            "publishing",
+            "published",
+            "partial",
+            "failed",
+            "canceled"
+          ],
+          "label": "Post status"
+        }
+      },
+      "args": {
+        "status": "$param.status",
+        "limit": 50
+      },
+      "items": "$.posts[*]",
+      "key": "$.id",
+      "fields": {
+        "status": {
+          "path": "$.status",
+          "type": "enum",
+          "values": [
+            "draft",
+            "scheduled",
+            "publishing",
+            "published",
+            "partial",
+            "failed",
+            "canceled"
+          ]
+        },
+        "created": {
+          "path": "$.created_at",
+          "type": "string"
+        }
+      }
+    }
+  ],
+  "profile": {
+    "steps": [],
+    "defaultWatches": [
+      {
+        "id": "post-failed",
+        "watchable": "posts",
+        "args": {
+          "status": "failed"
+        },
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "A post you made through Tebar failed to publish."
+      }
+    ],
+    "suggestedWatches": [
+      {
+        "id": "unreplied-comment",
+        "watchable": "comments",
+        "label": "Tell me when a new comment on my posts is waiting for a reply",
+        "args": {
+          "status": "unreplied"
+        },
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "A new comment is waiting for your reply"
+      },
+      {
+        "id": "open-conversation",
+        "watchable": "conversations",
+        "label": "Tell me when a new Instagram DM is waiting for a reply",
+        "args": {
+          "status": "open"
+        },
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "A new Instagram DM is waiting for your reply"
+      }
+    ]
+  }
+}

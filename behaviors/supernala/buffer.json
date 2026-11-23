@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:buffer",
+  "revision": 1,
+  "followUps": [
+    {
+      "id": "post-outcome",
+      "after": {
+        "tool": "buffer.create_post",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "buffer.get_post",
+        "args": {
+          "postId": "$result.post.id",
+          "includeMetrics": true
+        },
+        "checkAt": ["+1h", "+1d", "+3d"],
+        "stopAfter": "+7d"
+      },
+      "judge": {
+        "classify": {
+          "name": "status",
+          "options": ["waiting to send", "sent", "failed", "taking off", "underperforming"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "status = failed or owner_should_know = yes",
+      "instruction": "Say whether the post went out and how it is doing; if it failed, give Buffer's error and suggest one fix.",
+      "remember": ["best posting time by channel"]
+    }
+  ],
+  "failures": {
+    "rules": [
+      {
+        "kind": "auth_revoked",
+        "httpStatus": [401]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "report"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "buffer.list_posts",
+      "entity": "post",
+      "items": "$.edges[*]",
+      "key": "$.node.id",
+      "time": "$.node.dueAt",
+      "keep": ["node.status", "node.channelId", "node.dueAt", "node.sentAt", "node.error"]
+    }
+  ],
+  "watchables": [
+    {
+      "id": "posts",
+      "label": "Posts in my Buffer organization, by status",
+      "tool": "buffer.list_posts",
+      "params": {
+        "status": {
+          "type": "enum",
+          "values": ["draft", "needs_approval", "scheduled", "sending", "sent", "error"],
+          "required": true,
+          "label": "Post status"
+        }
+      },
+      "args": {
+        "organizationId": "$profile.organization_id",
+        "status": ["$param.status"],
+        "sort": [
+          {
+            "field": "dueAt",
+            "direction": "desc"
+          }
+        ],
+        "first": 50
+      },
+      "items": "$.edges[*]",
+      "key": "$.node.id",
+      "fields": {
+        "status": {
+          "path": "$.node.status",
+          "type": "enum",
+          "values": ["draft", "needs_approval", "scheduled", "sending", "sent", "error"]
+        },
+        "channel_id": {
+          "path": "$.node.channelId",
+          "type": "string"
+        },
+        "due_at": {
+          "path": "$.node.dueAt",
+          "type": "string"
+        },
+        "sent_at": {
+          "path": "$.node.sentAt",
+          "type": "string"
+        }
+      }
+    },
+    {
+      "id": "failed-posts",
+      "label": "Posts in my Buffer organization that failed to send",
+      "tool": "buffer.list_posts",
+      "args": {
+        "organizationId": "$profile.organization_id",
+        "status": ["error"],
+        "sort": [
+          {
+            "field": "dueAt",
+            "direction": "desc"
+          }
+        ],
+        "first": 50
+      },
+      "items": "$.edges[*]",
+      "key": "$.node.id",
+      "fields": {
+        "status": {
+          "path": "$.node.status",
+          "type": "enum",
+          "values": ["draft", "needs_approval", "scheduled", "sending", "sent", "error"]
+        },
+        "channel_id": {
+          "path": "$.node.channelId",
+          "type": "string"
+        },
+        "due_at": {
+          "path": "$.node.dueAt",
+          "type": "string"
+        },
+        "sent_at": {
+          "path": "$.node.sentAt",
+          "type": "string"
+        }
+      }
+    }
+  ],
+  "profile": {
+    "steps": [
+      {
+        "tool": "buffer.get_account",
+        "args": {},
+        "values": {
+          "organization_id": "$.organizations[0].id",
+          "organization_name": "$.organizations[0].name",
+          "timezone": "$.timezone"
+        }
+      }
+    ],
+    "defaultWatches": [
+      {
+        "id": "post-failed",
+        "watchable": "failed-posts",
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "A Buffer post failed to send."
+      }
+    ],
+    "suggestedWatches": [
+      {
+        "id": "post-sent",
+        "watchable": "posts",
+        "label": "Tell me each time Buffer sends one of my posts",
+        "args": {
+          "status": "sent"
+        },
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "Buffer sent one of your posts"
+      }
+    ]
+  }
+}

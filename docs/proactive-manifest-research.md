@@ -129,7 +129,13 @@ sizeBytes, url, parentIds, shared, owners } ] }` from `search_files`, `list_fold
 
 ### vercel (`managed-remote-mcp`, eligible, 246 tools)
 
-Same provider as `vercel-api`; no declaration until a live capture shows result shapes.
+Mirrors `vercel-api` with the remote catalog's flat arguments (no `path`/`query` grouping):
+`create_deployment` → `get_deployment` with `idOrUrl: $result.id` plus `$args.teamId` /
+`$args.slug`; observe `list_deployments` (`deployments[*]`, key `$.uid`); profile `get_auth_user`
+→ `$.user.id` / `$.user.username`; watchables `my-failed-deployments` (`state: ERROR`, `users` the
+profile id, optional project and team) and `deployments`; default `deployment-failed`. Result
+paths are _inferred_ to pass the Vercel REST bodies through unchanged. No poll source: the
+remote's hourly checkpoint read is enough, and `vercel-api` already polls.
 
 ### atlassian-api (`managed-openapi`, eligible, Jira REST)
 
@@ -142,8 +148,22 @@ Same provider as `vercel-api`; no declaration until a live capture shows result 
 
 ### atlassian, atlassian-api-token (`managed-remote-mcp`, 117 tools)
 
-Writes such as `create_jira_issue` and `create_confluence_content` exist, but result shapes are
-unknown and the API-token variant is history. No declaration.
+The two catalogs are identical (Rovo MCP, OAuth or API token), so both declarations are the same
+apart from failure handling (OAuth `401` is `auth_expired` with a refresh; the API token's `401` is
+`auth_revoked`).
+
+- Profile: `atlassian_user_info` → `account_id` (`$.data.accountId`) and
+  `get_accessible_atlassian_resources` → `cloud_id` / `site_url` (`$.data.resources[0]`), both
+  confirmed by `fixtures/mcp/captures/provider-evidence-20261028.json`. Every Jira tool requires
+  `cloudId`, so watchables pass `$profile.cloud_id`: the first site only.
+- Watchables (`search_jira_issues_using_jql`, `issues[*]` keyed by `$.key`, _inferred_ from the
+  tool description's `issues[].fields`): `my-open-issues` (`assignee = currentUser() AND
+statusCategory != Done`, optional extra JQL), `my-transitioned-issues` (status changed in the
+  last day by someone other than the Owner), `jql-search`.
+- Defaults: `issue-assigned` (`new-item` on open issues assigned to me) and `my-issue-transitioned`
+  (`new-item` on the transitioned set; entering the one-day window is the transition).
+- Follow-up: `create_jira_issue` → `get_jira_issue` with `$args.cloudId` and `$result.key`
+  (_inferred_; the description says a create returns the new key). Observe the JQL search.
 
 ### wordpress-self-hosted (`managed-openapi`, eligible, 25 tools)
 
@@ -170,19 +190,52 @@ unknown and the API-token variant is history. No declaration.
 Single read `jev.ask`. Failures only: 401 key revoked, 402 out of credits (OpenRouter) →
 `quota_exceeded` Owner report, 403, 429, 5xx.
 
-### Others (no declaration)
+### Remote MCP apps added 2026-11-23
 
-- `buffer` (remote, 17): `create_post` (write) → `get_post` / `get_aggregated_post_metrics` is a
-  good future follow-up once result shapes are captured.
-- `tebar` (33), `repliz` (73), `linear` (65), `elevenlabs` (20): writes and lists exist
-  (`linear.save_issue`, `repliz.create_schedule`), but result shapes are unknown. `meta-ads-token`
-  (108) has watchables only (below). Linear `list_issues` and `get_notifications` are strong future
-  observation sources.
-- `notion` (3 reads), `maple` (24 reads), `google-maps` (6 reads): read-only. Maple
-  `list_alert_incidents` and Notion search are good observation candidates after a capture.
-- `cloudflare`, `posthog`, `wordpress-com`: code-mode `execute`/`exec` tools classified
-  `destructive`; nothing typed to observe.
-- `resend` (remote): one write, no read to watch with.
+Failures for every remote MCP use the host's own transport status, the one reliable signal: `401`
+→ `auth_expired` / refresh for OAuth connections (`auth_revoked` / reconnect after the host's one
+refresh attempt) and `auth_revoked` / reconnect for API keys (`atlassian-api-token`, `buffer`,
+`google-maps`); `403` → `permission_denied` (reconnect for OAuth, where new consent can fix scopes;
+report for API keys); `404` → `not_found`; `429` → `rate_limited` / backoff; `5xx` → `transient` /
+retry. Tool-level `isError` text is left unclassified: no provider documents stable wording.
+
+- **linear** (65 tools). Profile `get_user` `query: "me"` → `user_id`, `name`. Watchables
+  (`list_issues` `assignee: "me"` with an explicit `fields` list; `issues[*]` keyed by `$.id`, the
+  `ENG-123` identifier, _inferred_): `my-recent-issues` (updated in the last 7 days, newest update
+  first), `my-assigned-issues` (newest created first), `issues`, `issue-comments`,
+  `my-unread-notifications` (`get_notifications` `unreadOnly`). Defaults: `issue-assigned`
+  (`new-item`) and `my-issue-status-changed` (`field-changed` on `statusType` to any workflow type;
+  moves within one type, such as In Progress to In Review, are not seen, and Linear cannot exclude
+  the Owner's own moves). Suggested: new inbox notifications (comments, mentions). Follow-up
+  `save_issue` → `get_issue` `id: $result.id` (creates and updates). Observe `list_issues` and
+  `get_issue`.
+- **maple** (24 reads). Shapes confirmed against the open-source server
+  (`MapleTechLabs/maple`, `apps/ai/src/mcp/tools/list-error-issues.ts`, `list-alert-incidents.ts`;
+  the tool's output is `structuredContent`). Watchables `error-issues` (`issues[*]`, key `$.id`,
+  `workflowState`, `severity`, `serviceName`, `errorLabel`, `occurrenceCount`, `lastSeenAt`) and
+  `alert-incidents` (`incidents[*]`, key `$.id`, `severity`, `status`, `ruleName`,
+  `lastObservedValue`). Defaults: new error issue whose severity is critical or high, and alert
+  incident opened. Suggested: regressed errors, every new error issue. Observe both lists.
+- **tebar** (33). `create_post` is `destructive`, so it cannot trigger a follow-up. Watchables
+  `comments`, `conversations`, `posts` (`comments[*]` / `conversations[*]` / `posts[*]` keyed by
+  `$.id`, _inferred_). Default: own posts that failed (`posts` `status: failed`, `new-item`).
+  Suggested: unreplied comments and open DMs (busy accounts would be noisy as defaults).
+- **repliz** (73). Follow-up `create_schedule` → `get_schedule` `scheduleId: $result._id` at +1h,
+  +1d, +3d. Watchables `comments`, `chats`, `schedules` (`docs[*]` keyed by `$._id`, _inferred_
+  from Repliz's paginated public API). Default: failed scheduled posts (`schedules` `status:
+error`). Suggested: pending comments, unreplied chats.
+- **buffer** (17). Profile `get_account` → `organization_id` (`$.organizations[0].id`), confirmed by
+  the provider capture. Watchables `posts` (required status) and `failed-posts` on `list_posts`
+  (`edges[*]` keyed by `$.node.id`, _inferred_ from the Relay-style pagination Buffer describes).
+  Default: failed posts. Suggested: each sent post. Follow-up `create_post` → `get_post`
+  `postId: $result.post.id` with `includeMetrics` at +1h, +1d, +3d (_inferred_ result path).
+- **Failures only**: `posthog` (single `exec`) and `cloudflare`, `wordpress-com` (code-mode
+  `execute` is `destructive`; nothing typed to watch, and a Cloudflare `whoami` profile would only
+  repeat the host's `account_subject`); `notion` (search and fetch return text whose item shape is
+  not captured, so no `observe` yet); `resend` (one write, no read to follow up with);
+  `google-maps` (lookups, nothing about the Owner changes); `elevenlabs` (`account_get_usage`
+  would suit a credits threshold, but its field names are not captured, and a suggested Watch on a
+  guessed path would never fire).
 - `canva`: revoked. `remotes/gmail.json`: staged, no catalog. `openapi-inventory`,
   `offline-fixture`: fixtures.
 

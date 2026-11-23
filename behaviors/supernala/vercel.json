@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "plugin": "supernala-public:supernala:vercel",
+  "revision": 1,
+  "followUps": [
+    {
+      "id": "deployment-outcome",
+      "after": {
+        "tool": "vercel.create_deployment",
+        "outcome": "succeeded"
+      },
+      "watch": {
+        "tool": "vercel.get_deployment",
+        "args": {
+          "idOrUrl": "$result.id",
+          "teamId": "$args.teamId",
+          "slug": "$args.slug"
+        },
+        "checkAt": ["+5m", "+15m", "+1h"],
+        "stopAfter": "+6h"
+      },
+      "judge": {
+        "classify": {
+          "name": "state",
+          "options": ["building", "ready", "error", "canceled"]
+        },
+        "yesNo": {
+          "name": "owner_should_know",
+          "question": "Would the Owner want to hear about this now?"
+        }
+      },
+      "wakeWhen": "state = error or owner_should_know = yes",
+      "instruction": "Say whether the deployment is live; if it failed, name the failing step and suggest one fix."
+    }
+  ],
+  "failures": {
+    "rules": [
+      {
+        "kind": "auth_expired",
+        "httpStatus": [401]
+      },
+      {
+        "kind": "permission_denied",
+        "httpStatus": [403]
+      },
+      {
+        "kind": "not_found",
+        "httpStatus": [404]
+      },
+      {
+        "kind": "rate_limited",
+        "httpStatus": [429]
+      },
+      {
+        "kind": "transient",
+        "httpStatus": [500, 502, 503, 504]
+      }
+    ],
+    "kinds": {
+      "auth_expired": {
+        "fix": "auto",
+        "action": "refresh_token"
+      },
+      "auth_revoked": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "permission_denied": {
+        "fix": "owner",
+        "action": "reconnect"
+      },
+      "rate_limited": {
+        "fix": "auto",
+        "action": "backoff"
+      },
+      "transient": {
+        "fix": "auto",
+        "action": "retry"
+      },
+      "not_found": {
+        "fix": "none",
+        "action": "none"
+      }
+    }
+  },
+  "observe": [
+    {
+      "from": "vercel.list_deployments",
+      "entity": "deployment",
+      "items": "$.deployments[*]",
+      "key": "$.uid",
+      "time": "$.created",
+      "keep": [
+        "name",
+        "url",
+        "state",
+        "target",
+        "created",
+        "creator.username",
+        "meta.githubCommitMessage",
+        "meta.githubCommitRef"
+      ]
+    }
+  ],
+  "watchables": [
+    {
+      "id": "my-failed-deployments",
+      "label": "My failed deployments",
+      "tool": "vercel.list_deployments",
+      "params": {
+        "project": {
+          "type": "string",
+          "label": "Project ID or name"
+        },
+        "team": {
+          "type": "string",
+          "label": "Team ID; omit for the personal account"
+        }
+      },
+      "args": {
+        "state": "ERROR",
+        "users": "$profile.user_id",
+        "projectId": "$param.project",
+        "teamId": "$param.team",
+        "limit": 20
+      },
+      "items": "$.deployments[*]",
+      "key": "$.uid",
+      "fields": {
+        "name": {
+          "path": "$.name",
+          "type": "string"
+        },
+        "state": {
+          "path": "$.state",
+          "type": "enum",
+          "values": [
+            "BUILDING",
+            "ERROR",
+            "INITIALIZING",
+            "QUEUED",
+            "READY",
+            "CANCELED",
+            "DELETED",
+            "BLOCKED"
+          ]
+        },
+        "target": {
+          "path": "$.target",
+          "type": "string"
+        },
+        "url": {
+          "path": "$.url",
+          "type": "string"
+        },
+        "project_id": {
+          "path": "$.projectId",
+          "type": "string"
+        },
+        "created": {
+          "path": "$.created",
+          "type": "number"
+        }
+      }
+    },
+    {
+      "id": "deployments",
+      "label": "Recent deployments",
+      "tool": "vercel.list_deployments",
+      "params": {
+        "project": {
+          "type": "string",
+          "label": "Project ID or name"
+        },
+        "team": {
+          "type": "string",
+          "label": "Team ID; omit for the personal account"
+        },
+        "state": {
+          "type": "enum",
+          "values": ["BUILDING", "ERROR", "INITIALIZING", "QUEUED", "READY", "CANCELED"],
+          "label": "Deployment state"
+        },
+        "target": {
+          "type": "string",
+          "label": "Environment, such as production"
+        }
+      },
+      "args": {
+        "projectId": "$param.project",
+        "teamId": "$param.team",
+        "state": "$param.state",
+        "target": "$param.target",
+        "limit": 20
+      },
+      "items": "$.deployments[*]",
+      "key": "$.uid",
+      "fields": {
+        "name": {
+          "path": "$.name",
+          "type": "string"
+        },
+        "state": {
+          "path": "$.state",
+          "type": "enum",
+          "values": [
+            "BUILDING",
+            "ERROR",
+            "INITIALIZING",
+            "QUEUED",
+            "READY",
+            "CANCELED",
+            "DELETED",
+            "BLOCKED"
+          ]
+        },
+        "target": {
+          "path": "$.target",
+          "type": "string"
+        },
+        "url": {
+          "path": "$.url",
+          "type": "string"
+        },
+        "project_id": {
+          "path": "$.projectId",
+          "type": "string"
+        },
+        "created": {
+          "path": "$.created",
+          "type": "number"
+        }
+      }
+    }
+  ],
+  "profile": {
+    "steps": [
+      {
+        "tool": "vercel.get_auth_user",
+        "args": {},
+        "values": {
+          "user_id": "$.user.id",
+          "username": "$.user.username"
+        }
+      }
+    ],
+    "defaultWatches": [
+      {
+        "id": "deployment-failed",
+        "watchable": "my-failed-deployments",
+        "condition": {
+          "kind": "new-item"
+        },
+        "notify": "One of your Vercel deployments failed."
+      }
+    ]
+  }
+}
